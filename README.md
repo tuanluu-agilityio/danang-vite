@@ -42,7 +42,7 @@ src/
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
   audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
   ui/                bảng điều khiển, nút quay cầu, âm thanh
-  i18n/              index.ts + locales/{vi,en,ko,ja,zh,th,ar,hi}.json
+  i18n/              index.ts + locales/{vi,en,ko,ja,zh,th,ar,hi,ru}.json
   styles/main.css
 ```
 

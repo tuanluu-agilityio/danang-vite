@@ -1,7 +1,7 @@
 /* =====================================================================
    ĐA NGÔN NGỮ — bảng dịch giao diện, mặc định Tiếng Việt.
    Mỗi ngôn ngữ một file JSON trong locales/. Thêm ngôn ngữ: tạo file mới rồi khai báo trong LOCALES bên dưới.
-   Chọn ngôn ngữ qua menu, hoặc link có #en, #ko, #ja, #zh, #th, #ar, #hi.
+   Chọn ngôn ngữ qua menu, hoặc link có #en, #ko, #ja, #zh, #th, #ar, #hi, #ru.
    ===================================================================== */
 import vi from './locales/vi.json';
 import en from './locales/en.json';
@@ -11,12 +11,13 @@ import zh from './locales/zh.json';
 import th from './locales/th.json';
 import ar from './locales/ar.json';
 import hi from './locales/hi.json';
+import ru from './locales/ru.json';
 
 export type Locale = Record<string, unknown> & { _name: string; _dir?: 'rtl' | 'ltr' };
 export type Stop = [title: string, text: string];
 
 /* Thứ tự ở đây là thứ tự trong menu chọn ngôn ngữ */
-const LOCALES: Record<string, Locale> = { vi, en, ko, ja, zh, th, ar, hi } as Record<string, Locale>;
+const LOCALES: Record<string, Locale> = { vi, en, ko, ja, zh, th, ar, hi, ru } as Record<string, Locale>;
 
 /* Font theo chữ viết — chỉ tải khi chọn ngôn ngữ đó */
 const FONTS: Record<string, string> = {
@@ -25,7 +26,8 @@ const FONTS: Record<string, string> = {
   zh: 'Noto+Serif+SC:wght@600&family=Noto+Sans+SC:wght@400;500;600',
   th: 'Noto+Serif+Thai:wght@600&family=Noto+Sans+Thai:wght@400;500;600',
   ar: 'Noto+Naskh+Arabic:wght@600&family=Noto+Sans+Arabic:wght@400;500;600',
-  hi: 'Noto+Serif+Devanagari:wght@600&family=Noto+Sans+Devanagari:wght@400;500;600'
+  hi: 'Noto+Serif+Devanagari:wght@600&family=Noto+Sans+Devanagari:wght@400;500;600',
+  ru: 'Noto+Serif:wght@600&family=Noto+Sans:wght@400;500;600'
 };
 const STORE_KEY = 'cauRong.lang';
 const listeners: ((code: string) => void)[] = [];

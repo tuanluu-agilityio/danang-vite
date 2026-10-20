@@ -43,6 +43,7 @@ html[lang=zh]{--font-display:'Noto Serif SC',serif;--font-body:'Noto Sans SC',sy
 html[lang=th]{--font-display:'Noto Serif Thai',serif;--font-body:'Noto Sans Thai',system-ui,sans-serif;--font-mono:'JetBrains Mono','Noto Sans Thai',monospace;}
 html[lang=ar]{--font-display:'Noto Naskh Arabic',serif;--font-body:'Noto Sans Arabic',system-ui,sans-serif;--font-mono:'JetBrains Mono','Noto Sans Arabic',monospace;}
 html[lang=hi]{--font-display:'Noto Serif Devanagari',serif;--font-body:'Noto Sans Devanagari',system-ui,sans-serif;--font-mono:'JetBrains Mono','Noto Sans Devanagari',monospace;}
+html[lang=ru]{--font-display:'Noto Serif',serif;--font-body:'Noto Sans',system-ui,sans-serif;--font-mono:'JetBrains Mono','Noto Sans',monospace;}
 html:is([lang=ko],[lang=ja],[lang=zh],[lang=th],[lang=ar],[lang=hi]) h1{font-size:27px;line-height:1.3;}
 html:is([lang=ko],[lang=ja],[lang=zh],[lang=th],[lang=ar],[lang=hi]) #tourCaption h2{font-size:20px;line-height:1.35;}
 html:is([lang=ko],[lang=ja],[lang=zh],[lang=th],[lang=ar],[lang=hi]) .specs dd{font-size:20px;}
