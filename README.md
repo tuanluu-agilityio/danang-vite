@@ -24,6 +24,7 @@ npm run build
 npm run test:drawcalls -- [thư-mục-bản-gốc]   # draw call ở 18 góc nhìn × ngày/đêm
 npm run test:tour      -- [thư-mục-bản-gốc]   # 5 Tour: chú thích, đường bay, quay cầu sông Hàn, mặt cắt + mô phỏng dìm của hầm
 npm run test:tunnel                           # hầm: trắc dọc, mặt cắt bật/tắt, mắt thích nghi, mô phỏng dìm, ảnh chụp vào tests/screens/
+npm run test:riverfront                       # hai bờ: nhà bị dọn, hướng mặt LED, bật/tắt trái tim, quảng cáo, ảnh chụp vào tests/screens/
 ```
 
 `tests/original/index.html` là file gốc chỉ sửa hai chỗ: link three từ CDN đổi sang `/three/…` (server kiểm tra lấy từ `node_modules/three`) và thêm móc `?test`. Truyền `tests/original` làm tham số để so sánh hai bản với nhau. Trình duyệt kiểm tra dựng hình bằng CPU (SwiftShader) nên mỗi script chạy khoảng 10–20 phút.
@@ -43,6 +44,7 @@ src/
     song-han/        Cầu sông Hàn + SwingController
     han-tunnel/      Hầm vượt sông Hàn (vỏ hầm, nội thất, máng hầm hở, cửa hầm, đáy sông, mặt cắt, mô phỏng dìm)
   environment/       sông Hàn, núi, đường phố, thành phố, cây, giao thông
+    riverfront/      hai bờ sông: địa danh thật, mặt dựng LED trái tim + "DN", bảng quảng cáo, chi tiết dải đi bộ
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
   audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
   ui/                bảng điều khiển, nút quay cầu, âm thanh
@@ -63,6 +65,15 @@ Chiều dài từng đoạn, số làn, tốc độ, độ dốc tham khảo và
 - Lái xe xuyên hầm (`hrDrive`): độ phơi sáng giảm còn 70% trong hầm rồi trả về giá trị gốc khi ra.
 - Nhà, cây, cột đèn nằm trên hành lang tuyến được **thu nhỏ về 0 sau khi cảnh đã dựng** (`corridor.ts`), nên chuỗi `rand()` của khu phố không đổi. Hầm phải dựng sau mọi lệnh dùng `rand` trong `main.ts`.
 - i18n: các khóa `hr*`, `vHr*`, `im_*`, `hrStops` có đủ 9 ngôn ngữ; thuyết minh `hrStops` có tiếng Việt và tiếng Anh (`scripts/narration`).
+
+## Hai bờ sông Hàn
+
+`src/environment/riverfront/` (kế hoạch: [prompts/bo-song-han.md](prompts/bo-song-han.md)); thông số ở `CONFIG.riverfront`.
+- **Địa danh** (`landmarks.ts`, một mesh gộp, cửa sổ sáng đêm bằng `patchWindows`): Novotel Danang Premier Han River (37 tầng), Vinpearl Condotel Riverfront (36 tầng nổi + sky bar), Trung tâm Hành chính (34 tầng, 166,8 m, dáng ngọn hải đăng), Chợ Hàn, Bảo tàng Điêu khắc Chăm, Cầu Tình Yêu + cá chép hóa rồng, 3 khách sạn ven Trần Hưng Đạo. Số tầng/chiều cao có nguồn công khai (ghi ở đầu `landmarks.ts`); **toạ độ trong cảnh là ước lượng**. Không có logo thật.
+- **Mặt dựng trái tim + "DN"** (`heartFacade.ts`): một canvas mặt nạ (R tim, G chữ DN, B viền) + fragment shader lưới chấm LED 0,8 m, chu kỳ 24 s (tim đập → DN hiện dần → tim bọc DN, viền chạy → lấp lánh). Hai tấm gộp một mesh, pha từng tấm là attribute (`Đối đáp` lệch 12 s, `Đồng bộ` cùng pha). Ban ngày tối đa 4% độ sáng ban đêm. Novotel quay +X, Vinpearl quay −X, trục U luôn chạy sang phải người nhìn từ sông.
+- **Quảng cáo** (`adAtlas.ts`, `billboards.ts`): atlas canvas 2048², thương hiệu **hư cấu** (danh sách ở đầu `adAtlas.ts`) xen thông điệp du lịch thành phố. 8 pano trụ đơn, 5 bảng nóc nhà, 3 màn LED đổi quảng cáo mỗi 8 s (chuyển mờ 0,6 s), ~100 băng rôn cột đèn, biển hiệu Chợ Hàn/Bảo tàng Chăm.
+- **Dải đi bộ** (`promenade.ts`, chia chunk 600 m mỗi chunk một `THREE.LOD`, ẩn khi xa hơn 600 m): lan can kè, ghế đá, bồn hoa, thùng rác, bến du thuyền, mái hiên + bảng hiệu cửa hàng, đèn LED quấn cây Bạch Đằng, đèn trái tim Cầu Tình Yêu.
+- Nhà/cây/cột đèn bị đè được **thu nhỏ về 0 sau khi cảnh dựng** (`clearance.ts`, có ảnh chụp ma trận để test); `buildRiverfront()` chạy sau `HanTunnel` trong `main.ts`. UI: nút "Đèn trái tim", chọn Đối đáp/Đồng bộ, "Quảng cáo", góc nhìn `rfHearts` (tự chuyển sang đêm) và `rfBank`.
 
 Ghi chú:
 - Bộ sinh số ngẫu nhiên có seed nên `main.ts` giữ đúng thứ tự dựng như bản gốc; đổi thứ tự sẽ làm vị trí nhà, cây, xe thay đổi.

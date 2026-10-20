@@ -26,6 +26,7 @@ import { ThuanPhuocBridge } from './bridges/thuan-phuoc';
 import { TranThiLyBridge } from './bridges/tran-thi-ly';
 import { SongHanBridge } from './bridges/song-han';
 import { HanTunnel } from './bridges/han-tunnel';
+import { buildRiverfront, updateRiverfront } from './environment/riverfront';
 import { updateCamera, hrDrive } from './views/camera';
 import { cam } from './views/state';
 import { TOURS, tour } from './views/tour';
@@ -65,6 +66,7 @@ const songHan = new SongHanBridge();
 scene.add(songHan.group);
 const hanTunnel = new HanTunnel();     // sau mọi lệnh dựng có dùng rand(): chỉ dọn nhà, cây trên tuyến bằng cách thu nhỏ instance
 scene.add(hanTunnel.group);
+const riverfront = buildRiverfront();    // sau HanTunnel: dọn nhà bị đè bằng scale 0, không đụng chuỗi rand()
 const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel];
 createFire();
 createWaterJet();
@@ -74,7 +76,7 @@ applyNight(0, 0);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, hrDrive, THREE, dayNight, tours: TOURS, tour, narration };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, riverfront, hrDrive, THREE, dayNight, tours: TOURS, tour, narration };
 }
 
 /* ============================ Vòng lặp ============================ */
@@ -97,6 +99,7 @@ function animate() {
   for (const b of bridges) b.update(dt, time, camera);
   hanTunnel.holdBoats(songHan.boats.list);
   updateHrUI(camera);
+  updateRiverfront(dt, time);
   audio.setSwingDistance(camera.position.distanceTo(songHan.center));
   audio.update(dayNight.night, show.fireOn, show.waterOn, camera.position.distanceTo(mouthW));
   renderer.info.reset();
