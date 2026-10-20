@@ -4,6 +4,7 @@
 //   npm run build && node tests/drawcalls.mjs [thư-mục-bản-gốc]
 //
 // Thư mục bản gốc (tùy chọn) phải chứa index.html có móc ?test (window.__app) và thư mục three/.
+import { fileURLToPath } from 'node:url';
 import { serveDir, launch, openApp, frames, pickView } from './lib.mjs';
 
 const VIEWS = [
@@ -48,7 +49,7 @@ const results = {};
 const servers = [];
 try {
   if (origDir) { const s = await serveDir(origDir); servers.push(s); results.goc = await measure(browser, s.url); }
-  const s = await serveDir(new URL('../dist/', import.meta.url).pathname); servers.push(s);
+  const s = await serveDir(fileURLToPath(new URL('../dist/', import.meta.url))); servers.push(s);
   results.vite = await measure(browser, s.url);
 } finally {
   await browser.close();

@@ -12,9 +12,11 @@ interface AudioState {
   deg: number; pluck: Map<number, AudioBuffer>; noise: AudioBuffer | null; white?: AudioBuffer;
   waterSrc: AudioBufferSourceNode | null; waterGain: GainNode | null; lastFire: boolean; lastWater: boolean; distGain: number;
   master?: GainNode; tone?: BiquadFilterNode; music?: GainNode; sfx?: GainNode; verb?: ConvolverNode; verbSend?: GainNode;
-  droneGain?: GainNode; riverGain?: GainNode; motorGain?: GainNode; swingGain?: number;
+  droneGain?: GainNode; riverGain?: GainNode; motorGain?: GainNode; swingGain?: number; ducked?: boolean;
 }
 type AudioCtor = typeof AudioContext;
+
+const MUSIC_GAIN = 0.9, DUCK_GAIN = 0.3;     // hạ nhạc nền khi có giọng thuyết trình
 
 export function createAudio() {
   const SCALE = [0, 2, 5, 7, 9];                 // bán cung tính từ nốt gốc
@@ -35,7 +37,7 @@ export function createAudio() {
     A.master.connect(comp).connect(ctx.destination);
     A.tone = ctx.createBiquadFilter(); A.tone.type = 'lowpass'; A.tone.frequency.value = 9000;
     A.tone.connect(A.master);
-    A.music = ctx.createGain(); A.music.gain.value = 0.9; A.music.connect(A.tone);
+    A.music = ctx.createGain(); A.music.gain.value = A.ducked ? DUCK_GAIN : MUSIC_GAIN; A.music.connect(A.tone);
     A.sfx = ctx.createGain(); A.sfx.gain.value = 1; A.sfx.connect(A.master);
     // Hồi âm: đáp ứng xung tự sinh (nhiễu tắt dần, stereo)
     const len = ctx.sampleRate * 3.2, ir = ctx.createBuffer(2, len, ctx.sampleRate);
@@ -219,6 +221,7 @@ export function createAudio() {
       setTimeout(() => { if (!A.on) A.ctx.suspend(); }, 1200);
     },
     setVolume(v) { A.volume = v; if (A.ctx && A.on) A.master.gain.setTargetAtTime(v, A.ctx.currentTime, 0.08); },
+    duck(on) { A.ducked = on; if (A.music) A.music.gain.setTargetAtTime(on ? DUCK_GAIN : MUSIC_GAIN, A.ctx.currentTime, 0.3); },
     pause() { if (A.ctx && A.on) { clearInterval(A.timer); A.ctx.suspend(); } },
     resume() { if (A.ctx && A.on) { A.ctx.resume(); A.nextTime = Math.max(A.nextTime, A.ctx.currentTime + 0.1); A.timer = window.setInterval(schedule, 60); } },
     /* Gọi mỗi khung hình: ngày/đêm, trạng thái trình diễn, khoảng cách camera tới đầu rồng */

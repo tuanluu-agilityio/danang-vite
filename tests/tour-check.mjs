@@ -7,6 +7,7 @@
 // Nếu truyền thêm thư mục bản gốc, so sánh luôn đường bay giữa hai bản (phải trùng nhau).
 //
 //   npm run build && node tests/tour-check.mjs [thư-mục-bản-gốc]
+import { fileURLToPath } from 'node:url';
 import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
 
 const TOURS = [['dragon', 'tour'], ['tp', 'tpTour'], ['ttl', 'ttlTour'], ['sh', 'shTour']];
@@ -90,7 +91,7 @@ const browser = await launch();
 const res = {}, servers = [];
 try {
   if (origDir) { const s = await serveDir(origDir); servers.push(s); res.goc = await checkTours(browser, s.url); }
-  const s = await serveDir(new URL('../dist/', import.meta.url).pathname); servers.push(s);
+  const s = await serveDir(fileURLToPath(new URL('../dist/', import.meta.url))); servers.push(s);
   res.vite = await checkTours(browser, s.url);
 } finally { await browser.close(); servers.forEach((s) => s.close()); }
 

@@ -29,9 +29,11 @@ import { updateCamera } from './views/camera';
 import { cam } from './views/state';
 import { TOURS, tour } from './views/tour';
 import { audio } from './audio';
+import { narration } from './audio/narration';
 import { setupUI } from './ui/setupUI';
 
 initI18n();
+void narration.init();
 window.addEventListener('resize', onResize);
 
 /* ============================ Khởi tạo ============================ */
@@ -68,7 +70,7 @@ applyNight(0, 0);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, THREE, dayNight, tours: TOURS, tour };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, THREE, dayNight, tours: TOURS, tour, narration };
 }
 
 /* ============================ Vòng lặp ============================ */

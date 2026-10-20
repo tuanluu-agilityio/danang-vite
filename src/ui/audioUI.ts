@@ -1,4 +1,6 @@
 import { audio } from '../audio';
+import { narration } from '../audio/narration';
+import { onChange } from '../i18n';
 
 /* Nút nhạc nền: trình duyệt chỉ cho phát âm thanh sau khi người xem bấm */
 export function setupAudioUI() {
@@ -25,6 +27,11 @@ export function setupAudioUI() {
     };
     window.addEventListener('pointerdown', arm, true); window.addEventListener('keydown', arm, true);
   }
+  // Thuyết minh Tour: chỉ bật được ở ngôn ngữ đã có giọng đọc
+  const voice = document.getElementById('btnVoice') as HTMLButtonElement;
+  const syncVoice = () => { voice.disabled = !narration.available; voice.setAttribute('aria-pressed', String(narration.active)); };
+  voice.addEventListener('click', () => narration.setEnabled(!narration.enabled));
+  narration.onChange(syncVoice); onChange(syncVoice); syncVoice();
   document.addEventListener('visibilitychange', () => { if (document.hidden) audio.pause(); else audio.resume(); });
   sync();
 }

@@ -4,6 +4,7 @@ import { clamp, smooth } from '../common/math';
 import { deckY } from '../bridges/dragon/profile';
 import { tpRoadY } from '../bridges/thuan-phuoc/profile';
 import { VIEWS, type ViewPreset } from './presets';
+import { narration } from '../audio/narration';
 import { cam, keys } from './state';
 import { TOUR_VIEWS, activeTour, setActiveTour, tour, tourBox, showTourCaption, startTour, updateTour } from './tour';
 
@@ -21,6 +22,7 @@ export function flyTo(v: ViewPreset, then: 'tour' | null = null) {
   flight.toP.set(...v.pos); flight.toT.set(...v.target); flight.t = 0; cam.mode = 'fly'; controls.enabled = false;
 }
 export function setView(name: string) {
+  narration.stop();
   document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
   document.getElementById('hint').hidden = name !== 'walk';
   const tourKey = TOUR_VIEWS[name];

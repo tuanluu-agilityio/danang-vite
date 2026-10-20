@@ -1,11 +1,12 @@
 // Tiện ích chung cho các script kiểm tra: server tĩnh + mở trang bằng Chromium (Playwright).
+import { fileURLToPath } from 'node:url';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
-const THREE_DIR = new URL('../node_modules/three/', import.meta.url).pathname;
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png' };
+const THREE_DIR = fileURLToPath(new URL('../node_modules/three/', import.meta.url));
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg', '.png': 'image/png' };
 
 /** Server tĩnh tối giản cho một thư mục (theo symlink). Trả về { url, close }. */
 export function serveDir(dir) {
