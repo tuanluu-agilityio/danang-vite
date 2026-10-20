@@ -124,6 +124,10 @@ body.touring .specs{display:none;}
   background:var(--ink);font-family:var(--font-display);font-size:26px;color:var(--gold);z-index:20;transition:opacity .6s;}
 #loading small{font-family:var(--font-body);font-size:12px;color:var(--muted);}
 #loading.done{opacity:0;pointer-events:none;}
+/* Nhãn 3D trên mặt cắt Hầm sông Hàn */
+#hrLabels{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
+.hr-label{position:absolute;left:0;top:0;padding:3px 7px;font:500 11px/1.2 var(--font-body);color:var(--text);background:rgba(10,18,30,.72);border:1px solid rgba(230,189,106,.55);border-radius:4px;white-space:nowrap;will-change:transform;}
+.hr-label::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:rgba(230,189,106,.7);}
 @media (max-width:760px){
   h1{font-size:26px;}
   html:is([lang=ko],[lang=ja],[lang=zh],[lang=th],[lang=ar],[lang=hi]) h1{font-size:22px;}

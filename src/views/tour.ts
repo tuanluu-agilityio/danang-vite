@@ -8,7 +8,7 @@ import { cam } from './state';
 
 /* ============================ Tour tự động: đường bay + chú thích ============================ */
 interface Tour {
-  view: string; key: string; stops: TourStop[];
+  view: string; key: string; stops: TourStop[]; minY?: number;
   posCurve: THREE.CatmullRomCurve3; tgtCurve: THREE.CatmullRomCurve3; base: number[]; durs: number[]; total: number;
 }
 export type TourKey = keyof typeof TOUR_DEFS;
@@ -54,6 +54,8 @@ export const tour = { t: 0, shown: -1 };
 let onTourSwingStop: (() => void) | null = null;   // Cầu sông Hàn gắn hàm quay cầu vào đây
 export const setTourSwingHook = (fn: () => void) => { onTourSwingStop = fn; };
 export const setActiveTour = (k: TourKey) => { activeTour = TOURS[k]; };
+/* Móc cho công trình có hành vi riêng ở từng điểm dừng (Hầm sông Hàn: mặt cắt, mô phỏng dìm) và khi thoát Tour */
+export const tourHooks: { stop: ((s: TourStop) => void) | null; exit: (() => void) | null } = { stop: null, exit: null };
 
 /* Giọng bật/tắt hoặc đổi ngôn ngữ: tính lại thời lượng (giữ nguyên vị trí trên đường bay) rồi đọc lại điểm dừng hiện tại */
 function syncNarration() {
@@ -87,7 +89,7 @@ export function showTourCaption(i: number) {
 export function startTour() { cam.mode = 'tour'; controls.enabled = false; tour.t = 0; tour.shown = -1; }
 export function exitTour() {
   if (cam.mode !== 'tour' && !(cam.mode === 'fly' && cam.flight.then === 'tour')) return;
-  narration.stop();
+  narration.stop(); tourHooks.exit?.();
   cam.flight.then = null; cam.mode = 'orbit'; controls.enabled = true;
   els.box.hidden = true; document.body.classList.remove('touring');
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
@@ -99,10 +101,10 @@ export function updateTour(dt: number) {
   const e = 0.5 - 0.5 * Math.cos(Math.PI * f);       // chậm lại ở mỗi điểm dừng
   const u = (i + e) / T.stops.length;
   T.posCurve.getPoint(u, camera.position);
-  camera.position.y = Math.max(camera.position.y, 3);   // đường cong có thể võng xuống: giữ camera trên mặt nước
+  camera.position.y = Math.max(camera.position.y, T.minY ?? 3);   // đường cong có thể võng xuống: giữ camera trên mặt nước (trừ Tour Hầm sông Hàn)
   T.tgtCurve.getPoint(u, controls.target);
   camera.lookAt(controls.target);
   const near = f < SWITCH ? i : (i + 1) % T.stops.length;
-  if (near !== tour.shown) { tour.shown = near; showTourCaption(near); narration.play(T.key, near); if (T.stops[near].swing && onTourSwingStop) onTourSwingStop(); }
+  if (near !== tour.shown) { tour.shown = near; showTourCaption(near); narration.play(T.key, near); if (T.stops[near].swing && onTourSwingStop) onTourSwingStop(); tourHooks.stop?.(T.stops[near]); }
   els.bar.style.width = `${(tour.t / T.total * 100).toFixed(1)}%`;
 }

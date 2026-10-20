@@ -74,6 +74,9 @@ export function updateTraffic(dt: number) {
   for (const mm of [vBody, vCabin, vHead, vTail]) mm.instanceMatrix.needsUpdate = true;
 }
 
+/* Vùng cấm thuyền quanh công trường dìm đốt hầm (Hầm vượt sông Hàn, z ≈ −1700): chỉ có hiệu lực khi on */
+export const boatKeepOut = { on: false, z0: -1760, z1: -1640 };
+
 /* Thuyền du lịch dọc sông Hàn */
 const boats: { x: number; z: number; dir: number; speed: number; len: number }[] = [];
 let bHull: THREE.InstancedMesh, bCabin: THREE.InstancedMesh, bRoof: THREE.InstancedMesh;
@@ -90,6 +93,7 @@ export function updateBoats(dt: number, t: number) {
   const q = new THREE.Quaternion(), base = new THREE.Vector3();
   boats.forEach((b, i) => {
     b.z += b.dir * b.speed * dt; if (b.z > 2500) b.z = -2500; if (b.z < -2500) b.z = 2500;
+    if (boatKeepOut.on && b.z > boatKeepOut.z0 && b.z < boatKeepOut.z1) b.z = b.dir > 0 ? boatKeepOut.z0 : boatKeepOut.z1;
     q.setFromEuler(_e.set(Math.sin(t * 0.9 + i) * 0.015, 0, Math.sin(t * 1.1 + i * 2) * 0.02));
     base.set(b.x, 0, b.z);
     const m = new THREE.Matrix4(), s = new THREE.Vector3(), o = new THREE.Vector3();

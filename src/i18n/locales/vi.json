@@ -143,7 +143,7 @@
   "title": "Đà Nẵng 3D",
   "canvasAria": "Mô hình 3D các cây cầu trên sông Hàn, Đà Nẵng",
   "loading": "Đang dựng các cây cầu Đà Nẵng…",
-  "loadingSub": "Cầu Rồng, Thuận Phước, Trần Thị Lý và cầu quay sông Hàn",
+  "loadingSub": "Cầu Rồng, Thuận Phước, Trần Thị Lý, cầu quay sông Hàn và hầm vượt sông Hàn",
   "eyebrow": "Sông Hàn · 16,061°N · 108,227°E",
   "h1": "Đà Nẵng",
   "h1Sub": "",
@@ -212,6 +212,72 @@
     [
       "Chim bay ven sông",
       "Nhìn từ phía cửa sông. Núi Sơn Trà ở phía đông bắc, dãy Hải Vân phía tây bắc."
+    ]
+  ],
+  "bridgeHr": "Hầm sông Hàn",
+  "vHrCutaway": "Mặt cắt dọc tuyến",
+  "vHrPortalW": "Cửa Tây · Thành Điện Hải",
+  "vHrPortalE": "Cửa Đông · Sơn Trà",
+  "vHrDrive": "Lái xe xuyên hầm",
+  "vHrGallery": "Hành lang thoát nạn",
+  "hrSection": "Mặt cắt địa chất",
+  "hrTraffic": "Xe cộ",
+  "hrImmerseBtn": "Mô phỏng dìm đốt hầm",
+  "hrImBusy": "Đang dìm đốt hầm…",
+  "hrImSpeed": "Tốc độ mô phỏng",
+  "hrImNote": "Đốt số 3 (120 m) được lai dắt, dằn nước, dìm xuống hào rồi lấp đá hộc. Đường tạm đóng trong lúc mô phỏng.",
+  "hrFollow": "Camera theo dõi khi dìm",
+  "im_IDLE": "Chờ — hầm hoàn chỉnh",
+  "im_FLOAT_IN": "Tàu kéo lai dắt đốt hầm nổi vào",
+  "im_POSITION": "Neo và định vị trên hào",
+  "im_BALLAST": "Bơm nước dằn, đốt hầm chìm dần",
+  "im_PULL_JOINT": "Kích kéo áp khít, nén gioăng GINA",
+  "im_BACKFILL": "Lấp cát, phủ đá hộc bảo vệ",
+  "im_DONE": "Hoàn tất — nối thông hai đốt",
+  "hrLengthVal": "≈ 1.670 m",
+  "hrWidthVal": "31,2 m",
+  "hrSpan": "Hầm dìm qua sông",
+  "hrSpanVal": "600 m · 5 đốt",
+  "hrNote": "Phương án đề xuất 2025, dự kiến đầu tư 2031–2045, tổng mức 6.880 tỷ đồng. Mặt cắt, độ sâu và kiến trúc cửa hầm là ước lượng.",
+  "hrLblElements": "Hầm dìm 5 × 120 m",
+  "hrLblGina": "Khe nối GINA",
+  "hrLblBed": "Đáy sông −6 m",
+  "hrLblPump": "Trạm bơm",
+  "hrLblCover": "Hầm kín trên bờ 190 m",
+  "hrLblRamp": "Hầm hở 207,5 m",
+  "hrLblFlood": "Gờ chắn ngập +1,0 m",
+  "hrStops": [
+    [
+      "Hầm vượt sông thứ hai của Việt Nam",
+      "Phương án đề xuất 2025: tuyến hầm dài khoảng 1.670 m nối Đống Đa (Hải Châu) với Vân Đồn (Sơn Trà), gồm hầm kín qua sông 600 m, hầm kín trên bờ 380 m và hầm hở 415 m. Dự kiến đầu tư 2031–2045."
+    ],
+    [
+      "Cửa Tây · mái lam",
+      "Gần Thành Điện Hải, cửa hầm làm thấp và ốp màu gạch thành cổ. Mái lam dài 80 m giảm chói khi xe từ nắng gắt chạy vào, hắt bớt mưa và cho gió bão xuyên qua."
+    ],
+    [
+      "Gờ chắn ngập & cửa phai",
+      "Mùa mưa bão, Đà Nẵng hay ngập khi mưa lớn gặp triều cường. Đỉnh dốc trước cửa hầm được nâng cao hơn mặt phố 1 m, kèm cửa phai trượt để chắn nước."
+    ],
+    [
+      "Mặt cắt dọc tuyến",
+      "Năm đốt hầm dìm, mỗi đốt 120 m, nằm dưới đáy sông sâu khoảng 6 m; nóc hầm cách đáy sông tối thiểu 1 m. Hai bờ là hầm đào hở có tường vây, rồi tới hầm hở dốc không quá 4,5%."
+    ],
+    [
+      "Dìm đốt hầm",
+      "Mỗi đốt đúc sẵn trong ụ khô, bịt kín hai đầu rồi lai dắt ra sông, bơm nước dằn cho chìm xuống hào nạo vét. Kích kéo áp khít vào đốt kề, gioăng cao su GINA chống thấm."
+    ],
+    [
+      "Trong ống xe",
+      "Mỗi chiều ba làn: hai làn ô tô chạy 60 km/h và một làn xe máy sát lề phải. Quạt phản lực thông gió dọc hầm, đèn vùng ngưỡng sáng hơn để mắt kịp thích nghi."
+    ],
+    [
+      "Hành lang thoát nạn",
+      "Giữa hai ống là hành lang tăng áp chống khói. Cứ 100 m có một cửa ngang xanh dẫn sang hành lang; hộp SOS và bình chữa cháy cách nhau 50 m."
+    ],
+    [
+      "Cửa Đông · Sơn Trà",
+      "Cửa phía Sơn Trà gợi sóng biển và làng chài với những chiếc thuyền thúng. Tổng mức đầu tư dự kiến 6.880 tỷ đồng, giúp giảm tải cho Cầu Rồng và Cầu sông Hàn."
     ]
   ]
 }

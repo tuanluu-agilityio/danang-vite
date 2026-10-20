@@ -12,7 +12,7 @@
 <body>
 
 <canvas id="scene" tabindex="0" data-i18n-aria="canvasAria" aria-label="Mô hình 3D các cây cầu trên sông Hàn, Đà Nẵng"></canvas>
-<div id="loading"><span data-i18n="loading">Đang dựng các cây cầu Đà Nẵng…</span><small data-i18n="loadingSub">Cầu Rồng, Thuận Phước, Trần Thị Lý và cầu quay sông Hàn</small></div>
+<div id="loading"><span data-i18n="loading">Đang dựng các cây cầu Đà Nẵng…</span><small data-i18n="loadingSub">Cầu Rồng, Thuận Phước, Trần Thị Lý, cầu quay sông Hàn và hầm vượt sông Hàn</small></div>
 
 <header class="panel brand">
   <div class="brand-top">
@@ -46,6 +46,7 @@
     <button data-bridge="tp" aria-pressed="false" data-i18n="bridgeTp">Cầu Thuận Phước</button>
     <button data-bridge="ttl" aria-pressed="false" data-i18n="bridgeTtl">Cầu Trần Thị Lý</button>
     <button data-bridge="sh" aria-pressed="false" data-i18n="bridgeSh">Cầu sông Hàn</button>
+    <button data-bridge="hr" aria-pressed="false" data-i18n="bridgeHr">Hầm sông Hàn</button>
   </div>
   <div class="view-list" data-list="dragon">
   <button data-view="tour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
@@ -98,6 +99,25 @@
     <button id="btnShLife" class="toggle" aria-pressed="true" data-i18n="tpTraffic">Xe cộ &amp; tàu thuyền</button>
     <button id="btnShPeople" class="toggle" aria-pressed="true" data-i18n="ttlPeople">Người đi bộ</button>
   </div>
+  <div class="view-list" data-list="hr" hidden>
+    <button data-view="hrTour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
+    <button data-view="hrOverview" aria-pressed="false" data-i18n="vTtlOverview">Toàn cảnh</button>
+    <button data-view="hrCutaway" aria-pressed="false" data-i18n="vHrCutaway">Mặt cắt dọc tuyến</button>
+    <button data-view="hrPortalW" aria-pressed="false" data-i18n="vHrPortalW">Cửa Tây · Thành Điện Hải</button>
+    <button data-view="hrPortalE" aria-pressed="false" data-i18n="vHrPortalE">Cửa Đông · Sơn Trà</button>
+    <button data-view="hrDrive" aria-pressed="false" data-i18n="vHrDrive">Lái xe xuyên hầm</button>
+    <button data-view="hrGallery" aria-pressed="false" data-i18n="vHrGallery">Hành lang thoát nạn</button>
+    <button id="btnHrSection" class="toggle" aria-pressed="false" data-i18n="hrSection">Mặt cắt địa chất</button>
+    <div class="swing-box">
+      <button id="btnHrImmerse" class="swing-btn" data-i18n="hrImmerseBtn">Mô phỏng dìm đốt hầm</button>
+      <div class="swing-state"><span data-i18n="swingStateLbl">Trạng thái</span>: <b id="hrImState" aria-live="polite">Chờ</b></div>
+      <label class="mini-select" for="hrImSpeed"><span data-i18n="hrImSpeed">Tốc độ mô phỏng</span>
+        <select id="hrImSpeed"><option value="1">1×</option><option value="10" selected>10×</option><option value="30">30×</option></select></label>
+      <small class="swing-note" data-i18n="hrImNote">Đốt số 3 (120 m) được lai dắt, dằn nước, dìm xuống hào rồi lấp đá hộc. Đường tạm đóng trong lúc mô phỏng.</small>
+    </div>
+    <button id="btnHrFollow" class="toggle" aria-pressed="true" data-i18n="hrFollow">Camera theo dõi khi dìm</button>
+    <button id="btnHrLife" class="toggle" aria-pressed="true" data-i18n="hrTraffic">Xe cộ</button>
+  </div>
 </nav>
 
 <section class="panel specs" data-i18n-aria="specs" aria-label="Thông số">
@@ -122,6 +142,7 @@
   <p id="tourText"></p>
   <div class="bar"><i id="tourBar"></i></div>
 </div>
+<div id="hrLabels" hidden aria-hidden="true"></div>
 <div id="hint" class="panel" hidden data-i18n="walkHint">W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát</div>
 
 <script type="module" src="/src/main.ts"></script>

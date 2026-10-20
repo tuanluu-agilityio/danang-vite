@@ -1,5 +1,6 @@
 import { CONFIG } from '../config';
 import { shRoadY } from '../bridges/song-han/profile';
+import { hrRoadY } from '../bridges/han-tunnel/profile';
 
 /* ============================ Góc nhìn có sẵn ============================
    Dữ liệu thuần (tọa độ thế giới, mét). pos: vị trí camera, target: điểm nhìn,
@@ -7,7 +8,7 @@ import { shRoadY } from '../bridges/song-han/profile';
 export type Vec3 = [number, number, number];
 export interface ViewPreset { pos: Vec3; target: Vec3; maxPolar?: number }
 
-const TPZ = CONFIG.thuanPhuoc.z, SHZ = CONFIG.songHan.z;
+const TPZ = CONFIG.thuanPhuoc.z, SHZ = CONFIG.songHan.z, HRZ = CONFIG.hanTunnel.z, HRC = HRZ + CONFIG.hanTunnel.cutZ;
 
 export const VIEWS: Record<string, ViewPreset> = {
   overview: { pos: [-430, 330, 560], target: [0, 12, 0] },
@@ -29,8 +30,15 @@ export const VIEWS: Record<string, ViewPreset> = {
   shTop: { pos: [-70, 210, SHZ + 70], target: [0, 8, SHZ] },
   shBank: { pos: [-266, 4.6, SHZ - 85], target: [-40, 9, SHZ + 5], maxPolar: Math.PI * 0.97 },
   shDeck: { pos: [-130, shRoadY(-130) + 1.9, SHZ + 5.3], target: [0, 26, SHZ], maxPolar: Math.PI * 0.97 },   // đứng trên lề bộ hành
-  shSwingCam: { pos: [150, 125, SHZ + 170], target: [0, 8, SHZ] }
+  shSwingCam: { pos: [150, 125, SHZ + 170], target: [0, 8, SHZ] },
+  // Hầm vượt sông Hàn
+  hrOverview: { pos: [-560, 230, HRZ - 520], target: [0, -4, HRZ] },
+  hrCutaway: { pos: [-95, 30, HRC - 110], target: [0, -10, HRC], maxPolar: Math.PI * 0.97 },
+  hrPortalW: { pos: [-640, 14, HRZ + 32], target: [-560, 3.5, HRZ - 2] },
+  hrPortalE: { pos: [800, 11, HRZ + 8], target: [585, 2.5, HRZ] },
+  hrGallery: { pos: [-130, hrRoadY(-130) + 1.6, HRZ], target: [60, hrRoadY(60) + 1.5, HRZ], maxPolar: Math.PI * 0.97 },
+  hrSimCam: { pos: [-110, 70, HRZ - 95], target: [0, -4, HRZ] }
 };
 /* Góc nhìn mặc định khi chọn từng cầu */
-export const BRIDGE_HOME = { dragon: 'overview', tp: 'tpBay', ttl: 'ttlOverview', sh: 'shOverview' } as const;
+export const BRIDGE_HOME = { dragon: 'overview', tp: 'tpBay', ttl: 'ttlOverview', sh: 'shOverview', hr: 'hrOverview' } as const;
 export type BridgeKey = keyof typeof BRIDGE_HOME;

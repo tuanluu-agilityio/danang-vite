@@ -6,6 +6,7 @@ import { show, showLabel } from '../bridges/dragon/effects';
 import type { ThuanPhuocBridge } from '../bridges/thuan-phuoc';
 import type { TranThiLyBridge } from '../bridges/tran-thi-ly';
 import type { SongHanBridge } from '../bridges/song-han';
+import type { HanTunnel } from '../bridges/han-tunnel';
 import type { BridgeKey } from '../views/presets';
 import { cam, keys } from '../views/state';
 import { setView } from '../views/camera';
@@ -13,9 +14,10 @@ import { tour, tourBox, initTourCaption, renderTourCaption, exitTour } from '../
 import { selectBridge, syncShowLine, toggle } from './panel';
 import { setupAudioUI } from './audioUI';
 import { setupSwingUI, swingRender } from './swingUI';
+import { setupHrUI, hrRender } from './hrUI';
 
 /* Gắn mọi bảng điều khiển: ngày/đêm, bóng đổ, trình diễn, chọn cầu, góc nhìn, nút bật/tắt từng cầu, bàn phím */
-export function setupUI({ thuanPhuoc, tranThiLy, songHan }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge }) {
+export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge; hanTunnel: HanTunnel }) {
   const btnNight = document.getElementById('btnNight'), slider = document.getElementById('timeSlider') as HTMLInputElement;
   const btnShow = document.getElementById('btnShow'), btnShadow = document.getElementById('btnShadow');
   const syncNight = () => {
@@ -32,7 +34,7 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan }: { thuanPhuoc: ThuanP
     syncNight();
     if (!tourBox().hidden && tour.shown >= 0) renderTourCaption(tour.shown);
     document.getElementById('showState').textContent = showLabel();
-    swingRender();
+    swingRender(); hrRender();
   });
   btnShow.addEventListener('click', () => {
     show.on = !show.on; show.t = 0; btnShow.setAttribute('aria-pressed', String(show.on)); syncShowLine();
@@ -52,6 +54,8 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan }: { thuanPhuoc: ThuanP
   document.getElementById('ttlPatternSel').addEventListener('change', (e) => tranThiLy.setPattern(Number((e.target as HTMLSelectElement).value)));
   // Cầu sông Hàn
   setupSwingUI(songHan, toggle);
+  // Hầm vượt sông Hàn
+  setupHrUI(hanTunnel, toggle);
   window.addEventListener('keydown', (e) => {
     if (cam.mode !== 'walk') return;
     const k = e.key.toLowerCase(); keys.add(k);
