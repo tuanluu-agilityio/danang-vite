@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Đà Nẵng 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+
+<canvas id="scene" tabindex="0" data-i18n-aria="canvasAria" aria-label="Mô hình 3D các cây cầu trên sông Hàn, Đà Nẵng"></canvas>
+<div id="loading"><span data-i18n="loading">Đang dựng các cây cầu Đà Nẵng…</span><small data-i18n="loadingSub">Cầu Rồng, Thuận Phước, Trần Thị Lý và cầu quay sông Hàn</small></div>
+
+<header class="panel brand">
+  <div class="brand-top">
+    <div class="eyebrow" data-i18n="eyebrow">Sông Hàn · 16,061°N · 108,227°E</div>
+    <label class="lang"><span hidden data-i18n="language">Ngôn ngữ</span><select id="langSelect" data-i18n-aria="language" aria-label="Ngôn ngữ"></select></label>
+  </div>
+  <h1><span data-i18n="h1" class="h1-main">Đà Nẵng</span></h1>
+  <div class="row">
+    <button id="btnNight" aria-pressed="false">Chuyển sang đêm</button>
+    <button id="btnShadow" aria-pressed="true" data-i18n="shadows">Bóng đổ</button>
+  </div>
+  <div class="audio-row">
+    <button id="btnMusic" aria-pressed="false">
+      <svg class="note" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6 2.5v8.1A2.5 2.5 0 1 0 7.5 13V6l6-1.5v4.6A2.5 2.5 0 1 0 15 11.5V1z"/></svg>
+      <svg class="eq" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="3" height="11" rx="1" fill="currentColor"/><rect x="6.5" y="3" width="3" height="11" rx="1" fill="currentColor"/><rect x="11" y="3" width="3" height="11" rx="1" fill="currentColor"/></svg>
+      <span data-i18n="music">Nhạc nền</span>
+    </button>
+    <input id="volSlider" type="range" min="0" max="100" value="70" data-i18n-aria="volume" aria-label="Âm lượng" disabled>
+  </div>
+  <label class="slider" for="timeSlider"><span data-i18n="day">Ngày</span> <input id="timeSlider" type="range" min="0" max="100" value="0"> <span data-i18n="night">Đêm</span></label>
+</header>
+
+<nav class="panel views" data-i18n-aria="views" aria-label="Góc nhìn">
+  <div class="label" data-i18n="views">Góc nhìn</div>
+  <div class="seg" role="group">
+    <button data-bridge="dragon" aria-pressed="true" data-i18n="bridgeDragon">Cầu Rồng</button>
+    <button data-bridge="tp" aria-pressed="false" data-i18n="bridgeTp">Cầu Thuận Phước</button>
+    <button data-bridge="ttl" aria-pressed="false" data-i18n="bridgeTtl">Cầu Trần Thị Lý</button>
+    <button data-bridge="sh" aria-pressed="false" data-i18n="bridgeSh">Cầu sông Hàn</button>
+  </div>
+  <div class="view-list" data-list="dragon">
+  <button data-view="tour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
+  <button data-view="overview" aria-pressed="true" data-i18n="vOverview">Toàn cảnh trên cao</button>
+  <button data-view="head" aria-pressed="false" data-i18n="vHead">Đầu rồng</button>
+  <button data-view="tail" aria-pressed="false" data-i18n="vTail">Đuôi rồng</button>
+  <button data-view="drive" aria-pressed="false" data-i18n="vDrive">Lái xe trên cầu</button>
+  <button data-view="bird" aria-pressed="false" data-i18n="vBird">Chim bay ven sông</button>
+  <button data-view="walk" aria-pressed="false" data-i18n="vWalk">Đi bộ (WASD)</button>
+  <button id="btnShow" class="toggle" aria-pressed="false" data-i18n="showBtn">Phun lửa &amp; nước</button>
+  </div>
+  <div class="view-list" data-list="tp" hidden>
+    <button data-view="tpTour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
+    <button data-view="tpBay" aria-pressed="false" data-i18n="vTpBay">Toàn cảnh từ vịnh</button>
+    <button data-view="tpWater" aria-pressed="false" data-i18n="vTpWater">Mặt nước dưới nhịp chính</button>
+    <button data-view="tpDrive" aria-pressed="false" data-i18n="vTpDrive">Lái xe qua cầu</button>
+    <button data-view="tpBoth" aria-pressed="false" data-i18n="vTpBoth">Toàn cảnh hai cầu</button>
+    <button id="btnTpLife" class="toggle" aria-pressed="true" data-i18n="tpTraffic">Xe cộ &amp; tàu thuyền</button>
+  </div>
+  <div class="view-list" data-list="ttl" hidden>
+    <button data-view="ttlTour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
+    <button data-view="ttlOverview" aria-pressed="false" data-i18n="vTtlOverview">Toàn cảnh</button>
+    <button data-view="ttlBase" aria-pressed="false" data-i18n="vTtlBase">Dưới chân tháp nhìn lên</button>
+    <button data-view="ttlDeck" aria-pressed="false" data-i18n="vTtlDeck">Trên mặt cầu</button>
+    <button data-view="ttlBoth" aria-pressed="false" data-i18n="vTtlBoth">Cầu Rồng và Trần Thị Lý</button>
+    <label class="mini-select" for="ttlPatternSel"><span data-i18n="ledPattern">Đèn LED</span>
+      <select id="ttlPatternSel">
+        <option value="0" data-i18n="patStatic">Tĩnh</option>
+        <option value="1" data-i18n="patSlow">Chuyển màu chậm</option>
+        <option value="2" data-i18n="patWave" selected>Sóng màu chạy dọc dây</option>
+      </select></label>
+    <button id="btnTtlLife" class="toggle" aria-pressed="true" data-i18n="tpTraffic">Xe cộ &amp; tàu thuyền</button>
+    <button id="btnTtlPeople" class="toggle" aria-pressed="true" data-i18n="ttlPeople">Người đi bộ</button>
+    <button id="btnTtlNvt" class="toggle" aria-pressed="true" data-i18n="ttlNvt">Cầu Nguyễn Văn Trỗi cũ</button>
+  </div>
+  <div class="view-list" data-list="sh" hidden>
+    <button data-view="shTour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
+    <button data-view="shOverview" aria-pressed="false" data-i18n="vTtlOverview">Toàn cảnh</button>
+    <button data-view="shTop" aria-pressed="false" data-i18n="vShTop">Trên cao nhìn xuống trụ quay</button>
+    <button data-view="shBank" aria-pressed="false" data-i18n="vShBank">Từ bờ Bạch Đằng</button>
+    <button data-view="shDeck" aria-pressed="false" data-i18n="vTtlDeck">Trên mặt cầu</button>
+    <div class="swing-box">
+      <button id="btnSwing" class="swing-btn">Quay cầu</button>
+      <div class="swing-state"><span data-i18n="swingStateLbl">Trạng thái</span>: <b id="swingState" aria-live="polite">Đóng — xe chạy bình thường</b></div>
+      <label class="mini-select" for="swingSpeed"><span data-i18n="swingSpeed">Tốc độ quay</span>
+        <select id="swingSpeed"><option value="1">1×</option><option value="10">10×</option><option value="30" selected>30×</option></select></label>
+      <small class="swing-note" data-i18n="swingAuto">Tự quay lúc 23:00 thứ Bảy, Chủ nhật (giờ Việt Nam), giữ mở 30 phút.</small>
+    </div>
+    <button id="btnSwingFollow" class="toggle" aria-pressed="true" data-i18n="swingFollow">Camera theo dõi khi quay</button>
+    <button id="btnShLife" class="toggle" aria-pressed="true" data-i18n="tpTraffic">Xe cộ &amp; tàu thuyền</button>
+    <button id="btnShPeople" class="toggle" aria-pressed="true" data-i18n="ttlPeople">Người đi bộ</button>
+  </div>
+</nav>
+
+<section class="panel specs" data-i18n-aria="specs" aria-label="Thông số">
+  <div class="label" data-i18n="specs">Thông số</div>
+  <dl>
+    <div><dt data-i18n="length">Chiều dài</dt><dd id="specLen" data-i18n="lengthVal">666 m</dd></div>
+    <div><dt data-i18n="width">Bề rộng</dt><dd id="specWidth" data-i18n="widthVal">37,5 m</dd></div>
+    <div><dt data-i18n="lanes">Làn xe</dt><dd id="specLanes">6</dd></div>
+    <div><dt id="specSpanLabel" data-i18n="span">Nhịp vòm chính</dt><dd id="specSpanVal" data-i18n="spanVal">200 m</dd></div>
+  </dl>
+  <small id="specNote" data-i18n="note">Rồng phun lửa và nước lúc 21:00 tối thứ Bảy, Chủ Nhật. Chiều cao vòm, đầu rồng và nhịp phụ là ước lượng.</small>
+</section>
+
+<div class="panel stats" aria-live="polite">
+  <div>FPS <b id="fps">–</b></div>
+  <div class="extra"><span data-i18n="drawCalls">Draw call</span> <b id="calls">–</b></div>
+  <div class="show" id="showLine"><span data-i18n="showLbl">Trình diễn</span> <b id="showState">tắt</b></div>
+</div>
+<div id="tourCaption" class="panel" hidden aria-live="polite">
+  <div class="top"><span class="step" id="tourStep">Điểm dừng 1/8</span><span class="exit" data-i18n="tourExit">Kéo chuột hoặc Esc để thoát</span></div>
+  <h2 id="tourTitle">Toàn cảnh sông Hàn</h2>
+  <p id="tourText"></p>
+  <div class="bar"><i id="tourBar"></i></div>
+</div>
+<div id="hint" class="panel" hidden data-i18n="walkHint">W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

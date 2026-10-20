@@ -1,0 +1,216 @@
+{
+  "_name": "English",
+  "tpStops": [
+    [
+      "Gateway to the sea",
+      "Thuan Phuoc Bridge is the last crossing on the Han River before Da Nang Bay, about 1,856 m long."
+    ],
+    [
+      "Under the 405 m main span",
+      "The aerodynamic steel box girder is welded from 69 segments; 27 m of clearance lets ships into the bay."
+    ],
+    [
+      "H-shaped towers",
+      "Two reinforced-concrete towers rise 80 m above their bases, with crossbeams at the top and beneath the deck."
+    ],
+    [
+      "Saddles on the tower top",
+      "The two 360 mm main cables pass over saddles; an aviation light blinks on each tower."
+    ],
+    [
+      "From the western approach",
+      "Twelve 50 m prestressed-concrete spans on each side slope down to Nguyen Tat Thanh Street and the Son Tra peninsula."
+    ],
+    [
+      "Towards Son Tra",
+      "Son Tra peninsula lies to the east; 114 hangers about 9.9 m apart tie the main cables to the girder."
+    ],
+    [
+      "Winds blowing out to sea",
+      "At night LEDs on the cables, hangers and towers shift through blue, purple, pink and green, flowing along the bridge like wind heading out to sea."
+    ]
+  ],
+  "shStops": [
+    [
+      "Vietnam’s only swing bridge",
+      "Opened on 29 March 2000, the 487.7 m Han River Bridge links Le Duan Street with Pham Van Dong Street."
+    ],
+    [
+      "Above the turntable",
+      "The 122.7 m centre span rotates 90° around a round pier. The tour swings the bridge once at 30× speed."
+    ],
+    [
+      "The turntable",
+      "The swing span rests on a rail ring and rollers around the pier; a king pin keeps it centred as it turns."
+    ],
+    [
+      "From Bach Dang riverside",
+      "When open, the span lies along the river, leaving two channels for ships on either side of the pier."
+    ],
+    [
+      "On the deck",
+      "Before swinging, the signals turn red and barriers drop at both ends of the span; vehicles already on it drive off."
+    ],
+    [
+      "A tall ship waits",
+      "Its mast is taller than the ~11 m clearance, so it can only pass when the bridge is open. In real life the bridge swings at 23:00 on Saturday and Sunday nights."
+    ]
+  ],
+  "ttlStops": [
+    [
+      "A sail on the Han River",
+      "The 731 m Tran Thi Ly Bridge has a single pylon leaning west like a sail filled with wind."
+    ],
+    [
+      "The 12° leaning pylon",
+      "The 145 m concrete pylon rises 134 m above the deck and leans away from the 230 m main span to balance the pull of the cables."
+    ],
+    [
+      "Two giant bearings",
+      "Instead of being fixed to the pier, the pylon stands on two steel bearings, each carrying about 250,000 kN."
+    ],
+    [
+      "From the east bank",
+      "At night LEDs on the pylon, cables and deck shift through red, pink, purple and blue."
+    ],
+    [
+      "Front cable plane",
+      "A single semi-fan plane on the centreline anchors in the 5.5 m median of the main span; the 34.5 m deck carries six lanes."
+    ],
+    [
+      "Twisted rear cables",
+      "In the two rear planes the highest cable anchors nearest the pylon and the lowest farthest away, forming a hyperbolic surface seen from below."
+    ],
+    [
+      "Old Nguyen Van Troi Bridge",
+      "Just to the north is the old steel truss bridge, now for pedestrians only."
+    ]
+  ],
+  "bridgeSh": "Han River Bridge",
+  "vShTop": "Top-down over the turntable",
+  "vShBank": "From Bach Dang riverside",
+  "swingBtn": "Swing the bridge",
+  "swingClose": "Close the bridge",
+  "swingBusy": "Swinging…",
+  "swingStateLbl": "Status",
+  "swingSpeed": "Swing speed",
+  "swingAuto": "Swings automatically at 23:00 on Saturdays and Sundays (Vietnam time) and stays open for 30 minutes.",
+  "swingFollow": "Camera follows the swing",
+  "st_CLOSED": "Closed — traffic flowing",
+  "st_STOP_TRAFFIC": "Stopping traffic, lowering barriers",
+  "st_UNLOCK": "Pulling lock pins, lifting span",
+  "st_ROTATING_OPEN": "Swinging open 90°",
+  "st_OPEN": "Open — ships pass both channels",
+  "st_ROTATING_CLOSE": "Swinging closed",
+  "st_LOCK": "Lowering span, locking pins",
+  "st_REOPEN_TRAFFIC": "Raising barriers, reopening traffic",
+  "shLengthVal": "487.7 m",
+  "shWidthVal": "12.9 m",
+  "shSpan": "Swing span",
+  "shSpanVal": "122.7 m",
+  "shNote": "Vietnam’s only swing bridge (2000): its cable-stayed centre span rotates 90° on a round pier to let ships through. Pylon shape, span layout and the ~11 m clearance are estimates from photos.",
+  "bridgeTtl": "Tran Thi Ly Bridge",
+  "vTtlOverview": "Overview",
+  "vTtlBase": "Look up from the pylon base",
+  "vTtlDeck": "On the deck",
+  "vTtlBoth": "Dragon & Tran Thi Ly bridges",
+  "ttlPeople": "Pedestrians",
+  "ttlNvt": "Old Nguyen Van Troi Bridge",
+  "ledPattern": "LED lighting",
+  "patStatic": "Static",
+  "patSlow": "Slow colour shift",
+  "patWave": "Colour wave along the cables",
+  "ttlLengthVal": "731 m",
+  "ttlWidthVal": "34.5 m",
+  "ttlSpan": "Main cable-stayed span",
+  "ttlSpanVal": "230 m",
+  "ttlNote": "Reinforced-concrete cable-stayed bridge with a single pylon leaning 12° west, 145 m tall; three cable planes, the two rear planes twisted like a sail. Pylon section and approach spans are estimates.",
+  "bridgeDragon": "Dragon Bridge",
+  "bridgeTp": "Thuan Phuoc Bridge",
+  "vTpBay": "Bay overview",
+  "vTpWater": "Water level under the main span",
+  "vTpDrive": "Drive across",
+  "vTpBoth": "Both bridges from above",
+  "tpTraffic": "Traffic & boats",
+  "tpLengthVal": "1,856 m",
+  "tpWidthVal": "18 m",
+  "tpSpan": "Main span",
+  "tpSpanVal": "405 m",
+  "tpNote": "Three-span continuous suspension bridge with 80 m reinforced-concrete H-shaped towers and 27 m navigation clearance. Cable sag and tower sections are estimates.",
+  "music": "Music",
+  "volume": "Volume",
+  "title": "Da Nang 3D",
+  "canvasAria": "3D model of the bridges over the Han River, Da Nang",
+  "loading": "Building Da Nang’s bridges…",
+  "loadingSub": "Dragon, Thuan Phuoc, Tran Thi Ly and the Han River swing bridge",
+  "eyebrow": "Han River · 16.061°N · 108.227°E",
+  "h1": "Da Nang",
+  "h1Sub": "",
+  "toNight": "Switch to night",
+  "toDay": "Switch to day",
+  "showBtn": "Fire & water show",
+  "shadows": "Shadows",
+  "day": "Day",
+  "night": "Night",
+  "language": "Language",
+  "views": "Viewpoints",
+  "vTour": "Guided tour",
+  "vOverview": "Aerial overview",
+  "vHead": "Dragon head",
+  "vTail": "Dragon tail",
+  "vDrive": "Drive across",
+  "vBird": "Riverside flyover",
+  "vWalk": "Walk (WASD)",
+  "specs": "Key figures",
+  "length": "Length",
+  "width": "Width",
+  "lanes": "Traffic lanes",
+  "span": "Main arch span",
+  "lengthVal": "666 m",
+  "widthVal": "37.5 m",
+  "spanVal": "200 m",
+  "note": "The dragon breathes fire and water at 21:00 on Saturday and Sunday nights. Arch height, head size and side spans are estimates.",
+  "drawCalls": "Draw calls",
+  "showLbl": "Show",
+  "sOff": "off",
+  "sFire": "fire {n}/9",
+  "sWater": "water",
+  "sRest": "pause, repeats in {s} s",
+  "step": "Stop {i}/{n}",
+  "tourExit": "Drag or press Esc to exit",
+  "walkHint": "W/S or ↑/↓ to walk · A/D or ←/→ to turn · pick another view to exit",
+  "stops": [
+    [
+      "Han River overview",
+      "The 666 m Dragon Bridge links downtown Hai Chau (west bank) with Son Tra district and My Khe Beach (east bank)."
+    ],
+    [
+      "Dragon tail",
+      "A curling tail with flared fins at the west end, facing the city centre."
+    ],
+    [
+      "On the deck",
+      "Six traffic lanes, three each way; a 6 m central median; 2.5 m sidewalks on both sides. 37.5 m wide in total."
+    ],
+    [
+      "200 m main arch span",
+      "The dragon’s body rises highest over the central span. Steel hangers tie its belly to the deck."
+    ],
+    [
+      "From the water",
+      "Five main spans rest on piers in the riverbed; tour boats pass beneath."
+    ],
+    [
+      "Dragon head",
+      "The head faces the sea. At 21:00 on Saturday and Sunday nights the dragon breathes fire, then sprays water."
+    ],
+    [
+      "Tran Thi Ly Bridge",
+      "A 731 m cable-stayed bridge with a single 145 m pylon leaning 12°; its three cable planes form a sail filled with wind."
+    ],
+    [
+      "Riverside flyover",
+      "Seen from the river mouth. Son Tra Mountain lies to the northeast, the Hai Van range to the northwest."
+    ]
+  ]
+}

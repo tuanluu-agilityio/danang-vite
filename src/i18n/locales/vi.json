@@ -1,0 +1,216 @@
+{
+  "_name": "Tiếng Việt",
+  "tpStops": [
+    [
+      "Cửa ngõ ra biển",
+      "Cầu Thuận Phước là cây cầu cuối cùng trên sông Hàn trước khi đổ ra vịnh Đà Nẵng, dài khoảng 1.856 m."
+    ],
+    [
+      "Dưới nhịp chính 405 m",
+      "Dầm hộp thép khí động gồm 69 đốt hàn nối; tĩnh không 27 m cho tàu ra vào vịnh."
+    ],
+    [
+      "Tháp chữ H",
+      "Hai tháp BTCT cao 80 m tính từ bệ, có dầm ngang trên đỉnh và dưới mặt cầu."
+    ],
+    [
+      "Yên ngựa đỉnh tháp",
+      "Hai bó cáp chủ Ø360 mm vắt qua yên ngựa; đèn báo hàng không nhấp nháy trên đỉnh mỗi tháp."
+    ],
+    [
+      "Từ cầu dẫn phía Tây",
+      "Mỗi bên 12 nhịp dẫn 50 m bằng BTCT dự ứng lực hạ dần về đường Nguyễn Tất Thành và bán đảo Sơn Trà."
+    ],
+    [
+      "Hướng về Sơn Trà",
+      "Phía Đông là bán đảo Sơn Trà; 114 dây treo cách nhau khoảng 9,9 m nối cáp chủ với dầm."
+    ],
+    [
+      "Những cơn gió ra biển",
+      "Ban đêm, LED trên cáp, dây treo và tháp đổi màu xanh dương, tím, hồng, xanh lá, chạy dọc cầu như gió thổi ra biển."
+    ]
+  ],
+  "shStops": [
+    [
+      "Cầu quay duy nhất Việt Nam",
+      "Cầu sông Hàn khánh thành ngày 29/3/2000, dài 487,7 m, nối đường Lê Duẩn với Phạm Văn Đồng."
+    ],
+    [
+      "Trên trụ quay",
+      "Nhịp giữa dài 122,7 m quay 90° quanh một trụ tròn. Tour sẽ cho cầu quay một lần ở tốc độ 30×."
+    ],
+    [
+      "Mâm xoay",
+      "Nhịp quay tựa lên vành ray và các con lăn quanh trụ; chốt tâm giữ đúng trục khi quay."
+    ],
+    [
+      "Từ bờ Bạch Đằng",
+      "Khi mở, nhịp quay nằm dọc dòng sông, chừa hai luồng cho tàu qua hai bên trụ."
+    ],
+    [
+      "Trên mặt cầu",
+      "Trước khi quay, đèn tín hiệu chuyển đỏ và barie hạ xuống ở hai đầu nhịp quay; xe đang trên nhịp chạy hết ra ngoài."
+    ],
+    [
+      "Tàu cao chờ luồng",
+      "Cột buồm cao hơn tĩnh không ~11 m nên tàu chỉ qua được khi cầu mở. Ngoài đời, cầu quay lúc 23:00 tối thứ Bảy, Chủ nhật."
+    ]
+  ],
+  "ttlStops": [
+    [
+      "Cánh buồm trên sông Hàn",
+      "Cầu Trần Thị Lý dài 731 m, một tháp duy nhất nghiêng về phía Tây như cánh buồm căng gió."
+    ],
+    [
+      "Tháp nghiêng 12°",
+      "Tháp BTCT cao 145 m, nhô 134 m trên mặt cầu, ngả ra xa nhịp chính 230 m để cân bằng lực kéo của dây."
+    ],
+    [
+      "Hai gối cầu khổng lồ",
+      "Tháp không ngàm xuống trụ mà đứng trên 2 gối cầu thép, mỗi gối chịu khoảng 250.000 kN."
+    ],
+    [
+      "Từ bờ Đông",
+      "Ban đêm, đèn LED trên tháp, dây và mặt cầu đổi màu đỏ, hồng, tím, xanh."
+    ],
+    [
+      "Mặt phẳng dây phía trước",
+      "Một mặt dây ở tim cầu xòe nửa rẻ quạt, neo dọc dải phân cách 5,5 m của nhịp chính; mặt cầu rộng 34,5 m với 6 làn xe."
+    ],
+    [
+      "Dây văng xoắn phía sau",
+      "Ở hai mặt dây sau, dây cao nhất neo gần tháp nhất, dây thấp nhất neo xa nhất, tạo mặt cong hyperbolic khi nhìn từ dưới lên."
+    ],
+    [
+      "Cầu Nguyễn Văn Trỗi cũ",
+      "Ngay phía Bắc là cây cầu dàn thép cũ, nay chỉ dành cho người đi bộ."
+    ]
+  ],
+  "bridgeSh": "Cầu sông Hàn",
+  "vShTop": "Trên cao nhìn xuống trụ quay",
+  "vShBank": "Từ bờ Bạch Đằng",
+  "swingBtn": "Quay cầu",
+  "swingClose": "Đóng cầu",
+  "swingBusy": "Đang quay…",
+  "swingStateLbl": "Trạng thái",
+  "swingSpeed": "Tốc độ quay",
+  "swingAuto": "Tự quay lúc 23:00 thứ Bảy, Chủ nhật (giờ Việt Nam), giữ mở 30 phút.",
+  "swingFollow": "Camera theo dõi khi quay",
+  "st_CLOSED": "Đóng — xe chạy bình thường",
+  "st_STOP_TRAFFIC": "Dừng xe, hạ barie",
+  "st_UNLOCK": "Rút chốt, nâng nhịp",
+  "st_ROTATING_OPEN": "Đang quay mở 90°",
+  "st_OPEN": "Đã mở — tàu qua hai luồng",
+  "st_ROTATING_CLOSE": "Đang quay đóng",
+  "st_LOCK": "Hạ nhịp, khóa chốt",
+  "st_REOPEN_TRAFFIC": "Nâng barie, thông xe",
+  "shLengthVal": "487,7 m",
+  "shWidthVal": "12,9 m",
+  "shSpan": "Nhịp quay",
+  "shSpanVal": "122,7 m",
+  "shNote": "Cầu quay duy nhất ở Việt Nam (2000): nhịp dây văng giữa quay 90° quanh một trụ tròn để tàu qua. Hình dáng tháp, chia nhịp và tĩnh không ~11 m là ước lượng theo ảnh.",
+  "bridgeTtl": "Cầu Trần Thị Lý",
+  "vTtlOverview": "Toàn cảnh",
+  "vTtlBase": "Dưới chân tháp nhìn lên",
+  "vTtlDeck": "Trên mặt cầu",
+  "vTtlBoth": "Cầu Rồng và Trần Thị Lý",
+  "ttlPeople": "Người đi bộ",
+  "ttlNvt": "Cầu Nguyễn Văn Trỗi cũ",
+  "ledPattern": "Đèn LED",
+  "patStatic": "Tĩnh",
+  "patSlow": "Chuyển màu chậm",
+  "patWave": "Sóng màu chạy dọc dây",
+  "ttlLengthVal": "731 m",
+  "ttlWidthVal": "34,5 m",
+  "ttlSpan": "Nhịp dây văng chính",
+  "ttlSpanVal": "230 m",
+  "ttlNote": "Cầu dây văng BTCT một tháp nghiêng 12° về phía Tây, cao 145 m; dây văng 3 mặt phẳng, hai mặt sau xoắn như cánh buồm. Tiết diện tháp và chia nhịp dẫn là ước lượng.",
+  "bridgeDragon": "Cầu Rồng",
+  "bridgeTp": "Cầu Thuận Phước",
+  "vTpBay": "Toàn cảnh từ vịnh",
+  "vTpWater": "Mặt nước dưới nhịp chính",
+  "vTpDrive": "Lái xe qua cầu",
+  "vTpBoth": "Toàn cảnh hai cầu",
+  "tpTraffic": "Xe cộ & tàu thuyền",
+  "tpLengthVal": "1.856 m",
+  "tpWidthVal": "18 m",
+  "tpSpan": "Nhịp chính",
+  "tpSpanVal": "405 m",
+  "tpNote": "Cầu treo dây võng 3 nhịp liên tục, tháp BTCT chữ H cao 80 m, tĩnh không thông thuyền 27 m. Độ võng cáp và tiết diện tháp là ước lượng.",
+  "music": "Nhạc nền",
+  "volume": "Âm lượng",
+  "title": "Đà Nẵng 3D",
+  "canvasAria": "Mô hình 3D các cây cầu trên sông Hàn, Đà Nẵng",
+  "loading": "Đang dựng các cây cầu Đà Nẵng…",
+  "loadingSub": "Cầu Rồng, Thuận Phước, Trần Thị Lý và cầu quay sông Hàn",
+  "eyebrow": "Sông Hàn · 16,061°N · 108,227°E",
+  "h1": "Đà Nẵng",
+  "h1Sub": "",
+  "toNight": "Chuyển sang đêm",
+  "toDay": "Chuyển sang ngày",
+  "showBtn": "Phun lửa & nước",
+  "shadows": "Bóng đổ",
+  "day": "Ngày",
+  "night": "Đêm",
+  "language": "Ngôn ngữ",
+  "views": "Góc nhìn",
+  "vTour": "Tour tự động",
+  "vOverview": "Toàn cảnh trên cao",
+  "vHead": "Đầu rồng",
+  "vTail": "Đuôi rồng",
+  "vDrive": "Lái xe trên cầu",
+  "vBird": "Chim bay ven sông",
+  "vWalk": "Đi bộ (WASD)",
+  "specs": "Thông số",
+  "length": "Chiều dài",
+  "width": "Bề rộng",
+  "lanes": "Làn xe",
+  "span": "Nhịp vòm chính",
+  "lengthVal": "666 m",
+  "widthVal": "37,5 m",
+  "spanVal": "200 m",
+  "note": "Rồng phun lửa và nước lúc 21:00 tối thứ Bảy, Chủ Nhật. Chiều cao vòm, đầu rồng và nhịp phụ là ước lượng.",
+  "drawCalls": "Draw call",
+  "showLbl": "Trình diễn",
+  "sOff": "tắt",
+  "sFire": "phun lửa {n}/9",
+  "sWater": "phun nước",
+  "sRest": "nghỉ, lặp lại sau {s} giây",
+  "step": "Điểm dừng {i}/{n}",
+  "tourExit": "Kéo chuột hoặc Esc để thoát",
+  "walkHint": "W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát",
+  "stops": [
+    [
+      "Toàn cảnh sông Hàn",
+      "Cầu Rồng dài 666 m nối trung tâm Hải Châu (bờ Tây) với quận Sơn Trà và biển Mỹ Khê (bờ Đông)."
+    ],
+    [
+      "Đuôi rồng",
+      "Đuôi cong vút và vây xòe ở đầu cầu phía Tây, hướng về trung tâm thành phố."
+    ],
+    [
+      "Trên mặt cầu",
+      "6 làn xe, mỗi chiều 3 làn; dải phân cách giữa 6 m; lề đi bộ 2,5 m mỗi bên. Rộng tổng cộng 37,5 m."
+    ],
+    [
+      "Nhịp vòm chính 200 m",
+      "Thân rồng vồng cao nhất ở nhịp giữa. Dây treo bằng thép nối bụng rồng với mặt cầu."
+    ],
+    [
+      "Từ mặt sông",
+      "Năm nhịp chính tựa trên các trụ trong lòng sông; thuyền du lịch qua lại dưới gầm cầu."
+    ],
+    [
+      "Đầu rồng",
+      "Đầu rồng hướng ra biển. Tối thứ Bảy và Chủ Nhật lúc 21:00, rồng phun lửa rồi phun nước."
+    ],
+    [
+      "Cầu Trần Thị Lý",
+      "Cầu dây văng dài 731 m, một tháp nghiêng 12° cao 145 m; dây văng 3 mặt phẳng tạo hình cánh buồm căng gió."
+    ],
+    [
+      "Chim bay ven sông",
+      "Nhìn từ phía cửa sông. Núi Sơn Trà ở phía đông bắc, dãy Hải Vân phía tây bắc."
+    ]
+  ]
+}

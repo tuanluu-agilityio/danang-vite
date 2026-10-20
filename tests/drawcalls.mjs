@@ -1,0 +1,67 @@
+// So sánh draw call (renderer.info.render.calls, gồm cả bóng đổ, phản chiếu nước và bloom)
+// giữa bản gốc (một file HTML) và bản build Vite, ở mọi góc nhìn, ban ngày và ban đêm.
+//
+//   npm run build && node tests/drawcalls.mjs [thư-mục-bản-gốc]
+//
+// Thư mục bản gốc (tùy chọn) phải chứa index.html có móc ?test (window.__app) và thư mục three/.
+import { serveDir, launch, openApp, frames, pickView } from './lib.mjs';
+
+const VIEWS = [
+  ['dragon', 'overview'], ['dragon', 'head'], ['dragon', 'tail'], ['dragon', 'drive'], ['dragon', 'bird'], ['dragon', 'walk'],
+  ['tp', 'tpBay'], ['tp', 'tpWater'], ['tp', 'tpDrive'], ['tp', 'tpBoth'],
+  ['ttl', 'ttlOverview'], ['ttl', 'ttlBase'], ['ttl', 'ttlDeck'], ['ttl', 'ttlBoth'],
+  ['sh', 'shOverview'], ['sh', 'shTop'], ['sh', 'shBank'], ['sh', 'shDeck']
+];
+
+async function setNight(page, v) {
+  await page.evaluate((v) => { window.__app.dayNight.target = v; window.__app.dayNight.night = v; }, v);
+  await page.waitForFunction((v) => Math.abs(window.__app.dayNight.night - v) < 1e-6, v, { timeout: 60000 });
+  await frames(page, 3);
+}
+
+/** Trung vị của vài khung hình (xe cộ, thuyền chạy nên số có thể dao động nhẹ). */
+async function sample(page) {
+  const xs = [];
+  for (let i = 0; i < 5; i++) { await frames(page, 1); xs.push(await page.evaluate(() => window.__app.renderer.info.render.calls)); }
+  xs.sort((a, b) => a - b);
+  return xs[2];
+}
+
+async function measure(browser, url) {
+  const { page, errors } = await openApp(browser, url);
+  const out = {};
+  for (const night of [0, 1]) {
+    await setNight(page, night);
+    for (const [bridge, view] of VIEWS) {
+      await pickView(page, bridge, view);
+      await frames(page, 4);
+      out[`${view}|${night ? 'đêm' : 'ngày'}`] = await sample(page);
+    }
+  }
+  await page.close();
+  return { out, errors };
+}
+
+const origDir = process.argv[2];
+const browser = await launch();
+const results = {};
+const servers = [];
+try {
+  if (origDir) { const s = await serveDir(origDir); servers.push(s); results.goc = await measure(browser, s.url); }
+  const s = await serveDir(new URL('../dist/', import.meta.url).pathname); servers.push(s);
+  results.vite = await measure(browser, s.url);
+} finally {
+  await browser.close();
+  servers.forEach((s) => s.close());
+}
+
+let diff = 0;
+const rows = Object.keys(results.vite.out).map((k) => {
+  const v = results.vite.out[k], g = results.goc?.out[k];
+  if (g !== undefined && g !== v) diff++;
+  return { 'góc nhìn': k, ...(g !== undefined ? { 'bản gốc': g } : {}), 'bản Vite': v, ...(g !== undefined ? { 'chênh': v - g } : {}) };
+});
+console.table(rows);
+for (const [name, r] of Object.entries(results)) if (r.errors.length) console.log(`Lỗi console (${name}):`, r.errors);
+if (origDir) console.log(diff ? `${diff} góc nhìn có draw call khác bản gốc.` : 'Draw call trùng khớp bản gốc ở mọi góc nhìn.');
+process.exit(Object.values(results).some((r) => r.errors.length) ? 1 : 0);
