@@ -1,11 +1,14 @@
 import type { Vec3 } from './presets';
+import { CONFIG } from '../config';
+import { hrRoadY } from '../bridges/han-tunnel/profile';
 
 /* ============================ Điểm dừng Tour tự động ============================
    Dữ liệu thuần (tọa độ thế giới, mét): chỉnh điểm dừng ở đây, không cần đụng tới code camera.
    Camera bay qua các điểm theo đường cong Catmull-Rom khép kín. Tên và lời giới thiệu từng điểm
    nằm trong bảng dịch (i18n/locales/*.json, khóa ở TOURS[...].key), đúng thứ tự các điểm dưới đây.
-   swing: true — tới điểm này thì tự quay Cầu sông Hàn. */
-export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean }
+   swing: true — tới điểm này thì tự quay Cầu sông Hàn.
+   Hầm sông Hàn: immerse — chạy mô phỏng dìm đốt hầm; cutaway — bật mặt cắt địa chất; interior — luôn hiện nội thất hầm. */
+export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean; immerse?: boolean; cutaway?: boolean; interior?: boolean }
 
 /* Cầu Rồng */
 export const DRAGON_TOUR: TourStop[] = [
@@ -50,10 +53,25 @@ export const SH_TOUR: TourStop[] = [
   { pos: [-80, 25, -1420], target: [-20, 12, -1200] }
 ];
 
+/* Hầm vượt sông Hàn: toàn tuyến → cửa Tây (mái lam) → gờ chắn ngập → mặt cắt dọc → dìm đốt hầm → trong ống xe → hành lang thoát nạn → cửa Đông.
+   Các điểm dưới đất bay trong lòng hầm; đường bay đi xuyên mặt đất/nước nên Tour này không kiểm tra va chạm mô hình. */
+const HRZ = CONFIG.hanTunnel.z, HRC = HRZ + CONFIG.hanTunnel.cutZ, HRT = CONFIG.hanTunnel.tubeCenter;
+export const HR_TOUR: TourStop[] = [
+  { pos: [-560, 230, HRZ - 520], target: [0, -4, HRZ] },
+  { pos: [-640, 14, HRZ + 32], target: [-560, 3.5, HRZ - 2] },
+  { pos: [-742, 9, HRZ + 30], target: [-700, 3.4, HRZ] },
+  { pos: [-95, 30, HRC - 110], target: [0, -10, HRC], cutaway: true },
+  { pos: [-110, 70, HRZ - 95], target: [0, -4, HRZ], immerse: true },
+  { pos: [-230, hrRoadY(-230) + 1.5, HRZ + HRT], target: [-60, hrRoadY(-60) + 1.8, HRZ + HRT], interior: true },
+  { pos: [-130, hrRoadY(-130) + 1.6, HRZ], target: [60, hrRoadY(60) + 1.5, HRZ], interior: true },
+  { pos: [800, 11, HRZ + 8], target: [585, 2.5, HRZ] }
+];
+
 /* Mỗi cầu một hành trình: view = tên nút góc nhìn, key = khóa danh sách điểm dừng trong bảng dịch */
 export const TOUR_DEFS = {
   dragon: { view: 'tour', key: 'stops', stops: DRAGON_TOUR },
   ttl: { view: 'ttlTour', key: 'ttlStops', stops: TTL_TOUR },
   tp: { view: 'tpTour', key: 'tpStops', stops: TP_TOUR },
-  sh: { view: 'shTour', key: 'shStops', stops: SH_TOUR }
+  sh: { view: 'shTour', key: 'shStops', stops: SH_TOUR },
+  hr: { view: 'hrTour', key: 'hrStops', stops: HR_TOUR, minY: -30 }   // minY: đường bay được phép xuống dưới mặt nước (mặc định 3 m)
 };

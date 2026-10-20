@@ -143,7 +143,7 @@
   "title": "Da Nang 3D",
   "canvasAria": "3D model of the bridges over the Han River, Da Nang",
   "loading": "Building Da Nang’s bridges…",
-  "loadingSub": "Dragon, Thuan Phuoc, Tran Thi Ly and the Han River swing bridge",
+  "loadingSub": "Dragon, Thuan Phuoc, Tran Thi Ly, the Han River swing bridge and the Han River tunnel",
   "eyebrow": "Han River · 16.061°N · 108.227°E",
   "h1": "Da Nang",
   "h1Sub": "",
@@ -212,6 +212,72 @@
     [
       "Riverside flyover",
       "Seen from the river mouth. Son Tra Mountain lies to the northeast, the Hai Van range to the northwest."
+    ]
+  ],
+  "bridgeHr": "Han River Tunnel",
+  "vHrCutaway": "Longitudinal section",
+  "vHrPortalW": "West portal · Dien Hai Citadel",
+  "vHrPortalE": "East portal · Son Tra",
+  "vHrDrive": "Drive through the tunnel",
+  "vHrGallery": "Escape corridor",
+  "hrSection": "Geological section",
+  "hrTraffic": "Traffic",
+  "hrImmerseBtn": "Simulate element immersion",
+  "hrImBusy": "Immersing element…",
+  "hrImSpeed": "Simulation speed",
+  "hrImNote": "Element no. 3 (120 m) is towed in, ballasted, lowered into the trench and covered with rock. The road is closed during the simulation.",
+  "hrFollow": "Camera follows the immersion",
+  "im_IDLE": "Idle — tunnel complete",
+  "im_FLOAT_IN": "Tugs tow the floating element in",
+  "im_POSITION": "Mooring and positioning over the trench",
+  "im_BALLAST": "Ballast water pumped in, element sinks",
+  "im_PULL_JOINT": "Jacks pull it tight, GINA gasket compresses",
+  "im_BACKFILL": "Backfilling sand and rock armour",
+  "im_DONE": "Done — two elements joined",
+  "hrLengthVal": "≈ 1,670 m",
+  "hrWidthVal": "31.2 m",
+  "hrSpan": "Immersed tunnel",
+  "hrSpanVal": "600 m · 5 elements",
+  "hrNote": "Proposal of 2025, investment planned 2031–2045, total 6,880 billion VND. Cross-section, depths and portal architecture are estimates.",
+  "hrLblElements": "Immersed tunnel 5 × 120 m",
+  "hrLblGina": "GINA joint",
+  "hrLblBed": "Riverbed −6 m",
+  "hrLblPump": "Pump station",
+  "hrLblCover": "Cut-and-cover 190 m",
+  "hrLblRamp": "Open ramp 207.5 m",
+  "hrLblFlood": "Flood sill +1.0 m",
+  "hrStops": [
+    [
+      "Vietnam’s second river tunnel",
+      "The 2025 proposal is a tunnel of about 1,670 m linking Dong Da (Hai Chau) with Van Don (Son Tra): a 600 m immersed tunnel under the river, 380 m of cut-and-cover on the banks and 415 m of open ramps. Investment is planned for 2031–2045."
+    ],
+    [
+      "West portal · louvre roof",
+      "Next to Dien Hai Citadel the portal is kept low and clad in old-brick tones. An 80 m louvre roof cuts glare as cars enter from harsh sun, keeps out driving rain and lets typhoon wind pass through."
+    ],
+    [
+      "Flood sill and flood gate",
+      "Da Nang often floods when heavy rain meets high tide. The road crest before the portal is raised 1 m above the street, with a sliding flood gate to hold the water back."
+    ],
+    [
+      "Longitudinal section",
+      "Five immersed elements of 120 m each lie about 6 m below the riverbed level, with at least 1 m of cover above the roof. On each bank comes cut-and-cover with diaphragm walls, then open ramps no steeper than 4.5%."
+    ],
+    [
+      "Immersing an element",
+      "Each element is cast in a dry dock, sealed at both ends and towed out; ballast water sinks it into the dredged trench. Jacks pull it tight against its neighbour and a rubber GINA gasket seals the joint."
+    ],
+    [
+      "Inside the tube",
+      "Three lanes each way: two car lanes at 60 km/h and a motorbike lane on the right. Jet fans ventilate along the tunnel, and the entrance zone is lit brighter so eyes can adapt."
+    ],
+    [
+      "Escape corridor",
+      "Between the two tubes runs a pressurised, smoke-free corridor. A green cross-passage door every 100 m leads into it, with SOS boxes and extinguishers every 50 m."
+    ],
+    [
+      "East portal · Son Tra",
+      "On the Son Tra side the portal recalls sea waves and fishing villages, with basket boats beside it. The planned investment of 6,880 billion VND would relieve the Dragon and Han River bridges."
     ]
   ]
 }

@@ -11,7 +11,9 @@ const VIEWS = [
   ['dragon', 'overview'], ['dragon', 'head'], ['dragon', 'tail'], ['dragon', 'drive'], ['dragon', 'bird'], ['dragon', 'walk'],
   ['tp', 'tpBay'], ['tp', 'tpWater'], ['tp', 'tpDrive'], ['tp', 'tpBoth'],
   ['ttl', 'ttlOverview'], ['ttl', 'ttlBase'], ['ttl', 'ttlDeck'], ['ttl', 'ttlBoth'],
-  ['sh', 'shOverview'], ['sh', 'shTop'], ['sh', 'shBank'], ['sh', 'shDeck']
+  ['sh', 'shOverview'], ['sh', 'shTop'], ['sh', 'shBank'], ['sh', 'shDeck'],
+  // Hầm vượt sông Hàn (bản gốc không có: tự bỏ qua nếu thiếu nút)
+  ['hr', 'hrOverview'], ['hr', 'hrCutaway'], ['hr', 'hrPortalW'], ['hr', 'hrPortalE'], ['hr', 'hrDrive'], ['hr', 'hrGallery']
 ];
 
 async function setNight(page, v) {
@@ -34,6 +36,7 @@ async function measure(browser, url) {
   for (const night of [0, 1]) {
     await setNight(page, night);
     for (const [bridge, view] of VIEWS) {
+      if (!(await page.$(`button[data-view="${view}"]`))) continue;
       await pickView(page, bridge, view);
       await frames(page, 4);
       out[`${view}|${night ? 'đêm' : 'ngày'}`] = await sample(page);

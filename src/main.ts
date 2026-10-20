@@ -25,12 +25,14 @@ import {
 import { ThuanPhuocBridge } from './bridges/thuan-phuoc';
 import { TranThiLyBridge } from './bridges/tran-thi-ly';
 import { SongHanBridge } from './bridges/song-han';
-import { updateCamera } from './views/camera';
+import { HanTunnel } from './bridges/han-tunnel';
+import { updateCamera, hrDrive } from './views/camera';
 import { cam } from './views/state';
 import { TOURS, tour } from './views/tour';
 import { audio } from './audio';
 import { narration } from './audio/narration';
 import { setupUI } from './ui/setupUI';
+import { updateHrUI } from './ui/hrUI';
 
 initI18n();
 void narration.init();
@@ -61,16 +63,18 @@ const tranThiLy = new TranThiLyBridge();
 scene.add(tranThiLy.group);
 const songHan = new SongHanBridge();
 scene.add(songHan.group);
-const bridges = [thuanPhuoc, tranThiLy, songHan];
+const hanTunnel = new HanTunnel();     // sau mọi lệnh dựng có dùng rand(): chỉ dọn nhà, cây trên tuyến bằng cách thu nhỏ instance
+scene.add(hanTunnel.group);
+const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel];
 createFire();
 createWaterJet();
-setupUI({ thuanPhuoc, tranThiLy, songHan });
+setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel });
 onResize();
 applyNight(0, 0);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, THREE, dayNight, tours: TOURS, tour, narration };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, hrDrive, THREE, dayNight, tours: TOURS, tour, narration };
 }
 
 /* ============================ Vòng lặp ============================ */
@@ -91,6 +95,8 @@ function animate() {
   updateBoats(dt, time);
   updateCamera(dt);
   for (const b of bridges) b.update(dt, time, camera);
+  hanTunnel.holdBoats(songHan.boats.list);
+  updateHrUI(camera);
   audio.setSwingDistance(camera.position.distanceTo(songHan.center));
   audio.update(dayNight.night, show.fireOn, show.waterOn, camera.position.distanceTo(mouthW));
   renderer.info.reset();

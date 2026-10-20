@@ -202,11 +202,73 @@ function deriveSh(C: typeof songHanBase) {
   return { ...C, swingHalf, fixedStart, westEnd, eastEnd, hw, lane, piers, restX };
 }
 
+/* ---------------------------- Hầm vượt sông Hàn ----------------------------
+   Phương án đề xuất 2025 (chưa xây): tuyến thẳng Đống Đa – Trần Phú (Hải Châu) → Vân Đồn – Trần Hưng Đạo (Sơn Trà),
+   ≈ 1.670 m: hầm kín qua sông 600 m (hầm dìm), hầm kín trên bờ 380 m, hầm hở 415 m. 6 làn, 60 km/h, 6.880 tỷ đồng.
+   Đã công bố: chiều dài từng đoạn, số làn, tốc độ, độ dốc tham khảo, vị trí tuyến. Còn lại là thiết kế ước lượng.
+   Tọa độ cục bộ: tim sông là x = 0, đối xứng hai bờ; group đặt tại z = −1700. Mét. */
+const hanTunnelBase = {
+  z: -1700,                   // m — ~620 m phía Bắc Cầu sông Hàn, ~1,2 km phía Nam Cầu Thuận Phước (ước lượng)
+  immersedHalf: 300,          // m — |x| ≤ 300: hầm dìm (5 đốt × 120 m = 600 m)
+  coverHalf: 490,             // m — 300 < |x| ≤ 490: hầm kín trên bờ, đào hở rồi lấp (2 × 190 = 380 m)
+  rampHalf: 697.5,            // m — 490 < |x| ≤ 697,5: hầm hở (2 × 207,5 = 415 m)
+  approachHalf: 835,          // m — 697,5 < |x| ≤ 835: đường dẫn trên mặt đất (2 × 137,5 m)
+  elements: 5, elementLen: 120, // đốt hầm dìm bê tông cốt thép đúc sẵn (ước lượng)
+  // mặt cắt ngang: |1,0| ống 12,5 |0,6| hành lang 3,0 |0,6| ống 12,5 |1,0| = 31,2 m (ước lượng, theo hầm Thủ Thiêm)
+  halfWidth: 15.6, outerWall: 1.0, midWall: 0.6, corridorHalf: 1.5,
+  tubeNear: 2.1, tubeFar: 14.6, tubeCenter: 8.35, // m — mép trong gần / xa tim, tim ống
+  laneWidth: 3.5, lanesPerDir: 3, shoulder: 1.0,   // 2 làn ô tô + 1 làn xe máy sát lề phải
+  slabBelow: 1.5,             // m — bản đáy dưới mặt đường
+  clear: 5.8,                 // m — chiều cao trong ống (tĩnh không 4,75 m + thiết bị)
+  roofT: 1.2,                 // m — bản nóc → đốt dìm cao 1,5 + 5,8 + 1,2 = 8,5 m
+  corridorClear: 2.6,         // m — chiều cao hành lang thoát nạn
+  carSpeed: 16.7, bikeSpeed: 11.1, // m/s — 60 km/h ô tô, 40 km/h xe máy
+  // trắc dọc: [|x|, cao độ mặt đường] là các điểm đổi dốc; vc = chiều dài đường cong đứng parabol tại đó (ước lượng)
+  profile: [[0, -14.6], [90, -14.33], [300, -10.35], [490, -5.6], [705, 3.84], [745, 2.6]] as [number, number][],
+  vc: [0, 40, 0, 80, 24, 20],
+  bedMid: -6, bedBank: -2.5, bedFlat: 90, // m — đáy sông ở luồng giữa (|x| ≤ 90) và sát kè (ước lượng)
+  minCover: 1.0,              // m — nóc hầm dìm thấp hơn đáy sông tối thiểu
+  floodSill: 1.0,             // m — gờ chắn ngập ở đỉnh dốc cửa hầm hở, cao hơn mặt phố
+  maxGrade: { immersed: 0.02, cover: 0.035, ramp: 0.045 }, // độ dốc dọc tối đa từng đoạn (đoạn đáy sông 0,3% là điểm trũng)
+  trenchBottomHalf: 19, trenchSlope: 2.5, // hào nạo vét cho hầm dìm: nửa bề rộng đáy, mái dốc 1 : 2,5
+  louverLen: 80,              // m — mái lam che nắng mưa sát cửa hầm kín, mỗi phía
+  louverGap: 2.0,             // m — bước lam
+  fanStep: 100, sosStep: 50, crossStep: 100, signalStep: 150, // bước thiết bị dọc hầm kín
+  gantryX: 747.5,             // m — khung giới hạn chiều cao, cách đầu hầm hở 50 m
+  heightLimit: 4.5,
+  lodDistance: 1300, farDistance: 1600
+};
+function deriveHr(C: typeof hanTunnelBase) {
+  const nodes = C.profile.map(([x, y], i) => ({ x, y, L: C.vc[i] })), last = nodes[nodes.length - 1];
+  const grades = nodes.slice(1).map((n, i) => (n.y - nodes[i].y) / (n.x - nodes[i].x));
+  const gIn = nodes.map((_, i) => (i > 0 ? grades[i - 1] : grades[0])), gOut = nodes.map((_, i) => (i < grades.length ? grades[i] : 0));
+  /* mặt đường theo |x|: đường gãy khúc, bo bằng parabol quanh điểm đổi dốc; phẳng 2,6 m sau x = 745 */
+  const roadY = (x: number) => {
+    const a = Math.abs(x);
+    for (let k = 1; k < nodes.length; k++) {
+      const n = nodes[k];
+      if (n.L && Math.abs(a - n.x) < n.L / 2) { const t = a - (n.x - n.L / 2); return n.y - gIn[k] * n.L / 2 + gIn[k] * t + (gOut[k] - gIn[k]) * t * t / (2 * n.L); }
+    }
+    if (a >= last.x) return last.y;
+    let i = 1; while (a > nodes[i].x) i++;
+    return nodes[i - 1].y + grades[i - 1] * (a - nodes[i - 1].x);
+  };
+  const bedY = (x: number) => { const a = Math.abs(x); return a <= C.bedFlat ? C.bedMid : a >= 262 ? C.bedBank : C.bedMid + (C.bedBank - C.bedMid) * (a - C.bedFlat) / (262 - C.bedFlat); };
+  const roofTop = C.clear + C.roofT;                                // nóc ống so với mặt đường: 7,0 m
+  const laneOffsets = Array.from({ length: C.lanesPerDir }, (_, i) => C.tubeCenter + C.laneWidth * (i - (C.lanesPerDir - 1) / 2)); // 4,85 / 8,35 / 11,85
+  const elementEdges = Array.from({ length: C.elements + 1 }, (_, i) => -C.immersedHalf + i * C.elementLen);
+  const cutZ = C.tubeCenter + C.laneWidth / 2;   // mặt cắt dọc đi giữa làn ô tô và làn xe máy của ống Nam (xe chạy hướng Đông): xe máy còn nguyên, ô tô bị bóc cùng nửa phía Bắc
+  const grade = (x: number) => (roadY(x + 0.5) - roadY(x - 0.5));
+  return { ...C, roadY, bedY, roofTop, laneOffsets, elementEdges, cutZ, grade };
+}
+
 export const CONFIG = {
   ...base,
   mainTotal: sum(base.mainSpans),
   thuanPhuoc: deriveTp(thuanPhuocBase),
   tranThiLy: deriveTtl(tranThiLyBase),
-  songHan: deriveSh(songHanBase)
+  songHan: deriveSh(songHanBase),
+  hanTunnel: deriveHr(hanTunnelBase)
 };
 export type SongHanConfig = typeof CONFIG.songHan;
+export type HanTunnelConfig = typeof CONFIG.hanTunnel;

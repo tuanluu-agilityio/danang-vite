@@ -11,7 +11,8 @@
     "gen:voice": "node scripts/gen-narration.mjs",
     "test:tour": "node tests/tour-check.mjs",
     "test:voice": "node tests/voice-check.mjs",
-    "test:drawcalls": "node tests/drawcalls.mjs"
+    "test:drawcalls": "node tests/drawcalls.mjs",
+    "test:tunnel": "node tests/tunnel-check.mjs"
   },
   "dependencies": {
     "three": "^0.165.0"

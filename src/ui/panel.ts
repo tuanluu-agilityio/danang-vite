@@ -8,7 +8,8 @@ const SPEC_KEYS: Record<BridgeKey, Record<string, string>> = {
   dragon: { specLen: 'lengthVal', specWidth: 'widthVal', specSpanLabel: 'span', specSpanVal: 'spanVal', specNote: 'note', lanes: '6' },
   tp: { specLen: 'tpLengthVal', specWidth: 'tpWidthVal', specSpanLabel: 'tpSpan', specSpanVal: 'tpSpanVal', specNote: 'tpNote', lanes: '4' },
   ttl: { specLen: 'ttlLengthVal', specWidth: 'ttlWidthVal', specSpanLabel: 'ttlSpan', specSpanVal: 'ttlSpanVal', specNote: 'ttlNote', lanes: '6' },
-  sh: { specLen: 'shLengthVal', specWidth: 'shWidthVal', specSpanLabel: 'shSpan', specSpanVal: 'shSpanVal', specNote: 'shNote', lanes: '2' }
+  sh: { specLen: 'shLengthVal', specWidth: 'shWidthVal', specSpanLabel: 'shSpan', specSpanVal: 'shSpanVal', specNote: 'shNote', lanes: '2' },
+  hr: { specLen: 'hrLengthVal', specWidth: 'hrWidthVal', specSpanLabel: 'hrSpan', specSpanVal: 'hrSpanVal', specNote: 'hrNote', lanes: '6' }
 };
 let currentBridge: BridgeKey = 'dragon';
 

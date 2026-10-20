@@ -1,8 +1,9 @@
 import { CONFIG } from '../config';
-import { camera, controls, canvas } from '../core/renderer';
+import { camera, controls, canvas, renderer } from '../core/renderer';
 import { clamp, smooth } from '../common/math';
 import { deckY } from '../bridges/dragon/profile';
 import { tpRoadY } from '../bridges/thuan-phuoc/profile';
+import { hrRoadY } from '../bridges/han-tunnel/profile';
 import { VIEWS, type ViewPreset } from './presets';
 import { narration } from '../audio/narration';
 import { cam, keys } from './state';
@@ -11,7 +12,10 @@ import { TOUR_VIEWS, activeTour, setActiveTour, tour, tourBox, showTourCaption, 
 /* ============================ Góc nhìn & điều khiển camera ============================ */
 const drive = { x: -700 };
 const tpDrive = { x: -1300 };
+export const hrDrive = { x: -1000 };
 const walk = { x: -240, z: 17.4, yaw: 0 };
+/* Mắt thích nghi khi lái vào/ra hầm: độ phơi sáng nhân hệ số k, về 0,7 trong hầm (τ ≈ 0,5 s ⇒ ổn định sau ~1,5 s) rồi trả về 1 */
+const eye = { k: 1 };
 
 /* Bay mượt tới một góc nhìn; then = 'tour' để bắt đầu Tour khi tới nơi */
 export function flyTo(v: ViewPreset, then: 'tour' | null = null) {
@@ -30,11 +34,13 @@ export function setView(name: string) {
   if (tourKey) { setActiveTour(tourKey); showTourCaption(0); tour.shown = 0; flyTo(activeTour.stops[0], 'tour'); return; }
   if (name === 'drive') { cam.mode = 'drive'; controls.enabled = false; drive.x = -700; return; }
   if (name === 'tpDrive') { cam.mode = 'tpDrive'; controls.enabled = false; tpDrive.x = -1300; return; }
+  if (name === 'hrDrive') { cam.mode = 'hrDrive'; controls.enabled = false; hrDrive.x = -1000; eye.k = 1; return; }
   if (name === 'walk') { cam.mode = 'walk'; controls.enabled = false; walk.x = -240; walk.z = 17.4; walk.yaw = 0; canvas.focus(); return; }
   flyTo(VIEWS[name]);
 }
 export function updateCamera(dt: number) {
   const flight = cam.flight;
+  if (cam.mode !== 'hrDrive') eye.k = 1;
   if (cam.mode === 'fly') {
     flight.t += dt / flight.dur; const k = smooth(Math.min(flight.t, 1));
     camera.position.lerpVectors(flight.fromP, flight.toP, k); controls.target.lerpVectors(flight.fromT, flight.toT, k);
@@ -54,6 +60,15 @@ export function updateCamera(dt: number) {
     camera.position.set(tpDrive.x, tpRoadY(tpDrive.x) + 1.45, z);
     camera.lookAt(ahead, tpRoadY(ahead) + 2.2, z - 1.6);
     controls.target.set(ahead, tpRoadY(ahead), CONFIG.thuanPhuoc.z);
+  } else if (cam.mode === 'hrDrive') {
+    const H = CONFIG.hanTunnel;
+    hrDrive.x += 18 * dt; if (hrDrive.x > 1000) hrDrive.x = -1000;
+    const z = H.z + H.laneOffsets[1], ahead = hrDrive.x + 45;
+    camera.position.set(hrDrive.x, hrRoadY(hrDrive.x) + 1.45, z);
+    camera.lookAt(ahead, hrRoadY(ahead) + 1.8, z - 0.5);
+    controls.target.set(ahead, hrRoadY(ahead), H.z);
+    eye.k += ((Math.abs(hrDrive.x) < H.coverHalf ? 0.7 : 1) - eye.k) * Math.min(1, dt / 0.5);
+    renderer.toneMappingExposure *= eye.k;                 // applyNight đặt lại độ phơi sáng mỗi khung hình nên không tích lũy
   } else if (cam.mode === 'walk') {
     const speed = keys.has('shift') ? 6 : 2.2;
     if (keys.has('a') || keys.has('arrowleft')) walk.yaw += 1.6 * dt;
