@@ -236,7 +236,7 @@ const hanTunnelBase = {
   fanStep: 100, sosStep: 50, crossStep: 100, signalStep: 150, // bước thiết bị dọc hầm kín
   gantryX: 747.5,             // m — khung giới hạn chiều cao, cách đầu hầm hở 50 m
   heightLimit: 4.5,
-  lodDistance: 1300, farDistance: 1600
+  lodDistance: 600, farDistance: 650, hideDistance: 1500, lifeDistance: 450   // chi tiết nhỏ ẩn xa hơn 600 m; mặt đường/vỉa hè xa hơn 650 m; xe xa hơn 450 m; cả công trình xa hơn 1.500 m
 };
 function deriveHr(C: typeof hanTunnelBase) {
   const nodes = C.profile.map(([x, y], i) => ({ x, y, L: C.vc[i] })), last = nodes[nodes.length - 1];

@@ -59,7 +59,7 @@ const HRZ = CONFIG.hanTunnel.z, HRC = HRZ + CONFIG.hanTunnel.cutZ, HRT = CONFIG.
 export const HR_TOUR: TourStop[] = [
   { pos: [-560, 230, HRZ - 520], target: [0, -4, HRZ] },
   { pos: [-640, 14, HRZ + 32], target: [-560, 3.5, HRZ - 2] },
-  { pos: [-742, 9, HRZ + 30], target: [-700, 3.4, HRZ] },
+  { pos: [-742, 15, HRZ + 30], target: [-700, 3.4, HRZ] },
   { pos: [-95, 30, HRC - 110], target: [0, -10, HRC], cutaway: true },
   { pos: [-110, 70, HRZ - 95], target: [0, -4, HRZ], immerse: true },
   { pos: [-230, hrRoadY(-230) + 1.5, HRZ + HRT], target: [-60, hrRoadY(-60) + 1.8, HRZ + HRT], interior: true },

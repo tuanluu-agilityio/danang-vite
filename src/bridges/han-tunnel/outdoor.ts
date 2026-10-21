@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CONFIG } from '../../config';
-import { MAT } from '../../core/materials';
 import { canvasTex } from '../../core/textures';
 import { rng } from '../../common/math';
 import { prepColored, extrudeAlongX, fillBlock, bentBox, boxAt, roadStrip, shadowed } from '../../common/geometry';
@@ -14,22 +13,29 @@ import type { HanTunnel } from './HanTunnel';
    mặt đường + vỉa hè + đèn đường + cọ hai bên. Mọi hình học gộp vào concreteParts hoặc InstancedMesh. */
 const W = HR.halfWidth, LAND = CONFIG.landY;
 const BRICK: [number, number, number] = [0.86, 0.6, 0.45];
-const _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _e = new THREE.Euler(), _m = new THREE.Matrix4();
+const _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _e = new THREE.Euler();
 const wallTop = (x: number) => Math.max(hrRoadY(x) + 1.1, LAND + 0.6);   // tường máng: cao hơn mặt đường 1,1 m, tối thiểu nhô 0,6 m khỏi mặt phố
 
-function signTexture(lines: [string, number][], bg: string, w: number, h: number) {
-  return canvasTex(w, h, (g, cw, ch) => {
-    g.fillStyle = bg; g.fillRect(0, 0, cw, ch);
-    g.strokeStyle = '#f2f2ee'; g.lineWidth = 4; g.strokeRect(5, 5, cw - 10, ch - 10);
-    g.fillStyle = '#f2f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    let y = 0; const tot = lines.reduce((a, [, k]) => a + k, 0);
-    for (const [txt, k] of lines) { g.font = `600 ${Math.round(ch * k / tot * 0.72)}px "Be Vietnam Pro", sans-serif`; g.fillText(txt, cw / 2, y + ch * k / tot / 2); y += ch * k / tot; }
-  });
+/* Vẽ một biển vào vùng (x, y, w, h) của canvas */
+function paintSign(g: CanvasRenderingContext2D, x: number, y0: number, cw: number, ch: number, lines: [string, number][], bg: string) {
+  g.fillStyle = bg; g.fillRect(x, y0, cw, ch);
+  g.strokeStyle = '#f2f2ee'; g.lineWidth = 4; g.strokeRect(x + 5, y0 + 5, cw - 10, ch - 10);
+  g.fillStyle = '#f2f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let y = y0; const tot = lines.reduce((a, [, k]) => a + k, 0);
+  for (const [txt, k] of lines) { g.font = `600 ${Math.round(ch * k / tot * 0.72)}px "Be Vietnam Pro", sans-serif`; g.fillText(txt, x + cw / 2, y + ch * k / tot / 2); y += ch * k / tot; }
 }
+const SIGN_W = 1024, SIGN_H = 160, VMS_H = 92, LIM_W = 128, LIM_H = 64;   // canvas biển: VMS ở trên, biển "4,5 m" ở góc dưới trái
+/* UV của PlaneGeometry trỏ vào vùng (u0..u1, v0..v1) của canvas biển */
+const remapUV = (g: THREE.BufferGeometry, u0: number, u1: number, v0: number, v1: number) => { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, u0 + (u1 - u0) * uv.getX(i), v0 + (v1 - v0) * uv.getY(i)); return g; };
 
 export function hrBuildOutdoor(bridge: HanTunnel) {
   const a = HR.coverHalf, c = HR.rampHalf, cp = bridge.concreteParts, M = bridge.mats;
   const lintelY = (x: number) => hrRoadY(x) + HR.clear + 0.2;
+  // gom các chi tiết nhỏ hai phía để mỗi loại chỉ tốn một draw call: lam mái, dải LED, biển VMS, biển giới hạn chiều cao
+  const slatAll: THREE.Matrix4[] = [], ledAll: THREE.BufferGeometry[] = [], signAll: THREE.BufferGeometry[] = [];
+  const signTex = canvasTex(SIGN_W, SIGN_H, (g) => { g.fillStyle = '#10151c'; g.fillRect(0, 0, SIGN_W, SIGN_H); paintSign(g, 0, 0, SIGN_W, VMS_H, [['HẦM SÔNG HÀN', 1.15], ['60 km/h · XE MÁY ĐI LÀN PHẢI', 0.8]], '#0a3f78'); paintSign(g, 0, VMS_H + 4, LIM_W, LIM_H, [['4,5 m', 1]], '#c9201a'); });
+  const signMat = new THREE.MeshBasicMaterial({ map: signTex, side: THREE.DoubleSide });
+  M.textures.push(signTex);
   for (const s of [-1, 1]) {
     const x0 = s > 0 ? a : -c, x1 = s > 0 ? c : -a, west = s < 0;
     const tint = west ? BRICK : [0.8, 0.8, 0.8] as [number, number, number];
@@ -43,29 +49,23 @@ export function hrBuildOutdoor(bridge: HanTunnel) {
     for (let x = lx0 + 8; x < lx0 + HR.louverLen; x += 16) cp.push(prepColored(boxAt(0.6, HR.clear - 0.9, 0.6, x, hrRoadY(x) + (HR.clear + 0.9) / 2 - 0.0, 0), () => 0.8));
     const slats: THREE.Matrix4[] = [];
     for (let x = lx0 + 1; x < lx0 + HR.louverLen; x += HR.louverGap) { _q.setFromEuler(_e.set(0, 0, 0.5)); slats.push(new THREE.Matrix4().compose(_p.set(x, hrRoadY(x) + HR.clear + 0.45, 0), _q, _s.set(1, 1, 1))); }
-    const sl = new THREE.InstancedMesh(new THREE.BoxGeometry(1.5, 0.12, W * 2 - 1.2), M.louver, slats.length);
-    slats.forEach((m, i) => sl.setMatrixAt(i, m)); sl.castShadow = true; sl.receiveShadow = true; bridge.group.add(sl);
+    slatAll.push(...slats);
     // dải LED viền mái lam và cửa hầm (sáng về đêm)
     const px = s * (a + HR.louverLen);   // mặt cửa hầm ở đầu mái lam, phía ra mặt phố
     const led = [-W, W].map((z) => bentBox(HR.louverLen, 0.08, 0.08, lc, HR.clear + 0.55, z, 40, hrRoadY));
     led.push(boxAt(0.1, 0.1, W * 2, px, lintelY(px) + 0.1, 0));
-    const lm = new THREE.Mesh(mergeGeometries(led.map((g) => { g.deleteAttribute('uv'); return g; })), M.led); bridge.group.add(lm);
+    ledAll.push(...led.map((g) => { g.deleteAttribute('uv'); return g; }));
     // khung cửa hầm: dầm ngang + hai trụ, biển VMS quay ra phía đường dẫn
     cp.push(prepColored(boxAt(1.4, 1.7, W * 2 + 0.4, px, lintelY(px) + 1.1, 0), () => tint));
     for (const z of [-1, 1]) cp.push(prepColored(boxAt(1.6, lintelY(px) + 1.1 - wallTop(px) + 0.4, 1.6, px, (lintelY(px) + 1.1 + wallTop(px)) / 2 - 0.2, z * (W - 0.8)), () => tint));
-    const vms = new THREE.Mesh(new THREE.PlaneGeometry(15, 1.35), new THREE.MeshBasicMaterial({
-      map: signTexture([['HẦM SÔNG HÀN', 1.15], ['60 km/h · XE MÁY ĐI LÀN PHẢI', 0.8]], '#0a3f78', 1024, 92), side: THREE.FrontSide }));
-    vms.position.set(px + s * 0.72, lintelY(px) + 1.1, 0); vms.rotation.y = s * Math.PI / 2; bridge.details.add(vms);
-    bridge.mats.textures.push((vms.material as THREE.MeshBasicMaterial).map);
+    signAll.push(remapUV(new THREE.PlaneGeometry(15, 1.35), 0, 1, 1 - VMS_H / SIGN_H, 1).rotateY(s * Math.PI / 2).translate(px + s * 0.72, lintelY(px) + 1.1, 0));
     // trang trí đỉnh cửa hầm
-    const topY = lintelY(px) + 1.95, n = Math.floor((W * 2 - 1) / 1.8), crest: THREE.Matrix4[] = [];
+    const topY = lintelY(px) + 1.95, n = Math.floor((W * 2 - 1) / 1.8);
     for (let k = 0; k < n; k++) {
       const z = -W + 0.9 + k * 1.8 + 0.5;
-      if (west) crest.push(new THREE.Matrix4().compose(_p.set(px, topY + 0.35, z), _q.identity(), _s.set(1, 1, 1)));            // lô cốt răng cưa, gợi tường thành Điện Hải
-      else { const h = 0.5 + 1.0 * (0.5 + 0.5 * Math.sin(k * 0.55)); crest.push(new THREE.Matrix4().compose(_p.set(px, topY + h / 2 - 0.05, z), _q.identity(), _s.set(1, h / 0.7, 1))); } // đỉnh sóng
+      if (west) cp.push(prepColored(boxAt(0.9, 0.7, 1.0, px, topY + 0.35, z), () => BRICK));            // lô cốt răng cưa, gợi tường thành Điện Hải
+      else { const h = 0.5 + 1.0 * (0.5 + 0.5 * Math.sin(k * 0.55)); cp.push(prepColored(boxAt(0.9, h, 1.4, px, topY + h / 2 - 0.05, z), () => [0.75, 0.86, 0.92])); } // đỉnh sóng
     }
-    const cm = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.7, west ? 1.0 : 1.4), west ? M.brick : M.wave, crest.length);
-    crest.forEach((m, i) => cm.setMatrixAt(i, m)); cm.castShadow = true; bridge.group.add(cm);
     // gờ chắn ngập: đoạn nền đắp qua đỉnh dốc, kèm cửa phai (khe thép + cánh cửa kéo lên) ở đầu hầm hở
     const e0 = s > 0 ? c : -c - 62.5, e1 = s > 0 ? c + 62.5 : -c;
     cp.push(prepColored(fillBlock(e0, e1, 36, 0, 2.0, (x) => hrRoadY(x) - 0.04, 40), () => 0.74));
@@ -77,10 +77,12 @@ export function hrBuildOutdoor(bridge: HanTunnel) {
     const hx = s * HR.gantryX;
     for (const z of [-1, 1]) bridge.steelParts.push(boxAt(0.5, HR.heightLimit + 1.2, 0.5, hx, hrRoadY(hx) + (HR.heightLimit + 1.2) / 2, z * (W + 1.4)).toNonIndexed());
     bridge.steelParts.push(boxAt(0.55, 0.55, (W + 1.4) * 2, hx, hrRoadY(hx) + HR.heightLimit + 0.3, 0).toNonIndexed());
-    const lim = new THREE.MeshBasicMaterial({ map: signTexture([['4,5 m', 1]], '#c9201a', 128, 64), side: THREE.DoubleSide });
-    bridge.mats.textures.push(lim.map);
-    for (const z of [-HR.tubeCenter, HR.tubeCenter]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.2), lim); p.position.set(hx, hrRoadY(hx) + HR.heightLimit + 1.0, z); p.rotation.y = Math.PI / 2; bridge.details.add(p); }
+    for (const z of [-HR.tubeCenter, HR.tubeCenter]) signAll.push(remapUV(new THREE.PlaneGeometry(2.4, 1.2), 0, LIM_W / SIGN_W, 0, LIM_H / SIGN_H).rotateY(Math.PI / 2).translate(hx, hrRoadY(hx) + HR.heightLimit + 1.0, z));
   }
+  // mỗi loại gộp thành một mesh; lam mái là InstancedMesh chung hai phía
+  cp.push(...slatAll.map((m) => prepColored(new THREE.BoxGeometry(1.5, 0.12, W * 2 - 1.2).applyMatrix4(m), () => [0.93, 0.91, 0.86])));
+  bridge.group.add(new THREE.Mesh(mergeGeometries(ledAll), M.led));
+  bridge.details.add(new THREE.Mesh(mergeGeometries(signAll), signMat));
   hrBuildSurface(bridge);
   hrBuildDecor(bridge);
 }
@@ -101,8 +103,7 @@ function hrBuildSurface(bridge: HanTunnel) {
     med.push(bentBox(len, 0.3, HR.tubeNear * 2, xc, 0.15, 0, segs, hrRoadY));
     for (const z of [-1, 1]) paver.push(bentBox(len, 0.2, 3, xc, 0.1, z * (HR.tubeFar + 1.5), segs, hrRoadY));
   }
-  const mm = shadowed(new THREE.Mesh(mergeGeometries(med), MAT.grass), false, true), pv = shadowed(new THREE.Mesh(mergeGeometries(paver), MAT.paver), false, true);
-  bridge.group.add(mm, pv); bridge.noReflect.push(mm, pv); bridge.farHide.push(mm, pv);
+  bridge.concreteParts.push(...med.map((g) => prepColored(g, () => [0.4, 0.58, 0.3])), ...paver.map((g) => prepColored(g, () => [0.8, 0.72, 0.6])));
   const xs: number[] = []; for (let x = 760; x <= 1460; x += 40) xs.push(x, -x);
   addLampPosts(bridge, { xs, profile: hrRoadY, rows: [{ z: -HR.tubeFar - 1.8, s: -1 }, { z: HR.tubeFar + 1.8, s: 1 }] });
 }
@@ -114,18 +115,16 @@ function hrBuildDecor(bridge: HanTunnel) {
     for (let x = HR.coverHalf + 10; x < HR.rampHalf; x += 14) for (const z of [-1, 1]) palms.push([s * x + (rnd() - 0.5) * 2, z * (W + 3.4 + rnd() * 1.5)]);
     for (let x = HR.rampHalf + 20; x < 1440; x += 18) for (const z of [-1, 1]) palms.push([s * x + (rnd() - 0.5) * 3, z * (HR.tubeFar + 5.2 + rnd() * 1.5)]);
   }
-  const trunkGeo = new THREE.CylinderGeometry(0.22, 0.35, 1, 6).translate(0, 0.5, 0);
-  const trunks = new THREE.InstancedMesh(trunkGeo, MAT.trunk, palms.length), crowns = new THREE.InstancedMesh(new THREE.ConeGeometry(1, 1, 9, 1, true), MAT.palm, palms.length);
-  palms.forEach(([x, z], i) => {
+  // cọ: trụ + tán nón mở, hộp tĩnh có màu đỉnh gộp vào bê tông (một draw call chung, không cần InstancedMesh riêng)
+  const cp = bridge.concreteParts, tg = new THREE.CylinderGeometry(0.22, 0.35, 1, 6).translate(0, 0.5, 0), cg = new THREE.ConeGeometry(1, 1, 9, 1, true);
+  palms.forEach(([x, z]) => {
     const h = 8 + rnd() * 4, y = hrRoadY(x) < LAND ? LAND : hrRoadY(x) - 0.1;
-    trunks.setMatrixAt(i, _m.compose(_p.set(x, y, z), _q.identity(), _s.set(0.8, h, 0.8)));
-    crowns.setMatrixAt(i, _m.compose(_p.set(x, y + h + 0.3, z), _q.identity(), _s.set(3.8, 1.6, 3.8)));
+    cp.push(prepColored(tg.clone().scale(0.8, h, 0.8).translate(x, y, z), () => [0.42, 0.32, 0.22]), prepColored(cg.clone().scale(3.8, 1.6, 3.8).translate(x, y + h + 0.3, z), () => [0.3, 0.55, 0.22]));
   });
-  trunks.castShadow = crowns.castShadow = true; bridge.details.add(trunks, crowns);
   // thuyền thúng: bát úp nửa cầu + mái chèo, xếp thành cụm bên cạnh cửa hầm phía Đông
   const bowl = new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1.7, 0.9, 1.7);
   const spots: [number, number, number][] = [[612, 25, 0.2], [624, 28, 1.2], [636, 24.5, 2.4], [618, -27, 0.7], [632, -25, 1.9]];
-  const boats = new THREE.InstancedMesh(bowl, bridge.mats.basket, spots.length);
-  spots.forEach(([x, z, ry], i) => boats.setMatrixAt(i, _m.compose(_p.set(x, LAND + 0.9, z), _q.setFromEuler(_e.set(0, ry, 0)), _s.set(1, 1, 1))));
-  boats.castShadow = true; bridge.details.add(boats);
+  spots.forEach(([x, z, ry]) => {
+    cp.push(prepColored(bowl.clone().rotateY(ry).translate(x, LAND + 0.9, z), () => [0.48, 0.33, 0.19]), prepColored(new THREE.CircleGeometry(1.7, 18).rotateX(-Math.PI / 2).translate(x, LAND + 0.9, z), () => [0.33, 0.23, 0.14]));
+  });
 }

@@ -53,6 +53,9 @@ export class HanTunnel extends BridgeBase<HrMaterials> {
       { off: HR.laneOffsets[2], n: 110, speed: HR.bikeSpeed, bike: 0.94, bus: 0 }   // làn phải: xe máy
     ] });
     this.finalize();
+    // tiết kiệm draw call: bê tông/thép gộp không vào lượt phản chiếu mặt nước; thép và cột đèn không đổ bóng
+    for (const o of this.group.children) { const me = o as THREE.Mesh; if (me.isMesh && (me.name === 'hr-concrete' || me.material === this.mats.steel)) { me.layers.set(1); if (me.material === this.mats.steel) me.castShadow = false; } }
+    this.details.traverse((o) => { (o as THREE.Mesh).castShadow = false; });
     this.cutaway = new Cutaway(this.mats);
     this.ctrl.addEventListener('immerseStart', () => { this.cutaway.setGlass(true); boatKeepOut.on = true; });
     this.ctrl.addEventListener('immerseDone', () => { this.cutaway.setGlass(false); boatKeepOut.on = false; });
@@ -102,7 +105,8 @@ export class HanTunnel extends BridgeBase<HrMaterials> {
     for (const b of list) if (b.z > boatKeepOut.z0 && b.z < boatKeepOut.z1) b.z = b.dir > 0 ? boatKeepOut.z0 : boatKeepOut.z1;
   }
   update(dt: number, elapsed: number, cam: THREE.Camera) {
-    const near = this.updateLod(cam), c = this.ctrl;
+    this.updateLod(cam); const c = this.ctrl, dist = cam.position.distanceTo(this.center);
+    this.group.visible = dist < HR.hideDistance;   // xa quá thì không vẽ gì (bê tông, thép gộp không có LOD riêng)
     c.update(dt);
     hrUpdateLamps(this.mats, shared.uNight.value);
     const p = cam.position, inside = hrInside(p.x, p.y, p.z - 0);
@@ -113,8 +117,8 @@ export class HanTunnel extends BridgeBase<HrMaterials> {
     }
     this.applySim();
     this.riverbed.group.visible = this.details.visible && (this.cutaway.section || this.cutaway.glass || c.busy);
-    this.life.visible = this.life.visible && !c.busy;     // đóng đường khi thi công
-    if (near && !c.busy) stepTraffic(this.traffic, dt, hrRoadY);
+    this.life.visible = this.life.visible && !c.busy && dist < HR.lifeDistance;     // đóng đường khi thi công; xe chỉ vẽ khi camera gần
+    if (this.life.visible) stepTraffic(this.traffic, dt, hrRoadY);
   }
   get state(): ImState { return this.ctrl.state; }
   static readonly states = IM_STATES;
