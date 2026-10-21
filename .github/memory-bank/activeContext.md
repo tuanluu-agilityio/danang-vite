@@ -29,6 +29,15 @@ _Cập nhật: 2026-10-21 · Nhánh chính: `main`_
 - 2026-10-21 (sau đó): đã chạy tay `npm run build` + `npm run test:weather` → `weather-check: đạt` (now no-op, storm→now khớp tuyệt đối ngày/đêm, mưa/bão sương dày, console sạch). Chạy lại GĐ2 bằng `run-weather.ps1 -Resume` để script ngoài chấm với log.
 - Bước tiếp theo: GĐ3 (mưa + mặt ướt, `rain.ts`, `wetness.ts`, ngân sách ≤ +3 draw call, chống overdraw D-010) sau khi GĐ2 qua chấm.
 
+## Thời tiết — Giai đoạn 3 (nhánh `feature/weather`, chưa commit)
+- Đã làm (lần 0): `rain.ts`, `wetness.ts`, option `weather` trong `bridgePatch` (`shaders.ts`), `registerWet`/`weather: true` cho vật liệu TP/TTL/SH, nối `index.ts`/`main.ts`, `CONFIG.weather` (mưa, perf), `tests/weather-gd3-shots.mjs` (ảnh vào `tests/screens/weather-gd3/`). Lần chấm 0: build qua, `test:drawcalls` 52/52 chênh 0, `test:tunnel` LỖI.
+- Lần chấm 0 LỖI vì `test:tunnel`: hai lỗi **có sẵn trong code hầm** (không do mưa/ướt), nên phải sửa trong `HanTunnel.ts` dù nằm ngoài danh sách file của GĐ3, vì "`test:tunnel` qua" là điều kiện của GĐ3:
+  1. `riverbed.group.visible` từng phụ thuộc `details.visible` (LOD 600 m), mà camera `hrOverview` cách tâm hầm ≈ 797 m → bật mặt cắt không hiện đáy sông (`hrBed` false ở bước 2 của test). Sửa ở lần 0: bỏ `details.visible &&`. Draw call không đổi (52/52).
+  2. `applySim()` cộng dao động sóng `sin(performance.now()·1,3)·0,08` lên `lift` khi `lift > 1`. Đồng hồ thật nên test ngẫu nhiên: ở khung đầu BALLAST `lift` = 8,4 + tối đa 0,08 > ngưỡng 8,4 (log: 8,4395). Sửa (lần 1): dao động chỉ chìm xuống, `(sin − 1)·0,04` ∈ [−0,08; 0] → không bao giờ vượt `FLOAT_LIFT`; FLOAT_IN vẫn > 8. Không nới test.
+- Lần 1: `npm run build` qua. Đã xem lại ảnh `shDeck-dem-rain`, `overview-ngay-rain`, `hrGallery-ngay-storm` (có vệt mưa, đường ướt sẫm màu, trong hầm không có mưa). Các test không chạy theo yêu cầu, chờ script ngoài chấm.
+- Chưa có bằng chứng: so ảnh `now` trước/sau trùng điểm ảnh; FPS SwiftShader/GPU thật (`wxStreet` chưa có, góc nhìn mới thuộc GĐ6); khung dài nhất ≤ `perf.maxFrameMs`; draw call preset `rain` (≤ +1) chỉ đọc từ HUD trong script ảnh. Ô chọn thời tiết vẫn hiện "Hiện trạng" khi `setWx` đặt preset qua API (helper test, không qua UI).
+- Bước tiếp theo: chờ chấm lại GĐ3 (`build`, `test:drawcalls`, `test:tunnel`), commit GĐ3, rồi sang GĐ4 (gió).
+
 ## Vấn đề mở / cần quyết
 - Tọa độ các địa danh riverfront là ước lượng (chưa có nguồn công khai); số tầng đã xác minh — xem comment đầu `src/environment/riverfront/landmarks.ts`.
 - Thuyết minh cho ko, ja, zh, th, ar, hi: chưa lên kế hoạch.

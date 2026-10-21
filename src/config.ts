@@ -302,6 +302,8 @@ const weatherBase = {
   tau: { rain: 4, wet: 40, wind: 6, temp: 20, cloud: 10, haze: 10, level: 30, lightning: 3 },   // s — hằng số thời gian tiến về target (mưa tới nhanh, mặt ướt khô chậm, nước dâng/rút chậm) (ước lượng)
   levelMax: 1.2,                                        // m — mực nước sông dâng tối đa (không làm ngập phố)
   rain: { count: 6000, box: [160, 90, 160] as [number, number, number], fall: 18, len: 1.6 },   // số vệt; hộp bao quanh camera (m); tốc độ rơi (m/s); độ dài vệt (m) (ước lượng)
+  rainLook: { width: 0.03, alpha: 0.55, color: 0xc4ccd4 },   // m — bề rộng vệt; độ đục tối đa (0–1); màu vệt ban ngày (ước lượng, chỉnh theo ảnh)
+  wetness: { roughness: 0.25, darken: 0.65, bridgeDarken: 0.8, bridgeRough: 0.45 },   // mặt ướt (mục 4.4): roughness đường khi ướt hẳn; màu đường ×0,65; bê tông/thép cầu (bridgePatch): màu ×0,8, roughness về tối đa 0,45 (ước lượng). Không đổi envMapIntensity: đường dùng scene.environment nên three bỏ qua giá trị này
   lightning: { minGap: 3, maxGap: 12, distMin: 400, distMax: 3000 },   // s giữa hai tia chớp; khoảng cách chớp (m) (ước lượng)
   // Hiệu năng (D-010): mưa giảm overdraw, tự hạ chất lượng khi FPS thấp. Mọi số (ước lượng), chỉnh theo đo trên GPU thật
   perf: {

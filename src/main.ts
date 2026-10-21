@@ -68,7 +68,7 @@ scene.add(songHan.group);
 const hanTunnel = new HanTunnel();     // sau mọi lệnh dựng có dùng rand(): chỉ dọn nhà, cây trên tuyến bằng cách thu nhỏ instance
 scene.add(hanTunnel.group);
 const riverfront = buildRiverfront();    // sau HanTunnel: dọn nhà bị đè bằng scale 0, không đụng chuỗi rand()
-const weather = buildWeather();          // sau buildRiverfront (sau mọi rand()): giai đoạn 2: chụp giá trị gốc khí quyển, điều biến sau applyNight
+const weather = buildWeather();          // sau buildRiverfront (sau mọi rand()): chụp giá trị gốc khí quyển/đường, dựng mưa (ẩn), điều biến sau applyNight
 const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel];
 createFire();
 createWaterJet();
@@ -92,7 +92,7 @@ function animate() {
   shadowCenter.set(Math.round(controls.target.x / 8) * 8, 0, Math.round(controls.target.z / 8) * 8);
   stepNight(dt);
   applyNight(dayNight.night, time);
-  updateWeather(dt, time, dayNight.night);                 // điều biến sau applyNight (D-009)
+  updateWeather(dt, time, dayNight.night, camera);         // điều biến sau applyNight (D-009); camera: mưa quanh camera, tắt trong hầm
   water.material.uniforms.time.value += dt * 0.6;
   updateShow(dt);
   updateEffects(dt, time);

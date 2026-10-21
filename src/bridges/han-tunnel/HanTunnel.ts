@@ -82,7 +82,8 @@ export class HanTunnel extends BridgeBase<HrMaterials> {
   /* Tư thế đốt 3 và các phụ kiện theo trạng thái mô phỏng */
   private applySim() {
     const c = this.ctrl, busy = c.busy, mid = this.bores.mid, rb = this.riverbed.ribbons[2], t = performance.now() / 1000;
-    mid.group.position.set(c.gap, c.lift + (busy && c.lift > 1 ? Math.sin(t * 1.3) * 0.08 : 0), c.zOff);
+    // Đốt nổi dập dềnh theo sóng: chỉ chìm xuống (−0,08…0 m), không bao giờ cao hơn FLOAT_LIFT (mạn khô +0,8 m), kể cả khung đầu của BALLAST
+    mid.group.position.set(c.gap, c.lift + (busy && c.lift > 1 ? (Math.sin(t * 1.3) - 1) * 0.04 : 0), c.zOff);
     mid.fit.visible = !busy || c.state === 'DONE';
     this.sim.visible = busy && c.state !== 'DONE';
     this.bulk.forEach((b) => { b.visible = busy && c.state !== 'BACKFILL' && c.state !== 'DONE'; });
@@ -116,7 +117,9 @@ export class HanTunnel extends BridgeBase<HrMaterials> {
       for (const b of Object.values(this.bores)) spinFans(b, this.fanAngle);
     }
     this.applySim();
-    this.riverbed.group.visible = this.details.visible && (this.cutaway.section || this.cutaway.glass || c.busy);
+    // Đáy sông là một phần của chế độ mặt cắt / nước trong / mô phỏng: KHÔNG phụ thuộc LOD chi tiết (lodDistance 600 m nhỏ hơn khoảng cách góc hrOverview ≈ 800 m).
+    // Xa hơn hideDistance thì cả group đã ẩn. Chế độ tắt thì vẫn ẩn → góc nhìn thường không thêm draw call
+    this.riverbed.group.visible = this.cutaway.section || this.cutaway.glass || c.busy;
     this.life.visible = this.life.visible && !c.busy && dist < HR.lifeDistance;     // đóng đường khi thi công; xe chỉ vẽ khi camera gần
     if (this.life.visible) stepTraffic(this.traffic, dt, hrRoadY);
   }
