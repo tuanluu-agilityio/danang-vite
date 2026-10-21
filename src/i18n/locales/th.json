@@ -286,5 +286,12 @@
   "rfHeartsMode": "อาคารหัวใจสองหลัง",
   "rfHeartsDuet": "โต้ตอบ",
   "rfHeartsSync": "พร้อมกัน",
-  "rfAds": "โฆษณา"
+  "rfAds": "โฆษณา",
+  "weather": "สภาพอากาศ",
+  "wxNow": "สภาพปัจจุบัน",
+  "wxSummer": "แดดฤดูร้อน",
+  "wxRain": "ฝน",
+  "wxMonsoon": "ลมมรสุม",
+  "wxStorm": "พายุ",
+  "wxIntensity": "ความรุนแรง"
 }

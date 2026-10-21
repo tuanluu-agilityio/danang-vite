@@ -286,5 +286,12 @@
   "rfHeartsMode": "दो दिल वाली इमारतें",
   "rfHeartsDuet": "सवाल-जवाब",
   "rfHeartsSync": "समकालिक",
-  "rfAds": "विज्ञापन"
+  "rfAds": "विज्ञापन",
+  "weather": "मौसम",
+  "wxNow": "वर्तमान स्थिति",
+  "wxSummer": "गर्मी की धूप",
+  "wxRain": "बारिश",
+  "wxMonsoon": "मानसूनी हवा",
+  "wxStorm": "तूफ़ान",
+  "wxIntensity": "तीव्रता"
 }

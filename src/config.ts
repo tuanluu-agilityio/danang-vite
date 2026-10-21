@@ -320,6 +320,21 @@ const weatherBase = {
     monsoon: { temp: 22, rain: 0.25, wind: 14, gust: 5, cloud: 0.7, haze: 0, level: 0.2, lightning: 0, closed: false }, // Gió mùa Đông Bắc (ước lượng)
     storm: { temp: 25, rain: 1, wind: 28, gust: 10, cloud: 1, haze: 0, level: 1.2, lightning: 0.8, closed: true }       // Bão (ước lượng); cấm lưu thông theo trạng thái preset
   },
+  // Khí quyển (mục 4.2). Trọng số: sunny = haze; gray = max(mưa, (mây − grayCloud)·grayGain); stormK = min(mưa, gió / stormWind). Mọi số (ước lượng)
+  atmosphere: {
+    stormWind: 28,                                      // m/s — gió làm chuẩn cho trọng số bão (= gió preset Bão); thanh cường độ 50 % thì stormK = 0,5
+    grayCloud: 0.5, grayGain: 1.4,                      // độ phủ mây bắt đầu xám trời; hệ số khuếch đại
+    nightDim: 0.9,                                      // màu thời tiết (ban ngày) tối đi theo đêm: nhân (1 − nightDim·night)
+    hazeFog: 0.3, hazeTint: 1,                          // sương nóng: mật độ ×(1 + 0,3·haze) = ×1,3 ở haze 1; mức pha màu be
+    rainFog: 8, stormFog: 10,                           // mật độ sương ×8 khi mưa 1 (×5,6 ở mưa 0,7), ×10 khi bão
+    sunSky: [3, 1.0], graySky: [12, 3], stormSky: [20, 4],   // Sky [turbidity, rayleigh]: nắng gắt trong / mưa / bão
+    sunBoost: 0.15, hemiBoost: 0.05, expBoost: 0.08,    // nắng hè: sun ×1,15, hemi ×1,05, exposure ×1,08
+    sunCloud: 0.85, stormSun: 0.67,                     // sun ×(1 − 0,85·mây), bão thêm ×0,67 (mây 1 → ×0,1)
+    hemiGray: 0.7, hemiStorm: 0.5,                      // hemi ×0,7 khi xám, ×0,5 khi bão
+    expGray: 0.9, expStorm: 0.8,                        // exposure ×0,9 khi xám, ×0,8 khi bão
+    cloudThin: 0.7, cloudNightOpacity: 0.4, cloudNightDim: 0.12, cloudSpin: 0.004,   // mây nắng mỏng (opacity ×0,3); mây dày ban đêm opacity 0,6; màu mây ban đêm ×0,12; tốc độ xoay cụm mây khi bão (rad/s)
+    sunWave: 2.0, grayWave: 4, stormWave: 7, stormSize: 0.4   // water.distortionScale (nắng / mưa / bão) và water.size khi bão (gốc 2,4 và 0,6)
+  },
   windDir: 0,                                           // rad — hướng gió thổi tới mặc định (0 = từ Tây sang Đông, +X)
   monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
 };

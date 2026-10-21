@@ -13,7 +13,8 @@
     "test:voice": "node tests/voice-check.mjs",
     "test:drawcalls": "node tests/drawcalls.mjs",
     "test:tunnel": "node tests/tunnel-check.mjs",
-    "test:riverfront": "node tests/riverfront-check.mjs"
+    "test:riverfront": "node tests/riverfront-check.mjs",
+    "test:weather": "node tests/weather-check.mjs"
   },
   "dependencies": {
     "three": "^0.165.0"

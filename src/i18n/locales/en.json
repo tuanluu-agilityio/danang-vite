@@ -286,5 +286,12 @@
   "rfHeartsMode": "Two heart towers",
   "rfHeartsDuet": "Call & response",
   "rfHeartsSync": "Synchronised",
-  "rfAds": "Advertising"
+  "rfAds": "Advertising",
+  "weather": "Weather",
+  "wxNow": "As is",
+  "wxSummer": "Summer sun",
+  "wxRain": "Rain",
+  "wxMonsoon": "Monsoon wind",
+  "wxStorm": "Storm",
+  "wxIntensity": "Intensity"
 }

@@ -286,5 +286,12 @@
   "rfHeartsMode": "ハートの2棟",
   "rfHeartsDuet": "掛け合い",
   "rfHeartsSync": "同期",
-  "rfAds": "広告"
+  "rfAds": "広告",
+  "weather": "天気",
+  "wxNow": "現状",
+  "wxSummer": "夏の日差し",
+  "wxRain": "雨",
+  "wxMonsoon": "季節風",
+  "wxStorm": "台風",
+  "wxIntensity": "強さ"
 }

@@ -286,5 +286,12 @@
   "rfHeartsMode": "Hai tòa trái tim",
   "rfHeartsDuet": "Đối đáp",
   "rfHeartsSync": "Đồng bộ",
-  "rfAds": "Quảng cáo"
+  "rfAds": "Quảng cáo",
+  "weather": "Thời tiết",
+  "wxNow": "Hiện trạng",
+  "wxSummer": "Nắng hè",
+  "wxRain": "Mưa",
+  "wxMonsoon": "Gió mùa",
+  "wxStorm": "Bão",
+  "wxIntensity": "Cường độ"
 }

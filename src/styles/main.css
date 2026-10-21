@@ -26,6 +26,9 @@ h1{margin:0;font-family:var(--font-display);font-weight:600;font-size:34px;line-
 h1 span{color:var(--text);font-weight:500;font-size:.62em;letter-spacing:.04em;}
 h1 .h1-main{color:var(--gold);font-weight:600;font-size:1em;letter-spacing:inherit;}
 .row{display:flex;flex-wrap:wrap;gap:6px;}
+.weather-row{display:flex;flex-direction:column;gap:6px;}
+.weather-row .mini-select{margin-top:0;}
+.weather-row output,#weatherKVal{min-width:3.2em;text-align:end;font-family:var(--font-mono);}
 .brand-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .lang{position:relative;flex:0 0 auto;}
 .lang select{appearance:none;-webkit-appearance:none;font:500 11.5px/1.2 var(--font-body);color:var(--text);

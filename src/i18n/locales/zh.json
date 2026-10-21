@@ -286,5 +286,12 @@
   "rfHeartsMode": "两座爱心大楼",
   "rfHeartsDuet": "对唱",
   "rfHeartsSync": "同步",
-  "rfAds": "广告"
+  "rfAds": "广告",
+  "weather": "天气",
+  "wxNow": "现状",
+  "wxSummer": "夏日晴天",
+  "wxRain": "下雨",
+  "wxMonsoon": "季风",
+  "wxStorm": "台风",
+  "wxIntensity": "强度"
 }

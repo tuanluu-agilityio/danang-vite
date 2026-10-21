@@ -38,7 +38,7 @@ $Trailer = 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 # sec: mục đặc tả agent cần đọc · tests: script npm chạy sau khi agent làm · testsFirst: chạy test trước agent (GĐ8 ghi kết quả vào tài liệu)
 $Phases = @(
   @{ n = 1; title = 'khung trạng thái + config';         model = 'sonnet'; effort = 'medium'; sec = '3, 5, 10 (Giai đoạn 1)';            tests = @('test:drawcalls') },
-  @{ n = 2; title = 'khí quyển 4 preset + UI';           model = 'sonnet'; effort = 'medium'; sec = '4.1, 4.2, 8.1, 9, 10 (Giai đoạn 2)'; tests = @('test:drawcalls') },
+  @{ n = 2; title = 'khí quyển 4 preset + UI';           model = 'sonnet'; effort = 'medium'; sec = '4.1, 4.2, 8.1, 9, 10 (Giai đoạn 2)'; tests = @('test:drawcalls', 'test:weather') },
   @{ n = 3; title = 'mưa + mặt ướt';                     model = 'opus';   effort = 'high';   sec = '4.3, 4.4, 5.3, 9, 10 (Giai đoạn 3)'; tests = @('test:drawcalls', 'test:tunnel'); checkpoint = $true },
   @{ n = 4; title = 'gió: cây, sóng, rung cáp';          model = 'opus';   effort = 'high';   sec = '2.2, 2.3, 4.5, 9, 10 (Giai đoạn 4)'; tests = @('test:drawcalls', 'test:tour') },
   @{ n = 5; title = 'bão: chớp, đóng cầu, cầu quay';     model = 'sonnet'; effort = 'medium'; sec = '2, 4.6, 5.3, 10 (Giai đoạn 5), 11';  tests = @('test:drawcalls', 'test:weather'); checkpoint = $true },

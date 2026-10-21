@@ -286,5 +286,12 @@
   "rfHeartsMode": "하트 두 건물",
   "rfHeartsDuet": "주고받기",
   "rfHeartsSync": "동기화",
-  "rfAds": "광고"
+  "rfAds": "광고",
+  "weather": "날씨",
+  "wxNow": "현재 상태",
+  "wxSummer": "여름 햇볕",
+  "wxRain": "비",
+  "wxMonsoon": "계절풍",
+  "wxStorm": "태풍",
+  "wxIntensity": "강도"
 }

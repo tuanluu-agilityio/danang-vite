@@ -37,6 +37,11 @@
     <input id="volSlider" type="range" min="0" max="100" value="70" data-i18n-aria="volume" aria-label="Âm lượng" disabled>
   </div>
   <label class="slider" for="timeSlider"><span data-i18n="day">Ngày</span> <input id="timeSlider" type="range" min="0" max="100" value="0"> <span data-i18n="night">Đêm</span></label>
+  <div class="weather-row">
+    <label class="mini-select" for="weatherSel"><span data-i18n="weather">Thời tiết</span>
+      <select id="weatherSel"><option value="now" data-i18n="wxNow" selected>Hiện trạng</option><option value="summer" data-i18n="wxSummer">Nắng hè</option><option value="rain" data-i18n="wxRain">Mưa</option><option value="monsoon" data-i18n="wxMonsoon">Gió mùa</option><option value="storm" data-i18n="wxStorm">Bão</option></select></label>
+    <label class="slider" for="weatherK"><span data-i18n="wxIntensity">Cường độ</span> <input id="weatherK" type="range" min="0" max="100" value="100"> <span id="weatherKVal">100%</span></label>
+  </div>
 </header>
 
 <nav class="panel views" data-i18n-aria="views" aria-label="Góc nhìn">

@@ -287,5 +287,12 @@
   "rfHeartsMode": "البرجان القلبيان",
   "rfHeartsDuet": "تبادلي",
   "rfHeartsSync": "متزامن",
-  "rfAds": "الإعلانات"
+  "rfAds": "الإعلانات",
+  "weather": "الطقس",
+  "wxNow": "الوضع الحالي",
+  "wxSummer": "شمس الصيف",
+  "wxRain": "مطر",
+  "wxMonsoon": "رياح موسمية",
+  "wxStorm": "عاصفة",
+  "wxIntensity": "الشدة"
 }

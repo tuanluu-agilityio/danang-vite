@@ -286,5 +286,12 @@
   "rfHeartsMode": "Две башни-сердца",
   "rfHeartsDuet": "Перекличка",
   "rfHeartsSync": "Синхронно",
-  "rfAds": "Реклама"
+  "rfAds": "Реклама",
+  "weather": "Погода",
+  "wxNow": "Как сейчас",
+  "wxSummer": "Летний зной",
+  "wxRain": "Дождь",
+  "wxMonsoon": "Муссон",
+  "wxStorm": "Шторм",
+  "wxIntensity": "Интенсивность"
 }
