@@ -13,7 +13,9 @@ const VIEWS = [
   ['ttl', 'ttlOverview'], ['ttl', 'ttlBase'], ['ttl', 'ttlDeck'], ['ttl', 'ttlBoth'],
   ['sh', 'shOverview'], ['sh', 'shTop'], ['sh', 'shBank'], ['sh', 'shDeck'],
   // Hầm vượt sông Hàn (bản gốc không có: tự bỏ qua nếu thiếu nút)
-  ['hr', 'hrOverview'], ['hr', 'hrCutaway'], ['hr', 'hrPortalW'], ['hr', 'hrPortalE'], ['hr', 'hrDrive'], ['hr', 'hrGallery']
+  ['hr', 'hrOverview'], ['hr', 'hrCutaway'], ['hr', 'hrPortalW'], ['hr', 'hrPortalE'], ['hr', 'hrDrive'], ['hr', 'hrGallery'],
+  // Hai bờ sông Hàn
+  ['dragon', 'rfHearts'], ['dragon', 'rfBank']
 ];
 
 async function setNight(page, v) {

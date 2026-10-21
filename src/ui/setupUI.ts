@@ -15,6 +15,7 @@ import { selectBridge, syncShowLine, toggle } from './panel';
 import { setupAudioUI } from './audioUI';
 import { setupSwingUI, swingRender } from './swingUI';
 import { setupHrUI, hrRender } from './hrUI';
+import { setupRiverfrontUI } from './riverfrontUI';
 
 /* Gắn mọi bảng điều khiển: ngày/đêm, bóng đổ, trình diễn, chọn cầu, góc nhìn, nút bật/tắt từng cầu, bàn phím */
 export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge; hanTunnel: HanTunnel }) {
@@ -56,6 +57,9 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPh
   setupSwingUI(songHan, toggle);
   // Hầm vượt sông Hàn
   setupHrUI(hanTunnel, toggle);
+  // Hai bờ sông: đèn trái tim, chế độ đối đáp/đồng bộ, quảng cáo; góc nhìn "Trái tim hai bờ" tự chuyển sang đêm
+  setupRiverfrontUI(toggle);
+  document.querySelector('[data-view="rfHearts"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
   window.addEventListener('keydown', (e) => {
     if (cam.mode !== 'walk') return;
     const k = e.key.toLowerCase(); keys.add(k);

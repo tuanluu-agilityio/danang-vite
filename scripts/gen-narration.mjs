@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const VOICES = { vi: 'vi-VN-HoaiMyNeural', en: 'en-US-AriaNeural' };
+const VOICES = { vi: 'vi-VN-HoaiMyNeural', en: 'en-US-AriaNeural', ru: 'ru-RU-SvetlanaNeural' };
 const BYTES_PER_SEC = 48000 / 8;     // định dạng audio-24khz-48kbitrate-mono-mp3 (CBR 48 kbps)
 const force = process.argv.includes('--force');
 const outDir = join(root, 'public', 'voice');

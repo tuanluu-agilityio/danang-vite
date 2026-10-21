@@ -31,6 +31,9 @@ export const VIEWS: Record<string, ViewPreset> = {
   shBank: { pos: [-266, 4.6, SHZ - 85], target: [-40, 9, SHZ + 5], maxPolar: Math.PI * 0.97 },
   shDeck: { pos: [-130, shRoadY(-130) + 1.9, SHZ + 5.3], target: [0, 26, SHZ], maxPolar: Math.PI * 0.97 },   // đứng trên lề bộ hành
   shSwingCam: { pos: [150, 125, SHZ + 170], target: [0, 8, SHZ] },
+  // Hai bờ sông Hàn: trái tim hai tòa nhìn từ giữa sông (ban đêm); dạo dải ven sông Bạch Đằng nhìn về Novotel
+  rfHearts: { pos: [0, 45, -640], target: [0, 80, -1150] },
+  rfBank: { pos: [-268, 4.3, -935], target: [-352, 50, -1150], maxPolar: Math.PI * 0.97 },
   // Hầm vượt sông Hàn
   hrOverview: { pos: [-560, 230, HRZ - 520], target: [0, -4, HRZ] },
   hrCutaway: { pos: [-95, 30, HRC - 110], target: [0, -10, HRC], maxPolar: Math.PI * 0.97 },

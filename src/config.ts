@@ -236,7 +236,7 @@ const hanTunnelBase = {
   fanStep: 100, sosStep: 50, crossStep: 100, signalStep: 150, // bước thiết bị dọc hầm kín
   gantryX: 747.5,             // m — khung giới hạn chiều cao, cách đầu hầm hở 50 m
   heightLimit: 4.5,
-  lodDistance: 1300, farDistance: 1600
+  lodDistance: 600, farDistance: 650, hideDistance: 1500, lifeDistance: 450   // chi tiết nhỏ ẩn xa hơn 600 m; mặt đường/vỉa hè xa hơn 650 m; xe xa hơn 450 m; cả công trình xa hơn 1.500 m
 };
 function deriveHr(C: typeof hanTunnelBase) {
   const nodes = C.profile.map(([x, y], i) => ({ x, y, L: C.vc[i] })), last = nodes[nodes.length - 1];
@@ -262,13 +262,38 @@ function deriveHr(C: typeof hanTunnelBase) {
   return { ...C, roadY, bedY, roofTop, laneOffsets, elementEdges, cutZ, grade };
 }
 
+/* ---------------------------- Hai bờ sông Hàn ----------------------------
+   Địa danh thật ven sông, hai tòa chiếu LED trái tim + "DN", bảng quảng cáo, chi tiết bờ. Mét; tọa độ thế giới (z âm là phía Bắc).
+   Đã xác minh bằng nguồn công khai: số tầng Novotel Danang Premier Han River (37), Vinpearl Condotel Riverfront (36 tầng nổi + sky bar),
+   Trung tâm Hành chính Đà Nẵng (34 tầng nổi, 166,8 m, dáng ngọn hải đăng). Chưa có nguồn công khai nào cho TỌA ĐỘ, nên mọi vị trí là ước lượng. */
+const riverfrontBase = {
+  floorH: 3.8,                                          // m — chiều cao một tầng (ước lượng)
+  novotel: { x: -352, z: -1150, w: 38, d: 38, floors: 37 },       // bờ Tây, 36 Bạch Đằng; chiếu trái tim, mặt chính quay +X (ước lượng vị trí)
+  vinpearl: { x: 352, z: -1150, w: 40, d: 40, floors: 37 },       // bờ Đông, 341 Trần Hưng Đạo; 36 tầng nổi + sky bar; mặt chính quay −X (ước lượng vị trí)
+  admin: { x: -470, z: -1230, h: 166.8, r0: 17, r1: 9 },          // Trung tâm Hành chính, 24 Trần Phú: 34 tầng, 166,8 m; chân/đỉnh thân (ước lượng)
+  market: { x: -366, z: -500, w: 64, d: 48, h: 13 },              // Chợ Hàn: 3 tầng, mặt tiền quay +X (ước lượng)
+  museum: { x: -376, z: 110, w: 54, d: 36, h: 9 },                // Bảo tàng Điêu khắc Chăm: tường vàng đất, mái ngói (ước lượng)
+  love: { z: -78, length: 38, width: 6 },                         // Cầu Tình Yêu + cá chép hóa rồng, nhô ra từ kè Đông (ước lượng)
+  hotels: [{ x: 372, z: -420, w: 36, d: 34, floors: 22 }, { x: 372, z: -660, w: 34, d: 34, floors: 17 }, { x: 374, z: -880, w: 36, d: 36, floors: 25 }], // cụm khách sạn ven Trần Hưng Đạo (ước lượng)
+  clearMargin: 4,                                                 // m — lề dọn nhà ngẫu nhiên quanh chân công trình
+  heart: {
+    cycle: 24, beat: 0.08, cell: 0.8,                             // chu kỳ hoạt cảnh (s), biên độ tim đập, ô LED (m)
+    panelW: 34, panelFrac: 0.66, gap: 0.08,                       // bề rộng tấm (m), tỉ lệ chiều cao phủ, khe so với mặt kính (m)
+    dayLevel: 0.04,                                               // độ sáng ban ngày so với ban đêm (≤ 5%)
+    intensity: 1.7, duetOffset: 12                                // cường độ LED, lệch pha chế độ Đối đáp (s)
+  },
+  ads: { panos: 8, roofs: 5, screens: 3, banners: 16, switchEvery: 8, fade: 0.6 },   // số lượng bảng; màn LED đổi quảng cáo mỗi 8 s, chuyển mờ 0,6 s
+  promenade: { chunk: 600, lod: 400, benchStep: 20, railStep: 4, lights: 8 }         // dải đi bộ: độ dài chunk LOD, ẩn khi camera xa hơn (m)
+};
+
 export const CONFIG = {
   ...base,
   mainTotal: sum(base.mainSpans),
   thuanPhuoc: deriveTp(thuanPhuocBase),
   tranThiLy: deriveTtl(tranThiLyBase),
   songHan: deriveSh(songHanBase),
-  hanTunnel: deriveHr(hanTunnelBase)
+  hanTunnel: deriveHr(hanTunnelBase),
+  riverfront: riverfrontBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;
 export type HanTunnelConfig = typeof CONFIG.hanTunnel;
