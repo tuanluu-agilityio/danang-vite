@@ -293,5 +293,7 @@
   "wxRain": "Rain",
   "wxMonsoon": "Monsoon wind",
   "wxStorm": "Storm",
-  "wxIntensity": "Intensity"
+  "wxIntensity": "Intensity",
+  "sWeather": "paused due to weather",
+  "swingWeather": "Bridge will not swing: bad weather, closed per city notice"
 }

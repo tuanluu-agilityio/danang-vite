@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MAT } from '../core/materials';
+import { weatherFx } from '../core/shared';
 
 /* Bộ vật liệu của một cầu: bê tông và thép là bắt buộc để gộp hình học; textures được dispose cùng cầu */
 export interface BridgeMaterials {
@@ -24,6 +25,7 @@ export abstract class BridgeBase<M extends BridgeMaterials = BridgeMaterials> im
   details = new THREE.Group();   // ẩn khi ở xa (LOD)
   life = new THREE.Group();      // xe cộ, thuyền, người
   lifeOn = true;
+  closable = true;               // theo lệnh đóng cầu của thời tiết; Hầm đặt false
   lodDistance: number;
   center: THREE.Vector3;
   concreteParts: THREE.BufferGeometry[] = [];
@@ -62,7 +64,7 @@ export abstract class BridgeBase<M extends BridgeMaterials = BridgeMaterials> im
   updateLod(cam: THREE.Camera) {
     const dist = cam.position.distanceTo(this.center);
     this.details.visible = dist < this.lodDistance;
-    this.life.visible = this.lifeOn && dist < this.lodDistance * 1.3;
+    this.life.visible = this.lifeOn && !(this.closable && weatherFx.clear >= 1) && dist < this.lodDistance * 1.3;   // đóng cầu (bão) xong thì ẩn cả xe, thuyền, người; lifeOn (nút người dùng) giữ nguyên
     const far = dist > this.farDistance;
     for (const o of this.farHide) o.visible = !far && o.userData.on !== false;
     return this.life.visible;

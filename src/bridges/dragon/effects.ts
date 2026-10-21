@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
 import { scene } from '../../core/renderer';
-import { pScale, windFx } from '../../core/shared';
+import { pScale, windFx, weatherFx } from '../../core/shared';
 import { fireLight } from '../../core/lights';
 import { rand, lerp } from '../../common/math';
 import { t as tr } from '../../i18n';
@@ -51,6 +51,7 @@ export const show = { on: false, t: 0, fireOn: false, waterOn: false, key: 'sOff
 export const showLabel = () => tr(show.key, show.args);
 export function updateShow(dt: number) {
   if (!show.on) { show.fireOn = show.waterOn = false; show.key = 'sOff'; show.args = null; return; }
+  if (!weatherFx.showAllowed) { show.fireOn = show.waterOn = false; show.key = 'sWeather'; show.args = null; return; }   // mưa to / gió mạnh / bão: tạm dừng, show.on (nút người dùng) giữ nguyên
   show.t = (show.t + dt) % CONFIG.showCycle;
   const t = show.t;
   show.fireOn = t < 27 && (t % 3) < 1.6;

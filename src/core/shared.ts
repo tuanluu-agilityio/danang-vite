@@ -12,3 +12,8 @@ export const weatherU = {
 };
 /* Hệ số gió cho code CPU (thuyền, lửa/nước Cầu Rồng, râu rồng, sóng). Mặc định trung tính: x = z = 0, nhân 1 → không đổi hành vi. */
 export const windFx = { x: 0, z: 0, boatRock: 1, whisker: 1, waveSpeed: 1 };
+/* Vận hành theo thời tiết (GĐ5), mặc định trung tính: clear = tiến độ dọn xe khi đóng cầu (0–1); boatAway = tiến độ thuyền về bến (0–1);
+   showAllowed = trình diễn Cầu Rồng được chạy; swingBlocked = khoá quay Cầu sông Hàn. KHÔNG đụng nút người dùng (lifeOn, show.on, quảng cáo). */
+export const weatherFx = { clear: 0, boatAway: 0, showAllowed: true, swingBlocked: false };
+/* Phương tiện thứ i đã biến mất chưa khi tiến độ k (thứ tự cố định theo i, không dùng rand()): k = 0 → không ai, k = 1 → tất cả */
+export const vanished = (i: number, k: number) => k > 0 && (i * 0.6180339887) % 1 < k;

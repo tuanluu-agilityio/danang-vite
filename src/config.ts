@@ -304,7 +304,20 @@ const weatherBase = {
   rain: { count: 6000, box: [160, 90, 160] as [number, number, number], fall: 18, len: 1.6 },   // số vệt; hộp bao quanh camera (m); tốc độ rơi (m/s); độ dài vệt (m) (ước lượng)
   rainLook: { width: 0.03, alpha: 0.55, color: 0xc4ccd4 },   // m — bề rộng vệt; độ đục tối đa (0–1); màu vệt ban ngày (ước lượng, chỉnh theo ảnh)
   wetness: { roughness: 0.25, darken: 0.65, bridgeDarken: 0.8, bridgeRough: 0.45 },   // mặt ướt (mục 4.4): roughness đường khi ướt hẳn; màu đường ×0,65; bê tông/thép cầu (bridgePatch): màu ×0,8, roughness về tối đa 0,45 (ước lượng). Không đổi envMapIntensity: đường dùng scene.environment nên three bỏ qua giá trị này
-  lightning: { minGap: 3, maxGap: 12, distMin: 400, distMax: 3000 },   // s giữa hai tia chớp; khoảng cách chớp (m) (ước lượng)
+  lightning: {
+    minGap: 3, maxGap: 12, distMin: 800, distMax: 3000,   // s giữa hai tia chớp (cường độ chớp 1 → minGap, 0 → maxGap, nhân ngẫu nhiên 0,6–1,4); khoảng cách tia chớp tới camera (m) (ước lượng)
+    height: 700, segs: 12, branches: 3, branchSegs: 5,   // m — độ cao chân mây; số đoạn tia chính; số nhánh; số đoạn mỗi nhánh (ước lượng)
+    jitter: 0.1, widthK: 0.004, yawSpread: 0.6,          // lệch ngang mỗi đoạn (tỉ lệ độ dài đoạn); bề rộng vệt = 0,004 × khoảng cách (m); tia chớp chọn hướng trong ±0,6 rad quanh hướng nhìn của camera (ước lượng)
+    flickers: [2, 3] as [number, number], flickMs: [60, 90] as [number, number], gapMs: [40, 70] as [number, number],   // số nháy mỗi lần chớp; thời gian một nháy (ms); khoảng tắt giữa hai nháy (ms)
+    hemiPulse: 2.5, expPulse: 1.6, pulseSec: 0.3,        // hemi.intensity cộng thêm, toneMappingExposure nhân thêm (đỉnh), thời gian tắt dần (s)
+    color: [3, 3, 4] as [number, number, number]         // màu HDR của tia chớp (cho bloom ban đêm)
+  },
+  // Vận hành khi bão (GĐ5). KHÔNG đặt ngưỡng gió cho cấm lưu thông / khoá quay cầu: theo trạng thái `closed` của preset Bão ("theo thông báo của thành phố")
+  ops: {
+    clearSec: 5,                                        // s — dọn hết xe trên Cầu Rồng, Trần Thị Lý và các cầu khi đóng cầu (mục 2.1)
+    boatAwaySec: 12,                                    // s — thuyền dừng và ẩn dần khi bão (về bến) (ước lượng)
+    showMaxWind: 10, showMaxRain: 0.5                   // m/s, 0–1 — trình diễn lửa/nước Cầu Rồng tạm dừng khi gió trung bình hoặc mưa vượt mức (ước lượng, cần xác minh thực tế)
+  },
   // Hiệu năng (D-010): mưa giảm overdraw, tự hạ chất lượng khi FPS thấp. Mọi số (ước lượng), chỉnh theo đo trên GPU thật
   perf: {
     rainNear: 1.5,                                      // m — bỏ vệt mưa gần camera hơn mức này (vệt sát mắt phủ cả màn hình = overdraw lớn nhất)

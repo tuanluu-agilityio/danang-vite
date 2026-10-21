@@ -35,6 +35,7 @@ export class HanTunnel extends BridgeBase<HrMaterials> {
     super('HanTunnel', 'hr', HR.z, new THREE.Vector3(0, 5, HR.z), HR.lodDistance);
     this.mats = hrMaterials();
     this.farDistance = HR.farDistance;
+    this.closable = false;           // bão: hầm vẫn lưu thông (bơm thoát nước làm việc), không theo lệnh đóng cầu
     hrClearCorridor();               // phải chạy trước khi dựng cọ và đèn của chính hầm
     // vỏ + nội thất theo ba đoạn: đốt 3 (±60 m) tách riêng để mô phỏng dìm
     const M = this.mats;
@@ -121,7 +122,7 @@ export class HanTunnel extends BridgeBase<HrMaterials> {
     // Xa hơn hideDistance thì cả group đã ẩn. Chế độ tắt thì vẫn ẩn → góc nhìn thường không thêm draw call
     this.riverbed.group.visible = this.cutaway.section || this.cutaway.glass || c.busy;
     this.life.visible = this.life.visible && !c.busy && dist < HR.lifeDistance;     // đóng đường khi thi công; xe chỉ vẽ khi camera gần
-    if (this.life.visible) stepTraffic(this.traffic, dt, hrRoadY);
+    if (this.life.visible) stepTraffic(this.traffic, dt, hrRoadY, false);   // hầm vẫn lưu thông khi bão (phương án đề xuất)
   }
   get state(): ImState { return this.ctrl.state; }
   static readonly states = IM_STATES;

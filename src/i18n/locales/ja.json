@@ -293,5 +293,7 @@
   "wxRain": "雨",
   "wxMonsoon": "季節風",
   "wxStorm": "台風",
-  "wxIntensity": "強さ"
+  "wxIntensity": "強さ",
+  "sWeather": "悪天候のため一時停止",
+  "swingWeather": "橋は旋回しません：悪天候のため市の通知により通行止め"
 }

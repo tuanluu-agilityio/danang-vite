@@ -293,5 +293,7 @@
   "wxRain": "Mưa",
   "wxMonsoon": "Gió mùa",
   "wxStorm": "Bão",
-  "wxIntensity": "Cường độ"
+  "wxIntensity": "Cường độ",
+  "sWeather": "tạm dừng do thời tiết",
+  "swingWeather": "Không quay cầu: thời tiết xấu, cấm theo thông báo của thành phố"
 }

@@ -293,5 +293,7 @@
   "wxRain": "비",
   "wxMonsoon": "계절풍",
   "wxStorm": "태풍",
-  "wxIntensity": "강도"
+  "wxIntensity": "강도",
+  "sWeather": "날씨로 인해 일시 중단",
+  "swingWeather": "다리를 회전하지 않음: 악천후, 시 공지에 따라 통제"
 }

@@ -69,6 +69,7 @@ const hanTunnel = new HanTunnel();     // sau mọi lệnh dựng có dùng rand
 scene.add(hanTunnel.group);
 const riverfront = buildRiverfront();    // sau HanTunnel: dọn nhà bị đè bằng scale 0, không đụng chuỗi rand()
 const weather = buildWeather();          // sau buildRiverfront (sau mọi rand()): chụp giá trị gốc khí quyển/đường, dựng mưa (ẩn), điều biến sau applyNight
+weather.attachSwing(songHan.ctrl);       // bão: Cầu sông Hàn không quay (SwingController.canStart)
 const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel];
 createFire();
 createWaterJet();
