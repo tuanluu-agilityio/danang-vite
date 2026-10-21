@@ -1,4 +1,4 @@
-// Kiểm tra giọng thuyết trình của Tour (Tiếng Việt và English):
+// Kiểm tra giọng thuyết trình của Tour (Tiếng Việt, English và Русский):
 //  1. Mỗi điểm dừng của 4 Tour có đúng một clip mp3 mỗi ngôn ngữ; thời lượng trong manifest khớp thời lượng thật (±0,3 s).
 //  2. Có giọng thì mỗi đoạn bay đủ dài để đọc xong (clip + 1,2 s) trước khi sang điểm dừng kế.
 //  3. Tour đổi điểm dừng thì phát đúng clip; đổi ngôn ngữ phát lại bằng giọng mới; Esc hoặc đổi góc nhìn thì dừng giọng.
@@ -25,7 +25,7 @@ try {
   // 1. Số clip khớp số điểm dừng, thời lượng khớp thật
   const manifest = await page.evaluate(() => fetch('./voice/manifest.json').then((r) => r.json()));
   const stopCount = await page.evaluate(() => Object.fromEntries(Object.entries(window.__app.tours).map(([k, T]) => [k, T.stops.length])));
-  for (const lang of ['vi', 'en']) {
+  for (const lang of ['vi', 'en', 'ru']) {
     for (const [bridge, key] of Object.entries(KEYS)) {
       const clips = manifest[lang]?.[key] || [];
       check(clips.length === stopCount[bridge], `${lang}/${key}: ${clips.length} clip, cần ${stopCount[bridge]}`);
@@ -65,7 +65,7 @@ try {
     await frames(page, 2);
 
     // 2. Đoạn bay đủ dài cho giọng đọc
-    for (const lang of ['vi', 'en']) {
+    for (const lang of ['vi', 'en', 'ru']) {
       await setLang(lang);
       const d = await durs(bridge), n = d.length;
       for (let k = 0; k < n; k++) {
@@ -80,6 +80,8 @@ try {
     check((await lastPlay())?.endsWith(`voice/vi/${key}-1.mp3`), `${bridge}: điểm 2 phát "${await lastPlay()}"`);
     await setLang('en');
     check((await lastPlay())?.endsWith(`voice/en/${key}-1.mp3`), `${bridge}: đổi sang English không phát lại bằng giọng en ("${await lastPlay()}")`);
+    await setLang('ru');
+    check((await lastPlay())?.endsWith(`voice/ru/${key}-1.mp3`), `${bridge}: đổi sang Русский không phát lại bằng giọng ru ("${await lastPlay()}")`);
     await page.keyboard.press('Escape'); await frames(page, 1);
     check((await page.evaluate(() => window.__plays.at(-1))) === 'pause', `${bridge}: Esc không dừng giọng`);
   }
@@ -108,5 +110,5 @@ try {
   await page.close();
 } finally { await browser.close(); server.close(); }
 
-console.log(problems.length ? 'LỖI:\n - ' + problems.join('\n - ') : 'Giọng thuyết trình: đạt (vi + en, 4 tour, 28 điểm dừng mỗi ngôn ngữ).');
+console.log(problems.length ? 'LỖI:\n - ' + problems.join('\n - ') : 'Giọng thuyết trình: đạt (vi + en + ru, 4 tour, 28 điểm dừng mỗi ngôn ngữ).');
 process.exit(problems.length ? 1 : 0);

@@ -79,12 +79,13 @@ Ghi chú:
 - Bộ sinh số ngẫu nhiên có seed nên `main.ts` giữ đúng thứ tự dựng như bản gốc; đổi thứ tự sẽ làm vị trí nhà, cây, xe thay đổi.
 - Giai đoạn 1 để `strict: false` trong `tsconfig.json`; có thể bật dần `strict` theo từng thư mục.
 
-## Giọng thuyết trình của Tour (vi, en)
+## Giọng thuyết trình của Tour (vi, en, ru)
 
 Mỗi điểm dừng của Tour có một clip mp3 trong `public/voice/<ngôn ngữ>/<khóa>-<i>.mp3`; `public/voice/manifest.json` ghi thời lượng từng clip để Tour kéo dài đoạn bay cho tới khi đọc xong. Ngôn ngữ chưa có clip thì Tour chạy lặng và nút **Thuyết minh** bị khóa.
 
-- Lời thoại nằm ở `scripts/narration/{vi,en}.json` (theo đúng khóa và thứ tự điểm dừng trong `i18n/locales`). Viết số, đơn vị, từ viết tắt bằng chữ để giọng đọc không vấp.
+- Lời thoại nằm ở `scripts/narration/{vi,en,ru}.json` (theo đúng khóa và thứ tự điểm dừng trong `i18n/locales`). Viết số, đơn vị, từ viết tắt bằng chữ để giọng đọc không vấp.
 - Sửa lời thoại hoặc thêm điểm dừng: `npm run gen:voice` chỉ tạo lại clip đã đổi (`-- --force` để tạo lại tất cả), rồi commit `public/voice/`.
-- Giọng đọc lấy từ dịch vụ đọc văn bản của Microsoft Edge qua gói `msedge-tts` (không cần tài khoản, nhưng là dịch vụ không chính thức nên có thể đổi hoặc bị giới hạn; clip đã tạo vẫn dùng được bình thường). Giọng: `vi-VN-HoaiMyNeural`, `en-US-AriaNeural` (đổi trong `scripts/gen-narration.mjs`).
+- Giọng đọc lấy từ dịch vụ đọc văn bản của Microsoft Edge qua gói `msedge-tts` (không cần tài khoản, nhưng là dịch vụ không chính thức nên có thể đổi hoặc bị giới hạn; clip đã tạo vẫn dùng được bình thường). Giọng: `vi-VN-HoaiMyNeural`, `en-US-AriaNeural`, `ru-RU-SvetlanaNeural` (đổi trong `scripts/gen-narration.mjs`).
+- Lời thoại tiếng Nga viết số bằng chữ và chia đúng giống, số, cách; nếu giọng đọc sai trọng âm thì đặt U+0301 sau nguyên âm.
 - Thêm ngôn ngữ thứ ba: tạo `scripts/narration/<mã>.json`, thêm giọng vào `VOICES` trong script, chạy lại `npm run gen:voice`.
 - Kiểm tra: `npm run build && npm run test:voice` (cần Chromium của Playwright, hoặc đặt `CHROMIUM_PATH` tới Chrome/Edge).
