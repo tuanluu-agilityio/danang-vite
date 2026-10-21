@@ -406,20 +406,26 @@ Dùng `tests/lib.mjs` (`serveDir`, `launch`, `openApp`, `frames`, `pickView`), g
 
 ## 12. Câu hỏi cho người dùng (chưa tự quyết)
 1. **Ngưỡng cấm lưu thông qua cầu** và **ngưỡng dừng quay Cầu sông Hàn**: nếu không tìm được văn bản chính thức thì dùng giá trị ước lượng (đề xuất: cấm khi gió ≥ cấp 10, không quay khi gió ≥ cấp 6) có ghi "(ước lượng)", hay chỉ ghi "theo thông báo của thành phố" và không đặt số?
-  - Theo thông báo của thành phố
 2. **Phóng đại dao động**: ×20 là mặc định. Có muốn thanh chỉnh hệ số (×1 thật → ×50) trong UI không?
-  - x20 là phù hợp
 3. **Lời dẫn bằng giọng đọc** cho kịch bản bão (vi/en/ru, cần `gen:voice` qua dịch vụ TTS không chính thức): làm trong đợt này hay để sau?
-  - Để sau
 4. **Ngập phố** (nước tràn mặt đường Bạch Đằng như đợt 10/2022): đề xuất **không** làm (phải sửa địa hình, dễ lệch draw call), chỉ dâng mực nước sông ≤ 1,2 m. Đồng ý không?
-  - Đồng ý
 5. **Cây đổ sau bão**: có muốn không, vì có thể gây cảm giác nặng nề cho người xem du lịch?
-  - Có, tôi muốn chân thật nhất có thể
 6. **Thời tiết theo tháng thực**: có muốn tự chọn preset theo tháng hiện tại khi mở trang không (không gọi API, chỉ theo lịch mùa)?
-  - Đồng ý
 7. **Ngân sách draw call** cho preset thời tiết: đề xuất ≤ +2. Có chấp nhận cao hơn để thêm gợn mưa trên mặt nước (+1) không?
-  - Đồng ý
 
+## 12b:
+1. Theo thông báo của thành phố
+   - Làm rõ: KHÔNG đặt ngưỡng gió bằng số cho việc cấm lưu thông và dừng quay cầu (bỏ `closeWind`, `swingMaxWind` khỏi config). Cấm lưu thông và khoá quay cầu bật theo **trạng thái**: preset Bão, và mốc 60 s của kịch bản bão. UI và bảng ảnh hưởng ghi "Cấm lưu thông theo thông báo của thành phố".
+2. x20 là phù hợp
+   - Làm rõ: hệ số cố định ×20 trong config, không thêm thanh chỉnh trong UI.
+3. Để sau
+   - Làm rõ: không làm thuyết minh giọng đọc, không chạy `gen:voice`. Chú thích chữ của kịch bản bão (wxS1…wxS8, 9 ngôn ngữ) vẫn làm.
+4. Đồng ý
+5. Có, tôi muốn chân thật nhất có thể
+6. Đồng ý
+   - Làm rõ: tự chọn preset theo tháng **chỉ khi URL không có `?test`** và người xem chưa tự chọn. Với `?test`, mặc định luôn là `now` (no-op) để mọi test cũ và bảng draw call chuẩn không đổi. Lịch tháng → preset đặt trong config.
+7. Đồng ý
+   - Làm rõ: ngân sách draw call của preset thời tiết là **≤ +3** (mưa +1, gợn mưa trên mặt nước +1, tia chớp +1 lúc nháy). Preset `now` vẫn phải chênh 0.
 ---
 
 ## 13. Báo cáo khi xong
