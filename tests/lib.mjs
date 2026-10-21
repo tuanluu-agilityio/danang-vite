@@ -37,11 +37,11 @@ export async function launch() {
 /** Mở trang với ?test, chặn font Google (không cần cho kiểm tra), chờ khung hình đầu. */
 export async function openApp(browser, url, { width = 480, height = 270 } = {}) {
   const page = await browser.newPage({ viewport: { width, height } });
-  const errors = [];
+  const errors = []; page.setDefaultTimeout(240000);
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error' && !/fonts\.(googleapis|gstatic)|ERR_FAILED|net::/.test(m.text())) errors.push(m.text()); });
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
-  await page.goto(url + (url.includes('?') ? '&' : '?') + 'test', { waitUntil: 'load' });
+  await page.goto(url + (url.includes('?') ? '&' : '?') + 'test', { waitUntil: 'load', timeout: 180000 });
   await page.waitForFunction(() => window.__app && document.getElementById('loading')?.classList.contains('done'), null, { timeout: 180000 });
   return { page, errors };
 }
@@ -53,7 +53,7 @@ export const frames = (page, n = 2) => page.evaluate((n) => new Promise((ok) => 
 // Phần mềm dựng hình (SwiftShader) rất chậm nên tua nhanh: đẩy tiến độ bay gần tới đích để khung hình kế tiếp hoàn tất.
 export async function waitFlight(page) {
   await page.evaluate(() => { const f = window.__app.cam.flight; if (window.__app.cam.mode === 'fly') f.t = Math.max(f.t, 0.999); });
-  await page.waitForFunction(() => window.__app.cam.mode !== 'fly', null, { timeout: 60000 });
+  await page.waitForFunction(() => window.__app.cam.mode !== 'fly', null, { timeout: 240000 });
 }
 
 /** Chọn cầu rồi bấm nút góc nhìn. */

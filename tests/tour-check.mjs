@@ -10,7 +10,8 @@
 import { fileURLToPath } from 'node:url';
 import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
 
-const TOURS = [['dragon', 'tour'], ['tp', 'tpTour'], ['ttl', 'ttlTour'], ['sh', 'shTour'], ['hr', 'hrTour']];
+const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7);   // --only=hr: chỉ chạy một Tour
+const TOURS = [['dragon', 'tour'], ['tp', 'tpTour'], ['ttl', 'ttlTour'], ['sh', 'shTour'], ['hr', 'hrTour']].filter(([b]) => !ONLY || b === ONLY);
 const SAMPLES = 600;
 
 async function checkTours(browser, url) {
@@ -98,7 +99,7 @@ async function checkTours(browser, url) {
   return { report, errors };
 }
 
-const origDir = process.argv[2];
+const origDir = process.argv.slice(2).find((a) => !a.startsWith("--"));
 const browser = await launch();
 const res = {}, servers = [];
 try {
