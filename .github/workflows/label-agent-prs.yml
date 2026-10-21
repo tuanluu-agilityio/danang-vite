@@ -1,0 +1,75 @@
+name: Label merged PRs by AI usage
+
+on:
+  # pull_request_target: token có quyền ghi kể cả PR từ fork.
+  # An toàn vì workflow KHÔNG checkout/chạy code của PR.
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  label:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PR based on AI commits
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+
+            const AI_PATTERN = /copilot|claude|anthropic/i;
+            const LABEL_AI = 'agent-authors';
+            const LABEL_NONE = 'agent-unused';
+
+            const commits = await github.paginate(
+              github.rest.pulls.listCommits,
+              { owner, repo, pull_number: pr.number, per_page: 100 }
+            );
+
+            const isAI = (c) => {
+              const fields = [
+                c.author?.login,
+                c.committer?.login,
+                c.commit.author?.name,
+                c.commit.author?.email,
+                c.commit.committer?.name,
+                c.commit.committer?.email,
+              ];
+              // Co-authored-by trailer (vd: Co-Authored-By: Claude ... <noreply@anthropic.com>)
+              const trailers = (c.commit.message.match(/^co-authored-by:.*$/gim) || []);
+              return [...fields, ...trailers].some((v) => v && AI_PATTERN.test(v));
+            };
+
+            const aiCommits = commits.filter(isAI);
+            const label = aiCommits.length > 0 ? LABEL_AI : LABEL_NONE;
+            const other = label === LABEL_AI ? LABEL_NONE : LABEL_AI;
+
+            core.info(`PR #${pr.number}: ${aiCommits.length}/${commits.length} AI commits -> ${label}`);
+
+            // Tạo label nếu chưa tồn tại
+            const ensureLabel = async (name, color, description) => {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (e) {
+                if (e.status !== 404) throw e;
+                await github.rest.issues.createLabel({ owner, repo, name, color, description });
+              }
+            };
+            await ensureLabel(LABEL_AI, '8250df', 'PR có commit từ AI agent (Copilot, Claude)');
+            await ensureLabel(LABEL_NONE, 'ededed', 'PR không có commit từ AI agent');
+
+            // Gỡ label đối lập (nếu có) rồi gán label đúng
+            try {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number: pr.number, name: other });
+            } catch (e) {
+              if (e.status !== 404) throw e;
+            }
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: pr.number, labels: [label],
+            });
