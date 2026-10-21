@@ -286,6 +286,44 @@ const riverfrontBase = {
   promenade: { chunk: 600, lod: 400, benchStep: 20, railStep: 4, lights: 8 }         // dải đi bộ: độ dài chunk LOD, ẩn khi camera xa hơn (m)
 };
 
+/* ---------------------------- Thời tiết ----------------------------
+   Lớp điều biến sau ngày/đêm (D-009). Preset `now` là no-op. Đơn vị: m, m/s, °C, giây; mọi số là (ước lượng) trừ khi ghi nguồn.
+   KHÔNG đặt ngưỡng gió bằng số cho cấm lưu thông / khoá quay cầu: bật theo trạng thái (preset Bão, mốc 60 s kịch bản) — "theo thông báo của thành phố". */
+const weatherBase = {
+  seed: 20061001,                                       // hạt giống riêng cho nhiễu gió, mưa, chớp — ngày bão Xangsane, không dùng rand()
+  enabled: false,                                       // false = không áp gì lên cảnh (mặc định, bảo toàn ảnh và draw call chuẩn)
+  swayExaggeration: 20,                                 // hệ số phóng đại dao động cáp/cây khi hiển thị (cố định ×20, không có thanh chỉnh)
+  windAlpha: 0.12,                                      // số mũ hồ sơ gió v(z) = v10·(z/10)^α, mặt nước/địa hình trống (cần xác minh theo TCVN 2737)
+  windRefH: 10,                                         // m — cao độ chuẩn của v10
+  gust: { period: 7, octaves: 3, steps: 256 },          // nhiễu gió giật: chu kỳ cơ bản (s), số tầng sóng, độ dài bảng nhiễu (ước lượng)
+  thermal: { steel: 12e-6, concrete: 10.5e-6, refTemp: 25 },   // hệ số giãn nở nhiệt (/°C) thép, bê tông (phổ biến; cần xác minh theo TCVN 11823:2017) và nhiệt độ chuẩn (°C)
+  cableSag: { span: 405, sagRatio: 9.5 },               // cáp chủ Thuận Phước: nhịp (m), L/f — dùng tính võng thêm khi nóng
+  beaufort: [0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7, 37.0, 41.5, 46.2, 51.0],   // m/s — ngưỡng dưới cấp 1…16, thang Beaufort ở độ cao 10 m
+  tau: { rain: 4, wet: 40, wind: 6, temp: 20, cloud: 10, haze: 10, level: 30, lightning: 3 },   // s — hằng số thời gian tiến về target (mưa tới nhanh, mặt ướt khô chậm, nước dâng/rút chậm) (ước lượng)
+  levelMax: 1.2,                                        // m — mực nước sông dâng tối đa (không làm ngập phố)
+  rain: { count: 6000, box: [160, 90, 160] as [number, number, number], fall: 18, len: 1.6 },   // số vệt; hộp bao quanh camera (m); tốc độ rơi (m/s); độ dài vệt (m) (ước lượng)
+  lightning: { minGap: 3, maxGap: 12, distMin: 400, distMax: 3000 },   // s giữa hai tia chớp; khoảng cách chớp (m) (ước lượng)
+  // Hiệu năng (D-010): mưa giảm overdraw, tự hạ chất lượng khi FPS thấp. Mọi số (ước lượng), chỉnh theo đo trên GPU thật
+  perf: {
+    rainNear: 1.5,                                      // m — bỏ vệt mưa gần camera hơn mức này (vệt sát mắt phủ cả màn hình = overdraw lớn nhất)
+    rainFadeFar: 70,                                    // m — alpha vệt mưa giảm dần về 0 ở khoảng cách này (cho phép hộp/N nhỏ mà vẫn thấy dày)
+    rainMaxPixelRatio: 1.5,                             // pixelRatio tối đa khi mưa đang hiện (trả lại giá trị cũ khi tạnh)
+    adaptiveWindow: 2,                                  // s — cửa sổ đo FPS trung bình để quyết định hạ chất lượng
+    adaptiveMinFps: 40,                                 // FPS — dưới mức này thì hạ một bậc chất lượng
+    adaptiveSteps: [1, 0.6, 0.35] as number[],          // hệ số nhân rain.count theo bậc chất lượng (bậc 0 = đầy đủ)
+    maxFrameMs: 150                                     // ms — khung dài nhất cho phép khi đổi preset (bắt khựng do biên dịch shader), dùng trong test:weather
+  },
+  presets: {
+    now: null,                                          // Hiện trạng: no-op, không áp gì
+    summer: { temp: 37, rain: 0, wind: 3, gust: 1, cloud: 0.1, haze: 0.6, level: 0, lightning: 0, closed: false },      // Nắng hè (ước lượng)
+    rain: { temp: 26, rain: 0.7, wind: 6, gust: 3, cloud: 0.85, haze: 0, level: 0.4, lightning: 0, closed: false },     // Mưa (ước lượng)
+    monsoon: { temp: 22, rain: 0.25, wind: 14, gust: 5, cloud: 0.7, haze: 0, level: 0.2, lightning: 0, closed: false }, // Gió mùa Đông Bắc (ước lượng)
+    storm: { temp: 25, rain: 1, wind: 28, gust: 10, cloud: 1, haze: 0, level: 1.2, lightning: 0.8, closed: true }       // Bão (ước lượng); cấm lưu thông theo trạng thái preset
+  },
+  windDir: 0,                                           // rad — hướng gió thổi tới mặc định (0 = từ Tây sang Đông, +X)
+  monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
+};
+
 export const CONFIG = {
   ...base,
   mainTotal: sum(base.mainSpans),
@@ -293,7 +331,8 @@ export const CONFIG = {
   tranThiLy: deriveTtl(tranThiLyBase),
   songHan: deriveSh(songHanBase),
   hanTunnel: deriveHr(hanTunnelBase),
-  riverfront: riverfrontBase
+  riverfront: riverfrontBase,
+  weather: weatherBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;
 export type HanTunnelConfig = typeof CONFIG.hanTunnel;
