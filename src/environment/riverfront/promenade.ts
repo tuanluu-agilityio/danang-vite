@@ -113,7 +113,7 @@ export function buildPromenade(atlas: Atlas, adMat: THREE.Material, buildings: B
   const lights = new THREE.InstancedMesh(new THREE.SphereGeometry(0.11, 5, 4), new THREE.MeshBasicMaterial({ color: 0xffffff }), pts.length);
   const m = new THREE.Matrix4(), cc = new THREE.Color();
   pts.forEach(([x, y, z, c], i) => { lights.setMatrixAt(i, m.makeTranslation(x, y, z)); lights.setColorAt(i, cc.setRGB(c[0], c[1], c[2])); });
-  lights.name = 'rf-night-lights'; lights.frustumCulled = false; lights.layers.set(1); lights.visible = false; group.add(lights);
+  lights.name = 'rf-night-lights'; lights.computeBoundingSphere(); lights.layers.set(1); lights.visible = false; group.add(lights);
   const api: Promenade = {
     group, lights, chunks, lightCount: pts.length,
     update() { const nt = shared.uNight.value; lights.visible = nt > 0.05; (lights.material as THREE.MeshBasicMaterial).color.setScalar(nt * 2.6); },

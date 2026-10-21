@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CONFIG } from '../../config';
-import { MAT } from '../../core/materials';
 import { shared } from '../../core/shared';
 import { lerp, rng } from '../../common/math';
 import { boxAt } from '../../common/geometry';
@@ -75,9 +74,11 @@ export function buildBillboards(atlas: Atlas, lm: Landmarks, buildings: Building
     nb++;
   }
   const adMat = new THREE.MeshStandardMaterial({ map: atlas.texture, emissiveMap: atlas.texture, emissive: 0xffffff, emissiveIntensity: 0, roughness: 0.85 });
-  const boardMesh = new THREE.Mesh(mergeGeometries(boards), adMat); boardMesh.name = 'rf-ad-boards';
-  const steelMesh = new THREE.Mesh(mergeGeometries(steel.map((g) => { if (g.attributes.uv) g.deleteAttribute('uv'); return g; })), MAT.girder); steelMesh.castShadow = true; steelMesh.name = 'rf-ad-steel';
-  group.add(boardMesh, steelMesh);
+  // khung/trụ thép dùng chung vật liệu atlas: UV trỏ vào một ô xám sẫm ở góc atlas → cả bảng và khung chỉ một draw call
+  const dark = atlas.darkUV();
+  for (const g of steel) { const n = g.attributes.position.count, uv = new Float32Array(n * 2); for (let i = 0; i < n; i++) { uv[i * 2] = dark[0]; uv[i * 2 + 1] = dark[1]; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); }
+  const boardMesh = new THREE.Mesh(mergeGeometries([...boards, ...steel]), adMat); boardMesh.name = 'rf-ad-boards';
+  group.add(boardMesh);
 
   // (c) màn LED mặt tiền: 3 tòa cao gần Cầu Rồng và Cầu sông Hàn, mặt hướng ra sông; quảng cáo đổi mỗi 8 s, chuyển mờ 0,6 s
   const screenSlots = atlas.byKind('screen'), screens: Screen[] = [];
@@ -105,7 +106,7 @@ export function buildBillboards(atlas: Atlas, lm: Landmarks, buildings: Building
         #include <colorspace_fragment>
       }`
   });
-  const ledMesh = new THREE.Mesh(ledGeo, ledMat); ledMesh.name = 'rf-led-screens'; ledMesh.frustumCulled = false; if (screens.length) group.add(ledMesh);
+  const ledMesh = new THREE.Mesh(ledGeo, ledMat); ledMesh.name = 'rf-led-screens'; if (screens.length) group.add(ledMesh);
   const setRects = (): void => {
     screens.forEach((s, i) => {
       const A = atlas.rect(screenSlots[s.cur]), Bq = atlas.rect(screenSlots[s.next]);
@@ -114,7 +115,7 @@ export function buildBillboards(atlas: Atlas, lm: Landmarks, buildings: Building
     (ledGeo.attributes.aA as THREE.BufferAttribute).needsUpdate = (ledGeo.attributes.aB as THREE.BufferAttribute).needsUpdate = (ledGeo.attributes.aM as THREE.BufferAttribute).needsUpdate = true;
   };
   setRects();
-  for (const o of [boardMesh, steelMesh, ledMesh]) o.layers.set(1);     // bảng nhỏ không cần phản chiếu trên mặt nước
+  for (const o of [boardMesh, ledMesh]) o.layers.set(1);     // bảng nhỏ không cần phản chiếu trên mặt nước
 
   const api: Billboards = {
     group, adMat, ledMat, screens, rects, counts: { panos: Math.min(PANOS.length, R.ads.panos), roofs: Math.min(roofSpots.length, R.ads.roofs), screens: screens.length, banners: nb },
@@ -129,7 +130,7 @@ export function buildBillboards(atlas: Atlas, lm: Landmarks, buildings: Building
       if (dirty) setRects();
     },
     setEnabled(on) { group.visible = on; },
-    dispose() { boardMesh.geometry.dispose(); steelMesh.geometry.dispose(); ledGeo.dispose(); adMat.dispose(); ledMat.dispose(); group.removeFromParent(); }
+    dispose() { boardMesh.geometry.dispose(); ledGeo.dispose(); adMat.dispose(); ledMat.dispose(); group.removeFromParent(); }
   };
   return api;
 }

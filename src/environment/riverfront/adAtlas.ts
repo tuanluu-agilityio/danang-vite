@@ -91,7 +91,7 @@ function drawSlot(g: CanvasRenderingContext2D, s: Slot, idx: number) {
   }
   g.restore();
 }
-export interface Atlas { texture: THREE.CanvasTexture; slots: Slot[]; byKind: (k: AdKind) => Slot[]; rect: (s: Slot) => [number, number, number, number]; redraw(): void; dispose(): void }
+export interface Atlas { texture: THREE.CanvasTexture; darkUV: () => [number, number]; slots: Slot[]; byKind: (k: AdKind) => Slot[]; rect: (s: Slot) => [number, number, number, number]; redraw(): void; dispose(): void }
 export function buildAtlas(): Atlas {
   const c = document.createElement('canvas'); c.width = c.height = ATLAS;
   const g = c.getContext('2d'), slots = layoutSlots();
@@ -101,13 +101,14 @@ export function buildAtlas(): Atlas {
     g.fillStyle = '#101018'; g.fillRect(0, 0, ATLAS, ATLAS);
     for (const k of Object.keys(counters)) delete counters[k as AdKind];
     for (const s of slots) { const i = counters[s.kind] ?? 0; counters[s.kind] = i + 1; drawSlot(g, s, i); }
+    g.fillStyle = '#2a2e33'; g.fillRect(ATLAS - 8, ATLAS - 8, 8, 8);       // ô xám sẫm cho khung/trụ thép của bảng
     texture.needsUpdate = true;
   };
   redraw();
   // chữ Việt có dấu: vẽ lại khi font đã nạp xong
   if (document.fonts?.ready) document.fonts.ready.then(redraw).catch(() => undefined);
   return {
-    texture, slots, byKind: (k) => slots.filter((s) => s.kind === k),
+    texture, slots, darkUV: () => [(ATLAS - 4) / ATLAS, 4 / ATLAS], byKind: (k) => slots.filter((s) => s.kind === k),
     /* [u0, v0, u1, v1] của ô, co vào 1 px để không rỉ màu sang ô bên */
     rect: (s) => [(s.x + 1) / ATLAS, 1 - (s.y + s.h - 1) / ATLAS, (s.x + s.w - 1) / ATLAS, 1 - (s.y + 1) / ATLAS],
     redraw, dispose: () => texture.dispose()

@@ -73,6 +73,6 @@ export function buildLandmarks(): Landmarks {
   // chuẩn hóa thuộc tính để gộp một mesh
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.18 }); patchWindows(mat);
   const mesh = new THREE.Mesh(mergeGeometries(g.map((q) => { const n = q.index ? q.toNonIndexed() : q; if (n.attributes.uv) n.deleteAttribute('uv'); return n; })), mat);
-  mesh.name = 'rf-landmarks'; mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.name = 'rf-landmarks'; mesh.receiveShadow = true;   // không đổ bóng: tiết kiệm draw call lượt bóng
   return { mesh, rects, towers, rooftops };
 }

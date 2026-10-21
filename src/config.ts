@@ -283,7 +283,7 @@ const riverfrontBase = {
     intensity: 1.7, duetOffset: 12                                // cường độ LED, lệch pha chế độ Đối đáp (s)
   },
   ads: { panos: 8, roofs: 5, screens: 3, banners: 16, switchEvery: 8, fade: 0.6 },   // số lượng bảng; màn LED đổi quảng cáo mỗi 8 s, chuyển mờ 0,6 s
-  promenade: { chunk: 600, lod: 600, benchStep: 20, railStep: 4, lights: 8 }         // dải đi bộ: độ dài chunk LOD, ẩn khi camera xa hơn (m)
+  promenade: { chunk: 600, lod: 400, benchStep: 20, railStep: 4, lights: 8 }         // dải đi bộ: độ dài chunk LOD, ẩn khi camera xa hơn (m)
 };
 
 export const CONFIG = {

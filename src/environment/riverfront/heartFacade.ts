@@ -96,7 +96,7 @@ export function buildHearts(towers: Tower[]): Hearts {
       uGrid: { value: new THREE.Vector2(Math.round(pw / HC.cell), Math.round(Hh / HC.cell)) }, uSize: { value: new THREE.Vector2(pw, Hh) }, uHc: { value: HEART_C } },
     vertexShader: vert, fragmentShader: frag, fog: false
   });
-  const mesh = new THREE.Mesh(geo, material); mesh.name = 'rf-hearts'; mesh.frustumCulled = false;
+  const mesh = new THREE.Mesh(geo, material); mesh.name = 'rf-hearts';
   const api: Hearts = {
     mesh, material, enabled: true, mode: 'duet', panels,
     /* độ sáng LED (0..1, chưa nhân cường độ) theo độ tối của trời và công tắc: ban ngày ≤ dayLevel */
