@@ -78,13 +78,13 @@ export function renderTourCaption(i: number) {
   els.step.textContent = t('step', { i: i + 1, n: activeTour.stops.length });
   els.title.textContent = stop[0]; els.text.textContent = stop[1];
 }
+/* Đổi chữ NGAY trong khung hình rồi hiện dần (transition opacity của CSS). Bản gốc mờ đi rồi đổi chữ bằng setTimeout(300):
+   khung hình nặng (bật mặt cắt hầm, biên dịch shader) làm timer trễ nên chú thích có lúc vẫn ghi điểm dừng trước */
 export function showTourCaption(i: number) {
   const box = els.box;
-  box.classList.add('fade');
-  setTimeout(() => {
-    renderTourCaption(i);
-    box.classList.remove('fade');
-  }, 300);
+  renderTourCaption(i);
+  box.style.transition = 'none'; box.classList.add('fade'); void box.offsetWidth;   // ẩn tức thì (ép reflow để trình duyệt ghi nhận)
+  box.style.transition = ''; box.classList.remove('fade');                          // rồi hiện dần
 }
 export function startTour() { cam.mode = 'tour'; controls.enabled = false; tour.t = 0; tour.shown = -1; }
 export function exitTour() {

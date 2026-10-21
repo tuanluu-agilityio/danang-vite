@@ -11,7 +11,7 @@ export function ttlMaterials() {
     concrete: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xe2e0da, roughness: 0.8, metalness: 0, vertexColors: true }), { noise: true, wet: true, weather: true }),
     pylon: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xebe9e4, roughness: 0.8, metalness: 0 }),
       { noise: true, weather: true, ...led({ led: 0.95, mode: 1, floodTop: 150, floodBase: 8 }) }),
-    stay: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xeceeee, roughness: 0.5, metalness: 0.15 }), led({ led: 2.6, mode: 0 })),
+    stay: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xeceeee, roughness: 0.5, metalness: 0.15 }), led({ led: 2.6, mode: 0, sway: 'ttl' })),   // rung mưa–gió (weather/wind.ts)
     hdpe: new THREE.MeshStandardMaterial({ color: 0xf6f6f2, roughness: 0.55, metalness: 0.05 }),
     ledStrip: bridgePatch(new THREE.MeshStandardMaterial({ color: 0x34383c, roughness: 0.5, metalness: 0.3 }), led({ led: 2.2, mode: 0 })),
     steel: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xb9bfc4, roughness: 0.32, metalness: 0.85 }), { weather: true }),

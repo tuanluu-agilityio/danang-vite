@@ -337,6 +337,18 @@ const weatherBase = {
     cloudThin: 0.7, cloudNightOpacity: 0.4, cloudNightDim: 0.12, cloudSpin: 0.004,   // mây nắng mỏng (opacity ×0,3); mây dày ban đêm opacity 0,6; màu mây ban đêm ×0,12; tốc độ xoay cụm mây khi bão (rad/s)
     sunWave: 2.0, grayWave: 4, stormWave: 7, stormSize: 0.4   // water.distortionScale (nắng / mưa / bão) và water.size khi bão (gốc 2,4 và 0,6)
   },
+  // Gió (mục 4.5, GĐ4): biên độ THẬT (m) trước khi nhân swayExaggeration; v = gió tức thời tại cao độ tham chiếu (windAt). Mọi số (ước lượng), mô phỏng trực quan, không phải phân tích kết cấu
+  wind: {
+    refLen: 40,                                         // m — dây ngắn hơn mức này lắc ít hơn tỉ lệ (biên độ × min(1, dài / refLen))
+    tp: { h: 50, amp: 0.03, refWind: 30, maxAmp: 0.06, omega: 2.2 },   // hanger Thuận Phước: cao độ giữa hanger (m), biên độ (m) ở refWind (m/s), tăng theo v², trần (m), tần số góc hiển thị (rad/s)
+    ttl: { h: 50, peak: 0.05, lo: 6, hi: 18, rainOn: [0.1, 0.3] as [number, number], dryAmp: 0.008, refWind: 30, omega: 3.0 },   // dây văng TTL: rung mưa–gió cực đại (m) khi gió trong [lo, hi] m/s VÀ mưa > ~0,2 (nhận dần trong rainOn); không mưa chỉ còn dryAmp·(v/refWind)²
+    sh: { h: 35, amp: 0.015, refWind: 30, maxAmp: 0.03, omega: 2.6 },  // dây văng Cầu sông Hàn (ngắn, căng): như TP nhưng nhỏ hơn
+    trees: { lean: 0.03, sway: 0.02, refWind: 28, max: 0.06, omega: 1.6 },   // tán cây: độ nghiêng tĩnh / dao động (m dịch trên mỗi m cao) ở refWind, tăng theo v², trần; KHÔNG nhân phóng đại (cây lắc thấy được thật)
+    boatRock: 0.08,                                     // biên độ tròng trành thuyền × (1 + 0,08·gió m/s) → bão 28 m/s ≈ ×3,2
+    whisker: 0.06,                                      // râu rồng đung đưa × (1 + 0,06·gió)
+    waveSpeed: 0.04, windWave: 3,                       // tốc độ trôi pháp tuyến nước × (1 + 0,04·gió); distortionScale cộng 3·(gió/stormWind) (ngoài phần bão đã có)
+    fire: 1.0, water: 0.15, mist: 1.2                   // hệ số cộng vận tốc gió vào hạt lửa / tia nước / sương Cầu Rồng (1/s): vel += gió·k·dt
+  },
   windDir: 0,                                           // rad — hướng gió thổi tới mặc định (0 = từ Tây sang Đông, +X)
   monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
 };

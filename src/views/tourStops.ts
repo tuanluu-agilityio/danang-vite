@@ -10,11 +10,12 @@ import { hrRoadY } from '../bridges/han-tunnel/profile';
    Hầm sông Hàn: immerse — chạy mô phỏng dìm đốt hầm; cutaway — bật mặt cắt địa chất; interior — luôn hiện nội thất hầm. */
 export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean; immerse?: boolean; cutaway?: boolean; interior?: boolean }
 
-/* Cầu Rồng */
+/* Cầu Rồng. Điểm "Trên mặt cầu" đặt ở làn phía Bắc (z < 0) như điểm "Đuôi rồng" trước nó: bản gốc đặt z = +11,5 nên đoạn bay
+   cắt ngang dải phân cách ở x ≈ −282, y ≈ 9,9 — xuyên thân rồng (đỉnh thân ở đó ≈ 12,4 m), `test:tour` báo chạm mô hình */
 export const DRAGON_TOUR: TourStop[] = [
   { pos: [-430, 330, 560], target: [0, 12, 0] },
   { pos: [-410, 22, -48], target: [-345, 11, 0] },
-  { pos: [-228, 11.4, 11.5], target: [-60, 15, 2] },
+  { pos: [-228, 11.4, -11.5], target: [-60, 15, -2] },
   { pos: [-45, 22, -80], target: [0, 30, 0] },
   { pos: [60, 3.5, -145], target: [10, 16, 0] },
   { pos: [392, 26, 40], target: [328, 16, 0] },

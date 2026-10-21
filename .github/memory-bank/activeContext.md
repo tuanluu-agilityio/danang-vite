@@ -37,6 +37,16 @@ _Cập nhật: 2026-10-21 · Nhánh chính: `main`_
 - Lần 1: `npm run build` qua. Đã xem lại ảnh `shDeck-dem-rain`, `overview-ngay-rain`, `hrGallery-ngay-storm` (có vệt mưa, đường ướt sẫm màu, trong hầm không có mưa). Các test không chạy theo yêu cầu, chờ script ngoài chấm.
 - Chưa có bằng chứng: so ảnh `now` trước/sau trùng điểm ảnh; FPS SwiftShader/GPU thật (`wxStreet` chưa có, góc nhìn mới thuộc GĐ6); khung dài nhất ≤ `perf.maxFrameMs`; draw call preset `rain` (≤ +1) chỉ đọc từ HUD trong script ảnh. Ô chọn thời tiết vẫn hiện "Hiện trạng" khi `setWx` đặt preset qua API (helper test, không qua UI).
 - Bước tiếp theo: chờ chấm lại GĐ3 (`build`, `test:drawcalls`, `test:tunnel`), commit GĐ3, rồi sang GĐ4 (gió).
+- GĐ3 đã commit (`5f780b4`).
+
+## Thời tiết — Giai đoạn 4 (nhánh `feature/weather`, chưa commit)
+- Đã làm (lần 0): `src/environment/weather/wind.ts` (vá shader tán cây `MAT.leaf`/`MAT.palm`, `updateWind()` tính biên độ), option `sway: 'tp'|'ttl'|'sh'` của `bridgePatch` (hanger TP, dây văng TTL/SH, dịch trong không gian thế giới sau instanceMatrix), `windFx` trong `core/shared.ts` (thuyền, lửa/nước/râu Cầu Rồng, tốc độ sóng — mặc định trung tính, không thêm `rand()`), mây xoay + sóng theo gió trong `atmosphere.ts`, `CONFIG.weather.wind`, API test `weather.setParams()` / `weather.sway()`, `tests/weather-gd4-shots.mjs` (ảnh `tests/screens/weather-gd4/`: ttlDeck/ttlClose now / rainWind / stormDry, tpBay, shDeck, overview).
+- Lần chấm 0: build qua, `test:drawcalls` 52/52 chênh 0, `test:tour` LỖI — hai lỗi KHÔNG do gió (raycast dùng hình học CPU, shader lắc không ảnh hưởng), đã sửa gốc (D-011):
+  1. Tour Cầu Rồng chạm thân rồng ở (−282,2; 9,9; −2,2): có từ bản gốc (đã ghi ở `tests/KET-QUA.md`; script chẩn đoán chạy trên `tests/original` cho cùng điểm chạm). Sửa: điểm 3 "Trên mặt cầu" sang làn Bắc `[-228, 11.4, -11.5]`, target `[-60, 15, -2]`. Chẩn đoán lại: 0 điểm chạm; ảnh `dragon-stop3.png` đúng cảnh trên mặt cầu.
+  2. Tour Hầm điểm 4 ghi "3/8" + tiêu đề trùng: chữ chú thích đổi trong `setTimeout(300)`, test đọc sau ~450 ms; khung hình bật mặt cắt (biên dịch shader, ~9 s trên SwiftShader) làm timer trễ. Sửa `showTourCaption()` (`views/tour.ts`): đổi chữ ngay, hiện dần bằng CSS. Chẩn đoán lại: 8/8 điểm ghi đúng.
+- Script chẩn đoán tạm (không commit) ở `tests/screens/weather-gd4/diag-*.mjs`. `npm run build` qua. Không chạy `test:*` theo yêu cầu — chờ script ngoài chấm lại (`build`, `test:drawcalls`, `test:tour`).
+- Lưu ý: `test:tour -- tests/original` giờ báo dragon "KHÁC bản gốc" (có chủ đích, D-011). `wxTtlStays` chưa có (GĐ6) — ảnh dùng `ttlDeck`/`ttlClose`.
+- Bước tiếp theo: chờ chấm GĐ4, commit GĐ4, rồi GĐ5 (bão: chớp, đóng cầu, cầu quay, trình diễn).
 
 ## Vấn đề mở / cần quyết
 - Tọa độ các địa danh riverfront là ước lượng (chưa có nguồn công khai); số tầng đã xác minh — xem comment đầu `src/environment/riverfront/landmarks.ts`.

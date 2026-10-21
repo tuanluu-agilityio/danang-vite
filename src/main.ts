@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { initI18n } from './i18n';
 import { renderer, scene, camera, controls } from './core/renderer';
-import { shared } from './core/shared';
+import { shared, windFx } from './core/shared';
 import { buildLights } from './core/lights';
 import { buildSky, shadowCenter } from './core/sky';
 import { buildWater, water } from './core/water';
@@ -93,7 +93,7 @@ function animate() {
   stepNight(dt);
   applyNight(dayNight.night, time);
   updateWeather(dt, time, dayNight.night, camera);         // điều biến sau applyNight (D-009); camera: mưa quanh camera, tắt trong hầm
-  water.material.uniforms.time.value += dt * 0.6;
+  water.material.uniforms.time.value += dt * 0.6 * windFx.waveSpeed;   // sóng trôi nhanh hơn theo gió (mặc định ×1)
   updateShow(dt);
   updateEffects(dt, time);
   updateTraffic(dt);

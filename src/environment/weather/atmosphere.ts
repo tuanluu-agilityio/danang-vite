@@ -48,7 +48,8 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number) {
   const stormK = clamp01(Math.min(c.rain, c.wind / A.stormWind));    // bão: mưa lớn VÀ gió mạnh (liên tục theo thanh cường độ)
   const gray = clamp01(Math.max(c.rain, (c.cloud - A.grayCloud) * A.grayGain));   // trời xám: mưa hoặc mây dày
   const lvl = c.level;
-  if (sunny < 1e-3 && gray < 1e-3 && stormK < 1e-3 && Math.abs(lvl) < 1e-3) {
+  const windK = Math.min(1.5, c.wind / A.stormWind);               // gió (GĐ4): mây xoay, sóng tăng — kể cả khi không mưa
+  if (sunny < 1e-3 && gray < 1e-3 && stormK < 1e-3 && Math.abs(lvl) < 1e-3 && windK < 1e-4) {
     if (active) { restore(); active = false; }                      // về `now`: trả đúng giá trị gốc, rồi không đụng gì nữa
     return;
   }
@@ -68,16 +69,16 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number) {
   hemi.intensity *= (1 + A.hemiBoost * sunny) * lerp(1, A.hemiGray, gray) * lerp(1, A.hemiStorm / A.hemiGray, stormK);
   hemi.color.lerp(tmp.copy(C.hemiGray).multiplyScalar(dark), gray);
   renderer.toneMappingExposure *= (1 + A.expBoost * sunny) * lerp(1, A.expGray, gray) * lerp(1, A.expStorm / A.expGray, stormK);
-  // Mây: mỏng khi nắng; dày, xám đậm rồi gần đen khi mưa/bão; bão xoay chậm theo gió
+  // Mây: mỏng khi nắng; dày, xám đậm rồi gần đen khi mưa/bão; cả cụm xoay chậm theo gió (mục 4.5)
   const cm = clouds.material;
   cm.opacity *= 1 - A.cloudThin * sunny;
   cm.opacity = lerp(cm.opacity, 1 - A.cloudNightOpacity * night, gray);
   cm.color.copy(base.cloudColor).lerp(tmp.copy(C.cloudGray).lerp(C.cloudStorm, stormK), gray).multiplyScalar(lerp(1, A.cloudNightDim, night));
-  spin += dt * A.cloudSpin * stormK; clouds.rotation.y = base.cloudRotY + spin;
+  spin += dt * A.cloudSpin * windK; clouds.rotation.y = base.cloudRotY + spin;
   // Nước: xanh trong khi nắng, nâu khi mưa, nâu đục khi bão; sóng tăng; sông dâng
   const wu = water.material.uniforms, wc = wu.waterColor.value as THREE.Color;
   wc.lerp(tmp.copy(C.waterSun).multiplyScalar(dark), sunny).lerp(tmp.copy(C.waterRain).lerp(C.waterStorm, stormK).multiplyScalar(dark), gray);
-  wu.distortionScale.value = lerp(lerp(lerp(base.distortion, A.sunWave, sunny), A.grayWave, gray), A.stormWave, stormK);
+  wu.distortionScale.value = lerp(lerp(lerp(base.distortion, A.sunWave, sunny), A.grayWave, gray), A.stormWave, stormK) + CONFIG.weather.wind.windWave * Math.min(1, windK) * (1 - stormK);   // gió không mưa (gió mùa) cũng nổi sóng
   wu.size.value = lerp(base.size, A.stormSize, stormK);
   water.position.y = base.waterY + lvl;
 }

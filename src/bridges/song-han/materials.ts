@@ -15,7 +15,7 @@ export function shMaterials() {
     girder: new THREE.MeshStandardMaterial({ color: 0x1d58b0, roughness: 0.42, metalness: 0.7 }),
     deckSlab: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xdcd9d2, roughness: 0.85, vertexColors: true }), { noise: true, weather: true }),
     stay: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xc4573c, roughness: 0.5, metalness: 0.3 }),
-      { led: 2.4, mode: 0, palette: 'rainbow', originX: 0, originZ: SH.z }),
+      { led: 2.4, mode: 0, palette: 'rainbow', originX: 0, originZ: SH.z, sway: 'sh' }),   // dây văng lắc theo gió (weather/wind.ts)
     ledStrip: bridgePatch(new THREE.MeshStandardMaterial({ color: 0x23406e, roughness: 0.5, metalness: 0.3 }),
       { led: 2.0, mode: 0, palette: 'sea', originX: 0, originZ: SH.z }),
     mech: new THREE.MeshStandardMaterial({ color: 0x3a3632, roughness: 0.62, metalness: 0.75 }),    // thép tối, gỉ dầu mỡ

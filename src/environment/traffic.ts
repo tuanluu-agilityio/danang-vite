@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CONFIG } from '../config';
 import { scene } from '../core/renderer';
 import { MAT } from '../core/materials';
+import { windFx } from '../core/shared';
 import { rand } from '../common/math';
 import { TYPES, CAR_COLORS, BIKE_COLORS, placePart, _e, _q, type VehicleType } from '../common/traffic';
 import { deckY } from '../bridges/dragon/profile';
@@ -94,7 +95,7 @@ export function updateBoats(dt: number, t: number) {
   boats.forEach((b, i) => {
     b.z += b.dir * b.speed * dt; if (b.z > 2500) b.z = -2500; if (b.z < -2500) b.z = 2500;
     if (boatKeepOut.on && b.z > boatKeepOut.z0 && b.z < boatKeepOut.z1) b.z = b.dir > 0 ? boatKeepOut.z0 : boatKeepOut.z1;
-    q.setFromEuler(_e.set(Math.sin(t * 0.9 + i) * 0.015, 0, Math.sin(t * 1.1 + i * 2) * 0.02));
+    q.setFromEuler(_e.set(Math.sin(t * 0.9 + i) * 0.015 * windFx.boatRock, 0, Math.sin(t * 1.1 + i * 2) * 0.02 * windFx.boatRock));   // tròng trành tăng theo gió (mặc định ×1)
     base.set(b.x, 0, b.z);
     const m = new THREE.Matrix4(), s = new THREE.Vector3(), o = new THREE.Vector3();
     bHull.setMatrixAt(i, m.compose(o.set(0, 0.6, 0).applyQuaternion(q).add(base), q, s.set(6.5, 2.6, b.len)));
