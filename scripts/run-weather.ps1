@@ -13,6 +13,7 @@
     powershell -ExecutionPolicy Bypass -File scripts/run-weather.ps1 -From 4      # chạy tiếp từ GĐ4
     powershell -ExecutionPolicy Bypass -File scripts/run-weather.ps1 -From 3 -To 3 -BudgetUsd 5
     powershell -ExecutionPolicy Bypass -File scripts/run-weather.ps1 -DryRun      # chỉ kiểm tra điều kiện + in kế hoạch, không gọi claude
+    powershell -ExecutionPolicy Bypass -File scripts/run-weather.ps1 -From 1 -Resume   # chấm lại phần việc chưa commit của GĐ1 (không bắt agent làm lại)
   Log: tests/screens/weather-logs/ (thư mục tests/screens/ không commit).
 #>
 param(
@@ -21,7 +22,8 @@ param(
   [double]$BudgetUsd = 0,      # giới hạn chi phí mỗi lần gọi claude (USD); 0 = không giới hạn
   [int]$MaxRetries = 1,        # số lần cho agent sửa khi kiểm tra báo LOI
   [switch]$NoCheckpoint,
-  [switch]$DryRun
+  [switch]$DryRun,
+  [switch]$Resume              # giữ thay đổi chưa commit của giai đoạn -From: bỏ bước agent làm lần đầu, chạy test + kiểm tra luôn
 )
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
@@ -55,9 +57,9 @@ function Stop-Run([string]$msg) { Write-Host "DỪNG: $msg" -ForegroundColor Red
 function Say([string]$msg, [string]$color = 'Cyan') { Write-Host $msg -ForegroundColor $color }
 
 # Gọi claude -p; trả về @{ text; cost }. Prompt đặt TRƯỚC các tùy chọn (--allowedTools nhận nhiều giá trị liền sau nó).
-# Prompt không được chứa dấu nháy kép: PowerShell 5.1 truyền sai tham số có nháy kép cho chương trình ngoài.
+# PowerShell 5.1 truyền sai tham số có nháy kép cho chương trình ngoài → đổi thành nháy đơn (kết luận của agent kiểm tra hay có "…")
 function Invoke-Claude([string]$prompt, [string]$model, [string]$effort, [string[]]$tools, [string]$log) {
-  if ($prompt.Contains('"')) { Stop-Run 'prompt chứa dấu nháy kép' }
+  $prompt = $prompt.Replace('"', "'")
   $a = @($prompt, '-p', '--model', $model, '--effort', $effort, '--permission-mode', 'acceptEdits',
     '--permission-prompts', 'none', '--output-format', 'json', '--append-system-prompt', $SystemNote)
   if ($BudgetUsd -gt 0) { $a += @('--max-budget-usd', [string]$BudgetUsd) }
@@ -100,15 +102,21 @@ if (-not (Select-String -Path $Spec -Pattern '^## 12b' -Quiet)) {
 }
 $cur = (git branch --show-current).Trim()
 if ($cur -ne $Branch) { Stop-Run "đang ở nhánh '$cur', cần '$Branch' (git checkout -b $Branch)" }
-if (git status --porcelain) { Stop-Run 'cây làm việc chưa sạch: commit hoặc bỏ thay đổi trước khi chạy' }
+if (-not $Resume -and (git status --porcelain)) { Stop-Run 'cây làm việc chưa sạch: commit hoặc bỏ thay đổi trước khi chạy (hoặc dùng -Resume để chấm lại phần việc đang có của giai đoạn -From)' }
 New-Item -ItemType Directory -Force $LogDir | Out-Null
 
-# Chuẩn draw call đo trên code CHƯA có thời tiết: chỉ đo khi bắt đầu từ GĐ1 và chưa có file
-if (-not (Test-Path $Baseline)) {
-  if ($From -gt 1) { Stop-Run "thiếu $Baseline; chạy lại với -From 1 trên code chưa có thời tiết" }
+# Chuẩn draw call đo trên code CHƯA có thời tiết: chỉ đo khi bắt đầu từ GĐ1, cây sạch và chưa có file hợp lệ
+# Hợp lệ = có bảng console.table của tests/drawcalls.mjs (dòng 'overview|ngày'); file lỗi (thiếu Chromium…) thì xoá, không dùng
+$baselineOk = (Test-Path $Baseline) -and (Select-String -Path $Baseline -Pattern 'overview\|' -Quiet)
+if (-not $baselineOk -and -not $DryRun) {
+  if (Test-Path $Baseline) { Remove-Item $Baseline; Say "Đã xoá $Baseline vì không có bảng draw call (lần đo trước lỗi)" 'Yellow' }
+  if ($From -gt 1 -or $Resume) { Stop-Run "thiếu chuẩn draw call hợp lệ ($Baseline); phải đo trên code CHƯA có thời tiết (cây sạch, -From 1, không -Resume)" }
   Say '== Đo chuẩn draw call trước khi sửa (10–20 phút) =='
   if (-not (Invoke-Npm 'build' "$LogDir/chuan-build.log")) { Stop-Run 'build lỗi trên code gốc' }
-  if (-not (Invoke-Npm 'test:drawcalls' $Baseline)) { Stop-Run "test:drawcalls lỗi trên code gốc, xem $Baseline" }
+  if (-not (Invoke-Npm 'test:drawcalls' $Baseline)) {
+    Copy-Item $Baseline "$LogDir/chuan-loi.log" -Force; Remove-Item $Baseline
+    Stop-Run "test:drawcalls lỗi trên code gốc, xem $LogDir/chuan-loi.log (thiếu Chromium thì chạy: npx playwright install chromium)"
+  }
 }
 
 # ============================ Chạy từng giai đoạn ============================
@@ -136,10 +144,14 @@ Báo cáo ngắn: file đã sửa, quyết định đã chọn, việc chưa là
     if ($try -gt 0) {
       $prompt = "Giai đoạn $n chưa đạt. Kết luận của người kiểm tra: $verdictLine`nLog test: $($tr.logs -join ', '). Đọc log, tìm nguyên nhân gốc rồi sửa. Không nới điều kiện kiểm tra.`n`n" + $work
     }
-    $r = Invoke-Claude $prompt $p.model $p.effort $WorkTools "$LogDir/gd$n-l$try-lam.json"
-    $phaseCost += $r.cost
-    $v = Get-Verdict $r.text
-    if (-not $v.ok) { $verdictLine = "agent làm tự báo: $($v.line)"; Say "    $verdictLine" 'Red'; continue }
+    if ($Resume -and $n -eq $From -and $try -eq 0) {
+      Say '    -Resume: giữ phần việc chưa commit, bỏ qua bước agent làm' 'DarkGray'
+    } else {
+      $r = Invoke-Claude $prompt $p.model $p.effort $WorkTools "$LogDir/gd$n-l$try-lam.json"
+      $phaseCost += $r.cost
+      $v = Get-Verdict $r.text
+      if (-not $v.ok) { $verdictLine = "agent làm tự báo: $($v.line)"; Say "    $verdictLine" 'Red'; continue }
+    }
 
     if (-not ($p.testsFirst -and $try -eq 0)) { $tr = Invoke-Tests $p $try }
     $check = @"
