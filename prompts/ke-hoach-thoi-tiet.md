@@ -199,6 +199,11 @@ Bóng đổ mờ dần khi cloud > 0,7 (giảm `sun.intensity` là đủ, **khô
 - **Không cập nhật CPU mỗi khung.** Vị trí gốc các hạt sinh một lần bằng `rng(seed)` trong hộp 160 × 80 × 160 m. Vertex shader tính `p = mod(p0 + vec3(wx, -vFall, wz) * uTime, box) - box/2 + uCamSnap`, với `uCamSnap` là vị trí camera làm tròn theo lưới. Mưa xiên theo `windNow` (góc nghiêng = atan(wind / vFall), vFall ≈ 9 m/s).
 - Số hạt hiển thị điều khiển bằng `mesh.count = round(N · rain)` (không tạo lại buffer). Khi rain = 0 thì `visible = false`.
 - `layers.set(1)` (không vẽ vào phản chiếu nước), `castShadow = false`, `frustumCulled = false`, `depthWrite = false`, `transparent`. Màu sáng hơn ban đêm gần đèn: cộng nhẹ `uNight`.
+- **Chống overdraw** (rủi ro hiệu năng lớn nhất của tính năng: +1 draw call nhưng tô lại cả màn hình nhiều lần). Thông số ở `CONFIG.weather.perf`:
+  - Vệt gần camera hơn `rainNear` bị đẩy ra ngoài clip space ngay trong vertex shader (`gl_Position = vec4(2.0, 2.0, 2.0, 1.0)`), không tô pixel nào.
+  - Alpha giảm dần theo khoảng cách tới `rainFadeFar`, tính trong vertex shader (varying), fragment shader chỉ một phép nhân. Không đọc texture.
+  - Khi mưa hiện: giới hạn `renderer.setPixelRatio(min(gốc, rainMaxPixelRatio))` và `composer.setPixelRatio` tương ứng; tạnh thì trả **đúng** giá trị gốc (preset `now` không đổi gì).
+  - **Tự hạ chất lượng:** đo FPS trung bình trong `adaptiveWindow` giây khi mưa; dưới `adaptiveMinFps` thì lùi một bậc `adaptiveSteps` (nhân vào `mesh.count`, không tạo lại buffer). Không tự nâng lại trong cùng phiên (tránh dao động). Với `?test` tắt cơ chế này để số đo ổn định.
 - **Gợn mưa trên mặt nước:** tăng tần số và độ nhám của `waterNormals` qua `size`, `distortionScale` (không thêm mesh). Vòng gợn riêng (P3) chỉ làm nếu ngân sách draw call cho phép.
 - Tắt mưa khi camera trong hầm (mục 2.5) hoặc dưới mặt nước.
 
@@ -223,6 +228,7 @@ Toàn bộ làm trong vertex shader, đọc uniform `uWind` (vec3 hướng × đ
 - Lịch chớp sinh bằng `rng(seed)` riêng theo `lightning`: trung bình 1 lần mỗi 6–15 s khi bão.
 - Mỗi lần chớp: tạo mới đường gấp khúc tia chớp (khoảng 12 đoạn, có nhánh) bằng **cập nhật buffer có sẵn** của một mesh ribbon emissive (`MeshBasicMaterial`, màu HDR khoảng (3, 3, 4) để bloom). Vị trí ngẫu nhiên cách camera 800–3.000 m. Mesh này `visible` trong 2–3 nháy, mỗi nháy 60–90 ms.
 - Đồng thời: `hemi.intensity` += 2,5 giảm dần trong 0,3 s, `toneMappingExposure` × 1,6. Ban ngày bão cũng thấy (trời tối).
+- Chỉ đổi **cường độ** đèn sẵn có. Không thêm đèn, không bật/tắt `visible` của đèn: số đèn đổi thì three.js biên dịch lại mọi vật liệu (khựng cả giây).
 - **Sấm** tới sau `khoảng cách / 343 m/s` giây (âm thanh, mục 7). Lời dẫn (P3): "đếm giây giữa chớp và sấm, nhân 343 m ra khoảng cách".
 
 ### 4.7 Nắng hè (`summer.ts`): P3, 0 draw call
@@ -342,6 +348,9 @@ Dịch tự nhiên. `ar` đúng chiều phải sang trái. Chú thích về hầ
 | Mặc định | Gió/mưa mặc định ≠ 0 làm đổi ảnh | Preset `now` là no-op, `weather.enabled = false` |
 | Tour | Weather chặn quay cầu làm Tour Cầu sông Hàn treo | `canStart` false thì Tour bỏ qua bước quay, có chú thích. `test:tour` chạy ở preset `now` |
 | Hiệu năng SwiftShader | 6.000 vệt mưa trong suốt làm test chậm | `rain.count` trong config. Test dùng số nhỏ qua `__app.weather.setRainCount()` nếu cần |
+| Fill rate / overdraw | Vệt mưa trong suốt sát camera, pixelRatio 2 → GPU tô lại màn hình nhiều lần; draw call không phản ánh | Mục 4.3 "Chống overdraw": bỏ vệt gần, mờ theo xa, giới hạn pixelRatio khi mưa, tự hạ `mesh.count`. Ảo ảnh mặt đường (P3) chỉ tính khi `uHaze > 0` |
+| Khựng khi đổi preset (biên dịch shader) | Đổi `defines`, `transparent`, `material.needsUpdate`, thêm/ẩn đèn, mesh mưa/tia chớp lần đầu hiện | Ướt/lắc/mưa điều khiển **chỉ bằng uniform**, nhánh shader luôn biên dịch sẵn. Không đổi `defines`/`transparent`/số đèn theo preset. `buildWeather()` gọi `renderer.compileAsync(scene, camera)` với mesh mưa + tia chớp tạm `visible = true` để biên dịch trước, rồi ẩn lại |
+| CPU mỗi khung | Cập nhật vật liệu, tính `impact()` | Mỗi khung chỉ ghi uniform `weatherU` và vài số vô hướng. `impact()` / bảng `#wxImpact` 2 lần/giây. Không cấp phát object trong `updateWeather()` |
 
 ---
 
@@ -360,7 +369,7 @@ Dịch tự nhiên. `ar` đúng chiều phải sang trái. Chú thích về hầ
 
 ### Giai đoạn 3: Mưa + mặt ướt (P1)
 - `rain.ts`, `wetness.ts`, option `weather` trong `bridgePatch`, `registerWet` cho đường của các cầu. Tắt mưa trong hầm.
-- Kiểm tra: draw call preset `rain` ≤ chuẩn + 1; `now` chênh 0; so ảnh `now` trước/sau giai đoạn trùng điểm ảnh; `test:tunnel` qua (vật liệu chung); FPS SwiftShader không giảm quá 30 % ở `overview` (ghi số).
+- Kiểm tra: draw call preset `rain` ≤ chuẩn + 1; `now` chênh 0; so ảnh `now` trước/sau giai đoạn trùng điểm ảnh; `test:tunnel` qua (vật liệu chung); FPS SwiftShader không giảm quá 30 % ở `overview` (ghi số). **FPS trên GPU thật** (Chrome DevTools Performance, máy dev + một máy yếu nếu có) ở `overview` và `wxStreet` (camera trong mưa): ghi số `now` và `rain` 100 %; SwiftShader tô pixel bằng CPU nên không đại diện cho overdraw. Khung dài nhất khi đổi `now → rain` ≤ `perf.maxFrameMs`.
 - Commit.
 
 ### Giai đoạn 4: Gió (P2)
@@ -398,6 +407,8 @@ Dùng `tests/lib.mjs` (`serveDir`, `launch`, `openApp`, `frames`, `pickView`), g
 5. **Mưa trong hầm:** camera ở `hrGallery` → mesh mưa `visible === false`.
 6. **Không rò rỉ:** đổi preset 5 vòng + chạy kịch bản 2 lần: `renderer.info.memory.geometries` / `textures` không tăng.
 7. **Console sạch.**
+7b. **Không khựng:** đổi preset `now → rain → storm → now` (lần đầu trong phiên), ghi thời gian từng khung bằng `requestAnimationFrame`; khung dài nhất ≤ `CONFIG.weather.perf.maxFrameMs`. Đếm `renderer.info.programs.length` trước và sau chuỗi đổi preset: **không tăng** (mọi program đã biên dịch sẵn lúc `buildWeather`).
+7c. **Khôi phục pixelRatio:** `rain → now` thì `renderer.getPixelRatio()` trùng giá trị trước khi mưa.
 8. **Ảnh** (Playwright, lưu `tests/screens/`, không commit): `overview`, `tpBay`, `wxTtlStays`, `wxStreet`, `shOverview` × 5 preset × ngày/đêm. **Tự xem lại ảnh** và soát: mưa không thành khối trắng đặc ở gần camera, mặt đường ướt có phản chiếu đèn, không có z-fighting do nước dâng ở kè, mây/sương không che mất cầu ở preset `rain` 50 %, bloom chớp không cháy trắng toàn màn hình quá 1 khung.
 
 `test:tour`, `test:voice`, `test:tunnel`, `test:riverfront` vẫn phải qua ở preset mặc định.
