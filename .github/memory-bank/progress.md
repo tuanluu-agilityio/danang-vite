@@ -16,9 +16,10 @@ _Cập nhật: 2026-10-21_
 | Test: timeout dài hơn, `test:tour -- --only`, đo thêm góc nhìn hầm/riverfront | `92c8d34` | — |
 | Thuyết minh tiếng Nga (`ru-RU-SvetlanaNeural`, 5 Tour / 36 điểm dừng) | `0a0b6be` | `test:voice` |
 
-Tất cả các commit từ `bdab293` trở đi mới nằm trên `feature/riverfront`, chưa vào `main`.
+Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn AI agent).
 
 ## Còn thiếu
+- Chạy lại đủ bộ test trên `main` sau khi merge PR #1–#3.
 - Bảng chuẩn draw call mới trong `tests/KET-QUA.md` (gồm `hr*`, `rf*`).
 - Thuyết minh cho ko, ja, zh, th, ar, hi.
 - Dựng lại Cầu Rồng chi tiết theo `prompts/cau-rong.md`.
