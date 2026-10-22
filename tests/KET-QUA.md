@@ -1,6 +1,20 @@
-# Kết quả kiểm tra (cập nhật 2026-10-22, nhánh `feature/weather` sau GĐ8)
+# Kết quả kiểm tra (cập nhật 2026-10-22, nhánh `feature/tour-4-cau` sau Tour 4 cầu; bảng `now` bên dưới là của GĐ8)
 
 Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (gồm bóng đổ, phản chiếu nước, bloom), trung vị 5 khung hình.
+
+## Bộ test Tour 4 cầu (2026-10-22, nhánh `feature/tour-4-cau`)
+
+Log: `tests/screens/tour4-gd4-*.log` (không commit). Không thêm mesh nên draw call phải không đổi.
+
+| Lệnh | Kết quả |
+|---|---|
+| `npm run typecheck`, `npm run build` | đạt |
+| `npm run test:drawcalls` | đạt, 58/58 phép đo (ngày + đêm) khớp bảng `now` bên dưới, chênh 0. Lần chạy đầu bị treo 240 s ở một thao tác nhấp (log `tour4-gd4-drawcalls.log`); chạy lại riêng một mình thì đạt. Chạy không kèm `tests/original` nên chỉ có cột `bản Vite` |
+| `npm run test:tour` | đạt: dragon 8, tp 7, ttl 7, sh 6, hr 8, **all 13** (camera thấp nhất 24 m, cầu sông Hàn tự quay ở điểm 8, hết hành trình → orbit), storm 8 |
+| `npm run test:voice` | đạt (vi + en + ru, 5 tour, 41 điểm dừng + 8 mốc kịch bản bão mỗi ngôn ngữ) |
+| `npm run test:tunnel`, `test:riverfront`, `test:weather` | đạt |
+
+Chưa có bằng chứng: FPS SwiftShader/GPU thật của Tour 4 cầu; giọng đọc nghe thật (headless chỉ kiểm file và thời lượng); Tour 4 cầu ở ban đêm / khi có thời tiết khác `now` (ảnh tự xem chỉ chụp ban ngày).
 
 ## Bộ test GĐ8 (2026-10-22)
 

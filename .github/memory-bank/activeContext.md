@@ -7,12 +7,7 @@ _Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/tour-4-cau` (tạo từ
 - `tests/KET-QUA.md` đã cập nhật theo log GD8 (58 góc nhìn `now`, gồm `hr*`, `rf*`, `wx*`).
 
 ## Bước tiếp theo
-1. Tour 4 cầu (`feature/tour-4-cau`, đặc tả `prompts/tour-4-cau.md`, D-015). Các giai đoạn:
-   - GĐ0: đặc tả + memory bank.
-   - GĐ1: `tour.ts` nhận đường bay mở (`loop: false`, `segMax`, hook `bridge`) + `CONFIG.tourAll`. Kiểm: `test:tour` 5 Tour cũ, `durs` không đổi.
-   - GĐ2: `ALL_TOUR` 13 điểm, nút `allTour` dưới thanh chọn cầu, i18n `vTourAll`/`allStops` × 9, `tour-check` thêm `all`.
-   - GĐ3: lời `allStops` vi/en/ru, `gen:voice`, `voice-check`.
-   - GĐ4: chạy đủ bộ test, `KET-QUA.md`, memory bank.
+1. Tour 4 cầu (`feature/tour-4-cau`, đặc tả `prompts/tour-4-cau.md`, D-015) đã đủ GĐ0–GĐ4: `tour.ts` nhận đường bay mở (`loop: false`, `segMax`, `TourStop.bridge` → `tourHooks.bridge`), `ALL_TOUR` 13 điểm, nút `allTour`, i18n `vTourAll`/`allStops` × 9, thuyết minh vi/en/ru (39 clip). Kết quả test ở `tests/KET-QUA.md`. Chưa kiểm: giọng nghe thật, Tour ban đêm / thời tiết khác `now`. Lời điểm 7 ("Tiếp tục về phía Bắc") đọc lúc camera còn nhìn lại Cầu Rồng; chỉnh `ALL_TOUR[6]` nếu muốn camera quay về hướng Bắc.
 2. Còn mở: tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
 3. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md`.
 4. `.gitignore` (dòng `prompts/tham-chieu/`) và `prompts/vong-quay-mat-troi.md` chưa commit: thuộc Sun Wheel, không commit vào nhánh Tour 4 cầu.

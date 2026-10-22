@@ -24,11 +24,11 @@ _Cập nhật: 2026-10-22_
 | Thời tiết GĐ7: kịch bản bão 120 s, nắng hè, cây đổ, âm thanh | `edced8b` | `test:drawcalls`, `test:weather`, `test:tour` |
 | Thời tiết GĐ8: hoàn tất — `KET-QUA.md`, README, memory bank (chưa commit) | — | `build`, toàn bộ bộ test (log `gd8-l0-*`) |
 | Kịch bản bão: hành trình camera như Tour + thuyết minh vi/en/ru khớp từng điểm (D-013); sửa dây không lắc (hình trụ 1 đoạn, lỗi từ GĐ4) (chưa commit) | — | `test:tour`, `test:voice`, `test:weather`, `test:drawcalls` |
+| Tour 4 cầu: TTL → Rồng → sông Hàn → Thuận Phước, đường bay mở một chiều, 13 điểm, thuyết minh vi/en/ru, i18n 9 ngôn ngữ (D-015) | `e672add`, `cd52a47` + GĐ4 | `test:drawcalls` (58/58, chênh 0), `test:tour`, `test:voice`, `test:tunnel`, `test:riverfront`, `test:weather` |
 
-Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn AI agent). Nhánh `feature/weather` (GĐ1–GĐ7 đã commit) chưa merge vào `main`.
+Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn AI agent, PR #6 thời tiết + kịch bản bão có thuyết minh).
 
 ## Còn thiếu
-- Merge `feature/weather` vào `main` (chưa làm, chờ người dùng quyết định).
 - Tự chọn preset theo tháng khi không có `?test` (12b-6, đã đồng ý nhưng chưa code; đổi mặc định hiển thị nên cần chạy lại bộ test).
 - Thời tiết: số draw call từng preset (`rain`, `storm`, …) chưa ghi vào `KET-QUA.md`; log GD8 chỉ ghi `now`. Cột "bản gốc" của `test:drawcalls` chưa đo lại trong bản này.
 - Thời tiết: sóng bạc đầu cửa sông, bơm hầm, tàu cao `ship` của Cầu sông Hàn, ảo ảnh mặt cầu chưa có.
