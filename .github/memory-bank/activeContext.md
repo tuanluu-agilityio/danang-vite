@@ -1,17 +1,24 @@
 # Active Context
 
-_Cập nhật: 2026-10-21 · Nhánh chính: `main`_
+_Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/weather` (GĐ1–GĐ7 đã commit, GĐ8 chưa commit) · Nhánh chính: `main`_
 
 ## Trạng thái
 - `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`).
-- Riverfront đã tích hợp: `buildRiverfront()` gọi sau `new HanTunnel()` trong `main.ts`, `updateRiverfront()` trong `animate()`, có trong `window.__app`; `test:riverfront` đã có.
-- `tests/drawcalls.mjs` đã đo thêm các góc nhìn `hr*`/`rf*`, nhưng bảng chuẩn `tests/KET-QUA.md` vẫn là bản 2026-10-20 (chỉ 18 góc nhìn cũ).
+- `feature/weather` đã đủ 8 giai đoạn của đặc tả `prompts/ke-hoach-thoi-tiet.md`. GĐ8 (hoàn tất) đã làm xong nội dung: `tests/KET-QUA.md`, README mục Cấu trúc, memory bank. Chưa merge vào `main`.
+- `tests/KET-QUA.md` đã cập nhật theo log GD8 (58 góc nhìn `now`, gồm `hr*`, `rf*`, `wx*`).
 
 ## Bước tiếp theo
-1. Chạy đủ bộ test trên `main` (`build`, `test:drawcalls`, `test:tour`, `test:tunnel`, `test:riverfront`, `test:voice`), ghi kết quả vào `progress.md` — chưa chạy đủ sau khi merge.
-2. Cập nhật `tests/KET-QUA.md` với bảng chuẩn mới gồm cả góc nhìn `hr*`, `rf*`.
-3. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md`.
-4. **Thời tiết** (đặc tả `prompts/ke-hoach-thoi-tiet.md`, chưa code, nhánh dự kiến `feature/weather`): 4 preset Nắng hè / Mưa / Gió mùa / Bão + "Hiện trạng" no-op; module `src/environment/weather/`; điều biến sau `applyNight` (D-009). 8 giai đoạn, GĐ1 = config + khung rỗng + đo draw call chênh 0. Người dùng đã trả lời 7 câu hỏi (mục 12b của đặc tả). GĐ1 đã code (xem mục "Thời tiết — Giai đoạn 1"); bước tiếp theo là GĐ2 (khí quyển 4 preset + UI) sau khi GĐ1 qua `test:drawcalls`.
+1. Commit GĐ8 trên `feature/weather` (các file docs đã sửa; `tests/KET-QUA.md`, `README.md`, `.github/memory-bank/*`).
+2. Quyết định merge `feature/weather` vào `main` (người dùng).
+3. Còn mở (không thuộc GĐ8, xem mục "Vấn đề mở"): tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
+4. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md` (chưa làm, ngoài phạm vi GĐ8).
+
+## Thời tiết — Giai đoạn 8 (hoàn tất, nhánh `feature/weather`, chưa commit)
+- Đã làm: cập nhật `tests/KET-QUA.md` theo log `tests/screens/weather-logs/gd8-l0-*.log` (bảng `now` 58 góc nhìn ngày/đêm; Tour; bộ test); README mục Cấu trúc thêm `environment/weather/`; `progress.md` thêm dòng GĐ1–GĐ8; `systemPatterns.md` thêm mẫu "điều biến thời tiết" và mẫu hiệu năng của shader/mesh ẩn; `npm run build` qua. Không đổi code ứng dụng.
+- Không chạy test (theo yêu cầu). Kết quả từ log GD8: build đạt; `test:drawcalls` đạt (log chỉ có cột `bản Vite`); `test:tour` đạt (dragon 8, tp 7, ttl 7, sh 6, hr 8); `test:tunnel`, `test:riverfront`, `test:voice`, `test:weather` đạt.
+- Chưa có trong log, nên chưa ghi: số draw call từng preset thời tiết; cột "bản gốc"/"chênh" của lần đo này (chạy không kèm `tests/original`); FPS SwiftShader/GPU thật; so ảnh `now` trước/sau trùng điểm ảnh; ảnh tự xem cho GĐ8 (GĐ8 không có bước tự xem bằng mắt theo đặc tả).
+- Bảng cũ 2026-10-20 thấp hơn 7 draw call so với log GD8 ở `overview|ngày` và `head|ngày`; chưa xác định nguyên nhân (riverfront/hầm đã merge sau 2026-10-20, hoặc thời tiết). Cần `test:drawcalls -- tests/original` để trả lời.
+- Quyết định: không đổi mặc định hiển thị ở GĐ8 (12b-6 để sau), vì mọi log `test:*` đã chạy trên mã hiện tại; đổi mã bây giờ mà không chạy lại test sẽ làm log không còn đúng.
 
 ## Thời tiết — Giai đoạn 1 (nhánh `feature/weather`, chưa commit)
 - Đã làm: `weatherBase` → `CONFIG.weather` trong `src/config.ts` (preset, Beaufort, giãn nở, hằng số thời gian, seed 20061001, `monthPreset`); `weatherU` trong `src/core/shared.ts`; `src/environment/weather/{state,impact,index}.ts`; `main.ts` gọi `buildWeather()` sau `buildRiverfront()`, `updateWeather()` ngay sau `applyNight()`, `weather` có trong `window.__app` (`weather.impact()`, `setPreset()`, `setIntensity()`). Chưa áp gì lên cảnh. `npm run build` qua.

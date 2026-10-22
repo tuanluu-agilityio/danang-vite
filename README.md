@@ -45,6 +45,7 @@ src/
     han-tunnel/      Hầm vượt sông Hàn (vỏ hầm, nội thất, máng hầm hở, cửa hầm, đáy sông, mặt cắt, mô phỏng dìm)
   environment/       sông Hàn, núi, đường phố, thành phố, cây, giao thông
     riverfront/      hai bờ sông: địa danh thật, mặt dựng LED trái tim + "DN", bảng quảng cáo, chi tiết dải đi bộ
+    weather/         thời tiết: khí quyển 4 preset, mưa + mặt ướt, gió (cây, dây, thuyền), bão (chớp, đóng cầu, kịch bản 120 s), nắng hè, cây đổ, âm thanh
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
   audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
   ui/                bảng điều khiển, nút quay cầu, âm thanh
