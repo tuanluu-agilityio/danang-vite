@@ -1,6 +1,6 @@
 # Các cây cầu Đà Nẵng 3D — Vite + TypeScript
 
-Chuyển từ một file `index (2).html` (~4 600 dòng) sang Vite + TypeScript, không dùng framework UI. Mọi tính năng giữ nguyên.
+Chuyển từ một file `index.html` (~4 600 dòng) sang Vite + TypeScript, không dùng framework UI. Mọi tính năng giữ nguyên.
 Ngoài bốn cây cầu còn có **Hầm vượt sông Hàn** (phương án đề xuất 2025, chưa xây) — xem mục [Hầm vượt sông Hàn](#hầm-vượt-sông-hàn).
 Ngoài bốn cây cầu còn có **Hầm vượt sông Hàn** (phương án đề xuất 2025, chưa xây) — xem mục [Hầm vượt sông Hàn](#hầm-vượt-sông-hàn).
 
