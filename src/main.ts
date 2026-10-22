@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { initI18n } from './i18n';
 import { renderer, scene, camera, controls } from './core/renderer';
-import { shared } from './core/shared';
+import { shared, windFx } from './core/shared';
 import { buildLights } from './core/lights';
 import { buildSky, shadowCenter } from './core/sky';
 import { buildWater, water } from './core/water';
@@ -27,6 +27,7 @@ import { TranThiLyBridge } from './bridges/tran-thi-ly';
 import { SongHanBridge } from './bridges/song-han';
 import { HanTunnel } from './bridges/han-tunnel';
 import { buildRiverfront, updateRiverfront } from './environment/riverfront';
+import { buildWeather, updateWeather } from './environment/weather';
 import { updateCamera, hrDrive } from './views/camera';
 import { cam } from './views/state';
 import { TOURS, tour } from './views/tour';
@@ -67,6 +68,8 @@ scene.add(songHan.group);
 const hanTunnel = new HanTunnel();     // sau mọi lệnh dựng có dùng rand(): chỉ dọn nhà, cây trên tuyến bằng cách thu nhỏ instance
 scene.add(hanTunnel.group);
 const riverfront = buildRiverfront();    // sau HanTunnel: dọn nhà bị đè bằng scale 0, không đụng chuỗi rand()
+const weather = buildWeather();          // sau buildRiverfront (sau mọi rand()): chụp giá trị gốc khí quyển/đường, dựng mưa (ẩn), điều biến sau applyNight
+weather.attachSwing(songHan.ctrl);       // bão: Cầu sông Hàn không quay (SwingController.canStart)
 const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel];
 createFire();
 createWaterJet();
@@ -76,7 +79,7 @@ applyNight(0, 0);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, riverfront, hrDrive, THREE, dayNight, tours: TOURS, tour, narration };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, riverfront, weather, hrDrive, THREE, dayNight, tours: TOURS, tour, narration, audio };
 }
 
 /* ============================ Vòng lặp ============================ */
@@ -90,7 +93,8 @@ function animate() {
   shadowCenter.set(Math.round(controls.target.x / 8) * 8, 0, Math.round(controls.target.z / 8) * 8);
   stepNight(dt);
   applyNight(dayNight.night, time);
-  water.material.uniforms.time.value += dt * 0.6;
+  updateWeather(dt, time, dayNight.night, camera);         // điều biến sau applyNight (D-009); camera: mưa quanh camera, tắt trong hầm
+  water.material.uniforms.time.value += dt * 0.6 * windFx.waveSpeed;   // sóng trôi nhanh hơn theo gió (mặc định ×1)
   updateShow(dt);
   updateEffects(dt, time);
   updateTraffic(dt);

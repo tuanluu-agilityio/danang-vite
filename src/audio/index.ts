@@ -7,12 +7,15 @@
    - Cầu sông Hàn: còi báo khi quay, tiếng động cơ mâm xoay.
    Thang âm ngũ cung Rê – Mi – Sol – La – Si (hơi hướng điệu Bắc). */
 
+import { CONFIG } from '../config';
+
 interface AudioState {
   ctx: AudioContext | null; on: boolean; volume: number; night: number; beat: number; nextTime: number; timer: number;
   deg: number; pluck: Map<number, AudioBuffer>; noise: AudioBuffer | null; white?: AudioBuffer;
   waterSrc: AudioBufferSourceNode | null; waterGain: GainNode | null; lastFire: boolean; lastWater: boolean; distGain: number;
   master?: GainNode; tone?: BiquadFilterNode; music?: GainNode; sfx?: GainNode; verb?: ConvolverNode; verbSend?: GainNode;
   droneGain?: GainNode; riverGain?: GainNode; motorGain?: GainNode; swingGain?: number; ducked?: boolean;
+  wxDuck: number; rainGain?: GainNode; windGain?: GainNode; windBp?: BiquadFilterNode; wxRain: number; wxWind: number; wxIndoors: number; patterAt: number;   // thời tiết (GĐ7)
 }
 type AudioCtor = typeof AudioContext;
 
@@ -26,7 +29,7 @@ export function createAudio() {
     return ROOT * Math.pow(2, oct + SCALE[i] / 12);
   };
   const A: AudioState = { ctx: null, on: false, volume: 0.7, night: 0, beat: 0, nextTime: 0, timer: 0,
-    deg: 7, pluck: new Map(), noise: null, waterSrc: null, waterGain: null, lastFire: false, lastWater: false, distGain: 1 };
+    deg: 7, pluck: new Map(), noise: null, waterSrc: null, waterGain: null, lastFire: false, lastWater: false, distGain: 1, wxDuck: 1, wxRain: 0, wxWind: 0, wxIndoors: 0, patterAt: 0 };
   const R = Math.random;
 
   function build() {
@@ -37,7 +40,7 @@ export function createAudio() {
     A.master.connect(comp).connect(ctx.destination);
     A.tone = ctx.createBiquadFilter(); A.tone.type = 'lowpass'; A.tone.frequency.value = 9000;
     A.tone.connect(A.master);
-    A.music = ctx.createGain(); A.music.gain.value = A.ducked ? DUCK_GAIN : MUSIC_GAIN; A.music.connect(A.tone);
+    A.music = ctx.createGain(); A.music.gain.value = musicLevel(); A.music.connect(A.tone);
     A.sfx = ctx.createGain(); A.sfx.gain.value = 1; A.sfx.connect(A.master);
     // Hồi âm: đáp ứng xung tự sinh (nhiễu tắt dần, stereo)
     const len = ctx.sampleRate * 3.2, ir = ctx.createBuffer(2, len, ctx.sampleRate);
@@ -52,8 +55,10 @@ export function createAudio() {
     const wl = ctx.sampleRate * 2, wb = ctx.createBuffer(1, wl, ctx.sampleRate), wd = wb.getChannelData(0);
     for (let i = 0; i < wl; i++) wd[i] = R() * 2 - 1;
     A.white = wb;
-    buildDrone(); buildRiver(); buildWater();
+    buildDrone(); buildRiver(); buildWater(); buildWeatherSound();
   }
+  const musicLevel = () => (A.ducked ? DUCK_GAIN : MUSIC_GAIN) * A.wxDuck;   // nhạc nền: giọng thuyết trình và bão cùng hạ
+
 
   /* Dây gảy Karplus–Strong, dựng sẵn mỗi nốt một lần */
   function pluckBuf(f) {
@@ -153,6 +158,24 @@ export function createAudio() {
     A.waterGain = ctx.createGain(); A.waterGain.gain.value = 0;
     src.connect(hp).connect(A.waterGain).connect(A.sfx); src.start();
   }
+  /* Thời tiết (GĐ7, mục 7): mưa = nhiễu trắng qua bandpass + lowpass; gió = nhiễu nâu qua bandpass trượt tần số; sấm gọi riêng. Mọi gain ban đầu 0. */
+  function buildWeatherSound() {
+    const ctx = A.ctx, W = CONFIG.weather.sound;
+    const rs = ctx.createBufferSource(); rs.buffer = A.white; rs.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = W.rainBand[0]; bp.Q.value = W.rainBand[1];
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = W.rainLow;
+    A.rainGain = ctx.createGain(); A.rainGain.gain.value = 0; rs.connect(bp).connect(lp).connect(A.rainGain).connect(A.sfx); rs.start();
+    const ws = ctx.createBufferSource(); ws.buffer = A.noise; ws.loop = true;
+    A.windBp = ctx.createBiquadFilter(); A.windBp.type = 'bandpass'; A.windBp.frequency.value = W.windBase; A.windBp.Q.value = W.windQ;
+    A.windGain = ctx.createGain(); A.windGain.gain.value = 0; ws.connect(A.windBp).connect(A.windGain).connect(A.sfx); ws.start();
+  }
+  /* "Tí tách": một hạt mưa ngắn, ngẫu nhiên (Math.random như phần nhạc, KHÔNG dùng rand() của cảnh) */
+  function patter(t, v) {
+    const ctx = A.ctx, o = ctx.createOscillator(), g = ctx.createGain(), pan = ctx.createStereoPanner();
+    o.frequency.value = 1800 + R() * 2600; pan.pan.value = R() * 1.6 - 0.8;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+    o.connect(g).connect(pan).connect(A.sfx); o.start(t); o.stop(t + 0.04);
+  }
   function cricket(t) {
     const ctx = A.ctx, o = ctx.createOscillator(), am = ctx.createOscillator(), amG = ctx.createGain(), g = ctx.createGain(), pan = ctx.createStereoPanner();
     o.frequency.value = 4300 + R() * 600; am.frequency.value = 28 + R() * 10; amG.gain.value = 0.5;
@@ -221,7 +244,29 @@ export function createAudio() {
       setTimeout(() => { if (!A.on) A.ctx.suspend(); }, 1200);
     },
     setVolume(v) { A.volume = v; if (A.ctx && A.on) A.master.gain.setTargetAtTime(v, A.ctx.currentTime, 0.08); },
-    duck(on) { A.ducked = on; if (A.music) A.music.gain.setTargetAtTime(on ? DUCK_GAIN : MUSIC_GAIN, A.ctx.currentTime, 0.3); },
+    duck(on) { A.ducked = on; if (A.music) A.music.gain.setTargetAtTime(musicLevel(), A.ctx.currentTime, 0.3); },
+    /* Mỗi khung (hoặc ~10 lần/giây): rain, wind (m/s tức thời), wxStorm (0–1, hạ nhạc), indoors (camera trong hầm / dưới nước: nhỏ đi). Chưa bật âm thanh thì chỉ nhớ giá trị. */
+    setWeather(rain, wind, storm, indoors) {
+      const W = CONFIG.weather.sound; A.wxRain = rain; A.wxWind = wind; A.wxIndoors = indoors ? W.indoors : 1;
+      A.wxDuck = 1 - (1 - W.musicDuck) * Math.min(1, storm);
+      if (!A.ctx || !A.on) return;
+      const now = A.ctx.currentTime, k = A.wxIndoors;
+      A.rainGain.gain.setTargetAtTime(W.rainGain * rain * k, now, 0.4);
+      A.windGain.gain.setTargetAtTime(W.windGain * Math.min(1.3, (wind / 28) ** 2) * k, now, 0.3);
+      A.windBp.frequency.setTargetAtTime(W.windBase + W.windPerMs * wind, now, 0.3);
+      A.music.gain.setTargetAtTime(musicLevel(), now, 0.5);
+      if (rain > 0.05 && now > A.patterAt) { patter(now + R() * 0.1, 0.02 * rain * k); A.patterAt = now + 0.1 / Math.max(0.05, rain * W.patter * 0.1); }
+    },
+    /* Sấm: nhiễu nâu lowpass 120–300 Hz, rền 2–4 s, trễ delay giây (khoảng cách / 343 m/s), to ∝ loud (1 = ở 800 m) */
+    thunder(delay, loud) {
+      if (!A.ctx || !A.on) return;
+      const ctx = A.ctx, W = CONFIG.weather.sound, t = ctx.currentTime + delay, dur = W.thunderSec[0] + R() * (W.thunderSec[1] - W.thunderSec[0]);
+      const src = ctx.createBufferSource(); src.buffer = A.noise;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = W.thunderLow[0] + R() * (W.thunderLow[1] - W.thunderLow[0]);
+      const g = ctx.createGain(), v = W.thunderGain * Math.min(1.5, loud) * A.wxIndoors;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.12); g.gain.setTargetAtTime(0.0001, t + 0.3, dur / 4);
+      src.connect(lp).connect(g).connect(A.sfx); src.start(t, R() * 2); src.stop(t + dur + 0.5);
+    },
     pause() { if (A.ctx && A.on) { clearInterval(A.timer); A.ctx.suspend(); } },
     resume() { if (A.ctx && A.on) { A.ctx.resume(); A.nextTime = Math.max(A.nextTime, A.ctx.currentTime + 0.1); A.timer = window.setInterval(schedule, 60); } },
     /* Gọi mỗi khung hình: ngày/đêm, trạng thái trình diễn, khoảng cách camera tới đầu rồng */

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { shared } from '../core/shared';
+import { shared, weatherU } from '../core/shared';
+import { CONFIG } from '../config';
 
 type Mat = THREE.Material;
 
@@ -60,17 +61,54 @@ export interface BridgePatchOptions {
   originZ?: number;
   floodTop?: number;             // m, cho mode 1
   floodBase?: number;
+  weather?: boolean;             // mặt ướt khi mưa: đọc weatherU.uWet (0 = không đổi gì)
+  sag?: 'cable' | 'hanger';      // võng cáp chủ Thuận Phước khi nóng (weather/summer.ts): đọc weatherU.uSagTp (0 = không đổi gì); hanger chỉ dịch đầu trên
+  sway?: SwayKind;               // dây lắc theo gió (chỉ InstancedMesh dựng bằng segmentMatrix): đọc weatherU.uSwayTp/Ttl/Sh (0 = không đổi gì)
 }
+export type SwayKind = 'tp' | 'ttl' | 'sh';
+const SWAY_U = { tp: weatherU.uSwayTp, ttl: weatherU.uSwayTtl, sh: weatherU.uSwaySh };
+
+/* Dây lắc theo gió (mục 4.5): dịch SAU khi nhân instanceMatrix/modelMatrix (không gian thế giới — segmentMatrix co bán kính nên dịch cục bộ bị thu nhỏ).
+   Dạng sin(π·t), t = position.y + 0.5 của CylinderGeometry (hai đầu cố định) — hình trụ phải có heightSegments > 1 (CONFIG.weather.wind.cableSegs), dây 1 đoạn thì sin = 0 ở mọi đỉnh, không lắc. Hướng chính: thành phần gió vuông góc với dây, thêm 35 % vuông góc thứ hai (quỹ đạo elip).
+   Biên độ (m, đã phóng đại) do weather/wind.ts tính; = 0 thì nhánh không chạy (ảnh preset `now` trùng từng điểm ảnh). */
+const swayVertex = (omega: number) => `#include <project_vertex>
+  #ifdef USE_INSTANCING
+  if (uSway > 0.0) {
+    vec3 swAx = mat3(modelMatrix) * instanceMatrix[1].xyz; float swLen = length(swAx); swAx /= swLen;
+    vec3 swW = vec3(uWindDir.x, 0.0, uWindDir.y), swD = swW - swAx * dot(swW, swAx); float swL = length(swD);
+    swD = swL > 1e-3 ? swD / swL : vec3(0.0, 1.0, 0.0);
+    vec3 swE = cross(swAx, swD), swC = (modelMatrix * vec4(instanceMatrix[3].xyz, 1.0)).xyz;
+    float swPh = dot(swC, vec3(0.071, 0.023, 0.113)), swT = clamp(position.y + 0.5, 0.0, 1.0);
+    float swA = sin(3.14159265 * swT) * uSway * min(1.0, swLen / ${CONFIG.weather.wind.refLen.toFixed(1)});
+    vec3 swDisp = swA * (swD * sin(uTime * ${omega.toFixed(2)} + swPh) + swE * 0.35 * sin(uTime * ${(omega * 1.37).toFixed(2)} + swPh * 1.7));
+    mvPosition.xyz += mat3(viewMatrix) * swDisp; gl_Position = projectionMatrix * mvPosition;
+  }
+  #endif`;
+/* Võng cáp chủ khi nóng (mục 4.7): dịch y theo Δf·sin(π·u), u = vị trí dọc nhịp chính (ngoài nhịp chính = 0). Hanger: chỉ đầu trên (position.y = −0,5, xem segmentMatrix(top, bot)) đi xuống. */
+const sagVertex = (kind: 'cable' | 'hanger') => `
+  if (uSagTp != 0.0) {
+    vec4 sgL = vec4(transformed, 1.0);
+    #ifdef USE_INSTANCING
+      sgL = instanceMatrix * sgL;
+    #endif
+    float sgX = (modelMatrix * sgL).x, sgU = clamp((sgX + ${(CONFIG.thuanPhuoc.mainSpan / 2).toFixed(2)}) / ${CONFIG.thuanPhuoc.mainSpan.toFixed(2)}, 0.0, 1.0);
+    float sgW = ${kind === 'hanger' ? 'clamp(0.5 - position.y, 0.0, 1.0)' : '1.0'};
+    mvPosition.xyz += mat3(viewMatrix) * vec3(0.0, -uSagTp * sin(3.14159265 * sgU) * sgW, 0.0); gl_Position = projectionMatrix * mvPosition;
+  }`;
 export function bridgePatch<M extends Mat>(mat: M, opt: BridgePatchOptions): M {
   const pal = LED_PALETTES[opt.palette || 'sea'];
   const key = ['bp', opt.noise ? 1 : 0, opt.wet ? 1 : 0, opt.led || 0, opt.mode || 0, opt.palette || 'sea',
-    opt.pattern ? 1 : 0, opt.originX ?? 'n', opt.originZ ?? 'n', opt.floodTop ?? 95, opt.floodBase ?? 12].join('-');
+    opt.pattern ? 1 : 0, opt.originX ?? 'n', opt.originZ ?? 'n', opt.floodTop ?? 95, opt.floodBase ?? 12].join('-') + (opt.weather ? '-w' : '') + (opt.sway ? '-s' + opt.sway : '') + (opt.sag ? '-g' + opt.sag : '');   // tắt weather/sway: key cũ giữ nguyên
   mat.customProgramCacheKey = () => key;
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = shared.uTime; sh.uniforms.uNight = shared.uNight;
     if (opt.pattern) sh.uniforms.uPattern = opt.pattern;
+    if (opt.weather) sh.uniforms.uWet = weatherU.uWet;
+    if (opt.sag) sh.uniforms.uSagTp = weatherU.uSagTp;
+    if (opt.sway) { sh.uniforms.uSway = SWAY_U[opt.sway]; sh.uniforms.uWindDir = weatherU.uWindDir; }
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vBW;')
+      .replace('#include <common>', '#include <common>\nvarying vec3 vBW;' + (opt.sway ? '\nuniform float uTime; uniform float uSway; uniform vec2 uWindDir;' : '') + (opt.sag ? '\nuniform float uSagTp;' : ''))
+      .replace('#include <project_vertex>', (opt.sway ? swayVertex(CONFIG.weather.wind[opt.sway].omega) : '#include <project_vertex>') + (opt.sag ? sagVertex(opt.sag) : ''))
       .replace('#include <fog_vertex>', `#include <fog_vertex>
         { vec4 bw = vec4(transformed, 1.0);
         #ifdef USE_INSTANCING
@@ -78,7 +116,7 @@ export function bridgePatch<M extends Mat>(mat: M, opt: BridgePatchOptions): M {
         #endif
           vBW = (modelMatrix * bw).xyz; }`);
     let frag = sh.fragmentShader.replace('#include <common>', `#include <common>
-      varying vec3 vBW; uniform float uTime; uniform float uNight; ${opt.pattern ? 'uniform float uPattern;' : ''}
+      varying vec3 vBW; uniform float uTime; uniform float uNight; ${opt.pattern ? 'uniform float uPattern;' : ''} ${opt.weather ? 'uniform float uWet;' : ''}
       float bpHash(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
       float bpNoise(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
         return mix(mix(mix(bpHash(i), bpHash(i + vec3(1,0,0)), f.x), mix(bpHash(i + vec3(0,1,0)), bpHash(i + vec3(1,1,0)), f.x), f.y),
@@ -95,9 +133,15 @@ export function bridgePatch<M extends Mat>(mat: M, opt: BridgePatchOptions): M {
     if (opt.wet) after += `
         { vec3 wetC = vBW.y < -0.4 ? vec3(0.42, 0.44, 0.40) : vec3(0.56, 0.60, 0.52);
           diffuseColor.rgb *= mix(wetC, vec3(1.0), smoothstep(1.7, 2.4, vBW.y)); }`;
+    // Mặt ướt: uWet = 0 thì nhánh không chạy (ảnh preset `now` trùng từng điểm ảnh); mặt hướng lên ướt hơn mặt đứng
+    if (opt.weather) after += `
+        float bpWet = 0.0;
+        if (uWet > 0.0) { bpWet = uWet * mix(0.6, 1.0, step(0.0, vBW.y)); diffuseColor.rgb *= 1.0 - ${(1 - CONFIG.weather.wetness.bridgeDarken).toFixed(3)} * bpWet; }`;
     if (after) frag = frag.replace('#include <map_fragment>', `#include <map_fragment>${after}`);
     if (opt.noise) frag = frag.replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(roughnessFactor + (bpN - 0.5) * 0.18, 0.0, 1.0);`);
+    if (opt.weather) frag = frag.replace('#include <lights_physical_fragment>', `if (uWet > 0.0) roughnessFactor = mix(roughnessFactor, min(roughnessFactor, ${CONFIG.weather.wetness.bridgeRough.toFixed(3)}), bpWet);
+        #include <lights_physical_fragment>`);
     if (opt.led) {
       const L = opt.led.toFixed(2), fTop = (opt.floodTop ?? 95).toFixed(1), fBase = (opt.floodBase ?? 12).toFixed(1);
       // originX: sóng chạy ra xa điểm này theo trục X; thêm originZ: theo khoảng cách ngang (dùng cho nhịp quay)

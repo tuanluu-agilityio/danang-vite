@@ -10,11 +10,12 @@ import { hrRoadY } from '../bridges/han-tunnel/profile';
    Hầm sông Hàn: immerse — chạy mô phỏng dìm đốt hầm; cutaway — bật mặt cắt địa chất; interior — luôn hiện nội thất hầm. */
 export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean; immerse?: boolean; cutaway?: boolean; interior?: boolean }
 
-/* Cầu Rồng */
+/* Cầu Rồng. Điểm "Trên mặt cầu" đặt ở làn phía Bắc (z < 0) như điểm "Đuôi rồng" trước nó: bản gốc đặt z = +11,5 nên đoạn bay
+   cắt ngang dải phân cách ở x ≈ −282, y ≈ 9,9 — xuyên thân rồng (đỉnh thân ở đó ≈ 12,4 m), `test:tour` báo chạm mô hình */
 export const DRAGON_TOUR: TourStop[] = [
   { pos: [-430, 330, 560], target: [0, 12, 0] },
   { pos: [-410, 22, -48], target: [-345, 11, 0] },
-  { pos: [-228, 11.4, 11.5], target: [-60, 15, 2] },
+  { pos: [-228, 11.4, -11.5], target: [-60, 15, -2] },
   { pos: [-45, 22, -80], target: [0, 30, 0] },
   { pos: [60, 3.5, -145], target: [10, 16, 0] },
   { pos: [392, 26, 40], target: [328, 16, 0] },
@@ -65,6 +66,23 @@ export const HR_TOUR: TourStop[] = [
   { pos: [-230, hrRoadY(-230) + 1.5, HRZ + HRT], target: [-60, hrRoadY(-60) + 1.8, HRZ + HRT], interior: true },
   { pos: [-130, hrRoadY(-130) + 1.6, HRZ], target: [60, hrRoadY(60) + 1.5, HRZ], interior: true },
   { pos: [800, 11, HRZ + 8], target: [585, 2.5, HRZ] }
+];
+
+/* Kịch bản bão (environment/weather/scenario.ts): mỗi điểm thường ứng với một mốc CONFIG.weather.scenario.steps, đúng thứ tự; via: true = điểm
+   trung gian chỉ để đường bay tránh mô hình (không có mốc). Cửa sông → sông Hàn (thuyền về bến) → đầu rồng → dây văng Trần Thị Lý (phía Bắc cầu)
+   → Cầu sông Hàn → vịnh Thuận Phước → trên cao nhìn về thành phố → phố bờ Tây Cầu Rồng (cây đổ). Không đặt điểm trên hành lang hầm |z + 1700| < 30 */
+const TPZ = CONFIG.thuanPhuoc.z, SHZ = CONFIG.songHan.z;
+export const STORM_TOUR: (TourStop & { via?: boolean })[] = [
+  { pos: [260, 36, TPZ - 330], target: [0, 30, TPZ] },            // wxS1 — cửa sông (như wxRiverMouth)
+  { pos: [160, 30, SHZ - 260], target: [-60, 4, SHZ + 80] },      // wxS2 — trên sông, thuyền về bến quanh Cầu sông Hàn
+  { pos: [200, 28, -170], target: [325, 18, 0] },                 // wxS3 — đầu rồng nhìn từ mặt sông phía Bắc
+  { pos: [160, 70, 20], target: [60, 20, 700], via: true },       // vượt Cầu Rồng trên cao
+  { pos: [-25, 48, 1222], target: [-55, 70, 1300] },              // wxS4 — dây văng Trần Thị Lý, phía Bắc cầu, sát giữa chùm dây dài (chỗ dao động lớn nhất, ~80 m) để thấy rõ dây rung
+  { pos: [250, 92, SHZ - 330], target: [-20, 14, SHZ] },          // wxS5 — Cầu sông Hàn (như shOverview)
+  { pos: [320, 150, TPZ], target: [0, 40, TPZ - 400], via: true },   // vượt Thuận Phước trên đỉnh tháp
+  { pos: [300, 78, TPZ - 470], target: [-40, 40, TPZ] },          // wxS6 — vịnh Thuận Phước (như tpBay)
+  { pos: [-600, 420, -3700], target: [60, 0, -1450] },            // wxS7 — trên vịnh nhìn về thành phố (gần tpBoth)
+  { pos: [-200, 24, 220], target: [-300, 4, 60] }                 // wxS8 — phố bờ Tây Cầu Rồng (cây đổ quanh target)
 ];
 
 /* Mỗi cầu một hành trình: view = tên nút góc nhìn, key = khóa danh sách điểm dừng trong bảng dịch */

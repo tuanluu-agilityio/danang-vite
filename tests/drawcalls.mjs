@@ -15,7 +15,9 @@ const VIEWS = [
   // Hầm vượt sông Hàn (bản gốc không có: tự bỏ qua nếu thiếu nút)
   ['hr', 'hrOverview'], ['hr', 'hrCutaway'], ['hr', 'hrPortalW'], ['hr', 'hrPortalE'], ['hr', 'hrDrive'], ['hr', 'hrGallery'],
   // Hai bờ sông Hàn
-  ['dragon', 'rfHearts'], ['dragon', 'rfBank']
+  ['dragon', 'rfHearts'], ['dragon', 'rfBank'],
+  // Thời tiết (GĐ6; bản gốc không có: tự bỏ qua nếu thiếu nút)
+  ['tp', 'wxRiverMouth'], ['ttl', 'wxTtlStays'], ['dragon', 'wxStreet']
 ];
 
 async function setNight(page, v) {

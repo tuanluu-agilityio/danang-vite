@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CONFIG } from '../../config';
 import { lerp } from '../../common/math';
 import { segmentMatrix, UP } from '../../common/geometry';
 import { TP, tpRoadY, tpCableY, tpHangerStations } from './profile';
@@ -19,7 +20,7 @@ export function tpBuildCables(bridge: ThuanPhuocBridge) {
   bridge.group.add(cables);
 
   // Hanger (114) và kẹp cáp tại mỗi hanger
-  const st = tpHangerStations(), hangers = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6), M.hanger, st.length * 2);
+  const st = tpHangerStations(), hangers = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6, CONFIG.weather.wind.cableSegs), M.hanger, st.length * 2);
   const bands = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 12), M.steel, st.length * 2);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), tng = new THREE.Vector3(), sc = new THREE.Vector3();
   let k = 0;

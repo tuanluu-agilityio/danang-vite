@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CONFIG } from '../config';
 import { scene } from '../core/renderer';
 import { MAT } from '../core/materials';
+import { windFx, weatherFx, vanished } from '../core/shared';
 import { rand } from '../common/math';
 import { TYPES, CAR_COLORS, BIKE_COLORS, placePart, _e, _q, type VehicleType } from '../common/traffic';
 import { deckY } from '../bridges/dragon/profile';
@@ -57,6 +58,7 @@ export function updateTraffic(dt: number) {
     if (P.hidden) { for (const mm of [vBody, vCabin, vHead, vTail]) mm.setMatrixAt(i, HIDDEN_M); return; } // làn tắt bằng nút bật/tắt
     v.s += v.dir * v.speed * dt;
     if (v.s > P.max) v.s -= range; if (v.s < P.min) v.s += range;
+    if ((P === PATHS.axis || P === PATHS.ttl) && vanished(i, weatherFx.clear)) { for (const mm of [vBody, vCabin, vHead, vTail]) mm.setMatrixAt(i, HIDDEN_M); return; }   // đóng cầu (bão): dọn dần xe trên Cầu Rồng, Trần Thị Lý
     let yaw: number, pitch = 0;
     if (P.axis === 'x') {
       const y = P.profile(v.s), slope = (P.profile(v.s + 1) - P.profile(v.s - 1)) / 2;
@@ -92,9 +94,10 @@ export function buildBoats() {
 export function updateBoats(dt: number, t: number) {
   const q = new THREE.Quaternion(), base = new THREE.Vector3();
   boats.forEach((b, i) => {
-    b.z += b.dir * b.speed * dt; if (b.z > 2500) b.z = -2500; if (b.z < -2500) b.z = 2500;
+    b.z += b.dir * b.speed * dt * (1 - weatherFx.boatAway); if (b.z > 2500) b.z = -2500; if (b.z < -2500) b.z = 2500;   // bão: thuyền chậm dần rồi dừng
     if (boatKeepOut.on && b.z > boatKeepOut.z0 && b.z < boatKeepOut.z1) b.z = b.dir > 0 ? boatKeepOut.z0 : boatKeepOut.z1;
-    q.setFromEuler(_e.set(Math.sin(t * 0.9 + i) * 0.015, 0, Math.sin(t * 1.1 + i * 2) * 0.02));
+    if (vanished(i, weatherFx.boatAway)) { bHull.setMatrixAt(i, HIDDEN_M); bCabin.setMatrixAt(i, HIDDEN_M); bRoof.setMatrixAt(i, HIDDEN_M); return; }   // về bến: ẩn dần
+    q.setFromEuler(_e.set(Math.sin(t * 0.9 + i) * 0.015 * windFx.boatRock, 0, Math.sin(t * 1.1 + i * 2) * 0.02 * windFx.boatRock));   // tròng trành tăng theo gió (mặc định ×1)
     base.set(b.x, 0, b.z);
     const m = new THREE.Matrix4(), s = new THREE.Vector3(), o = new THREE.Vector3();
     bHull.setMatrixAt(i, m.compose(o.set(0, 0.6, 0).applyQuaternion(q).add(base), q, s.set(6.5, 2.6, b.len)));

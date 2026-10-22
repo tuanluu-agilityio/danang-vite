@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CONFIG } from '../../config';
 import { lerp } from '../../common/math';
 import { prepColored, extrudeAlongX, bentBox, beamBetween, roadStrip, segmentMatrix, UP } from '../../common/geometry';
 import { addDeckEdges, addLampPosts } from '../../common/deck';
@@ -59,7 +60,7 @@ export function shBuildSwingSpan(bridge: SongHanBridge) {
     const k = i / (n - 1);
     list.push([V(s * 0.5, S + lerp(SH.stayTop[1], SH.stayTop[0], k), 0), V(s * lerp(SH.stayDeck[1], SH.stayDeck[0], k), S + 0.35, 0)]);
   }
-  const stays = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6), M.stay, list.length), m = new THREE.Matrix4();
+  const stays = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6, CONFIG.weather.wind.cableSegs), M.stay, list.length), m = new THREE.Matrix4();
   list.forEach(([a, b], i) => stays.setMatrixAt(i, segmentMatrix(a, b, SH.stayR, m)));
   stays.castShadow = true; swing.add(stays);
   // chốt khóa đầu cánh (trượt ra/vào) + đèn hàng hải đầu cánh

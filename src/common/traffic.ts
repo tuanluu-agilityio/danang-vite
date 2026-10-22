@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { MAT } from '../core/materials';
-import { shared } from '../core/shared';
+import { shared, weatherFx, vanished } from '../core/shared';
 import { rng } from './math';
 import type { Profile } from './geometry';
 
@@ -52,11 +52,14 @@ export function createTraffic(bridge: { life: THREE.Group }, { seed, x0, x1, lan
   T.body.castShadow = true;
   return T;
 }
-export function stepTraffic(T: Traffic, dt: number, profile: Profile) {
+/* closable: có theo lệnh đóng cầu của thời tiết (bão) không; Hầm vượt sông Hàn truyền false (hầm vẫn lưu thông) */
+const HIDDEN_M = new THREE.Matrix4().makeScale(0, 0, 0);
+export function stepTraffic(T: Traffic, dt: number, profile: Profile, closable = true) {
   const range = T.x1 - T.x0, base = new THREE.Vector3();
   T.list.forEach((v, i) => {
     const ty = TYPES[v.type];
     v.s += v.dir * v.speed * dt; if (v.s > T.x1) v.s -= range; if (v.s < T.x0) v.s += range;
+    if (closable && vanished(i, weatherFx.clear)) { for (const mm of [T.body, T.cabin, T.head, T.tail]) mm.setMatrixAt(i, HIDDEN_M); return; }   // đóng cầu (bão): dọn dần xe
     const y = profile(v.s), slope = (profile(v.s + 1) - profile(v.s - 1)) / 2;
     _q.setFromEuler(_e.set(0, v.dir > 0 ? 0 : Math.PI, Math.atan(slope * v.dir), 'YZX'));
     base.set(v.s, y + 0.03, v.dir * v.lane);                 // tọa độ cục bộ của group cầu

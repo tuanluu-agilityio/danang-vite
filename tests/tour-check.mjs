@@ -3,7 +3,8 @@
 //  2. Tua tới từng điểm dừng: chú thích đổi đúng số thứ tự và tiêu đề.
 //  3. Đường bay của camera: không xuống dưới 3 m, không xuyên qua mô hình (raycast từng đoạn).
 //  4. Tour sông Hàn: tới điểm dừng có cờ swing thì cầu tự quay (trạng thái rời "Đóng").
-//  5. Không có lỗi console.
+//  5. Kịch bản bão (bản Vite): đường bay scenario.pose(t) trên [0, duration] cũng không dưới 3 m, không xuyên mô hình; nút chạy vào chế độ storm, Esc trả orbit.
+//  6. Không có lỗi console.
 // Nếu truyền thêm thư mục bản gốc, so sánh luôn đường bay giữa hai bản (phải trùng nhau).
 //
 //   npm run build && node tests/tour-check.mjs [thư-mục-bản-gốc]
@@ -11,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
 
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7);   // --only=hr: chỉ chạy một Tour
+const STORM = !ONLY || ONLY === 'storm';                                           // --only=storm: chỉ kiểm đường bay kịch bản bão
 const TOURS = [['dragon', 'tour'], ['tp', 'tpTour'], ['ttl', 'ttlTour'], ['sh', 'shTour'], ['hr', 'hrTour']].filter(([b]) => !ONLY || b === ONLY);
 const SAMPLES = 600;
 
@@ -94,6 +96,32 @@ async function checkTours(browser, url) {
     await page.keyboard.press('Escape');
     await frames(page, 1);
     if (await page.evaluate(() => window.__app.cam.mode) === 'tour') r.problems.push('Esc không thoát tour');
+  }
+  if (STORM && await page.$('#btnWxStorm')) {   // bản gốc không có thời tiết
+    const r = report.storm = { problems: [] };
+    await page.evaluate(() => document.getElementById('btnWxStorm').click()); await frames(page, 2);
+    if (await page.evaluate(() => window.__app.cam.mode) !== 'storm') r.problems.push('nút kịch bản bão không vào chế độ storm');
+    const path = await page.evaluate(({ SAMPLES }) => {
+      const { THREE, scene, weather } = window.__app, sc = weather.scenario, pts = [], tgt = new THREE.Vector3();
+      for (let k = 0; k <= SAMPLES; k++) { const p = new THREE.Vector3(); sc.pose(k / SAMPLES * sc.duration, p, tgt); pts.push(p); }
+      const meshes = [];
+      scene.traverseVisible((o) => { if (o.isMesh && !o.isInstancedMesh && o.name !== 'water' && o.material && !o.material.transparent) meshes.push(o); });
+      const ray = new THREE.Raycaster(), dir = new THREE.Vector3(), hits = [];
+      for (let k = 0; k < SAMPLES; k++) {   // gồm cả đoạn bay vào điểm đầu (từ góc nhìn mặc định lúc bấm chạy)
+        const a = pts[k], b = pts[k + 1], len = a.distanceTo(b);
+        if (len < 1e-6) continue;
+        ray.set(a, dir.subVectors(b, a).normalize()); ray.far = len;
+        const h = ray.intersectObjects(meshes, false)[0];
+        if (h) hits.push({ t: +(k / SAMPLES * sc.duration).toFixed(1), obj: h.object.name || h.object.parent?.name || h.object.type, at: h.point.toArray().map((v) => +v.toFixed(1)) });
+      }
+      return { minY: Math.min(...pts.map((p) => p.y)), hits, n: sc.times.length, duration: sc.duration };
+    }, { SAMPLES: SAMPLES * 2 });
+    r.stops = path.n; r.minY = +path.minY.toFixed(2); r.hits = path.hits;
+    if (path.minY < 3) r.problems.push(`camera xuống ${path.minY} m`);
+    if (path.hits.length) r.problems.push(`đường bay chạm mô hình ${path.hits.length} lần: ${JSON.stringify(path.hits.slice(0, 3))}`);
+    await page.keyboard.press('Escape'); await frames(page, 1);
+    if (await page.evaluate(() => window.__app.cam.mode) !== 'orbit') r.problems.push('Esc không trả camera khi chạy kịch bản bão');
+    await page.evaluate(() => document.getElementById('btnWxStorm').click()); await frames(page, 1);
   }
   await page.close();
   return { report, errors };

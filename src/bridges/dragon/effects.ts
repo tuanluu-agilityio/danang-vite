@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
 import { scene } from '../../core/renderer';
-import { pScale } from '../../core/shared';
+import { pScale, windFx, weatherFx } from '../../core/shared';
 import { fireLight } from '../../core/lights';
 import { rand, lerp } from '../../common/math';
 import { t as tr } from '../../i18n';
@@ -51,6 +51,7 @@ export const show = { on: false, t: 0, fireOn: false, waterOn: false, key: 'sOff
 export const showLabel = () => tr(show.key, show.args);
 export function updateShow(dt: number) {
   if (!show.on) { show.fireOn = show.waterOn = false; show.key = 'sOff'; show.args = null; return; }
+  if (!weatherFx.showAllowed) { show.fireOn = show.waterOn = false; show.key = 'sWeather'; show.args = null; return; }   // mưa to / gió mạnh / bão: tạm dừng, show.on (nút người dùng) giữ nguyên
   show.t = (show.t + dt) % CONFIG.showCycle;
   const t = show.t;
   show.fireOn = t < 27 && (t % 3) < 1.6;
@@ -63,6 +64,7 @@ export function updateEffects(dt: number, time: number) {
   headGroup.updateMatrixWorld();
   mouthW.copy(MOUTH_LOCAL).applyMatrix4(headGroup.matrixWorld);
   fwd.set(1, 0, 0).applyQuaternion(headGroup.quaternion);
+  const W = CONFIG.weather.wind, windOn = windFx.x !== 0 || windFx.z !== 0;   // gió thời tiết (mặc định 0: không đổi gì, không thêm rand())
   // Lửa
   if (show.fireOn) {
     fire.acc += dt * 520; const n = Math.floor(fire.acc); fire.acc -= n;
@@ -77,6 +79,7 @@ export function updateEffects(dt: number, time: number) {
     if (fire.life[i] >= fire.max[i]) { fire.alpha[i] = 0; fire.size[i] = 0; continue; }
     fire.life[i] += dt; const t = Math.min(fire.life[i] / fire.max[i], 1), drag = 1 - 1.4 * dt;
     fire.vel[i * 3] *= drag; fire.vel[i * 3 + 2] *= drag; fire.vel[i * 3 + 1] = fire.vel[i * 3 + 1] * drag + 9 * dt;
+    if (windOn) { fire.vel[i * 3] += windFx.x * W.fire * dt; fire.vel[i * 3 + 2] += windFx.z * W.fire * dt; }   // lửa bị gió đánh dạt
     for (let a = 0; a < 3; a++) fire.pos[i * 3 + a] += fire.vel[i * 3 + a] * dt;
     let r: number, g: number, b: number;
     if (t < 0.25) { const k = t / 0.25; r = 1; g = lerp(0.95, 0.55, k); b = lerp(0.6, 0.12, k); }
@@ -102,6 +105,7 @@ export function updateEffects(dt: number, time: number) {
     const drag = 1 - (mist ? 1.2 : 0.08) * dt;
     waterJet.vel[i * 3] *= drag; waterJet.vel[i * 3 + 2] *= drag;
     waterJet.vel[i * 3 + 1] = waterJet.vel[i * 3 + 1] * drag - (mist ? 1.5 : 9.8) * dt;
+    if (windOn) { const k = (mist ? W.mist : W.water) * dt; waterJet.vel[i * 3] += windFx.x * k; waterJet.vel[i * 3 + 2] += windFx.z * k; }   // tia nước lệch, sương bay xa theo gió
     for (let a = 0; a < 3; a++) waterJet.pos[i * 3 + a] += waterJet.vel[i * 3 + a] * dt;
     waterJet.col[i * 3] = mist ? 0.9 : 0.62; waterJet.col[i * 3 + 1] = mist ? 0.95 : 0.84; waterJet.col[i * 3 + 2] = 1.0;
     waterJet.alpha[i] = mist ? 0.22 * (1 - t) : 0.75 * (1 - t * 0.6); waterJet.size[i] = mist ? 4 + 6 * t : 0.9 + 0.6 * t;
@@ -113,7 +117,7 @@ export function updateEffects(dt: number, time: number) {
   // Ánh lửa hắt sáng xung quanh
   fireLight.position.copy(mouthW).addScaledVector(fwd, 7);
   fireLight.intensity = show.fireOn ? 380 * (0.75 + 0.25 * Math.sin(time * 37) * Math.sin(time * 23)) : Math.max(0, fireLight.intensity - dt * 1500);
-  // Râu rồng đung đưa
-  whiskerGroup.rotation.x = Math.sin(time * 1.3) * 0.06;
-  whiskerGroup.rotation.y = Math.sin(time * 0.9) * 0.05;
+  // Râu rồng đung đưa (mạnh hơn theo gió; windFx.whisker mặc định 1)
+  whiskerGroup.rotation.x = Math.sin(time * 1.3) * 0.06 * windFx.whisker;
+  whiskerGroup.rotation.y = Math.sin(time * 0.9) * 0.05 * windFx.whisker;
 }

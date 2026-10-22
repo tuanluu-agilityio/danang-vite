@@ -40,7 +40,11 @@ export function updateRiverfront(dt: number, _time: number) {
 export function setHeartsEnabled(on: boolean) { current?.hearts.setEnabled(on); }
 export function setHeartsMode(m: 'duet' | 'sync') { current?.hearts.setMode(m); }
 /* "Quảng cáo": bảng quảng cáo + băng rôn + bảng hiệu; không tắt chi tiết bờ (lan can, ghế…) */
-export function setAdsEnabled(on: boolean) { if (!current) return; current.adsEnabled = on; current.billboards.setEnabled(on); }
+export function setAdsEnabled(on: boolean) { if (!current) return; adsWanted = on; applyAds(); }
+/* Thời tiết (bão) tắt quảng cáo tạm thời; hết bão trả đúng lựa chọn của người dùng (adsWanted), không ép bật */
+export function setAdsSuppressed(on: boolean) { adsSuppressed = on; applyAds(); }
+let adsWanted = true, adsSuppressed = false;
+function applyAds() { if (!current) return; const on = adsWanted && !adsSuppressed; if (current.adsEnabled === on) return; current.adsEnabled = on; current.billboards.setEnabled(on); }
 export function disposeRiverfront() {
   if (!current) return;
   const c = current; c.hearts.dispose(); c.billboards.dispose(); c.promenade.dispose(); c.atlas.dispose();

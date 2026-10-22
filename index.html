@@ -37,6 +37,14 @@
     <input id="volSlider" type="range" min="0" max="100" value="70" data-i18n-aria="volume" aria-label="Âm lượng" disabled>
   </div>
   <label class="slider" for="timeSlider"><span data-i18n="day">Ngày</span> <input id="timeSlider" type="range" min="0" max="100" value="0"> <span data-i18n="night">Đêm</span></label>
+  <div class="weather-row">
+    <label class="mini-select" for="weatherSel"><span data-i18n="weather">Thời tiết</span>
+      <select id="weatherSel"><option value="now" data-i18n="wxNow" selected>Hiện trạng</option><option value="summer" data-i18n="wxSummer">Nắng hè</option><option value="rain" data-i18n="wxRain">Mưa</option><option value="monsoon" data-i18n="wxMonsoon">Gió mùa</option><option value="storm" data-i18n="wxStorm">Bão</option></select></label>
+    <label class="slider" for="weatherK"><span data-i18n="wxIntensity">Cường độ</span> <input id="weatherK" type="range" min="0" max="100" value="100"> <span id="weatherKVal">100%</span></label>
+    <button id="btnWxImpact" class="toggle" aria-pressed="false" aria-controls="wxImpact" data-i18n="wxImpact">Ảnh hưởng tới cầu</button>
+    <div id="wxImpact" class="wx-impact" hidden aria-live="off"></div>
+    <button id="btnWxStorm" class="toggle" aria-pressed="false">Kịch bản bão</button>
+  </div>
 </header>
 
 <nav class="panel views" data-i18n-aria="views" aria-label="Góc nhìn">
@@ -58,6 +66,7 @@
   <button data-view="walk" aria-pressed="false" data-i18n="vWalk">Đi bộ (WASD)</button>
   <button data-view="rfHearts" aria-pressed="false" data-i18n="vRfHearts">Trái tim hai bờ (đêm)</button>
   <button data-view="rfBank" aria-pressed="false" data-i18n="vRfBank">Dạo bờ sông Bạch Đằng</button>
+  <button data-view="wxStreet" aria-pressed="false" data-i18n="vWxStreet">Ngang tầm xe, đường ướt</button>
   <button id="btnShow" class="toggle" aria-pressed="false" data-i18n="showBtn">Phun lửa &amp; nước</button>
   <button id="btnRfHearts" class="toggle" aria-pressed="true" data-i18n="rfHearts">Đèn trái tim</button>
   <label class="mini-select" for="rfHeartsMode"><span data-i18n="rfHeartsMode">Hai tòa trái tim</span>
@@ -70,6 +79,7 @@
     <button data-view="tpWater" aria-pressed="false" data-i18n="vTpWater">Mặt nước dưới nhịp chính</button>
     <button data-view="tpDrive" aria-pressed="false" data-i18n="vTpDrive">Lái xe qua cầu</button>
     <button data-view="tpBoth" aria-pressed="false" data-i18n="vTpBoth">Toàn cảnh hai cầu</button>
+    <button data-view="wxRiverMouth" aria-pressed="false" data-i18n="vWxRiverMouth">Từ cửa sông (thời tiết)</button>
     <button id="btnTpLife" class="toggle" aria-pressed="true" data-i18n="tpTraffic">Xe cộ &amp; tàu thuyền</button>
   </div>
   <div class="view-list" data-list="ttl" hidden>
@@ -78,6 +88,7 @@
     <button data-view="ttlBase" aria-pressed="false" data-i18n="vTtlBase">Dưới chân tháp nhìn lên</button>
     <button data-view="ttlDeck" aria-pressed="false" data-i18n="vTtlDeck">Trên mặt cầu</button>
     <button data-view="ttlBoth" aria-pressed="false" data-i18n="vTtlBoth">Cầu Rồng và Trần Thị Lý</button>
+    <button data-view="wxTtlStays" aria-pressed="false" data-i18n="vWxTtlStays">Dọc dây văng (thời tiết)</button>
     <label class="mini-select" for="ttlPatternSel"><span data-i18n="ledPattern">Đèn LED</span>
       <select id="ttlPatternSel">
         <option value="0" data-i18n="patStatic">Tĩnh</option>
@@ -147,6 +158,12 @@
   <h2 id="tourTitle">Toàn cảnh sông Hàn</h2>
   <p id="tourText"></p>
   <div class="bar"><i id="tourBar"></i></div>
+</div>
+<div id="wxScenario" class="panel" hidden aria-live="polite">
+  <div class="top"><span class="step" id="wxScenarioTime">0:00</span><span class="exit" data-i18n="wxStormHint">Kéo chuột hoặc Esc để tự điều khiển camera — thời tiết vẫn chạy</span></div>
+  <h2 data-i18n="wxStormRun">Kịch bản bão</h2>
+  <p id="wxScenarioText"></p>
+  <div class="bar"><i id="wxScenarioBar"></i></div>
 </div>
 <div id="hrLabels" hidden aria-hidden="true"></div>
 <div id="hint" class="panel" hidden data-i18n="walkHint">W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát</div>

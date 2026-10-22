@@ -286,6 +286,129 @@ const riverfrontBase = {
   promenade: { chunk: 600, lod: 400, benchStep: 20, railStep: 4, lights: 8 }         // dải đi bộ: độ dài chunk LOD, ẩn khi camera xa hơn (m)
 };
 
+/* ---------------------------- Thời tiết ----------------------------
+   Lớp điều biến sau ngày/đêm (D-009). Preset `now` là no-op. Đơn vị: m, m/s, °C, giây; mọi số là (ước lượng) trừ khi ghi nguồn.
+   KHÔNG đặt ngưỡng gió bằng số cho cấm lưu thông / khoá quay cầu: bật theo trạng thái (preset Bão, mốc 60 s kịch bản) — "theo thông báo của thành phố". */
+const weatherBase = {
+  seed: 20061001,                                       // hạt giống riêng cho nhiễu gió, mưa, chớp — ngày bão Xangsane, không dùng rand()
+  enabled: false,                                       // false = không áp gì lên cảnh (mặc định, bảo toàn ảnh và draw call chuẩn)
+  swayExaggeration: 20,                                 // hệ số phóng đại dao động cáp/cây khi hiển thị (cố định ×20, không có thanh chỉnh)
+  windAlpha: 0.12,                                      // số mũ hồ sơ gió v(z) = v10·(z/10)^α, mặt nước/địa hình trống (cần xác minh theo TCVN 2737)
+  windRefH: 10,                                         // m — cao độ chuẩn của v10
+  gust: { period: 7, octaves: 3, steps: 256 },          // nhiễu gió giật: chu kỳ cơ bản (s), số tầng sóng, độ dài bảng nhiễu (ước lượng)
+  thermal: { steel: 12e-6, concrete: 10.5e-6, refTemp: 25 },   // hệ số giãn nở nhiệt (/°C) thép, bê tông (phổ biến; cần xác minh theo TCVN 11823:2017) và nhiệt độ chuẩn (°C)
+  cableSag: { span: 405, sagRatio: 9.5 },               // cáp chủ Thuận Phước: nhịp (m), L/f — dùng tính võng thêm khi nóng
+  beaufort: [0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7, 37.0, 41.5, 46.2, 51.0],   // m/s — ngưỡng dưới cấp 1…16, thang Beaufort ở độ cao 10 m
+  tau: { rain: 4, wet: 40, wind: 6, temp: 20, cloud: 10, haze: 10, level: 30, lightning: 3 },   // s — hằng số thời gian tiến về target (mưa tới nhanh, mặt ướt khô chậm, nước dâng/rút chậm) (ước lượng)
+  levelMax: 1.2,                                        // m — mực nước sông dâng tối đa (không làm ngập phố)
+  rain: { count: 6000, box: [160, 90, 160] as [number, number, number], fall: 18, len: 1.6 },   // số vệt; hộp bao quanh camera (m); tốc độ rơi (m/s); độ dài vệt (m) (ước lượng)
+  rainLook: { width: 0.03, alpha: 0.55, color: 0xc4ccd4 },   // m — bề rộng vệt; độ đục tối đa (0–1); màu vệt ban ngày (ước lượng, chỉnh theo ảnh)
+  wetness: { roughness: 0.25, darken: 0.65, bridgeDarken: 0.8, bridgeRough: 0.45 },   // mặt ướt (mục 4.4): roughness đường khi ướt hẳn; màu đường ×0,65; bê tông/thép cầu (bridgePatch): màu ×0,8, roughness về tối đa 0,45 (ước lượng). Không đổi envMapIntensity: đường dùng scene.environment nên three bỏ qua giá trị này
+  lightning: {
+    minGap: 3, maxGap: 12, distMin: 800, distMax: 3000,   // s giữa hai tia chớp (cường độ chớp 1 → minGap, 0 → maxGap, nhân ngẫu nhiên 0,6–1,4); khoảng cách tia chớp tới camera (m) (ước lượng)
+    height: 700, segs: 12, branches: 3, branchSegs: 5,   // m — độ cao chân mây; số đoạn tia chính; số nhánh; số đoạn mỗi nhánh (ước lượng)
+    jitter: 0.1, widthK: 0.004, yawSpread: 0.6,          // lệch ngang mỗi đoạn (tỉ lệ độ dài đoạn); bề rộng vệt = 0,004 × khoảng cách (m); tia chớp chọn hướng trong ±0,6 rad quanh hướng nhìn của camera (ước lượng)
+    flickers: [2, 3] as [number, number], flickMs: [60, 90] as [number, number], gapMs: [40, 70] as [number, number],   // số nháy mỗi lần chớp; thời gian một nháy (ms); khoảng tắt giữa hai nháy (ms)
+    hemiPulse: 2.5, expPulse: 1.6, pulseSec: 0.3,        // hemi.intensity cộng thêm, toneMappingExposure nhân thêm (đỉnh), thời gian tắt dần (s)
+    color: [3, 3, 4] as [number, number, number]         // màu HDR của tia chớp (cho bloom ban đêm)
+  },
+  // Vận hành khi bão (GĐ5). KHÔNG đặt ngưỡng gió cho cấm lưu thông / khoá quay cầu: theo trạng thái `closed` của preset Bão ("theo thông báo của thành phố")
+  ops: {
+    clearSec: 5,                                        // s — dọn hết xe trên Cầu Rồng, Trần Thị Lý và các cầu khi đóng cầu (mục 2.1)
+    boatAwaySec: 12,                                    // s — thuyền dừng và ẩn dần khi bão (về bến) (ước lượng)
+    showMaxWind: 10, showMaxRain: 0.5                   // m/s, 0–1 — trình diễn lửa/nước Cầu Rồng tạm dừng khi gió trung bình hoặc mưa vượt mức (ước lượng, cần xác minh thực tế)
+  },
+  // Hiệu năng (D-010): mưa giảm overdraw, tự hạ chất lượng khi FPS thấp. Mọi số (ước lượng), chỉnh theo đo trên GPU thật
+  perf: {
+    rainNear: 1.5,                                      // m — bỏ vệt mưa gần camera hơn mức này (vệt sát mắt phủ cả màn hình = overdraw lớn nhất)
+    rainFadeFar: 70,                                    // m — alpha vệt mưa giảm dần về 0 ở khoảng cách này (cho phép hộp/N nhỏ mà vẫn thấy dày)
+    rainMaxPixelRatio: 1.5,                             // pixelRatio tối đa khi mưa đang hiện (trả lại giá trị cũ khi tạnh)
+    adaptiveWindow: 2,                                  // s — cửa sổ đo FPS trung bình để quyết định hạ chất lượng
+    adaptiveMinFps: 40,                                 // FPS — dưới mức này thì hạ một bậc chất lượng
+    adaptiveSteps: [1, 0.6, 0.35] as number[],          // hệ số nhân rain.count theo bậc chất lượng (bậc 0 = đầy đủ)
+    maxFrameMs: 150                                     // ms — khung dài nhất cho phép khi đổi preset (bắt khựng do biên dịch shader), dùng trong test:weather
+  },
+  presets: {
+    now: null,                                          // Hiện trạng: no-op, không áp gì
+    summer: { temp: 37, rain: 0, wind: 3, gust: 1, cloud: 0.1, haze: 0.6, level: 0, lightning: 0, closed: false },      // Nắng hè (ước lượng)
+    rain: { temp: 26, rain: 0.7, wind: 6, gust: 3, cloud: 0.85, haze: 0, level: 0.4, lightning: 0, closed: false },     // Mưa (ước lượng)
+    monsoon: { temp: 22, rain: 0.25, wind: 14, gust: 5, cloud: 0.7, haze: 0, level: 0.2, lightning: 0, closed: false }, // Gió mùa Đông Bắc (ước lượng)
+    storm: { temp: 25, rain: 1, wind: 28, gust: 10, cloud: 1, haze: 0, level: 1.2, lightning: 0.8, closed: true }       // Bão (ước lượng); cấm lưu thông theo trạng thái preset
+  },
+  // Khí quyển (mục 4.2). Trọng số: sunny = haze; gray = max(mưa, (mây − grayCloud)·grayGain); stormK = min(mưa, gió / stormWind). Mọi số (ước lượng)
+  atmosphere: {
+    stormWind: 28,                                      // m/s — gió làm chuẩn cho trọng số bão (= gió preset Bão); thanh cường độ 50 % thì stormK = 0,5
+    grayCloud: 0.5, grayGain: 1.4,                      // độ phủ mây bắt đầu xám trời; hệ số khuếch đại
+    nightDim: 0.9,                                      // màu thời tiết (ban ngày) tối đi theo đêm: nhân (1 − nightDim·night)
+    hazeFog: 0.3, hazeTint: 1,                          // sương nóng: mật độ ×(1 + 0,3·haze) = ×1,3 ở haze 1; mức pha màu be
+    rainFog: 8, stormFog: 10,                           // mật độ sương ×8 khi mưa 1 (×5,6 ở mưa 0,7), ×10 khi bão
+    sunSky: [3, 1.0], graySky: [12, 3], stormSky: [20, 4],   // Sky [turbidity, rayleigh]: nắng gắt trong / mưa / bão
+    sunBoost: 0.15, hemiBoost: 0.05, expBoost: 0.08,    // nắng hè: sun ×1,15, hemi ×1,05, exposure ×1,08
+    sunCloud: 0.85, stormSun: 0.67,                     // sun ×(1 − 0,85·mây), bão thêm ×0,67 (mây 1 → ×0,1)
+    hemiGray: 0.7, hemiStorm: 0.5,                      // hemi ×0,7 khi xám, ×0,5 khi bão
+    expGray: 0.9, expStorm: 0.8,                        // exposure ×0,9 khi xám, ×0,8 khi bão
+    cloudThin: 0.7, cloudNightOpacity: 0.4, cloudNightDim: 0.12, cloudSpin: 0.004,   // mây nắng mỏng (opacity ×0,3); mây dày ban đêm opacity 0,6; màu mây ban đêm ×0,12; tốc độ xoay cụm mây khi bão (rad/s)
+    sunWave: 2.0, grayWave: 4, stormWave: 7, stormSize: 0.4   // water.distortionScale (nắng / mưa / bão) và water.size khi bão (gốc 2,4 và 0,6)
+  },
+  // Gió (mục 4.5, GĐ4): biên độ THẬT (m) trước khi nhân swayExaggeration; v = gió tức thời tại cao độ tham chiếu (windAt). Mọi số (ước lượng), mô phỏng trực quan, không phải phân tích kết cấu
+  wind: {
+    refLen: 40,                                         // m — dây ngắn hơn mức này lắc ít hơn tỉ lệ (biên độ × min(1, dài / refLen))
+    cableSegs: 8,                                       // số đoạn dọc mỗi dây có lắc (hanger TP, dây văng TTL/SH): shader dịch theo sin(π·t) nên dây 1 đoạn (đỉnh chỉ ở hai đầu) không cong được; 0 draw call thêm
+    tp: { h: 50, amp: 0.03, refWind: 30, maxAmp: 0.06, omega: 2.2 },   // hanger Thuận Phước: cao độ giữa hanger (m), biên độ (m) ở refWind (m/s), tăng theo v², trần (m), tần số góc hiển thị (rad/s)
+    ttl: { h: 50, peak: 0.05, lo: 6, hi: 18, rainOn: [0.1, 0.3] as [number, number], dryAmp: 0.008, buffet: 0.1, buffetRise: 6, refWind: 30, omega: 3.0 },   // dây văng TTL: rung mưa–gió cực đại (m) khi gió trong [lo, hi] m/s VÀ mưa > ~0,2 (nhận dần trong rainOn); không mưa chỉ còn dryAmp·(v/refWind)²; gió vượt hi thì thêm dao động do gió giật buffet·(v/refWind)² (m, nhận dần trong hi…hi + buffetRise m/s) (ước lượng)
+    sh: { h: 35, amp: 0.015, refWind: 30, maxAmp: 0.03, omega: 2.6 },  // dây văng Cầu sông Hàn (ngắn, căng): như TP nhưng nhỏ hơn
+    trees: { lean: 0.03, sway: 0.02, refWind: 28, max: 0.06, omega: 1.6 },   // tán cây: độ nghiêng tĩnh / dao động (m dịch trên mỗi m cao) ở refWind, tăng theo v², trần; KHÔNG nhân phóng đại (cây lắc thấy được thật)
+    boatRock: 0.08,                                     // biên độ tròng trành thuyền × (1 + 0,08·gió m/s) → bão 28 m/s ≈ ×3,2
+    whisker: 0.06,                                      // râu rồng đung đưa × (1 + 0,06·gió)
+    waveSpeed: 0.04, windWave: 3,                       // tốc độ trôi pháp tuyến nước × (1 + 0,04·gió); distortionScale cộng 3·(gió/stormWind) (ngoài phần bão đã có)
+    fire: 1.0, water: 0.15, mist: 1.2                   // hệ số cộng vận tốc gió vào hạt lửa / tia nước / sương Cầu Rồng (1/s): vel += gió·k·dt
+  },
+  // Nắng hè (mục 4.7, GĐ7): ảo ảnh mặt đường (shader MAT.road/road2, cường độ = uHaze × (1 − đêm)). Mọi số (ước lượng)
+  summer: {
+    mirageNear: 60, mirageFar: 200,                     // m — ảo ảnh bắt đầu hiện từ 60 m và đủ mạnh ở 200 m tính từ camera
+    mirageGraze: 0.28,                                  // |cos| giữa tia nhìn và pháp tuyến mặt đường: nhỏ hơn mức này (nhìn sát mặt) mới có ảo ảnh
+    mirageMix: 0.55, mirageLift: 0.12,                  // tỉ lệ trộn tối đa màu sương/trời vào mặt đường; cộng sáng thêm
+    mirageWobble: 0.004, mirageFreq: 2.2                // độ lệch UV mặt đường (đơn vị UV) và tần số dao động (rad/s)
+  },
+  // Cây đổ sau bão (mục 4.8, GĐ7): chọn gần góc nhìn, nghiêng quanh gốc theo hướng gió; không đụng instance đã dọn scale 0
+  fallen: {
+    count: [6, 10] as [number, number],                 // số cây đổ mỗi lần (chọn bằng rng riêng, seed + 7)
+    angleDeg: 80, jitter: 0.3,                          // độ nghiêng cuối (°) và lệch hướng ngẫu nhiên (rad)
+    radius: 350, pool: 40,                              // m — chỉ xét cây trong bán kính quanh điểm nhìn; chọn trong `pool` cây gần nhất
+    fallSec: 3, hold: 120,                              // s — thời gian đổ dần; thời gian giữ trạng thái "sau bão" khi chọn preset (hết thì dựng lại cây)
+    armWind: 20, calmWind: 8                            // m/s — gió hiện tại đạt mức này thì "bão đã qua đỉnh"; gió đích dưới calmWind (và hết cấm) thì cây đổ
+  },
+  // Âm thanh thời tiết (mục 7, GĐ7): Web Audio tổng hợp. Mọi số (ước lượng)
+  sound: {
+    rainGain: 0.2, rainBand: [3500, 0.6] as [number, number], rainLow: 6500,   // gain mưa tối đa; bandpass (Hz, Q) và lowpass (Hz)
+    patter: 28,                                         // số "tí tách" tối đa mỗi giây khi mưa 1
+    windGain: 0.4, windBase: 180, windPerMs: 22, windQ: 1.6,   // gain gió tối đa (∝ (v/28)²); tần số bandpass = windBase + windPerMs·v (Hz)
+    thunderLow: [120, 300] as [number, number], thunderSec: [2, 4] as [number, number], thunderGain: 1.1,   // lowpass sấm (Hz); thời lượng rền (s); gain ở 800 m
+    musicDuck: 0.7, indoors: 0.15                       // nhạc nền hạ còn 70 % khi bão (−30 %); tiếng mưa/gió còn 15 % khi camera trong hầm / dưới nước
+  },
+  // Kịch bản bão (mục 6, GĐ7): dòng thời gian `duration` giây khi không có giọng đọc; mỗi mốc đặt target (cộng dồn từ trạng thái trung tính) và đổi chú thích
+  // Camera bay liên tục qua STORM_TOUR (views/tourStops.ts, mỗi mốc một điểm) như Tour; có giọng đọc thì cửa sổ mỗi mốc kéo dài cho đọc xong (D-013)
+  // Cấm lưu thông / khoá quay cầu / tắt quảng cáo bật theo `closed` (mốc 60 s, "theo thông báo của thành phố"), không theo ngưỡng gió
+  scenario: {
+    duration: 120,
+    arrive: 0.45,                                       // camera tới điểm của mốc k ở T_k + arrive·W_k (W_k: cửa sổ mốc k): chú thích đổi khi camera đang bay tới, như SWITCH 0,55 của Tour
+    pad: 1.2,                                           // s — nghỉ sau lời đọc trước mốc kế (như PAD của Tour)
+    entryArc: 0.15, entryArcMax: 250,                   // đoạn bay vào điểm đầu: nâng giữa đường thêm entryArc × khoảng cách (tối đa entryArcMax m) để không xuyên tháp cầu (ước lượng)
+    steps: [
+      { t: 0, p: { wind: 6, cloud: 0.6 }, cap: 'wxS1' },
+      { t: 15, p: { wind: 10, cloud: 0.9, rain: 0.3 }, cap: 'wxS2' },
+      { t: 30, p: { wind: 15, rain: 0.6 }, cap: 'wxS3' },
+      { t: 45, p: { wind: 22, gust: 8, rain: 0.9, lightning: 0.5 }, cap: 'wxS4' },
+      { t: 60, p: { wind: 28, gust: 10, rain: 1, level: 0.8, closed: true }, cap: 'wxS5' },
+      { t: 80, p: { level: 1.2, lightning: 0.9 }, cap: 'wxS6' },
+      { t: 95, p: { wind: 12, gust: 3, rain: 0.5, lightning: 0.2 }, cap: 'wxS7' },
+      { t: 110, p: { wind: 3, gust: 0, rain: 0, cloud: 0.3, lightning: 0, level: 0.2, closed: false }, cap: 'wxS8' }
+    ] as { t: number; p: Record<string, number | boolean>; cap: string }[]
+  },
+  windDir: 0,                                           // rad — hướng gió thổi tới mặc định (0 = từ Tây sang Đông, +X)
+  monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
+};
+
 export const CONFIG = {
   ...base,
   mainTotal: sum(base.mainSpans),
@@ -293,7 +416,8 @@ export const CONFIG = {
   tranThiLy: deriveTtl(tranThiLyBase),
   songHan: deriveSh(songHanBase),
   hanTunnel: deriveHr(hanTunnelBase),
-  riverfront: riverfrontBase
+  riverfront: riverfrontBase,
+  weather: weatherBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;
 export type HanTunnelConfig = typeof CONFIG.hanTunnel;

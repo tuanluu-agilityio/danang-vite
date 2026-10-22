@@ -24,6 +24,7 @@ export class SwingController extends EventTarget {
   fromTour = false;               // quay do Tour kích hoạt: đóng ngay khi tàu buồm qua hết luồng
   spanClear: () => boolean = () => true;
   canClose: () => boolean = () => true;
+  canStart: () => boolean = () => true;     // thời tiết (bão) gán predicate; false → start() từ chối và phát 'swingBlocked'
 
   constructor(cfg: SongHanConfig) {
     super();
@@ -33,6 +34,7 @@ export class SwingController extends EventTarget {
   get allowEntry() { return this.state === 'CLOSED' || (this.state === 'REOPEN_TRAFFIC' && this.signal === 'green'); }
   start(speed?: number) {
     if (this.state !== 'CLOSED') return false;
+    if (!this.canStart()) { this.dispatchEvent(new Event('swingBlocked')); return false; }
     if (speed) this.speed = speed;
     this.go('STOP_TRAFFIC'); this.dispatchEvent(new Event('swingStart'));
     return true;

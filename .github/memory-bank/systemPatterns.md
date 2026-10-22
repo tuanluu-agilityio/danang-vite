@@ -30,7 +30,18 @@ Tích hợp: khối `xxBase` + `deriveXx()` trong `config.ts` → `new` trong `m
 ## Mẫu: phần cảnh không phải công trình (`environment/riverfront/`)
 Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `current`, export `buildX()` / `updateX(dt, time)` / các hàm bật-tắt (`setHeartsEnabled`, `setHeartsMode`, `setAdsEnabled`) / `disposeX()`. Gọi `buildX()` trong `main.ts` sau mọi `rand`, `updateX()` trong `animate()`, thêm vào `window.__app`.
 
+## Mẫu: điều biến thời tiết (`environment/weather/`)
+- Thứ tự cập nhật trong `animate()`: `applyNight()` → `updateWeather(dt, time, night)`. Thời tiết chỉ **điều biến** kết quả ngày/đêm (màu trời, sương, nước), không tự tính lại ngày/đêm; hệ số đêm nhân vào màu ban ngày (`1 − 0,9·night`).
+- Trọng số lấy từ tham số liên tục (`state.current`), không theo tên preset. Khi các trọng số ≈ 0 và `level` ≈ 0 thì `restore()` trả đúng giá trị gốc một lần rồi thôi đụng vào: preset `now` là no-op và kiểm tra khôi phục khớp tuyệt đối.
+- Uniform riêng `weatherU` (`core/shared.ts`) cho shader; không đổi `uNight`.
+- Không thêm `PointLight`; hiệu ứng đêm bằng emissive/bloom.
+- Ngân sách draw call: mưa ≤ +1, bão ≤ +2 (chớp), preset thời tiết ≤ +3 tổng; `now` chênh 0. Mưa/chớp không vẽ trong hầm.
+- Cây/dây/thuyền chỉ đổi qua shader hoặc ma trận instance (`wind.ts`, `fallen.ts`); cây đổ dùng cặp thân–tán `InstancedMesh`, lưu ma trận gốc để `stand()` khôi phục đúng.
+- Kịch bản bão (`scenario.ts`) chạy theo `dt` đã kẹp 0,05 s; kết thúc phải trả preset, ngày/đêm và thanh cường độ cũ.
+
 ## Mẫu hiệu năng
+- Shader đã biên dịch sẵn lúc `buildWeather()` (mưa, chớp có hai biến thể): đổi preset không được làm tăng `renderer.info.programs`.
+- Mưa/chớp là mesh ẩn tới lúc cần; three.js chỉ đếm geometry khi được vẽ lần đầu, nên đo rò rỉ phải vẽ trước một khung.
 - `BridgeBase.finalize()` gộp bê tông + thép thành 2 mesh; `details` (LOD) ẩn khi xa hơn `lodDistance`; `farHide` ẩn khi rất xa.
 - Chi tiết nhỏ, xe, người: layer 1 → không vẽ trong lượt phản chiếu mặt nước.
 - Vật lặp lại → `InstancedMesh`. Ẩn instance = ma trận scale 0 (không xóa, để giữ chỉ số).
@@ -56,3 +67,4 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - `OrbitControls` không cho camera thấp hơn điểm nhìn → góc nhìn sát nước cần `maxPolar` (tới `Math.PI * 0.97`).
 - Mặt cắt địa chất của hầm sửa `clippingPlanes`/`transparent`/`depthWrite` của vật liệu chung → tắt phải trả **đúng** giá trị gốc (test:tunnel kiểm).
 - Chữ trên mặt LED / bảng: kiểm tra không bị lật gương theo hướng mặt.
+- Hiệu ứng dịch đỉnh trong vertex shader (lắc dây `sin(π·t)`, võng cáp) cần hình học có đỉnh ở giữa: `CylinderGeometry(1, 1, 1, n)` mặc định 1 đoạn dọc nên dây không cong dù uniform đúng (lỗi GĐ4, phát hiện 2026-10-22). Kiểm hiệu ứng shader bằng **điểm ảnh** (vẽ hai khung, đếm px khác — mẫu trong `tests/weather-check.mjs` mốc 4), không chỉ đọc uniform.
