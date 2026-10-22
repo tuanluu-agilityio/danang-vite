@@ -43,6 +43,7 @@
     <label class="slider" for="weatherK"><span data-i18n="wxIntensity">Cường độ</span> <input id="weatherK" type="range" min="0" max="100" value="100"> <span id="weatherKVal">100%</span></label>
     <button id="btnWxImpact" class="toggle" aria-pressed="false" aria-controls="wxImpact" data-i18n="wxImpact">Ảnh hưởng tới cầu</button>
     <div id="wxImpact" class="wx-impact" hidden aria-live="off"></div>
+    <button id="btnWxStorm" class="toggle" aria-pressed="false">Kịch bản bão</button>
   </div>
 </header>
 
@@ -157,6 +158,12 @@
   <h2 id="tourTitle">Toàn cảnh sông Hàn</h2>
   <p id="tourText"></p>
   <div class="bar"><i id="tourBar"></i></div>
+</div>
+<div id="wxScenario" class="panel" hidden aria-live="polite">
+  <div class="top"><span class="step" id="wxScenarioTime">0:00</span><span class="exit" data-i18n="wxStormHint">Kéo chuột hoặc Esc để tự điều khiển camera — thời tiết vẫn chạy</span></div>
+  <h2 data-i18n="wxStormRun">Kịch bản bão</h2>
+  <p id="wxScenarioText"></p>
+  <div class="bar"><i id="wxScenarioBar"></i></div>
 </div>
 <div id="hrLabels" hidden aria-hidden="true"></div>
 <div id="hint" class="panel" hidden data-i18n="walkHint">W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát</div>

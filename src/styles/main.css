@@ -131,6 +131,19 @@ body.touring .specs{display:none;}
 #tourCaption p{margin:0;font-size:12.5px;line-height:1.5;color:var(--text);}
 #tourCaption .bar{height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:4px;}
 #tourCaption .bar i{display:block;height:100%;width:0;background:var(--gold);}
+/* Khung chú thích Kịch bản bão: cùng kiểu #tourCaption, đặt ngay trên đó để hai khung không chồng nhau */
+#wxScenario{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  width:min(440px,calc(100vw - 32px));padding:12px 16px 13px;display:flex;flex-direction:column;gap:4px;}
+#wxScenario .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+#wxScenario .step{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;color:var(--han);font-variant-numeric:tabular-nums;}
+#wxScenario .exit{font-size:10.5px;color:var(--muted);}
+#wxScenario h2{margin:0;font-family:var(--font-display);font-weight:600;font-size:20px;line-height:1.1;color:var(--gold);text-wrap:balance;}
+#wxScenario p{margin:0;font-size:12.5px;line-height:1.5;color:var(--text);min-height:3em;}
+#wxScenario .bar{height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:4px;}
+#wxScenario .bar i{display:block;height:100%;width:0;background:var(--gold);}
+body.touring #wxScenario{bottom:calc(190px + env(safe-area-inset-bottom,0px));}
+body.wxrun .specs{display:none;}   /* như Tour: bảng Thông số nhường chỗ cho khung chú thích */
+html:is([lang=th],[lang=hi],[lang=ar]) #wxScenario p{line-height:1.7;}
 #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;
   background:var(--ink);font-family:var(--font-display);font-size:26px;color:var(--gold);z-index:20;transition:opacity .6s;}
 #loading small{font-family:var(--font-body);font-size:12px;color:var(--muted);}

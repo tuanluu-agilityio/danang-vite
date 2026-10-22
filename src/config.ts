@@ -362,6 +362,44 @@ const weatherBase = {
     waveSpeed: 0.04, windWave: 3,                       // tốc độ trôi pháp tuyến nước × (1 + 0,04·gió); distortionScale cộng 3·(gió/stormWind) (ngoài phần bão đã có)
     fire: 1.0, water: 0.15, mist: 1.2                   // hệ số cộng vận tốc gió vào hạt lửa / tia nước / sương Cầu Rồng (1/s): vel += gió·k·dt
   },
+  // Nắng hè (mục 4.7, GĐ7): ảo ảnh mặt đường (shader MAT.road/road2, cường độ = uHaze × (1 − đêm)). Mọi số (ước lượng)
+  summer: {
+    mirageNear: 60, mirageFar: 200,                     // m — ảo ảnh bắt đầu hiện từ 60 m và đủ mạnh ở 200 m tính từ camera
+    mirageGraze: 0.28,                                  // |cos| giữa tia nhìn và pháp tuyến mặt đường: nhỏ hơn mức này (nhìn sát mặt) mới có ảo ảnh
+    mirageMix: 0.55, mirageLift: 0.12,                  // tỉ lệ trộn tối đa màu sương/trời vào mặt đường; cộng sáng thêm
+    mirageWobble: 0.004, mirageFreq: 2.2                // độ lệch UV mặt đường (đơn vị UV) và tần số dao động (rad/s)
+  },
+  // Cây đổ sau bão (mục 4.8, GĐ7): chọn gần góc nhìn, nghiêng quanh gốc theo hướng gió; không đụng instance đã dọn scale 0
+  fallen: {
+    count: [6, 10] as [number, number],                 // số cây đổ mỗi lần (chọn bằng rng riêng, seed + 7)
+    angleDeg: 80, jitter: 0.3,                          // độ nghiêng cuối (°) và lệch hướng ngẫu nhiên (rad)
+    radius: 350, pool: 40,                              // m — chỉ xét cây trong bán kính quanh điểm nhìn; chọn trong `pool` cây gần nhất
+    fallSec: 3, hold: 120,                              // s — thời gian đổ dần; thời gian giữ trạng thái "sau bão" khi chọn preset (hết thì dựng lại cây)
+    armWind: 20, calmWind: 8                            // m/s — gió hiện tại đạt mức này thì "bão đã qua đỉnh"; gió đích dưới calmWind (và hết cấm) thì cây đổ
+  },
+  // Âm thanh thời tiết (mục 7, GĐ7): Web Audio tổng hợp. Mọi số (ước lượng)
+  sound: {
+    rainGain: 0.2, rainBand: [3500, 0.6] as [number, number], rainLow: 6500,   // gain mưa tối đa; bandpass (Hz, Q) và lowpass (Hz)
+    patter: 28,                                         // số "tí tách" tối đa mỗi giây khi mưa 1
+    windGain: 0.4, windBase: 180, windPerMs: 22, windQ: 1.6,   // gain gió tối đa (∝ (v/28)²); tần số bandpass = windBase + windPerMs·v (Hz)
+    thunderLow: [120, 300] as [number, number], thunderSec: [2, 4] as [number, number], thunderGain: 1.1,   // lowpass sấm (Hz); thời lượng rền (s); gain ở 800 m
+    musicDuck: 0.7, indoors: 0.15                       // nhạc nền hạ còn 70 % khi bão (−30 %); tiếng mưa/gió còn 15 % khi camera trong hầm / dưới nước
+  },
+  // Kịch bản bão (mục 6, GĐ7): dòng thời gian `duration` giây; mỗi mốc đặt target (cộng dồn từ trạng thái trung tính), có thể bay camera tới góc nhìn `cam`
+  // Cấm lưu thông / khoá quay cầu / tắt quảng cáo bật theo `closed` (mốc 60 s, "theo thông báo của thành phố"), không theo ngưỡng gió
+  scenario: {
+    duration: 120,
+    steps: [
+      { t: 0, p: { wind: 6, cloud: 0.6 }, cam: 'wxRiverMouth', cap: 'wxS1' },
+      { t: 15, p: { wind: 10, cloud: 0.9, rain: 0.3 }, cap: 'wxS2' },
+      { t: 30, p: { wind: 15, rain: 0.6 }, cap: 'wxS3' },
+      { t: 45, p: { wind: 22, gust: 8, rain: 0.9, lightning: 0.5 }, cam: 'wxTtlStays', cap: 'wxS4' },
+      { t: 60, p: { wind: 28, gust: 10, rain: 1, level: 0.8, closed: true }, cam: 'tpBay', cap: 'wxS5' },
+      { t: 80, p: { level: 1.2, lightning: 0.9 }, cap: 'wxS6' },
+      { t: 95, p: { wind: 12, gust: 3, rain: 0.5, lightning: 0.2 }, cap: 'wxS7' },
+      { t: 110, p: { wind: 3, gust: 0, rain: 0, cloud: 0.3, lightning: 0, level: 0.2, closed: false }, cap: 'wxS8' }
+    ] as { t: number; p: Record<string, number | boolean>; cam?: string; cap: string }[]
+  },
   windDir: 0,                                           // rad — hướng gió thổi tới mặc định (0 = từ Tây sang Đông, +X)
   monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
 };

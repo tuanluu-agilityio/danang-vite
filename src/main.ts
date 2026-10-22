@@ -79,7 +79,7 @@ applyNight(0, 0);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, riverfront, weather, hrDrive, THREE, dayNight, tours: TOURS, tour, narration };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, riverfront, weather, hrDrive, THREE, dayNight, tours: TOURS, tour, narration, audio };
 }
 
 /* ============================ Vòng lặp ============================ */

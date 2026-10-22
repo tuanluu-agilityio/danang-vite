@@ -4,6 +4,9 @@ import { getWeather } from '../environment/weather';
 import type { BridgeKey as ImpactKey } from '../environment/weather/impact';
 import type { PresetName } from '../environment/weather/state';
 import type { Toggle } from './panel';
+import { canvas } from '../core/renderer';
+import { setView } from '../views/camera';
+import { exitTour } from '../views/tour';
 
 const NAME_KEY: Record<ImpactKey, string> = { dragon: 'bridgeDragon', thuanPhuoc: 'bridgeTp', tranThiLy: 'bridgeTtl', songHan: 'bridgeSh', hanTunnel: 'bridgeHr' };
 const cm = (m: number) => (m * 100).toFixed(1);
@@ -47,9 +50,47 @@ export function setupWeatherUI(toggle: Toggle) {
       return item;
     }), div('wx-note', t('wxImpactNote', { k: CONFIG.weather.swayExaggeration })));
   };
+  setupScenarioUI();
   toggle('btnWxImpact', (on) => {
     card.hidden = !on; clearInterval(timer);
     if (on) { sig = ''; render(); timer = window.setInterval(render, 500); }
   });
   onChange(() => { sig = ''; if (!card.hidden) render(); });
+}
+
+/* Kịch bản bão (mục 6): nút bật/dừng, khung chú thích wxS1…wxS8, thanh tiến độ. Camera bay theo kịch bản cho tới khi người xem kéo chuột, cuộn,
+   nhấn Esc hoặc chọn góc nhìn — khi đó chỉ camera được trả lại, thời tiết vẫn chạy hết (giống exitTour). Nút "Dừng kịch bản" trả ngay preset cũ. */
+function setupScenarioUI() {
+  const btn = document.getElementById('btnWxStorm'), box = document.getElementById('wxScenario'), text = document.getElementById('wxScenarioText');
+  const time = document.getElementById('wxScenarioTime'), bar = document.getElementById('wxScenarioBar');
+  const sc = () => getWeather()?.scenario;
+  let capKey: string | null = null, timer = 0;
+  const label = () => { btn.textContent = t(sc()?.running ? 'wxStormStop' : 'wxStormRun'); };
+  const showCap = () => { text.textContent = capKey ? t(capKey, { k: CONFIG.weather.swayExaggeration }) : ''; };
+  const clock = () => {
+    const s = sc(); if (!s) return;
+    const tt = Math.min(s.t, CONFIG.weather.scenario.duration), m = Math.floor(tt / 60), ss = Math.floor(tt % 60);
+    time.textContent = `${m}:${String(ss).padStart(2, '0')} / 2:00`; bar.style.width = `${(tt / CONFIG.weather.scenario.duration * 100).toFixed(1)}%`;
+  };
+  const wire = () => {
+    const s = sc(); if (!s) return;
+    s.on.caption = (key) => { capKey = key; showCap(); };
+    s.on.camera = (view) => setView(view);
+    s.on.end = () => { clearInterval(timer); box.hidden = true; document.body.classList.remove('wxrun'); btn.setAttribute('aria-pressed', 'false'); label(); };
+  };
+  btn.addEventListener('click', () => {
+    const s = sc(); if (!s) return;
+    wire();
+    if (s.running) { s.stop(true); return; }
+    exitTour(); s.start();
+    box.hidden = false; document.body.classList.add('wxrun'); btn.setAttribute('aria-pressed', 'true'); label(); clock();
+    clearInterval(timer); timer = window.setInterval(clock, 250);
+  });
+  const release = () => { if (sc()?.running) sc().releaseCamera(); };
+  canvas.addEventListener('pointerdown', release);
+  canvas.addEventListener('wheel', release, { passive: true });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') release(); });
+  document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', release));
+  label();
+  onChange(() => { label(); showCap(); });
 }

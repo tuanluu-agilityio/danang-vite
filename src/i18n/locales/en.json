@@ -311,5 +311,16 @@
   "wxTunnelOk": "Tunnel stays open, unaffected by wind, drainage pumps working (proposed option)",
   "vWxRiverMouth": "From the river mouth (weather)",
   "vWxTtlStays": "Along the stay cables (weather)",
-  "vWxStreet": "Car height, wet road"
+  "vWxStreet": "Car height, wet road",
+  "wxStormRun": "Storm scenario",
+  "wxStormStop": "Stop scenario",
+  "wxStormHint": "Drag the mouse or press Esc to control the camera yourself — the weather keeps running",
+  "wxS1": "Hypothetical bulletin: a force-11 storm in the East Sea, expected to affect Da Nang",
+  "wxS2": "Vessels banned from the Han River; tour boats return to port",
+  "wxS3": "Dragon Bridge fire and water show suspended",
+  "wxS4": "Strong gusts: cables vibrate (exaggerated ×{k})",
+  "wxS5": "Bridges closed to traffic per city notice; the Han River Bridge will not swing",
+  "wxS6": "Storm landfall: force 10–11 winds, gusts to force 13",
+  "wxS7": "Storm weakening, rain still heavy",
+  "wxS8": "After the storm: traffic resumes, bridges reopen, fallen trees cleared"
 }

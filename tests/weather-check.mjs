@@ -56,6 +56,40 @@ try {
   check((await cityVis()) === 536, 'GĐ5: hết bão xe phải hiện lại đủ');
   check((await userState()) === user0, `GĐ5: hết bão nút người dùng phải giữ nguyên: ${user0} -> ${await userState()}`);
   check(await page.evaluate(() => window.__app.songHan.ctrl.canStart()), 'GĐ5: hết bão thì cầu quay lại được (canStart)');
+  /* GĐ7: kịch bản bão chạy hết (tua ×30), trả preset + ngày/đêm + khí quyển gốc; cây đổ dựng lại; không rò rỉ bộ nhớ GPU */
+  const mem = () => page.evaluate(() => { const i = window.__app.renderer.info; return { g: i.memory.geometries, t: i.memory.textures, p: i.programs.length }; });
+  const runScenario = () => page.evaluate(() => new Promise((ok) => {
+    const sc = window.__app.weather.scenario; let n = 0; const caps = new Set();
+    sc.start({ speed: 30 });
+    const f = () => { caps.add(sc.step); (!sc.running || ++n > 6000) ? ok({ n, steps: caps.size, running: sc.running }) : requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+  }));
+  await setWx(page, 'now'); await wait('w.fx().clear <= 0 && w.fx().boatAway <= 0'); await frames(page, 3);
+  await page.evaluate(() => { const d = window.__app.dayNight; d.target = d.night = 0; });
+  await frames(page, 3);
+  const base7 = await snapAtmosphere(page);
+  // khởi động: lần đầu three mới đếm geometry của mesh chớp khi nó được vẽ (tải GPU lười, không phải rò rỉ) -> vẽ trước một lần, rồi đo mốc
+  await setWx(page, 'storm'); await page.evaluate(() => window.__app.weather.lightning.strike()); await frames(page, 6);
+  await setWx(page, 'now'); await wait('w.fx().clear <= 0 && w.fx().boatAway <= 0'); await frames(page, 3);
+  const m0 = await mem();
+  for (let run = 1; run <= 3; run++) {
+    const r = await runScenario();
+    check(!r.running, `GĐ7: kịch bản lần ${run} chưa hết sau ${r.n} khung`);
+    check(r.steps >= 8, `GĐ7: kịch bản lần ${run} chỉ qua ${r.steps} mốc`);
+    await frames(page, 4);
+    const e = await page.evaluate(() => { const a = window.__app, s = a.weather.state; return { preset: s.preset, enabled: a.weather.enabled, night: a.dayNight.night, trees: a.weather.fallen.state().down }; });
+    check(e.preset === 'now' && !e.enabled, `GĐ7: kịch bản lần ${run} xong phải trả preset now: ${JSON.stringify(e)}`);
+    check(e.night === 0, `GĐ7: kịch bản lần ${run} làm đổi ngày/đêm (${e.night})`);
+    check(e.trees === 0, `GĐ7: kịch bản lần ${run} xong còn ${e.trees} cây đổ`);
+    const mk = await mem();
+    check(mk.g === m0.g && mk.t === m0.t, `GĐ7: rò rỉ sau kịch bản lần ${run}: geometries/textures ${m0.g}/${m0.t} -> ${mk.g}/${mk.t}`);
+  }
+  for (let round = 0; round < 5; round++) for (const p of ['rain', 'storm', 'summer', 'monsoon', 'now']) await setWx(page, p);
+  const m1 = await mem();
+  check(m1.g === m0.g && m1.t === m0.t, `GĐ7: rò rỉ sau 5 vòng đổi preset: geometries/textures ${m0.g}/${m0.t} -> ${m1.g}/${m1.t}`);
+  check(m1.p <= m0.p, `GĐ7: số program tăng sau kịch bản/đổi preset: ${m0.p} -> ${m1.p}`);
+  const back7 = await snapAtmosphere(page), d7 = diff(base7, back7);
+  check(d7.length === 0, `GĐ7: sau kịch bản khí quyển không về gốc: ${d7.join(', ')}`);
   check(errors.length === 0, `lỗi console: ${errors.slice(0, 3).join(' | ')}`);
 } finally { await browser.close(); srv.close(); }
 if (problems.length) { console.log('THẤT BẠI:\n- ' + problems.join('\n- ')); process.exit(1); }

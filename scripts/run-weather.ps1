@@ -43,7 +43,7 @@ $Phases = @(
   @{ n = 4; title = 'gió: cây, sóng, rung cáp';          model = 'opus';   effort = 'high';   sec = '2.2, 2.3, 4.5, 9, 10 (Giai đoạn 4)'; tests = @('test:drawcalls', 'test:tour') },
   @{ n = 5; title = 'bão: chớp, đóng cầu, cầu quay';     model = 'sonnet'; effort = 'medium'; sec = '2, 4.6, 5.3, 10 (Giai đoạn 5), 11';  tests = @('test:drawcalls', 'test:weather'); checkpoint = $true },
   @{ n = 6; title = 'bảng ảnh hưởng + góc nhìn + i18n';  model = 'sonnet'; effort = 'medium'; sec = '8, 10 (Giai đoạn 6)';                tests = @('test:drawcalls', 'test:weather') },
-  @{ n = 7; title = 'kịch bản bão + nắng hè + âm thanh'; model = 'sonnet'; effort = 'medium'; sec = '4.7, 4.8, 6, 7, 10 (Giai đoạn 7)';  tests = @('test:weather', 'test:tour') },
+  @{ n = 7; title = 'kịch bản bão + nắng hè + âm thanh'; model = 'sonnet'; effort = 'medium'; sec = '4.7, 4.8, 6, 7, 10 (Giai đoạn 7)';  tests = @('test:drawcalls', 'test:weather', 'test:tour') },
   @{ n = 8; title = 'hoàn tất: test đủ bộ + tài liệu';   model = 'haiku';  effort = 'low';    sec = '10 (Giai đoạn 8), 11, 13';          tests = @('test:drawcalls', 'test:tour', 'test:tunnel', 'test:riverfront', 'test:voice', 'test:weather'); testsFirst = $true }
 )
 $VerifyModel = 'sonnet'; $VerifyEffort = 'medium'

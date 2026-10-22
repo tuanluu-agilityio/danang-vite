@@ -62,6 +62,7 @@ export interface BridgePatchOptions {
   floodTop?: number;             // m, cho mode 1
   floodBase?: number;
   weather?: boolean;             // mặt ướt khi mưa: đọc weatherU.uWet (0 = không đổi gì)
+  sag?: 'cable' | 'hanger';      // võng cáp chủ Thuận Phước khi nóng (weather/summer.ts): đọc weatherU.uSagTp (0 = không đổi gì); hanger chỉ dịch đầu trên
   sway?: SwayKind;               // dây lắc theo gió (chỉ InstancedMesh dựng bằng segmentMatrix): đọc weatherU.uSwayTp/Ttl/Sh (0 = không đổi gì)
 }
 export type SwayKind = 'tp' | 'ttl' | 'sh';
@@ -83,19 +84,31 @@ const swayVertex = (omega: number) => `#include <project_vertex>
     mvPosition.xyz += mat3(viewMatrix) * swDisp; gl_Position = projectionMatrix * mvPosition;
   }
   #endif`;
+/* Võng cáp chủ khi nóng (mục 4.7): dịch y theo Δf·sin(π·u), u = vị trí dọc nhịp chính (ngoài nhịp chính = 0). Hanger: chỉ đầu trên (position.y = −0,5, xem segmentMatrix(top, bot)) đi xuống. */
+const sagVertex = (kind: 'cable' | 'hanger') => `
+  if (uSagTp != 0.0) {
+    vec4 sgL = vec4(transformed, 1.0);
+    #ifdef USE_INSTANCING
+      sgL = instanceMatrix * sgL;
+    #endif
+    float sgX = (modelMatrix * sgL).x, sgU = clamp((sgX + ${(CONFIG.thuanPhuoc.mainSpan / 2).toFixed(2)}) / ${CONFIG.thuanPhuoc.mainSpan.toFixed(2)}, 0.0, 1.0);
+    float sgW = ${kind === 'hanger' ? 'clamp(0.5 - position.y, 0.0, 1.0)' : '1.0'};
+    mvPosition.xyz += mat3(viewMatrix) * vec3(0.0, -uSagTp * sin(3.14159265 * sgU) * sgW, 0.0); gl_Position = projectionMatrix * mvPosition;
+  }`;
 export function bridgePatch<M extends Mat>(mat: M, opt: BridgePatchOptions): M {
   const pal = LED_PALETTES[opt.palette || 'sea'];
   const key = ['bp', opt.noise ? 1 : 0, opt.wet ? 1 : 0, opt.led || 0, opt.mode || 0, opt.palette || 'sea',
-    opt.pattern ? 1 : 0, opt.originX ?? 'n', opt.originZ ?? 'n', opt.floodTop ?? 95, opt.floodBase ?? 12].join('-') + (opt.weather ? '-w' : '') + (opt.sway ? '-s' + opt.sway : '');   // tắt weather/sway: key cũ giữ nguyên
+    opt.pattern ? 1 : 0, opt.originX ?? 'n', opt.originZ ?? 'n', opt.floodTop ?? 95, opt.floodBase ?? 12].join('-') + (opt.weather ? '-w' : '') + (opt.sway ? '-s' + opt.sway : '') + (opt.sag ? '-g' + opt.sag : '');   // tắt weather/sway: key cũ giữ nguyên
   mat.customProgramCacheKey = () => key;
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = shared.uTime; sh.uniforms.uNight = shared.uNight;
     if (opt.pattern) sh.uniforms.uPattern = opt.pattern;
     if (opt.weather) sh.uniforms.uWet = weatherU.uWet;
+    if (opt.sag) sh.uniforms.uSagTp = weatherU.uSagTp;
     if (opt.sway) { sh.uniforms.uSway = SWAY_U[opt.sway]; sh.uniforms.uWindDir = weatherU.uWindDir; }
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vBW;' + (opt.sway ? '\nuniform float uTime; uniform float uSway; uniform vec2 uWindDir;' : ''))
-      .replace('#include <project_vertex>', opt.sway ? swayVertex(CONFIG.weather.wind[opt.sway].omega) : '#include <project_vertex>')
+      .replace('#include <common>', '#include <common>\nvarying vec3 vBW;' + (opt.sway ? '\nuniform float uTime; uniform float uSway; uniform vec2 uWindDir;' : '') + (opt.sag ? '\nuniform float uSagTp;' : ''))
+      .replace('#include <project_vertex>', (opt.sway ? swayVertex(CONFIG.weather.wind[opt.sway].omega) : '#include <project_vertex>') + (opt.sag ? sagVertex(opt.sag) : ''))
       .replace('#include <fog_vertex>', `#include <fog_vertex>
         { vec4 bw = vec4(transformed, 1.0);
         #ifdef USE_INSTANCING
