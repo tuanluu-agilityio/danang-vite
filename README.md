@@ -22,7 +22,7 @@ Cần Chromium cho Playwright (`npx playwright install chromium` nếu máy chư
 ```bash
 npm run build
 npm run test:drawcalls -- [thư-mục-bản-gốc]   # draw call ở 18 góc nhìn × ngày/đêm
-npm run test:tour      -- [thư-mục-bản-gốc]   # 5 Tour: chú thích, đường bay, quay cầu sông Hàn, mặt cắt + mô phỏng dìm của hầm
+npm run test:tour      -- [thư-mục-bản-gốc]   # 5 Tour + Tour 4 cầu (đường bay mở): chú thích, đường bay, quay cầu sông Hàn, mặt cắt + mô phỏng dìm của hầm
 npm run test:tunnel                           # hầm: trắc dọc, mặt cắt bật/tắt, mắt thích nghi, mô phỏng dìm, ảnh chụp vào tests/screens/
 npm run test:riverfront                       # hai bờ: nhà bị dọn, hướng mặt LED, bật/tắt trái tim, quảng cáo, ảnh chụp vào tests/screens/
 ```
