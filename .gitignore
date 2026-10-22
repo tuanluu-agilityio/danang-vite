@@ -2,3 +2,5 @@ node_modules/
 dist/
 tests/screens/
 .env
+# Ảnh tham chiếu (bản quyền bên ngoài, chỉ dùng trên máy)
+prompts/tham-chieu/
