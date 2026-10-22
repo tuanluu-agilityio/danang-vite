@@ -431,7 +431,21 @@ const sunWheelBase = {
   baseLen: 100, baseDepth: 30,       // m — bệ dọc mặt vòng quay, và bề sâu theo trục quay (ước lượng)
   plaza: { len: 120, depth: 70 },    // m — quảng trường lát đá phía mặt Nam, nối vào bệ (ước lượng)
   clearMargin: 6,                    // m — lề dọn nhà/cây quanh nền
-  lodDistance: 1500                  // m — xa hơn thì ẩn cabin, chi tiết nhà ga
+  lodDistance: 1500,                 // m — xa hơn thì ẩn cabin, chi tiết nhà ga
+  /* ---- hình học (GĐ2), đọc tỉ lệ từ ảnh n1 (chính diện) và a1 (flycam); toàn bộ là ước lượng ---- */
+  rim: { gap: 5, tube: 0.45, ties: 64 },          // m — hai vòng vành chính cách nhau 5 m theo trục quay, bán kính ống 0,45 m; 64 thanh giằng giữa hai vòng (ước lượng)
+  ring2: 0.65, ring2Tube: 0.25,                   // vành phụ ở 0,65 R (theo ảnh n2), ống 0,25 m (ước lượng)
+  hubRing: 7, hubRingTube: 0.3,                   // m — vành nhỏ quanh moay-ơ, bán kính 7 m (ước lượng)
+  hub: { r: 2.6, len: 7 },                        // m — moay-ơ: bán kính, dài theo trục quay (ước lượng)
+  spokeR: 0.22, cableR: 0.07, cables: 64,         // m — bán kính 32 thanh chính và 64 cáp chéo mảnh (ước lượng; n1 thấy nhiều hơn 32 đường)
+  axle: { r: 1.3, len: 24 },                      // m — trục tĩnh theo phương 173°/353°, dài qua hai mặt giàn (ước lượng)
+  legs: { zTop: 10, zBot: 13, xBot: 26, xTop: 3, w: 1.2, brace: 0.5, tiers: 5 },   // m — giàn tháp hình thang mỗi bên mặt vòng quay: mặt giàn cách mặt vòng quay 10 m ở trục, 13 m ở chân; chân rộng ±26 m trên mặt bệ, đỉnh ±3 m; tiết diện chân 1,2 m, giằng 0,5 m; 5 tầng giằng ngang (ước lượng, n1)
+  cabin: { r: 1.5, len: 1.3, glass: 0.8 },        // m — cabin hình viên nang đứng: bán kính 1,5, thân thẳng 1,3 (cao 4,3 m), dải kính cao ±0,8 m quanh giữa (ước lượng)
+  station: { towerW: 17, towerH: 15, archW: 7, archH: 8.5, archX: 21, panel: 0.55, deckPlanters: 8 },   // m — tháp vuông hai đầu bệ rộng 17, cao 15; 3 vòm cuốn rộng 7, cao 8,5, cách nhau 21 m; ốp đá xám (hệ số màu 0,55); 8 bồn cây trên sàn mái (ước lượng, n1)
+  pavilion: { w: 12, h1: 4, h2: 3, roof1: 3, roof2: 2.6 },   // m — lầu trên tháp: rộng 12, tầng dưới cao 4, tầng trên 3, mái dưới cao 3, mái trên 2,6 (ước lượng, n1/a1)
+  gate: { r: 9, tube: 0.9, stageD: 8 },           // m — cổng vòm vàng giữa mặt Nam (sân khấu): bán kính vòm 9, ống 0,9, sân khấu sâu 8 (ước lượng, a1)
+  sign: { w: 16, h: 3.2, below: 13 },             // m — biển "SUN WHEEL" rộng 16, cao 3,2, tâm thấp hơn trục 13 m, mặt Nam (ước lượng, n1)
+  lamps: { n: 8, h: 8 }                           // cột đèn quảng trường: số cột, cao m (ước lượng)
 };
 function deriveSunWheel(C: typeof sunWheelBase) {
   const yaw = THREE.MathUtils.degToRad(90 - C.azimuth);          // quay quanh Y: trục X cục bộ (dọc mặt vòng quay) về phương vị 83°, +7° lệch Bắc
