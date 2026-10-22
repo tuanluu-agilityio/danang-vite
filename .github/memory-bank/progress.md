@@ -34,7 +34,7 @@ Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn
 - Thời tiết: sóng bạc đầu cửa sông, bơm hầm, tàu cao `ship` của Cầu sông Hàn, ảo ảnh mặt cầu chưa có.
 - Thuyết minh cho ko, ja, zh, th, ar, hi.
 - Dựng lại Cầu Rồng chi tiết theo `prompts/cau-rong.md`.
-- Vòng quay Mặt Trời (Sun Wheel) theo `prompts/vong-quay-mat-troi.md`: mới có đặc tả (GĐ0), chờ ảnh/tọa độ.
+- Vòng quay Mặt Trời (Sun Wheel) theo `prompts/vong-quay-mat-troi.md`: đã có đặc tả (GĐ0) và khung GĐ1 (config, `SunWheel` rỗng, dọn nền, `test:sunwheel`); còn hình học, quay, LED, ngồi cabin, thời tiết, Tour (GĐ2–GĐ8). Còn thiếu để chốt số: khoảng cách tâm → mép nước (x), đường kính thật, ảnh cận cabin, video show LED.
 - Bật `strict` TypeScript dần theo thư mục (giai đoạn 2).
 
 ## Lỗi / hạn chế đã biết

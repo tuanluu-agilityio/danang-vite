@@ -145,7 +145,7 @@ src/bridges/sun-wheel/
   SunWheel.ts    class SunWheel extends BridgeBase
 ```
 
-- Dùng `BridgeBase` (`src/common/BridgeBase.ts`) dù không phải cầu: có sẵn LOD, `life`, `closable`, panel, `bridges[]`. Ghi **D-013** vào `decisions.md`.
+- Dùng `BridgeBase` (`src/common/BridgeBase.ts`) dù không phải cầu: có sẵn LOD, `life`, `closable`, panel, `bridges[]`. Ghi **D-014** vào `decisions.md`.
 - `CONFIG.sunWheel` trong `src/config.ts`: mọi thông số mục 1–4, chú thích tiếng Việt, đơn vị, nguồn hoặc `(ước lượng)`.
 - `main.ts`: `new SunWheel()` **sau** `buildRiverfront()` và **trước** `buildWeather()` (thời tiết chụp vật liệu gốc); thêm vào `bridges[]` và `window.__app.sunWheel`.
 - Dọn: vùng z ≈ 2 280, x < −262 hiện chỉ có đất phẳng, kè, dải đi bộ (khu phố |z| < 1 800, đường Bạch Đằng tới z = 2 600, cây/đèn kè tới z = 2 300). Vẫn khai báo rect và dùng `clearRects()` (`src/environment/riverfront/clearance.ts`), xử lý cả `near` và `far` của `THREE.LOD`.

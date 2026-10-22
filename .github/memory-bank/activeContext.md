@@ -1,6 +1,6 @@
 # Active Context
 
-_Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/tour-4-cau` (tạo từ `main`) · Nhánh chính: `main`_
+_Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/sun-wheel` (tạo từ `main`; `feature/tour-4-cau` đã merge) · Nhánh chính: `main`_
 
 ## Trạng thái
 - `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`), thời tiết GĐ1–GĐ8 + kịch bản bão có thuyết minh (PR #6).
@@ -10,7 +10,7 @@ _Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/tour-4-cau` (tạo từ
 1. Tour 4 cầu (`feature/tour-4-cau`, đặc tả `prompts/tour-4-cau.md`, D-015) đã đủ GĐ0–GĐ4: `tour.ts` nhận đường bay mở (`loop: false`, `segMax`, `TourStop.bridge` → `tourHooks.bridge`), `ALL_TOUR` 13 điểm, nút `allTour`, i18n `vTourAll`/`allStops` × 9, thuyết minh vi/en/ru (39 clip). Kết quả test ở `tests/KET-QUA.md`. Chưa kiểm: giọng nghe thật, Tour ban đêm / thời tiết khác `now`. Lời điểm 7 ("Tiếp tục về phía Bắc") đọc lúc camera còn nhìn lại Cầu Rồng; chỉnh `ALL_TOUR[6]` nếu muốn camera quay về hướng Bắc.
 2. Còn mở: tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
 3. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md`.
-4. `.gitignore` (dòng `prompts/tham-chieu/`) và `prompts/vong-quay-mat-troi.md` chưa commit: thuộc Sun Wheel, không commit vào nhánh Tour 4 cầu.
+4. Vòng quay Mặt Trời đang làm trên `feature/sun-wheel` (đặc tả `prompts/vong-quay-mat-troi.md`, D-014): xem mục "Vòng quay Mặt Trời" bên dưới.
 
 ## Kịch bản bão: hành trình + thuyết minh (2026-10-22, nhánh `feature/weather`, chưa commit)
 - Giọng đọc kịch bản bão (vi, en, ru; người dùng đổi 12b-3): khóa `wxStorm` trong `scripts/narration/*.json`, 8 clip mỗi ngôn ngữ. Lời mở đầu nói rõ "kịch bản giả định, không phải bản tin thật", lời cuối nói kịch bản kết thúc.
@@ -90,12 +90,14 @@ _Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/tour-4-cau` (tạo từ
 - Sửa lần 1: thêm `test:drawcalls` vào GĐ7 trong `scripts/run-weather.ps1`; thêm phần GĐ7 vào `tests/weather-check.mjs`: kịch bản tua ×30 chạy hết ≥ 8 mốc, trả preset `now`/`enabled` false/ngày-đêm/0 cây đổ, khí quyển về đúng gốc (so tuyệt đối), 3 lần kịch bản + 5 vòng đổi preset thì `geometries`/`textures` bằng mốc (không còn "cho phép tăng lần đầu") và `programs` không tăng. Nguyên nhân geometries 206 → 207 lần đầu: three chỉ đếm geometry khi mesh được vẽ lần đầu — mesh tia chớp (ẩn tới lúc có bão) → tải GPU lười, không rò rỉ; test vẽ trước một tia rồi mới lấy mốc. Không đổi code ứng dụng. `npm run build` qua; `node --check` qua; các `test:*` chưa chạy (cấm), chờ script ngoài.
 - Bước tiếp theo: chờ chấm lại GĐ7 (`build`, `test:drawcalls`, `test:weather`, `test:tour`), commit GĐ7, rồi GĐ8 (chạy đủ bộ test, `tests/KET-QUA.md`, README mục Cấu trúc, `systemPatterns.md`; cân nhắc 12b-6).
 
-## Vòng quay Mặt Trời (Sun Wheel) — GĐ0 (2026-10-22, chưa code)
+## Vòng quay Mặt Trời (Sun Wheel) — GĐ1 (nhánh `feature/sun-wheel`, từ `main`)
+- GĐ0 đã commit (`52ad574`: đặc tả + `.gitignore`). GĐ1 đã code và commit: `CONFIG.sunWheel` + `deriveSunWheel()` (`yaw` = 90° − phương vị = +7°, `hubY` 66,5, `topY` 117,5 = 115 m trên mặt đất, `site` = khung bao nền), `src/bridges/sun-wheel/{index,profile,materials,SunWheel}.ts` (khung rỗng, chỉ `clearRects([SW.site])` + `updateLod`), `new SunWheel()` giữa `buildRiverfront()` và `buildWeather()` trong `main.ts`, có trong `bridges[]` và `__app.sunWheel`; `tests/sunwheel-check.mjs` + `npm run test:sunwheel`; D-014 ở `decisions.md`.
+- Kết quả: `typecheck`, `build` qua; `test:sunwheel` đạt (tâm −440/2 280, hướng 83°, đỉnh 115 m, dọn nền 0 nhà / 0 cây vì khu này vốn trống). `test:drawcalls` 58/58 khớp bảng GD8 trong `KET-QUA.md` (chênh 0; chạy không kèm `tests/original`, nên so với bảng GD8 chứ chưa so với bản gốc).
+- Chưa làm: mọi hình học (GĐ2), quay (GĐ3), LED (GĐ4), ngồi cabin (GĐ5), thời tiết (GĐ6: `weatherFx.wheelStopped`), panel/i18n/Tour (GĐ7). `SunWheel` chưa có `setAngle()` (GĐ3).
 - Đặc tả `prompts/vong-quay-mat-troi.md` đã viết. Người dùng đã trả lời 4 câu (mục 12b): đang hoạt động (kèm ghi chú nguồn báo ngừng từ 9/2025), chỉ vòng quay + bệ + nhà ga, đủ 4 tương tác (ngồi cabin, ×1/×10/×60, show LED, Tour vi/en/ru), góc cũ ≤ +2 draw call.
 - Đã nhận (2026-10-22): tọa độ 16,040525; 108,228459 → z ≈ +2 280 (2 282 m Nam Cầu Rồng); mặt phẳng phương vị 83°/263° → `rotation.y = +7°`; mặt có biển/quảng trường quay Nam Đông Nam (+Z). 6 ảnh ở `prompts/tham-chieu/sun-wheel/` (thư mục đã vào `.gitignore` vì ảnh có bản quyền). Đặc tả mục 1, 1.2, 1.3, 2, 4 đã cập nhật theo ảnh: tháp đỡ là giàn hình thang + trụ giữa, vành phụ 0,65 R, bệ có 3 vòm + 2 tháp có lầu.
 - Vẫn ước lượng: x ≈ −440 (chờ đo khoảng cách tới mép nước), D ≈ 93 m, trục ≈ 64 m, bệ ≈ 13 m.
-- Bước tiếp theo: GĐ1 trên nhánh `feature/sun-wheel` (tạo sau khi weather merge, hoặc từ `feature/weather` sau commit GĐ6). Dự định ghi D-014 (dùng `BridgeBase` cho công trình không phải cầu) khi bắt đầu code.
-- File đặc tả chưa commit (nhánh hiện tại `feature/weather` còn việc GĐ6 dở, không commit lẫn).
+- Bước tiếp theo: GĐ2 (hình học tĩnh: bệ, ga, tháp đỡ, vành, nan, 64 cabin instanced, LOD; góc cũ ≤ +2 draw call). Cần `x` thật: khoảng cách tâm → mép nước sông Hàn.
 
 ## Vấn đề mở / cần quyết
 - Tọa độ các địa danh riverfront là ước lượng (chưa có nguồn công khai); số tầng đã xác minh — xem comment đầu `src/environment/riverfront/landmarks.ts`.

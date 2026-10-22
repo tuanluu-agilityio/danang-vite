@@ -409,6 +409,45 @@ const weatherBase = {
   monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
 };
 
+/* ---------------------------- Vòng quay Mặt Trời (Sun Wheel) ----------------------------
+   Asia Park, bờ Tây, phía Nam Cầu Trần Thị Lý. Mét, độ, giây; tọa độ thế giới (z âm là phía Bắc), mặt đất y = landY.
+   Đã có nguồn: 115 m, 64 cabin × 6 khách, ~15 phút/vòng, 980 t, 13 000 LED trên 32 thanh, mở 18/7/2014, trước là "Igosu 108" (Biwako Tower, Shiga, 1992, 108 m)
+   (Wikipedia, danang.gov.vn, vietnamtourism.vn, vietnambooking). Tọa độ tâm và hướng mặt phẳng do người dùng đo trên Google Maps (2026-10-22).
+   Phần còn lại (đường kính, bệ, tháp đỡ, vị trí x) là ước lượng đo tỉ lệ trên ảnh. Theo một số nguồn vòng quay đã ngừng từ 9/2025; mô hình thể hiện lúc còn vận hành. */
+const sunWheelBase = {
+  lat: 16.040525, lon: 108.228459,   // ° — tâm vòng quay (người dùng đo); so Cầu Rồng (16,06116°N; 108,22719°E): 2 282 m về Nam, 136 m về Đông
+  z: 2280,                           // m — theo khoảng cách Nam–Bắc tới Cầu Rồng (mô hình coi sông thẳng)
+  x: -440,                           // m — (ước lượng) 262 mép kè + ~180 m vào bờ Tây, đọc trên ảnh vệ tinh; không lấy từ kinh độ vì sông thật lệch Đông dần về phía Nam
+  azimuth: 83,                       // ° — phương vị mặt phẳng vòng quay (83°↔263°, Đông Đông Bắc – Tây Tây Nam); trục quay 173°↔353°
+  height: 115,                       // m — đỉnh cabin so với mặt đất (có nguồn)
+  cabins: 64, seats: 6,              // số cabin, khách mỗi cabin (có nguồn: 384 khách)
+  spokes: 32, leds: 13000,           // thanh chính mang LED, tổng số LED (có nguồn)
+  period: 900,                       // s — một vòng ≈ 15 phút (có nguồn)
+  speeds: [0, 1, 10, 60],            // hệ số tốc độ quay: dừng, thật, ×10, ×60
+  mass: 980,                         // t (có nguồn, một nguồn)
+  rimR: 46.5,                        // m — bán kính vành (ước lượng, suy từ height = baseH + 2·(rimR + cabinH); đường kính ≈ 93 m)
+  cabinH: 4.5,                       // m — cabin + giá treo, treo ngoài vành (ước lượng)
+  baseH: 13,                         // m — mặt sàn mái bệ so với mặt đất; cabin thấp nhất chạm sàn này (ước lượng)
+  baseLen: 100, baseDepth: 30,       // m — bệ dọc mặt vòng quay, và bề sâu theo trục quay (ước lượng)
+  plaza: { len: 120, depth: 70 },    // m — quảng trường lát đá phía mặt Nam, nối vào bệ (ước lượng)
+  clearMargin: 6,                    // m — lề dọn nhà/cây quanh nền
+  lodDistance: 1500                  // m — xa hơn thì ẩn cabin, chi tiết nhà ga
+};
+function deriveSunWheel(C: typeof sunWheelBase) {
+  const yaw = THREE.MathUtils.degToRad(90 - C.azimuth);          // quay quanh Y: trục X cục bộ (dọc mặt vòng quay) về phương vị 83°, +7° lệch Bắc
+  const cabinR = C.rimR + C.cabinH / 2;                          // bán kính tâm cabin, treo ngoài vành
+  const hubY = base.landY + C.baseH + C.cabinH + C.rimR;      // cao độ trục ≈ 66,5 so với mặt nước (≈ 64 so với mặt đất)
+  const topY = hubY + C.rimR + C.cabinH;                         // đỉnh cabin ≈ 117,5 so với mặt nước (115 m so với mặt đất)
+  const omega = 2 * Math.PI / C.period;                          // rad/s ở tốc độ thật
+  const cabinStep = 2 * Math.PI / C.cabins;
+  /* nền cần dọn: bệ + quảng trường theo hệ cục bộ (X dọc mặt, Z về mặt Nam), đổi sang khung bao trục thế giới */
+  const local = { x0: -Math.max(C.baseLen, C.plaza.len) / 2, x1: Math.max(C.baseLen, C.plaza.len) / 2, z0: -C.baseDepth / 2, z1: C.baseDepth / 2 + C.plaza.depth };
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  const pts = [[local.x0, local.z0], [local.x1, local.z0], [local.x1, local.z1], [local.x0, local.z1]].map(([lx, lz]) => [C.x + lx * c + lz * s, C.z - lx * s + lz * c]);
+  const site = { x0: Math.min(...pts.map((p) => p[0])), x1: Math.max(...pts.map((p) => p[0])), z0: Math.min(...pts.map((p) => p[1])), z1: Math.max(...pts.map((p) => p[1])) };
+  return { ...C, yaw, cabinR, hubY, topY, omega, cabinStep, local, site };
+}
+
 /* ---- Tour 4 cầu ----
    Hành trình một chiều Trần Thị Lý → Cầu Rồng → Cầu sông Hàn → Thuận Phước (~4,2 km), điểm dừng ở views/tourStops.ts (ALL_TOUR) */
 const tourAllBase = {
@@ -423,6 +462,7 @@ export const CONFIG = {
   tranThiLy: deriveTtl(tranThiLyBase),
   songHan: deriveSh(songHanBase),
   hanTunnel: deriveHr(hanTunnelBase),
+  sunWheel: deriveSunWheel(sunWheelBase),
   riverfront: riverfrontBase,
   weather: weatherBase,
   tourAll: tourAllBase
