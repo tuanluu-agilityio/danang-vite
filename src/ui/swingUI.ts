@@ -36,7 +36,9 @@ export function setupSwingUI(songHan: SongHanBridge, toggle: Toggle) {
   setTourSwingHook(() => { if (ctrl.state === 'CLOSED') { speedSel.value = '30'; ctrl.fromTour = true; if (!ctrl.start(30)) ctrl.fromTour = false; } });
   // Bão: không quay cầu (cấm theo thông báo của thành phố) — hiện lý do vài giây rồi trả lại dòng trạng thái
   let blockedT = 0;
-  ctrl.addEventListener('swingBlocked', () => { stateEl.textContent = t('swingWeather'); clearTimeout(blockedT); blockedT = window.setTimeout(swingRender, 4000); });
+  ctrl.addEventListener('swingBlocked', () => {
+    if (ctrl.fromTour) { const tx = document.getElementById('tourText'); tx.textContent = `${tx.textContent} ${t('wxSwingTour')}`; }   // Tour: bỏ bước quay, ghi chú thích
+    stateEl.textContent = t('swingWeather'); clearTimeout(blockedT); blockedT = window.setTimeout(swingRender, 4000); });
   ctrl.addEventListener('swingStart', () => {
     audio.horn();
     if (follow && cam.mode !== 'tour' && cam.flight.then !== 'tour') {

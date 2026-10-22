@@ -295,5 +295,21 @@
   "wxStorm": "台風",
   "wxIntensity": "強さ",
   "sWeather": "悪天候のため一時停止",
-  "swingWeather": "橋は旋回しません：悪天候のため市の通知により通行止め"
+  "swingWeather": "橋は旋回しません：悪天候のため市の通知により通行止め",
+  "wxImpact": "橋への影響",
+  "wxImpactNote": "視覚的なシミュレーション（×{k}に誇張）、数値は概算で、構造解析ではありません。",
+  "wxWindDeck": "橋面の風速：{v} m/s・{b}級",
+  "wxWindTop": "主塔上端 {v} m/s",
+  "wxOpen": "通行可",
+  "wxClosed": "通行止め",
+  "wxClosedNote": "市の通知により通行止め",
+  "wxThermal": "全体の熱膨張 {cm} cm（概算）",
+  "wxSag": "主ケーブルの垂れ下がり増 {cm} cm（概算）",
+  "wxRainWind": "雨風によるケーブル振動（対策：被覆管の螺旋リブ、制振装置）",
+  "wxSwingBlocked": "橋は旋回しません",
+  "wxSwingTour": "悪天候のため橋の旋回を延期します。",
+  "wxTunnelOk": "トンネルは通行可能で風の影響なし、排水ポンプ稼働（提案案）",
+  "vWxRiverMouth": "河口から（天気）",
+  "vWxTtlStays": "斜張ケーブルに沿って（天気）",
+  "vWxStreet": "車の目線・濡れた路面"
 }

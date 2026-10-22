@@ -62,7 +62,7 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPh
   setupRiverfrontUI(toggle);
   document.querySelector('[data-view="rfHearts"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
   // Thời tiết: preset + cường độ (GĐ2: chỉ khí quyển)
-  setupWeatherUI();
+  setupWeatherUI(toggle);
   window.addEventListener('keydown', (e) => {
     if (cam.mode !== 'walk') return;
     const k = e.key.toLowerCase(); keys.add(k);

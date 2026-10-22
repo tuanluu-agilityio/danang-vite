@@ -295,5 +295,21 @@
   "wxStorm": "태풍",
   "wxIntensity": "강도",
   "sWeather": "날씨로 인해 일시 중단",
-  "swingWeather": "다리를 회전하지 않음: 악천후, 시 공지에 따라 통제"
+  "swingWeather": "다리를 회전하지 않음: 악천후, 시 공지에 따라 통제",
+  "wxImpact": "교량에 미치는 영향",
+  "wxImpactNote": "시각적 시뮬레이션, ×{k} 과장, 근사치 — 구조 해석이 아닙니다.",
+  "wxWindDeck": "교량 상판 풍속: {v} m/s · {b}등급",
+  "wxWindTop": "주탑 상단 {v} m/s",
+  "wxOpen": "통행",
+  "wxClosed": "통제",
+  "wxClosedNote": "시 공지에 따라 통행 금지",
+  "wxThermal": "전체 열팽창 {cm} cm (근사)",
+  "wxSag": "주케이블 추가 처짐 {cm} cm (근사)",
+  "wxRainWind": "비–바람 케이블 진동 (대책: 피복관의 나선 리브, 감쇠기)",
+  "wxSwingBlocked": "교량 회전 안 함",
+  "wxSwingTour": "날씨로 인해 교량 회전이 연기되었습니다.",
+  "wxTunnelOk": "터널은 계속 통행, 바람 영향 없음, 배수 펌프 가동 (제안안)",
+  "vWxRiverMouth": "강 하구에서 (날씨)",
+  "vWxTtlStays": "사장 케이블을 따라 (날씨)",
+  "vWxStreet": "차량 눈높이, 젖은 도로"
 }

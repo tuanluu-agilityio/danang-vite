@@ -295,5 +295,21 @@
   "wxStorm": "Storm",
   "wxIntensity": "Intensity",
   "sWeather": "paused due to weather",
-  "swingWeather": "Bridge will not swing: bad weather, closed per city notice"
+  "swingWeather": "Bridge will not swing: bad weather, closed per city notice",
+  "wxImpact": "Impact on bridges",
+  "wxImpactNote": "Visual simulation, exaggerated ×{k}, approximate figures — not a structural analysis.",
+  "wxWindDeck": "Wind at deck: {v} m/s · force {b}",
+  "wxWindTop": "tower top {v} m/s",
+  "wxOpen": "Open",
+  "wxClosed": "Closed",
+  "wxClosedNote": "Closed to traffic per city notice",
+  "wxThermal": "Overall thermal expansion {cm} cm (approx.)",
+  "wxSag": "Main cable sags {cm} cm more (approx.)",
+  "wxRainWind": "Rain–wind cable vibration (countermeasures: helical ribs on the sheath, dampers)",
+  "wxSwingBlocked": "Bridge will not swing",
+  "wxSwingTour": "Bridge swing postponed due to weather.",
+  "wxTunnelOk": "Tunnel stays open, unaffected by wind, drainage pumps working (proposed option)",
+  "vWxRiverMouth": "From the river mouth (weather)",
+  "vWxTtlStays": "Along the stay cables (weather)",
+  "vWxStreet": "Car height, wet road"
 }

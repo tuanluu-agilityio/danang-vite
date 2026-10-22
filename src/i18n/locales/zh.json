@@ -295,5 +295,21 @@
   "wxStorm": "台风",
   "wxIntensity": "强度",
   "sWeather": "因天气暂停",
-  "swingWeather": "桥梁不旋转：天气恶劣，按市政通知禁止通行"
+  "swingWeather": "桥梁不旋转：天气恶劣，按市政通知禁止通行",
+  "wxImpact": "对桥梁的影响",
+  "wxImpactNote": "直观模拟，放大×{k}，数据为近似值——并非结构分析。",
+  "wxWindDeck": "桥面风速：{v} m/s · {b}级",
+  "wxWindTop": "塔顶 {v} m/s",
+  "wxOpen": "通行",
+  "wxClosed": "禁行",
+  "wxClosedNote": "按市政通知禁止通行",
+  "wxThermal": "整体热胀 {cm} cm（近似）",
+  "wxSag": "主缆额外下垂 {cm} cm（近似）",
+  "wxRainWind": "风雨激振拉索（措施：护套螺旋肋、阻尼器）",
+  "wxSwingBlocked": "桥梁不旋转",
+  "wxSwingTour": "因天气原因暂缓旋转桥梁。",
+  "wxTunnelOk": "隧道照常通行，不受风影响，排水泵运行（建议方案）",
+  "vWxRiverMouth": "从河口望去（天气）",
+  "vWxTtlStays": "沿斜拉索（天气）",
+  "vWxStreet": "车辆视角，湿滑路面"
 }

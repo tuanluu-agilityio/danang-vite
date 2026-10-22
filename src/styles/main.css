@@ -94,10 +94,18 @@ button[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold),var(--
 .mini-select select option{background:var(--ink);color:var(--text);}
 .seg button[aria-pressed="true"]{background:rgba(230,189,106,.16);border-color:rgba(230,189,106,.55);color:var(--gold);}
 .view-list{display:flex;flex-direction:column;gap:6px;}
-.view-list .toggle{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:11.5px;color:var(--muted);background:transparent;}
-.view-list .toggle::before{content:"";width:11px;height:11px;flex:0 0 auto;border:1.5px solid var(--gold);border-radius:2px;}
-.view-list .toggle[aria-pressed="true"]{background:transparent;color:var(--text);border-color:rgba(230,189,106,.32);}
-.view-list .toggle[aria-pressed="true"]::before{background:var(--gold);box-shadow:inset 0 0 0 2px var(--ink);}
+.view-list .toggle,.weather-row .toggle{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:11.5px;color:var(--muted);background:transparent;}
+.view-list .toggle::before,.weather-row .toggle::before{content:"";width:11px;height:11px;flex:0 0 auto;border:1.5px solid var(--gold);border-radius:2px;}
+.view-list .toggle[aria-pressed="true"],.weather-row .toggle[aria-pressed="true"]{background:transparent;color:var(--text);border-color:rgba(230,189,106,.32);}
+.view-list .toggle[aria-pressed="true"]::before,.weather-row .toggle[aria-pressed="true"]::before{background:var(--gold);box-shadow:inset 0 0 0 2px var(--ink);}
+/* Thẻ "Ảnh hưởng tới cầu": mỗi công trình một ô (tên + trạng thái lưu thông, gió tại mặt cầu, hiệu ứng) */
+.wx-impact{display:flex;flex-direction:column;gap:6px;max-height:max(120px,calc(100vh - 560px));overflow-y:auto;}   /* chừa chỗ cho bảng Thông số ở góc dưới */
+.wx-item{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border:1px solid rgba(230,189,106,.2);border-radius:4px;background:rgba(255,255,255,.03);font-size:11px;line-height:1.35;color:var(--muted);}
+.wx-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--text);font-weight:500;}
+.wx-st{font:500 10px/1 var(--font-mono);padding:3px 6px;border-radius:3px;border:1px solid currentColor;white-space:nowrap;}
+.wx-st.open{color:#7bd18b;}.wx-st.closed{color:#f07b6b;}
+.wx-wind{font-variant-numeric:tabular-nums;color:var(--text);}
+.wx-note{font-size:10px;color:var(--muted);line-height:1.4;}
 .views .label,.specs .label{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
 .views button{text-align:start;}
 .specs{inset-inline-start:calc(14px + env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));padding:12px 16px;}

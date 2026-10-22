@@ -295,5 +295,21 @@
   "wxStorm": "Bão",
   "wxIntensity": "Cường độ",
   "sWeather": "tạm dừng do thời tiết",
-  "swingWeather": "Không quay cầu: thời tiết xấu, cấm theo thông báo của thành phố"
+  "swingWeather": "Không quay cầu: thời tiết xấu, cấm theo thông báo của thành phố",
+  "wxImpact": "Ảnh hưởng tới cầu",
+  "wxImpactNote": "Mô phỏng trực quan, phóng đại ×{k}, số liệu tính gần đúng — không phải phân tích kết cấu.",
+  "wxWindDeck": "Gió tại mặt cầu: {v} m/s · cấp {b}",
+  "wxWindTop": "đỉnh tháp {v} m/s",
+  "wxOpen": "Mở",
+  "wxClosed": "Cấm",
+  "wxClosedNote": "Cấm lưu thông theo thông báo của thành phố",
+  "wxThermal": "Giãn nở nhiệt toàn cầu {cm} cm (tính gần đúng)",
+  "wxSag": "Cáp chủ võng thêm {cm} cm (tính gần đúng)",
+  "wxRainWind": "Rung dây do mưa–gió (biện pháp: gân xoắn trên ống bọc, giảm chấn)",
+  "wxSwingBlocked": "Không quay cầu",
+  "wxSwingTour": "Tạm hoãn quay cầu do thời tiết.",
+  "wxTunnelOk": "Hầm vẫn lưu thông, không chịu gió, bơm thoát nước làm việc (phương án đề xuất)",
+  "vWxRiverMouth": "Từ cửa sông (thời tiết)",
+  "vWxTtlStays": "Dọc dây văng (thời tiết)",
+  "vWxStreet": "Ngang tầm xe, đường ướt"
 }

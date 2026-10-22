@@ -34,6 +34,10 @@ export const VIEWS: Record<string, ViewPreset> = {
   // Hai bờ sông Hàn: trái tim hai tòa nhìn từ giữa sông (ban đêm); dạo dải ven sông Bạch Đằng nhìn về Novotel
   rfHearts: { pos: [0, 45, -640], target: [0, 80, -1150] },
   rfBank: { pos: [-268, 4.3, -935], target: [-352, 50, -1150], maxPolar: Math.PI * 0.97 },
+  // Thời tiết (vị trí ước lượng, chỉnh khi xem ảnh): từ cửa sông nhìn vào Thuận Phước; đứng trên lề Trần Thị Lý nhìn dọc dây văng; ngang tầm xe trên Bạch Đằng, Cầu Rồng phía sau
+  wxRiverMouth: { pos: [260, 36, TPZ - 330], target: [0, 30, TPZ] },
+  wxTtlStays: { pos: [70, 14.6, 1300 + 9], target: [-140, 60, 1300], maxPolar: Math.PI * 0.97 },
+  wxStreet: { pos: [-299, 1.8, 120], target: [-200, 8, 0], maxPolar: Math.PI * 0.97 },
   // Hầm vượt sông Hàn
   hrOverview: { pos: [-560, 230, HRZ - 520], target: [0, -4, HRZ] },
   hrCutaway: { pos: [-95, 30, HRC - 110], target: [0, -10, HRC], maxPolar: Math.PI * 0.97 },
