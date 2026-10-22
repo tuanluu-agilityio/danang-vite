@@ -69,7 +69,7 @@ export type SwayKind = 'tp' | 'ttl' | 'sh';
 const SWAY_U = { tp: weatherU.uSwayTp, ttl: weatherU.uSwayTtl, sh: weatherU.uSwaySh };
 
 /* Dây lắc theo gió (mục 4.5): dịch SAU khi nhân instanceMatrix/modelMatrix (không gian thế giới — segmentMatrix co bán kính nên dịch cục bộ bị thu nhỏ).
-   Dạng sin(π·t), t = position.y + 0.5 của CylinderGeometry (hai đầu cố định). Hướng chính: thành phần gió vuông góc với dây, thêm 35 % vuông góc thứ hai (quỹ đạo elip).
+   Dạng sin(π·t), t = position.y + 0.5 của CylinderGeometry (hai đầu cố định) — hình trụ phải có heightSegments > 1 (CONFIG.weather.wind.cableSegs), dây 1 đoạn thì sin = 0 ở mọi đỉnh, không lắc. Hướng chính: thành phần gió vuông góc với dây, thêm 35 % vuông góc thứ hai (quỹ đạo elip).
    Biên độ (m, đã phóng đại) do weather/wind.ts tính; = 0 thì nhánh không chạy (ảnh preset `now` trùng từng điểm ảnh). */
 const swayVertex = (omega: number) => `#include <project_vertex>
   #ifdef USE_INSTANCING

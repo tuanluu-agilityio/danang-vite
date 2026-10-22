@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CONFIG } from '../../config';
 import { lerp } from '../../common/math';
 import { prepColored, segmentMatrix } from '../../common/geometry';
 import { TTL, ttlRoadY, ttlPylonSection, ttlPylonPoint } from './profile';
@@ -25,7 +26,7 @@ export function ttlStayList() {
 }
 export function ttlBuildStays(bridge: TranThiLyBridge) {
   const M = bridge.mats, list = ttlStayList(), m = new THREE.Matrix4(), cyl = new THREE.CylinderGeometry(1, 1, 1, 8);
-  const stays = new THREE.InstancedMesh(cyl, M.stay, list.length);
+  const stays = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 8, CONFIG.weather.wind.cableSegs), M.stay, list.length);   // nhiều đoạn dọc để shader lắc uốn cong được dây
   const hdpe = new THREE.InstancedMesh(cyl, M.hdpe, list.length);
   const towerBox = new THREE.InstancedMesh(new THREE.BoxGeometry(1.3, 0.9, 1.3), M.pylon, list.length);
   const deckBox = new THREE.InstancedMesh(prepColored(new THREE.BoxGeometry(1.1, 0.9, 1.1)), M.concrete, list.length);

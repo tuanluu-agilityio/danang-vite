@@ -315,12 +315,12 @@
   "wxStormRun": "Kịch bản bão",
   "wxStormStop": "Dừng kịch bản",
   "wxStormHint": "Kéo chuột hoặc Esc để tự điều khiển camera — thời tiết vẫn chạy",
-  "wxS1": "Bản tin giả định: bão mạnh cấp 11 trên Biển Đông, dự kiến ảnh hưởng Đà Nẵng",
-  "wxS2": "Cấm tàu thuyền hoạt động trên sông Hàn; thuyền du lịch về bến",
-  "wxS3": "Tạm dừng trình diễn lửa – nước của Cầu Rồng",
-  "wxS4": "Gió giật mạnh: dây cáp dao động (phóng đại ×{k})",
-  "wxS5": "Cấm lưu thông qua các cầu theo thông báo của thành phố; không quay Cầu sông Hàn",
-  "wxS6": "Bão đổ bộ: gió cấp 10–11, giật cấp 13",
-  "wxS7": "Bão suy yếu, mưa còn to",
-  "wxS8": "Sau bão: thông xe, mở lại cầu, dọn cây đổ"
+  "wxS1": "Cửa sông Hàn — bản tin giả định: bão mạnh cấp 11 trên Biển Đông, dự kiến ảnh hưởng Đà Nẵng",
+  "wxS2": "Sông Hàn — cấm tàu thuyền hoạt động; thuyền du lịch về bến",
+  "wxS3": "Cầu Rồng — tạm dừng trình diễn lửa – nước",
+  "wxS4": "Cầu Trần Thị Lý — gió giật mạnh: dây văng dao động (phóng đại ×{k})",
+  "wxS5": "Cầu sông Hàn — cấm lưu thông qua các cầu theo thông báo của thành phố; không quay cầu",
+  "wxS6": "Vịnh trước Cầu Thuận Phước — bão đổ bộ: gió cấp 10–11, giật cấp 13; nước sông dâng",
+  "wxS7": "Toàn cảnh thành phố — bão suy yếu, mưa còn to",
+  "wxS8": "Phố ven sông bờ Tây — sau bão: thông xe, mở lại cầu, dọn cây đổ"
 }

@@ -67,3 +67,4 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - `OrbitControls` không cho camera thấp hơn điểm nhìn → góc nhìn sát nước cần `maxPolar` (tới `Math.PI * 0.97`).
 - Mặt cắt địa chất của hầm sửa `clippingPlanes`/`transparent`/`depthWrite` của vật liệu chung → tắt phải trả **đúng** giá trị gốc (test:tunnel kiểm).
 - Chữ trên mặt LED / bảng: kiểm tra không bị lật gương theo hướng mặt.
+- Hiệu ứng dịch đỉnh trong vertex shader (lắc dây `sin(π·t)`, võng cáp) cần hình học có đỉnh ở giữa: `CylinderGeometry(1, 1, 1, n)` mặc định 1 đoạn dọc nên dây không cong dù uniform đúng (lỗi GĐ4, phát hiện 2026-10-22). Kiểm hiệu ứng shader bằng **điểm ảnh** (vẽ hai khung, đếm px khác — mẫu trong `tests/weather-check.mjs` mốc 4), không chỉ đọc uniform.

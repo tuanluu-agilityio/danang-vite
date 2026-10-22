@@ -24,7 +24,7 @@ import { createWeatherState, setPreset, stepWeather, windNow, type PresetName, t
    Gọi buildWeather() SAU buildRiverfront() (sau mọi rand()); updateWeather() ngay sau applyNight() trong animate(). */
 export interface Weather {
   state: WeatherState; enabled: boolean; rain: Rain; lightning: Lightning;
-  scenario: Scenario;                                                  // kịch bản bão 120 s (UI gắn on.camera / on.caption)
+  scenario: Scenario;                                                  // kịch bản bão (UI gắn on.caption; camera chế độ 'storm' đọc pose())
   fallen: { state: typeof fallenState; fell: () => void; stand: () => void; snapshot: typeof fallenSnapshot };   // cây đổ sau bão (API test): fell() đổ ngay quanh điểm nhìn, stand() dựng lại, snapshot() = ma trận thân/tán
   attachSwing: typeof attachSwing;                                     // gán predicate khoá quay cho SwingController (main.ts)
   fx: () => typeof weatherFx;                                          // hệ số vận hành đang áp (xe, thuyền, trình diễn, cầu quay) — cho test
@@ -99,12 +99,12 @@ export function updateWeather(dt: number, time: number, night: number, cam: THRE
 }
 
 /* Sau bão (mục 4.8): gió hiện tại từng đạt armWind rồi gió đích xuống dưới calmWind (và hết cấm) → cây đổ quanh điểm nhìn.
-   Rời trạng thái: hết `hold` giây, gió đích lại tăng, chọn preset khác 'now', hoặc kịch bản kết thúc/dừng. Chưa từng có bão thì không đụng cây. */
+   Đang chạy kịch bản: đổ quanh điểm nhìn của mốc đang chạy (camera lúc đó còn đang bay tới). Rời trạng thái: hết `hold` giây, gió đích lại tăng, chọn preset khác 'now', hoặc kịch bản kết thúc/dừng. Chưa từng có bão thì không đụng cây. */
 let armed = false, afterT = -1;
 function aftermath(s: WeatherState, dt: number) {
-  const F = CONFIG.weather.fallen;
+  const F = CONFIG.weather.fallen, sc = current.scenario;
   if (s.current.wind >= F.armWind) armed = true;
-  if (armed && s.target.wind <= F.calmWind && !s.target.closed) { armed = false; fellTrees(controls.target, s.current.windDir); afterT = 0; }
+  if (armed && s.target.wind <= F.calmWind && !s.target.closed) { armed = false; fellTrees(sc.running ? sc.focus() : controls.target, s.current.windDir); afterT = 0; }
   if (afterT >= 0) {
     afterT += dt;
     if (afterT > F.hold || s.target.wind > F.calmWind) { standTrees(); afterT = -1; }

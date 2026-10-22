@@ -64,6 +64,30 @@ try {
     const f = () => { caps.add(sc.step); (!sc.running || ++n > 6000) ? ok({ n, steps: caps.size, running: sc.running }) : requestAnimationFrame(f); };
     requestAnimationFrame(f);
   }));
+  // Hành trình camera (D-013): nút chạy → chế độ 'storm', camera bám scenario.pose(t); Esc trả 'orbit' nhưng thời tiết vẫn chạy; nút Dừng tắt kịch bản
+  const camMode = () => page.evaluate(() => window.__app.cam.mode);
+  await page.evaluate(() => document.getElementById('btnWxStorm').click()); await frames(page, 3);
+  check((await camMode()) === 'storm', `GĐ7: chạy kịch bản thì camera phải ở chế độ storm (${await camMode()})`);
+  const follow = await page.evaluate(() => { const a = window.__app, s = a.weather.scenario, p = new a.THREE.Vector3(), q = new a.THREE.Vector3(); s.pose(s.t, p, q); return p.distanceTo(a.camera.position); });
+  check(follow < 1, `GĐ7: camera lệch hành trình ${follow.toFixed(2)} m`);
+  /* Mốc 4 (dây văng Trần Thị Lý): dây phải cong thật trên hình — vẽ hai khung cùng uTime, uSway 0 và 1 m, đếm điểm ảnh khác.
+     Bắt lỗi hình trụ 1 đoạn (đỉnh chỉ ở hai đầu → sin(π·t) = 0, uniform có mà dây không lắc; cableSegs trong CONFIG.weather.wind) */
+  await page.evaluate(() => { const s = window.__app.weather.scenario; s.t = s.times[3] + 0.6 * (s.times[4] - s.times[3]); }); await frames(page, 3);
+  const swayPx = await page.evaluate(() => {
+    const { scene, camera, renderer } = window.__app; let st;
+    scene.traverse((o) => { if (o.isInstancedMesh && o.material.customProgramCacheKey?.().endsWith('-sttl')) st = o; });
+    const u = renderer.properties.get(st.material).uniforms, gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
+    const keep = [u.uTime.value, u.uSway.value];
+    const shot = (amp) => { u.uTime.value = 10; u.uSway.value = amp; renderer.render(scene, camera); const px = new Uint8Array(w * h * 4); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px); return px; };
+    const a = shot(0), b = shot(1); u.uTime.value = keep[0]; u.uSway.value = keep[1];
+    let n = 0; for (let i = 0; i < a.length; i += 4) if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 6) n++;
+    return n;
+  });
+  check(swayPx > 200, `GĐ7: mốc 4 dây văng Trần Thị Lý không lắc trên hình (uSway 1 m chỉ đổi ${swayPx} điểm ảnh)`);
+  await page.keyboard.press('Escape'); await frames(page, 2);
+  check((await camMode()) === 'orbit' && await page.evaluate(() => window.__app.weather.scenario.running), 'GĐ7: Esc phải trả camera (orbit) mà kịch bản vẫn chạy');
+  await page.evaluate(() => document.getElementById('btnWxStorm').click()); await frames(page, 2);
+  check(!(await page.evaluate(() => window.__app.weather.scenario.running)), 'GĐ7: nút Dừng không dừng kịch bản');
   await setWx(page, 'now'); await wait('w.fx().clear <= 0 && w.fx().boatAway <= 0'); await frames(page, 3);
   await page.evaluate(() => { const d = window.__app.dayNight; d.target = d.night = 0; });
   await frames(page, 3);

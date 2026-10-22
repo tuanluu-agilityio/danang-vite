@@ -68,6 +68,23 @@ export const HR_TOUR: TourStop[] = [
   { pos: [800, 11, HRZ + 8], target: [585, 2.5, HRZ] }
 ];
 
+/* Kịch bản bão (environment/weather/scenario.ts): mỗi điểm thường ứng với một mốc CONFIG.weather.scenario.steps, đúng thứ tự; via: true = điểm
+   trung gian chỉ để đường bay tránh mô hình (không có mốc). Cửa sông → sông Hàn (thuyền về bến) → đầu rồng → dây văng Trần Thị Lý (phía Bắc cầu)
+   → Cầu sông Hàn → vịnh Thuận Phước → trên cao nhìn về thành phố → phố bờ Tây Cầu Rồng (cây đổ). Không đặt điểm trên hành lang hầm |z + 1700| < 30 */
+const TPZ = CONFIG.thuanPhuoc.z, SHZ = CONFIG.songHan.z;
+export const STORM_TOUR: (TourStop & { via?: boolean })[] = [
+  { pos: [260, 36, TPZ - 330], target: [0, 30, TPZ] },            // wxS1 — cửa sông (như wxRiverMouth)
+  { pos: [160, 30, SHZ - 260], target: [-60, 4, SHZ + 80] },      // wxS2 — trên sông, thuyền về bến quanh Cầu sông Hàn
+  { pos: [200, 28, -170], target: [325, 18, 0] },                 // wxS3 — đầu rồng nhìn từ mặt sông phía Bắc
+  { pos: [160, 70, 20], target: [60, 20, 700], via: true },       // vượt Cầu Rồng trên cao
+  { pos: [-25, 48, 1222], target: [-55, 70, 1300] },              // wxS4 — dây văng Trần Thị Lý, phía Bắc cầu, sát giữa chùm dây dài (chỗ dao động lớn nhất, ~80 m) để thấy rõ dây rung
+  { pos: [250, 92, SHZ - 330], target: [-20, 14, SHZ] },          // wxS5 — Cầu sông Hàn (như shOverview)
+  { pos: [320, 150, TPZ], target: [0, 40, TPZ - 400], via: true },   // vượt Thuận Phước trên đỉnh tháp
+  { pos: [300, 78, TPZ - 470], target: [-40, 40, TPZ] },          // wxS6 — vịnh Thuận Phước (như tpBay)
+  { pos: [-600, 420, -3700], target: [60, 0, -1450] },            // wxS7 — trên vịnh nhìn về thành phố (gần tpBoth)
+  { pos: [-200, 24, 220], target: [-300, 4, 60] }                 // wxS8 — phố bờ Tây Cầu Rồng (cây đổ quanh target)
+];
+
 /* Mỗi cầu một hành trình: view = tên nút góc nhìn, key = khóa danh sách điểm dừng trong bảng dịch */
 export const TOUR_DEFS = {
   dragon: { view: 'tour', key: 'stops', stops: DRAGON_TOUR },

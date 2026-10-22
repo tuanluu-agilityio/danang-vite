@@ -353,8 +353,9 @@ const weatherBase = {
   // Gió (mục 4.5, GĐ4): biên độ THẬT (m) trước khi nhân swayExaggeration; v = gió tức thời tại cao độ tham chiếu (windAt). Mọi số (ước lượng), mô phỏng trực quan, không phải phân tích kết cấu
   wind: {
     refLen: 40,                                         // m — dây ngắn hơn mức này lắc ít hơn tỉ lệ (biên độ × min(1, dài / refLen))
+    cableSegs: 8,                                       // số đoạn dọc mỗi dây có lắc (hanger TP, dây văng TTL/SH): shader dịch theo sin(π·t) nên dây 1 đoạn (đỉnh chỉ ở hai đầu) không cong được; 0 draw call thêm
     tp: { h: 50, amp: 0.03, refWind: 30, maxAmp: 0.06, omega: 2.2 },   // hanger Thuận Phước: cao độ giữa hanger (m), biên độ (m) ở refWind (m/s), tăng theo v², trần (m), tần số góc hiển thị (rad/s)
-    ttl: { h: 50, peak: 0.05, lo: 6, hi: 18, rainOn: [0.1, 0.3] as [number, number], dryAmp: 0.008, refWind: 30, omega: 3.0 },   // dây văng TTL: rung mưa–gió cực đại (m) khi gió trong [lo, hi] m/s VÀ mưa > ~0,2 (nhận dần trong rainOn); không mưa chỉ còn dryAmp·(v/refWind)²
+    ttl: { h: 50, peak: 0.05, lo: 6, hi: 18, rainOn: [0.1, 0.3] as [number, number], dryAmp: 0.008, buffet: 0.1, buffetRise: 6, refWind: 30, omega: 3.0 },   // dây văng TTL: rung mưa–gió cực đại (m) khi gió trong [lo, hi] m/s VÀ mưa > ~0,2 (nhận dần trong rainOn); không mưa chỉ còn dryAmp·(v/refWind)²; gió vượt hi thì thêm dao động do gió giật buffet·(v/refWind)² (m, nhận dần trong hi…hi + buffetRise m/s) (ước lượng)
     sh: { h: 35, amp: 0.015, refWind: 30, maxAmp: 0.03, omega: 2.6 },  // dây văng Cầu sông Hàn (ngắn, căng): như TP nhưng nhỏ hơn
     trees: { lean: 0.03, sway: 0.02, refWind: 28, max: 0.06, omega: 1.6 },   // tán cây: độ nghiêng tĩnh / dao động (m dịch trên mỗi m cao) ở refWind, tăng theo v², trần; KHÔNG nhân phóng đại (cây lắc thấy được thật)
     boatRock: 0.08,                                     // biên độ tròng trành thuyền × (1 + 0,08·gió m/s) → bão 28 m/s ≈ ×3,2
@@ -385,20 +386,24 @@ const weatherBase = {
     thunderLow: [120, 300] as [number, number], thunderSec: [2, 4] as [number, number], thunderGain: 1.1,   // lowpass sấm (Hz); thời lượng rền (s); gain ở 800 m
     musicDuck: 0.7, indoors: 0.15                       // nhạc nền hạ còn 70 % khi bão (−30 %); tiếng mưa/gió còn 15 % khi camera trong hầm / dưới nước
   },
-  // Kịch bản bão (mục 6, GĐ7): dòng thời gian `duration` giây; mỗi mốc đặt target (cộng dồn từ trạng thái trung tính), có thể bay camera tới góc nhìn `cam`
+  // Kịch bản bão (mục 6, GĐ7): dòng thời gian `duration` giây khi không có giọng đọc; mỗi mốc đặt target (cộng dồn từ trạng thái trung tính) và đổi chú thích
+  // Camera bay liên tục qua STORM_TOUR (views/tourStops.ts, mỗi mốc một điểm) như Tour; có giọng đọc thì cửa sổ mỗi mốc kéo dài cho đọc xong (D-013)
   // Cấm lưu thông / khoá quay cầu / tắt quảng cáo bật theo `closed` (mốc 60 s, "theo thông báo của thành phố"), không theo ngưỡng gió
   scenario: {
     duration: 120,
+    arrive: 0.45,                                       // camera tới điểm của mốc k ở T_k + arrive·W_k (W_k: cửa sổ mốc k): chú thích đổi khi camera đang bay tới, như SWITCH 0,55 của Tour
+    pad: 1.2,                                           // s — nghỉ sau lời đọc trước mốc kế (như PAD của Tour)
+    entryArc: 0.15, entryArcMax: 250,                   // đoạn bay vào điểm đầu: nâng giữa đường thêm entryArc × khoảng cách (tối đa entryArcMax m) để không xuyên tháp cầu (ước lượng)
     steps: [
-      { t: 0, p: { wind: 6, cloud: 0.6 }, cam: 'wxRiverMouth', cap: 'wxS1' },
+      { t: 0, p: { wind: 6, cloud: 0.6 }, cap: 'wxS1' },
       { t: 15, p: { wind: 10, cloud: 0.9, rain: 0.3 }, cap: 'wxS2' },
       { t: 30, p: { wind: 15, rain: 0.6 }, cap: 'wxS3' },
-      { t: 45, p: { wind: 22, gust: 8, rain: 0.9, lightning: 0.5 }, cam: 'wxTtlStays', cap: 'wxS4' },
-      { t: 60, p: { wind: 28, gust: 10, rain: 1, level: 0.8, closed: true }, cam: 'tpBay', cap: 'wxS5' },
+      { t: 45, p: { wind: 22, gust: 8, rain: 0.9, lightning: 0.5 }, cap: 'wxS4' },
+      { t: 60, p: { wind: 28, gust: 10, rain: 1, level: 0.8, closed: true }, cap: 'wxS5' },
       { t: 80, p: { level: 1.2, lightning: 0.9 }, cap: 'wxS6' },
       { t: 95, p: { wind: 12, gust: 3, rain: 0.5, lightning: 0.2 }, cap: 'wxS7' },
       { t: 110, p: { wind: 3, gust: 0, rain: 0, cloud: 0.3, lightning: 0, level: 0.2, closed: false }, cap: 'wxS8' }
-    ] as { t: number; p: Record<string, number | boolean>; cam?: string; cap: string }[]
+    ] as { t: number; p: Record<string, number | boolean>; cap: string }[]
   },
   windDir: 0,                                           // rad — hướng gió thổi tới mặc định (0 = từ Tây sang Đông, +X)
   monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)

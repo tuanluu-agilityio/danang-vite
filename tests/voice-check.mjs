@@ -3,7 +3,8 @@
 //  2. Có giọng thì mỗi đoạn bay đủ dài để đọc xong (clip + 1,2 s) trước khi sang điểm dừng kế.
 //  3. Tour đổi điểm dừng thì phát đúng clip; đổi ngôn ngữ phát lại bằng giọng mới; Esc hoặc đổi góc nhìn thì dừng giọng.
 //  4. Nút Thuyết minh: tắt thì Tour lặng và về thời lượng gốc; ngôn ngữ chưa có giọng (ja) thì nút bị khóa.
-//  5. Không có lỗi console.
+//  5. Kịch bản bão: mỗi mốc một clip (wxStorm), đọc xong trước mốc kế, phát đúng mốc, đổi ngôn ngữ đọc lại, Dừng kịch bản thì dừng giọng.
+//  6. Không có lỗi console.
 //
 //   npm run build && node tests/voice-check.mjs
 import { fileURLToPath } from 'node:url';
@@ -106,9 +107,40 @@ try {
   check(JSON.stringify(await durs('ttl')) === JSON.stringify(await page.evaluate(() => window.__app.tours.ttl.base)), 'ja: thời lượng phải là bản gốc');
   await setLang('vi');
 
+  // 5. Kịch bản bão: mỗi mốc một clip wxStorm, đọc xong (clip + 1,2 s) trước mốc kế; nút chạy phát clip mốc 0 (sau khi bay camera), sang mốc kế
+  //    phát clip kế, đổi ngôn ngữ đọc lại, dừng kịch bản thì dừng giọng. Dòng thời gian kéo dài theo giọng của từng ngôn ngữ (D-013): đọc lại sau setLang
+  await page.keyboard.press('Escape'); await frames(page, 1);
+  const timeline = () => page.evaluate(() => { const s = window.__app.weather.scenario; return { times: [...s.times], duration: s.duration }; });
+  for (const lang of ['vi', 'en', 'ru']) {
+    await setLang(lang);
+    const sc = await timeline(), ends = [...sc.times.slice(1), sc.duration];
+    const clips = manifest[lang]?.wxStorm || [];
+    check(clips.length === sc.times.length, `${lang}/wxStorm: ${clips.length} clip, cần ${sc.times.length} (số mốc kịch bản)`);
+    for (let i = 0; i < clips.length; i++) {
+      check(fs.existsSync(new URL(`../public/voice/${lang}/wxStorm-${i}.mp3`, import.meta.url)), `thiếu file ${lang}/wxStorm-${i}.mp3`);
+      const real = await page.evaluate(async (u) => {
+        const buf = await fetch(u).then((r) => r.arrayBuffer());
+        return (await new OfflineAudioContext(1, 1, 24000).decodeAudioData(buf)).duration;
+      }, `./voice/${lang}/wxStorm-${i}.mp3`);
+      check(Math.abs(real - clips[i].d) <= 0.3, `${lang}/wxStorm-${i}: manifest ${clips[i].d}s, thật ${real}s`);
+      check(clips[i].d + 1.2 <= ends[i] - sc.times[i], `${lang}/wxStorm-${i}: clip ${clips[i].d}s không đọc xong trong ${ends[i] - sc.times[i]}s trước mốc kế`);
+    }
+  }
+  await setLang('vi');
+  const sc = await timeline();
+  await page.evaluate(() => document.getElementById('btnWxStorm').click()); await frames(page, 2);
+  check((await lastPlay())?.endsWith('voice/vi/wxStorm-0.mp3'), `kịch bản bão: mốc 1 phát "${await lastPlay()}"`);
+  await page.evaluate((t) => { window.__app.weather.scenario.t = t - 0.01; }, sc.times[1]); await frames(page, 3);
+  check((await lastPlay())?.endsWith('voice/vi/wxStorm-1.mp3'), `kịch bản bão: mốc 2 phát "${await lastPlay()}"`);
+  await setLang('en');
+  check((await lastPlay())?.endsWith('voice/en/wxStorm-1.mp3'), `kịch bản bão: đổi sang English không đọc lại mốc 2 ("${await lastPlay()}")`);
+  await setLang('vi');
+  await page.evaluate(() => document.getElementById('btnWxStorm').click()); await frames(page, 2);
+  check(!(await page.evaluate(() => window.__app.weather.scenario.running)) && (await page.evaluate(() => window.__plays.at(-1))) === 'pause', 'kịch bản bão: nút Dừng không dừng giọng');
+
   if (errors.length) { console.log('Lỗi console:', errors); problems.push('có lỗi console'); }
   await page.close();
 } finally { await browser.close(); server.close(); }
 
-console.log(problems.length ? 'LỖI:\n - ' + problems.join('\n - ') : 'Giọng thuyết trình: đạt (vi + en + ru, 4 tour, 28 điểm dừng mỗi ngôn ngữ).');
+console.log(problems.length ? 'LỖI:\n - ' + problems.join('\n - ') : 'Giọng thuyết trình: đạt (vi + en + ru, 4 tour, 28 điểm dừng + 8 mốc kịch bản bão mỗi ngôn ngữ).');
 process.exit(problems.length ? 1 : 0);

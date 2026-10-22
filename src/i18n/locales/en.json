@@ -315,12 +315,12 @@
   "wxStormRun": "Storm scenario",
   "wxStormStop": "Stop scenario",
   "wxStormHint": "Drag the mouse or press Esc to control the camera yourself — the weather keeps running",
-  "wxS1": "Hypothetical bulletin: a force-11 storm in the East Sea, expected to affect Da Nang",
-  "wxS2": "Vessels banned from the Han River; tour boats return to port",
-  "wxS3": "Dragon Bridge fire and water show suspended",
-  "wxS4": "Strong gusts: cables vibrate (exaggerated ×{k})",
-  "wxS5": "Bridges closed to traffic per city notice; the Han River Bridge will not swing",
-  "wxS6": "Storm landfall: force 10–11 winds, gusts to force 13",
-  "wxS7": "Storm weakening, rain still heavy",
-  "wxS8": "After the storm: traffic resumes, bridges reopen, fallen trees cleared"
+  "wxS1": "Han River mouth — hypothetical bulletin: a force-11 storm in the East Sea, expected to affect Da Nang",
+  "wxS2": "Han River — vessels banned; tour boats return to port",
+  "wxS3": "Dragon Bridge — fire and water show suspended",
+  "wxS4": "Tran Thi Ly Bridge — strong gusts: stay cables vibrate (exaggerated ×{k})",
+  "wxS5": "Han River Bridge — bridges closed to traffic per city notice; the bridge will not swing",
+  "wxS6": "Bay by Thuan Phuoc Bridge — storm landfall: force 10–11 winds, gusts to force 13; the river rises",
+  "wxS7": "City panorama — storm weakening, rain still heavy",
+  "wxS8": "West bank riverside — after the storm: traffic resumes, bridges reopen, fallen trees cleared"
 }

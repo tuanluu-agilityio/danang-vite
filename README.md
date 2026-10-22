@@ -84,6 +84,7 @@ Ghi chú:
 
 Mỗi điểm dừng của Tour có một clip mp3 trong `public/voice/<ngôn ngữ>/<khóa>-<i>.mp3`; `public/voice/manifest.json` ghi thời lượng từng clip để Tour kéo dài đoạn bay cho tới khi đọc xong. Ngôn ngữ chưa có clip thì Tour chạy lặng và nút **Thuyết minh** bị khóa.
 
+- **Kịch bản bão** cũng có giọng đọc: khóa `wxStorm`, mỗi mốc của `CONFIG.weather.scenario.steps` một clip. Camera bay theo `STORM_TOUR` (`views/tourStops.ts`) như Tour, và cửa sổ mỗi mốc kéo dài cho tới khi đọc xong (`test:voice` kiểm). Lời mốc 4 nói cố định "hai mươi lần" = `swayExaggeration`; đổi hệ số thì sửa lời và chạy lại `gen:voice`.
 - Lời thoại nằm ở `scripts/narration/{vi,en,ru}.json` (theo đúng khóa và thứ tự điểm dừng trong `i18n/locales`). Viết số, đơn vị, từ viết tắt bằng chữ để giọng đọc không vấp.
 - Sửa lời thoại hoặc thêm điểm dừng: `npm run gen:voice` chỉ tạo lại clip đã đổi (`-- --force` để tạo lại tất cả), rồi commit `public/voice/`.
 - Giọng đọc lấy từ dịch vụ đọc văn bản của Microsoft Edge qua gói `msedge-tts` (không cần tài khoản, nhưng là dịch vụ không chính thức nên có thể đổi hoặc bị giới hạn; clip đã tạo vẫn dùng được bình thường). Giọng: `vi-VN-HoaiMyNeural`, `en-US-AriaNeural`, `ru-RU-SvetlanaNeural` (đổi trong `scripts/gen-narration.mjs`).

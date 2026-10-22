@@ -23,6 +23,7 @@ _Cập nhật: 2026-10-22_
 | Thời tiết GĐ6: bảng "Ảnh hưởng tới cầu", góc nhìn `wx*`, i18n | `c169343` | `test:drawcalls`, `test:weather` |
 | Thời tiết GĐ7: kịch bản bão 120 s, nắng hè, cây đổ, âm thanh | `edced8b` | `test:drawcalls`, `test:weather`, `test:tour` |
 | Thời tiết GĐ8: hoàn tất — `KET-QUA.md`, README, memory bank (chưa commit) | — | `build`, toàn bộ bộ test (log `gd8-l0-*`) |
+| Kịch bản bão: hành trình camera như Tour + thuyết minh vi/en/ru khớp từng điểm (D-013); sửa dây không lắc (hình trụ 1 đoạn, lỗi từ GĐ4) (chưa commit) | — | `test:tour`, `test:voice`, `test:weather`, `test:drawcalls` |
 
 Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn AI agent). Nhánh `feature/weather` (GĐ1–GĐ7 đã commit) chưa merge vào `main`.
 
@@ -33,6 +34,7 @@ Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn
 - Thời tiết: sóng bạc đầu cửa sông, bơm hầm, tàu cao `ship` của Cầu sông Hàn, ảo ảnh mặt cầu chưa có.
 - Thuyết minh cho ko, ja, zh, th, ar, hi.
 - Dựng lại Cầu Rồng chi tiết theo `prompts/cau-rong.md`.
+- Vòng quay Mặt Trời (Sun Wheel) theo `prompts/vong-quay-mat-troi.md`: mới có đặc tả (GĐ0), chờ ảnh/tọa độ.
 - Bật `strict` TypeScript dần theo thư mục (giai đoạn 2).
 
 ## Lỗi / hạn chế đã biết

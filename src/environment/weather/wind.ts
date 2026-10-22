@@ -51,10 +51,11 @@ export function updateWind(c: WeatherParams, v: number, on: boolean) {
   // Hanger TP: tăng theo v², có trần
   const vTp = windAt(W.tp.h, v);
   weatherU.uSwayTp.value = v ? K * Math.min(W.tp.maxAmp, W.tp.amp * (vTp / W.tp.refWind) ** 2) : 0;
-  // Dây TTL: rung mưa–gió cực đại khi gió vừa [lo, hi] VÀ có mưa; gió quá mạnh hoặc hết mưa thì chỉ còn phần gió khô (nhỏ)
+  // Dây TTL: rung mưa–gió cực đại khi gió vừa [lo, hi] VÀ có mưa; hết mưa chỉ còn phần gió khô (nhỏ); gió vượt hi (bão) thì gió giật làm dây dao động (buffeting) thay cho rung mưa–gió
   const T = W.ttl, vTtl = windAt(T.h, v);
   const band = smooth(T.lo - 2, T.lo + 1, vTtl) * (1 - smooth(T.hi - 2, T.hi + 4, vTtl)), wetF = smooth(T.rainOn[0], T.rainOn[1], c.rain);
-  weatherU.uSwayTtl.value = v ? K * (T.peak * band * wetF + T.dryAmp * (vTtl / T.refWind) ** 2) : 0;
+  const buffet = T.buffet * smooth(T.hi, T.hi + T.buffetRise, vTtl);
+  weatherU.uSwayTtl.value = v ? K * (T.peak * band * wetF + (T.dryAmp + buffet) * (vTtl / T.refWind) ** 2) : 0;
   // Dây Cầu sông Hàn: như TP, nhỏ hơn
   const vSh = windAt(W.sh.h, v);
   weatherU.uSwaySh.value = v ? K * Math.min(W.sh.maxAmp, W.sh.amp * (vSh / W.sh.refWind) ** 2) : 0;

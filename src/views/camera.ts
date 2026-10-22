@@ -7,6 +7,7 @@ import { hrRoadY } from '../bridges/han-tunnel/profile';
 import { VIEWS, type ViewPreset } from './presets';
 import { narration } from '../audio/narration';
 import { cam, keys } from './state';
+import { getWeather } from '../environment/weather';
 import { TOUR_VIEWS, activeTour, setActiveTour, tour, tourBox, showTourCaption, startTour, updateTour } from './tour';
 
 /* ============================ Góc nhìn & điều khiển camera ============================ */
@@ -38,6 +39,14 @@ export function setView(name: string) {
   if (name === 'walk') { cam.mode = 'walk'; controls.enabled = false; walk.x = -240; walk.z = 17.4; walk.yaw = 0; canvas.focus(); return; }
   flyTo(VIEWS[name]);
 }
+/* Kịch bản bão nắm camera (chế độ 'storm'): bỏ chọn nút góc nhìn, tắt Tour / lái xe / đi bộ; updateCamera() đọc scenario.pose() mỗi khung */
+export function followScenario() {
+  document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+  document.getElementById('hint').hidden = true;
+  tourBox().hidden = true; document.body.classList.remove('touring');
+  controls.maxPolarAngle = Math.PI * 0.495;
+  cam.flight.then = null; cam.mode = 'storm'; controls.enabled = false;
+}
 export function updateCamera(dt: number) {
   const flight = cam.flight;
   if (cam.mode !== 'hrDrive') eye.k = 1;
@@ -48,6 +57,10 @@ export function updateCamera(dt: number) {
     if (flight.t >= 1) { if (flight.then === 'tour') startTour(); else { cam.mode = 'orbit'; controls.enabled = true; } }
   } else if (cam.mode === 'tour') {
     updateTour(dt);
+  } else if (cam.mode === 'storm') {
+    const sc = getWeather()?.scenario;
+    if (sc?.running && sc.cameraOwned) { sc.pose(sc.t, camera.position, controls.target); camera.lookAt(controls.target); }
+    else { cam.mode = 'orbit'; controls.enabled = true; }          // người xem giành camera hoặc kịch bản hết: trả điều khiển, giữ nguyên chỗ đang nhìn
   } else if (cam.mode === 'drive') {
     drive.x += 15 * dt; if (drive.x > 700) drive.x = -700;
     const z = 8.625, ahead = drive.x + 40;
