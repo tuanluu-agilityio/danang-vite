@@ -1,17 +1,16 @@
 # Active Context
 
-_Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/weather` (GĐ1–GĐ7 đã commit, GĐ8 chưa commit) · Nhánh chính: `main`_
+_Cập nhật: 2026-10-22 · Nhánh đang làm: `feature/tour-4-cau` (tạo từ `main`) · Nhánh chính: `main`_
 
 ## Trạng thái
-- `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`).
-- `feature/weather` đã đủ 8 giai đoạn của đặc tả `prompts/ke-hoach-thoi-tiet.md`. GĐ8 (hoàn tất) đã làm xong nội dung: `tests/KET-QUA.md`, README mục Cấu trúc, memory bank. Chưa merge vào `main`.
+- `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`), thời tiết GĐ1–GĐ8 + kịch bản bão có thuyết minh (PR #6).
 - `tests/KET-QUA.md` đã cập nhật theo log GD8 (58 góc nhìn `now`, gồm `hr*`, `rf*`, `wx*`).
 
 ## Bước tiếp theo
-1. Commit GĐ8 trên `feature/weather` (các file docs đã sửa; `tests/KET-QUA.md`, `README.md`, `.github/memory-bank/*`).
-2. Quyết định merge `feature/weather` vào `main` (người dùng).
-3. Còn mở (không thuộc GĐ8, xem mục "Vấn đề mở"): tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
-4. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md` (chưa làm, ngoài phạm vi GĐ8).
+1. Tour 4 cầu (`feature/tour-4-cau`, đặc tả `prompts/tour-4-cau.md`, D-015) đã đủ GĐ0–GĐ4: `tour.ts` nhận đường bay mở (`loop: false`, `segMax`, `TourStop.bridge` → `tourHooks.bridge`), `ALL_TOUR` 13 điểm, nút `allTour`, i18n `vTourAll`/`allStops` × 9, thuyết minh vi/en/ru (39 clip). Kết quả test ở `tests/KET-QUA.md`. Chưa kiểm: giọng nghe thật, Tour ban đêm / thời tiết khác `now`. Lời điểm 7 ("Tiếp tục về phía Bắc") đọc lúc camera còn nhìn lại Cầu Rồng; chỉnh `ALL_TOUR[6]` nếu muốn camera quay về hướng Bắc.
+2. Còn mở: tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
+3. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md`.
+4. `.gitignore` (dòng `prompts/tham-chieu/`) và `prompts/vong-quay-mat-troi.md` chưa commit: thuộc Sun Wheel, không commit vào nhánh Tour 4 cầu.
 
 ## Kịch bản bão: hành trình + thuyết minh (2026-10-22, nhánh `feature/weather`, chưa commit)
 - Giọng đọc kịch bản bão (vi, en, ru; người dùng đổi 12b-3): khóa `wxStorm` trong `scripts/narration/*.json`, 8 clip mỗi ngôn ngữ. Lời mở đầu nói rõ "kịch bản giả định, không phải bản tin thật", lời cuối nói kịch bản kết thúc.

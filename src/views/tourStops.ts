@@ -1,4 +1,4 @@
-import type { Vec3 } from './presets';
+import type { BridgeKey, Vec3 } from './presets';
 import { CONFIG } from '../config';
 import { hrRoadY } from '../bridges/han-tunnel/profile';
 
@@ -7,8 +7,12 @@ import { hrRoadY } from '../bridges/han-tunnel/profile';
    Camera bay qua các điểm theo đường cong Catmull-Rom khép kín. Tên và lời giới thiệu từng điểm
    nằm trong bảng dịch (i18n/locales/*.json, khóa ở TOURS[...].key), đúng thứ tự các điểm dưới đây.
    swing: true — tới điểm này thì tự quay Cầu sông Hàn.
-   Hầm sông Hàn: immerse — chạy mô phỏng dìm đốt hầm; cutaway — bật mặt cắt địa chất; interior — luôn hiện nội thất hầm. */
-export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean; immerse?: boolean; cutaway?: boolean; interior?: boolean }
+   Hầm sông Hàn: immerse — chạy mô phỏng dìm đốt hầm; cutaway — bật mặt cắt địa chất; interior — luôn hiện nội thất hầm.
+   bridge — tới điểm này thì bảng Thông số / danh sách góc nhìn chuyển sang cầu đó (Tour 4 cầu). */
+export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean; immerse?: boolean; cutaway?: boolean; interior?: boolean; bridge?: BridgeKey }
+/* minY: đường bay được phép xuống dưới mặt nước (mặc định 3 m); loop: false — đường bay mở, đi một lần rồi trả điều khiển (mặc định khép kín, lặp);
+   segMax: trần thời lượng một đoạn bay, s (mặc định 16) */
+export interface TourDef { view: string; key: string; stops: TourStop[]; minY?: number; loop?: boolean; segMax?: number }
 
 /* Cầu Rồng. Điểm "Trên mặt cầu" đặt ở làn phía Bắc (z < 0) như điểm "Đuôi rồng" trước nó: bản gốc đặt z = +11,5 nên đoạn bay
    cắt ngang dải phân cách ở x ≈ −282, y ≈ 9,9 — xuyên thân rồng (đỉnh thân ở đó ≈ 12,4 m), `test:tour` báo chạm mô hình */
@@ -85,11 +89,31 @@ export const STORM_TOUR: (TourStop & { via?: boolean })[] = [
   { pos: [-200, 24, 220], target: [-300, 4, 60] }                 // wxS8 — phố bờ Tây Cầu Rồng (cây đổ quanh target)
 ];
 
+/* Tour 4 cầu (D-015): Trần Thị Lý → Cầu Rồng → Cầu sông Hàn → Thuận Phước, đường bay mở, xuôi dòng Nam → Bắc.
+   Vượt Trần Thị Lý ở x ≈ 140 (phía Đông neo dây trước xa nhất x = 96, y ≈ 57); vượt Cầu Rồng phía Đông đầu rồng (x ≈ 375);
+   vượt Cầu sông Hàn trên cao (~190 m); vượt Thuận Phước trên đỉnh tháp Tây như TP_TOUR. Điểm 10 nhìn dọc tuyến hầm (phương án đề xuất) ở trên cao, không đặt gì lên hành lang */
+export const ALL_TOUR: TourStop[] = [
+  { pos: [330, 120, 1740], target: [-70, 55, 1300], bridge: 'ttl' },     // toàn cảnh Trần Thị Lý, mở đầu hành trình
+  { pos: [-40, 26, 1640], target: [-145, 72, 1300] },                   // tháp nghiêng
+  { pos: [220, 75, 1150], target: [-120, 70, 1300] },                   // nhìn lại từ phía Bắc, cầu Nguyễn Văn Trỗi cũ
+  { pos: [100, 80, 650], target: [0, 20, 0] },                          // xuôi dòng về Cầu Rồng
+  { pos: [220, 70, 300], target: [0, 20, 0], bridge: 'dragon' },        // Cầu Rồng từ phía Nam
+  { pos: [392, 26, 40], target: [328, 16, 0] },                         // đầu rồng (như góc nhìn head)
+  { pos: [250, 80, -300], target: [-20, 20, 0] },                       // nhìn lại Cầu Rồng, tiếp tục về phía Bắc
+  { pos: [-70, 210, -1010], target: [0, 8, -1080], bridge: 'sh', swing: true },   // trên trụ quay: tự quay cầu 30×
+  { pos: [250, 92, -1410], target: [-20, 14, -1080] },                  // nhịp quay mở luồng, từ phía Bắc
+  { pos: [150, 110, HRZ + 60], target: [-400, 0, HRZ] },                // nhìn dọc tuyến hầm về cửa Tây (phương án đề xuất)
+  { pos: [0, 140, -2500], target: [0, 40, -2900], bridge: 'tp' },       // Thuận Phước trên cao phía Nam
+  { pos: [-185, 100, -2930], target: [-202.5, 92, -2900] },             // yên ngựa đỉnh tháp Tây
+  { pos: [300, 78, -3370], target: [-40, 40, -2900] }                   // từ vịnh: cửa sông, kết thúc
+];
+
 /* Mỗi cầu một hành trình: view = tên nút góc nhìn, key = khóa danh sách điểm dừng trong bảng dịch */
 export const TOUR_DEFS = {
   dragon: { view: 'tour', key: 'stops', stops: DRAGON_TOUR },
   ttl: { view: 'ttlTour', key: 'ttlStops', stops: TTL_TOUR },
   tp: { view: 'tpTour', key: 'tpStops', stops: TP_TOUR },
   sh: { view: 'shTour', key: 'shStops', stops: SH_TOUR },
-  hr: { view: 'hrTour', key: 'hrStops', stops: HR_TOUR, minY: -30 }   // minY: đường bay được phép xuống dưới mặt nước (mặc định 3 m)
-};
+  hr: { view: 'hrTour', key: 'hrStops', stops: HR_TOUR, minY: -30 },  // minY: đường bay được phép xuống dưới mặt nước (mặc định 3 m)
+  all: { view: 'allTour', key: 'allStops', stops: ALL_TOUR, loop: false, segMax: CONFIG.tourAll.segMax }   // Tour 4 cầu: một chiều
+} satisfies Record<string, TourDef>;
