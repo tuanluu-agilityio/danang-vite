@@ -409,6 +409,13 @@ const weatherBase = {
   monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
 };
 
+/* ---- Tour 4 cầu ----
+   Hành trình một chiều Trần Thị Lý → Cầu Rồng → Cầu sông Hàn → Thuận Phước (~4,2 km), điểm dừng ở views/tourStops.ts (ALL_TOUR) */
+const tourAllBase = {
+  segMax: 24,    // s — trần thời lượng một đoạn bay (Tour từng cầu: 16 s); đoạn chuyển giữa hai cầu dài 1–1,8 km (ước lượng)
+  holdMin: 6     // s — giữ khung hình tối thiểu ở điểm cuối trước khi trả điều khiển; có giọng đọc thì kéo tới hết clip (ước lượng)
+};
+
 export const CONFIG = {
   ...base,
   mainTotal: sum(base.mainSpans),
@@ -417,7 +424,8 @@ export const CONFIG = {
   songHan: deriveSh(songHanBase),
   hanTunnel: deriveHr(hanTunnelBase),
   riverfront: riverfrontBase,
-  weather: weatherBase
+  weather: weatherBase,
+  tourAll: tourAllBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;
 export type HanTunnelConfig = typeof CONFIG.hanTunnel;

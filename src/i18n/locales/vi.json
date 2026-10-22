@@ -322,5 +322,60 @@
   "wxS5": "Cầu sông Hàn — cấm lưu thông qua các cầu theo thông báo của thành phố; không quay cầu",
   "wxS6": "Vịnh trước Cầu Thuận Phước — bão đổ bộ: gió cấp 10–11, giật cấp 13; nước sông dâng",
   "wxS7": "Toàn cảnh thành phố — bão suy yếu, mưa còn to",
-  "wxS8": "Phố ven sông bờ Tây — sau bão: thông xe, mở lại cầu, dọn cây đổ"
+  "wxS8": "Phố ven sông bờ Tây — sau bão: thông xe, mở lại cầu, dọn cây đổ",
+  "vTourAll": "Tour 4 cầu",
+  "allStops": [
+    [
+      "Hành trình bốn cây cầu",
+      "Từ Cầu Trần Thị Lý, ta xuôi sông Hàn về phía Bắc qua Cầu Rồng, Cầu sông Hàn tới Cầu Thuận Phước."
+    ],
+    [
+      "Tháp nghiêng 12°",
+      "Cầu Trần Thị Lý dài 731 m, một tháp cao 145 m nghiêng về phía Tây như cánh buồm căng gió."
+    ],
+    [
+      "Nhìn lại từ phía Bắc",
+      "Ba mặt phẳng dây văng neo vào tháp; sát bên là cầu Nguyễn Văn Trỗi cũ, nay dành cho người đi bộ."
+    ],
+    [
+      "Xuôi dòng sông Hàn",
+      "Khoảng 1,3 km tới Cầu Rồng; bờ Tây là trung tâm Hải Châu, bờ Đông là quận Sơn Trà."
+    ],
+    [
+      "Cầu Rồng",
+      "Dài 666 m, 6 làn xe; thân rồng bằng thép uốn lượn trên năm nhịp vòm, nhịp chính 200 m."
+    ],
+    [
+      "Đầu rồng",
+      "Đầu rồng hướng ra biển. Tối thứ Bảy và Chủ Nhật lúc 21:00, rồng phun lửa rồi phun nước."
+    ],
+    [
+      "Tiếp tục về phía Bắc",
+      "Xuôi dòng thêm khoảng 1,1 km là Cầu sông Hàn."
+    ],
+    [
+      "Cầu sông Hàn",
+      "Cầu quay duy nhất Việt Nam, khánh thành ngày 29/3/2000. Nhịp giữa 122,7 m sắp quay 90° (tốc độ 30×)."
+    ],
+    [
+      "Nhịp quay mở luồng",
+      "Khi mở, nhịp quay nằm dọc dòng sông, chừa hai luồng cho tàu. Ngoài đời, cầu quay lúc 23:00 tối thứ Bảy, Chủ Nhật."
+    ],
+    [
+      "Tuyến hầm đề xuất",
+      "Bên dưới là vị trí Hầm vượt sông Hàn — phương án đề xuất, chưa xây."
+    ],
+    [
+      "Cầu Thuận Phước",
+      "Cây cầu cuối cùng trên sông Hàn, dài khoảng 1.856 m; nhịp chính 405 m treo trên hai cáp chủ."
+    ],
+    [
+      "Yên ngựa đỉnh tháp",
+      "Hai tháp chữ H cao 80 m; hai bó cáp chủ Ø360 mm vắt qua yên ngựa trên đỉnh tháp."
+    ],
+    [
+      "Cửa sông Hàn",
+      "Sông Hàn đổ ra vịnh Đà Nẵng. Hành trình kết thúc — kéo chuột để tự khám phá."
+    ]
+  ]
 }

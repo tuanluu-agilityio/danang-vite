@@ -94,6 +94,7 @@ button[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold),var(--
 .mini-select select option{background:var(--ink);color:var(--text);}
 .seg button[aria-pressed="true"]{background:rgba(230,189,106,.16);border-color:rgba(230,189,106,.55);color:var(--gold);}
 .view-list{display:flex;flex-direction:column;gap:6px;}
+.tour-all{margin-bottom:6px;}
 .view-list .toggle,.weather-row .toggle{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:11.5px;color:var(--muted);background:transparent;}
 .view-list .toggle::before,.weather-row .toggle::before{content:"";width:11px;height:11px;flex:0 0 auto;border:1.5px solid var(--gold);border-radius:2px;}
 .view-list .toggle[aria-pressed="true"],.weather-row .toggle[aria-pressed="true"]{background:transparent;color:var(--text);border-color:rgba(230,189,106,.32);}

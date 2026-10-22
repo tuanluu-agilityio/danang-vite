@@ -10,7 +10,7 @@ import type { HanTunnel } from '../bridges/han-tunnel';
 import type { BridgeKey } from '../views/presets';
 import { cam, keys } from '../views/state';
 import { setView } from '../views/camera';
-import { tour, tourBox, initTourCaption, renderTourCaption, exitTour } from '../views/tour';
+import { tour, tourBox, tourHooks, initTourCaption, renderTourCaption, exitTour } from '../views/tour';
 import { selectBridge, syncShowLine, toggle } from './panel';
 import { setupAudioUI } from './audioUI';
 import { setupSwingUI, swingRender } from './swingUI';
@@ -47,6 +47,7 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPh
   });
   document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
   document.querySelectorAll<HTMLElement>('[data-bridge]').forEach((b) => b.addEventListener('click', () => selectBridge(b.dataset.bridge as BridgeKey, true)));
+  tourHooks.bridge = (k) => selectBridge(k, false);   // Tour 4 cầu: đổi bảng Thông số theo cầu đang thuyết minh, không bay camera
   // Cầu Thuận Phước
   toggle('btnTpLife', (on) => thuanPhuoc.setLifeVisible(on));
   // Cầu Trần Thị Lý: pattern LED và các phần bật/tắt

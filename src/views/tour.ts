@@ -1,25 +1,29 @@
 import * as THREE from 'three';
 import { camera, controls } from '../core/renderer';
 import { clamp } from '../common/math';
+import { CONFIG } from '../config';
 import { t, stops, onChange } from '../i18n';
 import { narration } from '../audio/narration';
-import { TOUR_DEFS, type TourStop } from './tourStops';
+import { TOUR_DEFS, type TourDef, type TourStop } from './tourStops';
+import type { BridgeKey } from './presets';
 import { cam } from './state';
 
 /* ============================ Tour tự động: đường bay + chú thích ============================ */
-interface Tour {
-  view: string; key: string; stops: TourStop[]; minY?: number;
-  posCurve: THREE.CatmullRomCurve3; tgtCurve: THREE.CatmullRomCurve3; base: number[]; durs: number[]; total: number;
+/* loop: false — đường bay mở (Tour 4 cầu): n − 1 đoạn bay + một đoạn "giữ" ở điểm cuối, hết thì trả điều khiển */
+interface Tour extends TourDef {
+  loop: boolean; posCurve: THREE.CatmullRomCurve3; tgtCurve: THREE.CatmullRomCurve3; base: number[]; durs: number[]; total: number;
 }
 export type TourKey = keyof typeof TOUR_DEFS;
 export const TOURS = {} as Record<TourKey, Tour>;
-for (const [k, T] of Object.entries(TOUR_DEFS) as [TourKey, typeof TOUR_DEFS[TourKey]][]) {
+for (const [k, T] of Object.entries(TOUR_DEFS) as [TourKey, TourDef][]) {
   const P = T.stops.map((s) => new THREE.Vector3(...s.pos)), Q = T.stops.map((s) => new THREE.Vector3(...s.target));
-  const durs = P.map((p, i) => clamp(4 + p.distanceTo(P[(i + 1) % P.length]) / 45, 8, 16)); // đoạn dài bay lâu hơn để tốc độ đều
+  const loop = T.loop !== false;
+  const durs = P.map((p, i) => !loop && i === P.length - 1 ? CONFIG.tourAll.holdMin   // đoạn giữ ở điểm cuối
+    : clamp(4 + p.distanceTo(P[(i + 1) % P.length]) / 45, 8, T.segMax ?? 16));           // đoạn dài bay lâu hơn để tốc độ đều
   TOURS[k] = {
-    ...T,
-    posCurve: new THREE.CatmullRomCurve3(P, true, 'centripetal'),
-    tgtCurve: new THREE.CatmullRomCurve3(Q, true, 'centripetal'),
+    ...T, loop,
+    posCurve: new THREE.CatmullRomCurve3(P, loop, 'centripetal'),
+    tgtCurve: new THREE.CatmullRomCurve3(Q, loop, 'centripetal'),
     base: durs, durs: [...durs], total: durs.reduce((a, b) => a + b, 0)
   };
 }
@@ -28,21 +32,22 @@ for (const [k, T] of Object.entries(TOUR_DEFS) as [TourKey, typeof TOUR_DEFS[Tou
 const SWITCH = 0.55, PAD = 1.2;
 
 /* Có giọng thuyết trình thì kéo dài từng đoạn bay để đọc xong trước khi sang điểm dừng kế.
-   Điểm dừng k hiện từ lúc 55% đoạn k-1 tới 55% đoạn k; chỉ đoạn k được kéo dài nên các điểm đã đủ chỗ vẫn đủ. */
+   Điểm dừng k hiện từ lúc 55% đoạn k-1 tới 55% đoạn k; chỉ đoạn k được kéo dài nên các điểm đã đủ chỗ vẫn đủ.
+   Đường bay mở: điểm 0 hiện ngay từ đầu (không có đoạn trước); điểm cuối hiện tới hết đoạn giữ. */
 function fitDurations(T: Tour) {
   const n = T.stops.length;
   T.durs.splice(0, n, ...T.base);
   for (let k = 0; k < n; k++) {
     const clip = narration.duration(T.key, k);
     if (clip === null) continue;
-    const prev = (k + n - 1) % n;
-    T.durs[k] = Math.max(T.durs[k], (clip + PAD - (1 - SWITCH) * T.durs[prev]) / SWITCH);
+    const prev = (k + n - 1) % n, before = !T.loop && k === 0 ? 0 : (1 - SWITCH) * T.durs[prev];
+    T.durs[k] = Math.max(T.durs[k], (clip + PAD - before) / (!T.loop && k === n - 1 ? 1 : SWITCH));
   }
   T.total = T.durs.reduce((a, b) => a + b, 0);
 }
 function locate(T: Tour, t: number) {
   let i = 0, acc = 0;
-  while (acc + T.durs[i] < t) { acc += T.durs[i]; i++; }
+  while (i < T.durs.length - 1 && acc + T.durs[i] < t) { acc += T.durs[i]; i++; }
   return { i, acc, f: (t - acc) / T.durs[i] };
 }
 for (const T of Object.values(TOURS)) fitDurations(T);
@@ -55,7 +60,8 @@ let onTourSwingStop: (() => void) | null = null;   // Cầu sông Hàn gắn hà
 export const setTourSwingHook = (fn: () => void) => { onTourSwingStop = fn; };
 export const setActiveTour = (k: TourKey) => { activeTour = TOURS[k]; };
 /* Móc cho công trình có hành vi riêng ở từng điểm dừng (Hầm sông Hàn: mặt cắt, mô phỏng dìm) và khi thoát Tour */
-export const tourHooks: { stop: ((s: TourStop) => void) | null; exit: (() => void) | null } = { stop: null, exit: null };
+/* bridge: Tour 4 cầu tới cầu khác thì đổi bảng Thông số / danh sách góc nhìn (setupUI gắn selectBridge, tránh vòng import panel → camera → tour) */
+export const tourHooks: { stop: ((s: TourStop) => void) | null; exit: (() => void) | null; bridge: ((k: BridgeKey) => void) | null } = { stop: null, exit: null, bridge: null };
 
 /* Giọng bật/tắt hoặc đổi ngôn ngữ: tính lại thời lượng (giữ nguyên vị trí trên đường bay) rồi đọc lại điểm dừng hiện tại */
 function syncNarration() {
@@ -96,15 +102,23 @@ export function exitTour() {
 }
 export function updateTour(dt: number) {
   const T = activeTour;
-  tour.t = (tour.t + dt) % T.total;
+  const n = T.stops.length;
+  tour.t = T.loop ? (tour.t + dt) % T.total : Math.min(tour.t + dt, T.total);
   const { i, f } = locate(T, tour.t);
   const e = 0.5 - 0.5 * Math.cos(Math.PI * f);       // chậm lại ở mỗi điểm dừng
-  const u = (i + e) / T.stops.length;
+  const u = T.loop ? (i + e) / n : Math.min((i + e) / (n - 1), 1);   // đường mở: đoạn giữ cuối đứng yên ở điểm cuối
   T.posCurve.getPoint(u, camera.position);
   camera.position.y = Math.max(camera.position.y, T.minY ?? 3);   // đường cong có thể võng xuống: giữ camera trên mặt nước (trừ Tour Hầm sông Hàn)
   T.tgtCurve.getPoint(u, controls.target);
   camera.lookAt(controls.target);
-  const near = f < SWITCH ? i : (i + 1) % T.stops.length;
-  if (near !== tour.shown) { tour.shown = near; showTourCaption(near); narration.play(T.key, near); if (T.stops[near].swing && onTourSwingStop) onTourSwingStop(); tourHooks.stop?.(T.stops[near]); }
+  const near = f < SWITCH || (!T.loop && i === n - 1) ? i : (i + 1) % n;
+  if (near !== tour.shown) {
+    tour.shown = near; showTourCaption(near); narration.play(T.key, near);
+    const s = T.stops[near];
+    if (s.swing && onTourSwingStop) onTourSwingStop();
+    if (s.bridge) tourHooks.bridge?.(s.bridge);
+    tourHooks.stop?.(s);
+  }
   els.bar.style.width = `${(tour.t / T.total * 100).toFixed(1)}%`;
+  if (!T.loop && tour.t >= T.total) exitTour();       // hết hành trình một chiều: trả điều khiển, giữ nguyên chỗ đang nhìn
 }
