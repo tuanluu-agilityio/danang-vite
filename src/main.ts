@@ -76,7 +76,7 @@ weather.attachSwing(songHan.ctrl);       // bão: Cầu sông Hàn không quay (
 const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel];
 createFire();
 createWaterJet();
-setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel });
+setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel });
 onResize();
 applyNight(0, 0);
 

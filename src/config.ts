@@ -445,7 +445,11 @@ const sunWheelBase = {
   pavilion: { w: 12, h1: 4, h2: 3, roof1: 3, roof2: 2.6 },   // m — lầu trên tháp: rộng 12, tầng dưới cao 4, tầng trên 3, mái dưới cao 3, mái trên 2,6 (ước lượng, n1/a1)
   gate: { r: 9, tube: 0.9, stageD: 8 },           // m — cổng vòm vàng giữa mặt Nam (sân khấu): bán kính vòm 9, ống 0,9, sân khấu sâu 8 (ước lượng, a1)
   sign: { w: 16, h: 3.2, below: 13 },             // m — biển "SUN WHEEL" rộng 16, cao 3,2, tâm thấp hơn trục 13 m, mặt Nam (ước lượng, n1)
-  lamps: { n: 8, h: 8 }                           // cột đèn quảng trường: số cột, cao m (ước lượng)
+  lamps: { n: 8, h: 8 },                          // cột đèn quảng trường: số cột, cao m (ước lượng)
+  /* ---- chuyển động (GĐ3) ---- */
+  speedAccel: 6,                                  // hệ số tốc độ/giây — đổi tốc độ mượt: dừng ↔ ×60 mất ≈ 10 s, dừng ↔ ×1 chưa tới 0,2 s (ước lượng)
+  stepMax: 0.1,                                   // s — bước tích phân tối đa khi một khung dài (không bỏ sót đổi tốc độ)
+  placeEps: 1e-4                                  // rad — lệch góc tối thiểu để dựng lại ma trận 64 cabin
 };
 function deriveSunWheel(C: typeof sunWheelBase) {
   const yaw = THREE.MathUtils.degToRad(90 - C.azimuth);          // quay quanh Y: trục X cục bộ (dọc mặt vòng quay) về phương vị 83°, +7° lệch Bắc

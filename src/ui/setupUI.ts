@@ -7,6 +7,7 @@ import type { ThuanPhuocBridge } from '../bridges/thuan-phuoc';
 import type { TranThiLyBridge } from '../bridges/tran-thi-ly';
 import type { SongHanBridge } from '../bridges/song-han';
 import type { HanTunnel } from '../bridges/han-tunnel';
+import type { SunWheel } from '../bridges/sun-wheel';
 import type { BridgeKey } from '../views/presets';
 import { cam, keys } from '../views/state';
 import { setView } from '../views/camera';
@@ -19,7 +20,7 @@ import { setupRiverfrontUI } from './riverfrontUI';
 import { setupWeatherUI } from './weatherUI';
 
 /* Gắn mọi bảng điều khiển: ngày/đêm, bóng đổ, trình diễn, chọn cầu, góc nhìn, nút bật/tắt từng cầu, bàn phím */
-export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge; hanTunnel: HanTunnel }) {
+export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge; hanTunnel: HanTunnel; sunWheel: SunWheel }) {
   const btnNight = document.getElementById('btnNight'), slider = document.getElementById('timeSlider') as HTMLInputElement;
   const btnShow = document.getElementById('btnShow'), btnShadow = document.getElementById('btnShadow');
   const syncNight = () => {
@@ -62,6 +63,10 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPh
   // Hai bờ sông: đèn trái tim, chế độ đối đáp/đồng bộ, quảng cáo; góc nhìn "Trái tim hai bờ" tự chuyển sang đêm
   setupRiverfrontUI(toggle);
   document.querySelector('[data-view="rfHearts"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
+  // Vòng quay Mặt Trời: tốc độ quay; góc nhìn ban đêm tự chuyển sang đêm
+  const swSpeed = document.getElementById('swSpeed') as HTMLSelectElement;
+  swSpeed.addEventListener('change', () => sunWheel.setSpeed(Number(swSpeed.value)));
+  document.querySelector('[data-view="swNight"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
   // Thời tiết: preset + cường độ (GĐ2: chỉ khí quyển)
   setupWeatherUI(toggle);
   window.addEventListener('keydown', (e) => {

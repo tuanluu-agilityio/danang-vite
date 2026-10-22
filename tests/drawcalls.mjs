@@ -17,7 +17,9 @@ const VIEWS = [
   // Hai bờ sông Hàn
   ['dragon', 'rfHearts'], ['dragon', 'rfBank'],
   // Thời tiết (GĐ6; bản gốc không có: tự bỏ qua nếu thiếu nút)
-  ['tp', 'wxRiverMouth'], ['ttl', 'wxTtlStays'], ['dragon', 'wxStreet']
+  ['tp', 'wxRiverMouth'], ['ttl', 'wxTtlStays'], ['dragon', 'wxStreet'],
+  // Vòng quay Mặt Trời (GĐ3; bản gốc không có: tự bỏ qua nếu thiếu nút)
+  ['sw', 'swOverview'], ['sw', 'swFront'], ['sw', 'swBase'], ['sw', 'swFromTTL'], ['sw', 'swNight'], ['sw', 'swTop']
 ];
 
 async function setNight(page, v) {
@@ -42,6 +44,7 @@ async function measure(browser, url) {
     for (const [bridge, view] of VIEWS) {
       if (!(await page.$(`button[data-view="${view}"]`))) continue;
       await pickView(page, bridge, view);
+      if (view === 'swNight') await setNight(page, night);   // góc này tự chuyển sang đêm khi bấm: trả về ngày/đêm đang đo (rfHearts giữ nguyên cách đo cũ để khớp bảng chuẩn)
       await frames(page, 4);
       out[`${view}|${night ? 'đêm' : 'ngày'}`] = await sample(page);
     }

@@ -377,5 +377,19 @@
       "Han River mouth",
       "The Han River flows into Da Nang Bay. The journey ends here — drag the mouse to explore on your own."
     ]
-  ]
+  ],
+  "bridgeSw": "Sun Wheel",
+  "vSwFront": "Front view",
+  "vSwBase": "From the base, looking up",
+  "vSwFromTTL": "From Tran Thi Ly Bridge",
+  "vSwNight": "At night",
+  "vSwTop": "Aerial, looking down",
+  "swWheelSpeed": "Rotation speed",
+  "swWheelStop": "Stopped",
+  "swWheelReal": "Real (1×)",
+  "swLengthVal": "115 m tall",
+  "swWidthVal": "≈ 93 m (diameter)",
+  "swSpan": "Cabins",
+  "swSpanVal": "64 cabins × 6 passengers · 15 min/turn",
+  "swNote": "Asia Park, opened 18 July 2014 (formerly Igosu 108, Japan). Some sources report it closed in September 2025; the model shows it in operation. Diameter, base and support towers are estimates."
 }

@@ -9,7 +9,8 @@ const SPEC_KEYS: Record<BridgeKey, Record<string, string>> = {
   tp: { specLen: 'tpLengthVal', specWidth: 'tpWidthVal', specSpanLabel: 'tpSpan', specSpanVal: 'tpSpanVal', specNote: 'tpNote', lanes: '4' },
   ttl: { specLen: 'ttlLengthVal', specWidth: 'ttlWidthVal', specSpanLabel: 'ttlSpan', specSpanVal: 'ttlSpanVal', specNote: 'ttlNote', lanes: '6' },
   sh: { specLen: 'shLengthVal', specWidth: 'shWidthVal', specSpanLabel: 'shSpan', specSpanVal: 'shSpanVal', specNote: 'shNote', lanes: '2' },
-  hr: { specLen: 'hrLengthVal', specWidth: 'hrWidthVal', specSpanLabel: 'hrSpan', specSpanVal: 'hrSpanVal', specNote: 'hrNote', lanes: '6' }
+  hr: { specLen: 'hrLengthVal', specWidth: 'hrWidthVal', specSpanLabel: 'hrSpan', specSpanVal: 'hrSpanVal', specNote: 'hrNote', lanes: '6' },
+  sw: { specLen: 'swLengthVal', specWidth: 'swWidthVal', specSpanLabel: 'swSpan', specSpanVal: 'swSpanVal', specNote: 'swNote', lanes: '—' }   // bảng thông số riêng cho Vòng quay: giai đoạn 7
 };
 let currentBridge: BridgeKey = 'dragon';
 
