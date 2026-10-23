@@ -5,6 +5,7 @@
    ===================================================================== */
 import * as THREE from 'three';
 import { initI18n } from './i18n';
+import { initAnalytics } from './analytics';
 import { renderer, scene, camera, controls } from './core/renderer';
 import { shared, windFx } from './core/shared';
 import { buildLights } from './core/lights';
@@ -76,6 +77,7 @@ createWaterJet();
 setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel });
 onResize();
 applyNight(0, 0);
+initAnalytics();                         // Google tag (GA4): chỉ ở bản build có VITE_GA_ID, bỏ qua ?test
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
