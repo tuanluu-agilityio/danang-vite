@@ -1,4 +1,5 @@
 node_modules/
 dist/
 tests/screens/
-.env.env.production
+.env
+.env.production
