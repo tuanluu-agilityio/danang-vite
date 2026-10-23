@@ -1,4 +1,4 @@
-/* Thêm khóa dịch của Vòng quay Mặt Trời vào cả 9 file src/i18n/locales/*.json. Giai đoạn 3: nút chọn công trình, góc nhìn sw*, ô tốc độ quay, bảng thông số.
+/* Thêm khóa dịch của Vòng quay Mặt Trời vào cả 9 file src/i18n/locales/*.json. Giai đoạn 3: nút chọn công trình, góc nhìn sw*, ô tốc độ quay, bảng thông số. Giai đoạn 4: ô show LED.
    Các giai đoạn sau (ngồi cabin, show LED, Tour) thêm khóa vào cuối file này. Số liệu có nguồn: 115 m, 64 cabin × 6 khách, ~15 phút/vòng, khai trương 18/7/2014, trước là Igosu 108.
    Đường kính ≈ 93 m là ước lượng. Hiện trạng: theo một số nguồn đã ngừng hoạt động từ 9/2025.
    node scripts/add-sunwheel-locales.mjs */
@@ -44,4 +44,25 @@ for (const [code, vals] of Object.entries(T3)) {
   K3.forEach((k, i) => { json[k] = vals[i]; });
   await writeFile(file, JSON.stringify(json, null, 2) + '\n');
   console.log(code, 'GĐ3', K3.length, 'khóa');
+}
+/* Giai đoạn 4: ô chọn kiểu show LED đêm */
+const K4 = ['swShow', 'swShowWhite', 'swShowPink', 'swShowRays', 'swShowHeart', 'swShowOff'];
+const T4 = {
+  vi: ['Đèn LED', 'Trắng', 'Hồng tím', 'Tia chạy', 'Nhịp tim', 'Tắt'],
+  en: ['LED lights', 'White', 'Pink-violet', 'Running rays', 'Heartbeat', 'Off'],
+  ko: ['LED 조명', '흰색', '핑크·보라', '퍼지는 빛줄기', '심장 박동', '끄기'],
+  ja: ['LED照明', '白', 'ピンク・紫', '走る光線', 'ハートビート', 'オフ'],
+  zh: ['LED灯光', '白色', '粉紫', '流动光线', '心跳', '关闭'],
+  th: ['ไฟ LED', 'ขาว', 'ชมพูม่วง', 'ลำแสงวิ่ง', 'จังหวะหัวใจ', 'ปิด'],
+  ar: ['أضواء LED', 'أبيض', 'وردي بنفسجي', 'أشعة متحركة', 'نبض القلب', 'إيقاف'],
+  hi: ['एलईडी रोशनी', 'सफ़ेद', 'गुलाबी-बैंगनी', 'दौड़ती किरणें', 'दिल की धड़कन', 'बंद'],
+  ru: ['Подсветка LED', 'Белая', 'Розово-фиолетовая', 'Бегущие лучи', 'Сердцебиение', 'Выкл.']
+};
+for (const [code, vals] of Object.entries(T4)) {
+  if (vals.length !== K4.length) throw new Error(`${code}: ${vals.length} khóa, cần ${K4.length}`);
+  const file = join(dir, `${code}.json`);
+  const json = JSON.parse(await readFile(file, 'utf8'));
+  K4.forEach((k, i) => { json[k] = vals[i]; });
+  await writeFile(file, JSON.stringify(json, null, 2) + '\n');
+  console.log(code, 'GĐ4', K4.length, 'khóa');
 }

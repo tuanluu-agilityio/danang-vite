@@ -66,6 +66,8 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
   // Vòng quay Mặt Trời: tốc độ quay; góc nhìn ban đêm tự chuyển sang đêm
   const swSpeed = document.getElementById('swSpeed') as HTMLSelectElement;
   swSpeed.addEventListener('change', () => sunWheel.setSpeed(Number(swSpeed.value)));
+  const swShow = document.getElementById('swShow') as HTMLSelectElement;   // kiểu show LED đêm (GĐ4)
+  swShow.addEventListener('change', () => sunWheel.setShow(swShow.value));
   document.querySelector('[data-view="swNight"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
   // Thời tiết: preset + cường độ (GĐ2: chỉ khí quyển)
   setupWeatherUI(toggle);

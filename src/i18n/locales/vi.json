@@ -391,5 +391,11 @@
   "swWidthVal": "≈ 93 m (đường kính)",
   "swSpan": "Cabin",
   "swSpanVal": "64 cabin × 6 khách · 15 phút/vòng",
-  "swNote": "Asia Park, khai trương 18/7/2014 (trước là Igosu 108, Nhật Bản). Theo một số nguồn đã ngừng hoạt động từ 9/2025; mô hình thể hiện lúc còn vận hành. Đường kính, bệ và tháp đỡ là ước lượng."
+  "swNote": "Asia Park, khai trương 18/7/2014 (trước là Igosu 108, Nhật Bản). Theo một số nguồn đã ngừng hoạt động từ 9/2025; mô hình thể hiện lúc còn vận hành. Đường kính, bệ và tháp đỡ là ước lượng.",
+  "swShow": "Đèn LED",
+  "swShowWhite": "Trắng",
+  "swShowPink": "Hồng tím",
+  "swShowRays": "Tia chạy",
+  "swShowHeart": "Nhịp tim",
+  "swShowOff": "Tắt"
 }

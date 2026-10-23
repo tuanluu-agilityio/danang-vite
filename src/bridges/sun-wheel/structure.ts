@@ -12,6 +12,12 @@ type Color3 = [number, number, number];
 const C_WALL: Color3 = [1, 1, 1], C_DARK: Color3 = [0.16, 0.16, 0.17], C_ROOF: Color3 = [0.72, 0.17, 0.12], C_GOLD: Color3 = [1.05, 0.76, 0.26];
 const C_GREEN: Color3 = [0.3, 0.5, 0.24], C_PAVE: Color3 = [0.82, 0.8, 0.76], C_STEEL: Color3 = [1.08, 1.08, 1.1], C_POST: Color3 = [0.35, 0.35, 0.36];
 const col = (g: THREE.BufferGeometry, c: Color3) => prepColored(g, () => c);
+/* thuộc tính aLit cho shader LED (ledShow.ts): 0 không sáng, 1 giàn thép được chiếu trắng, 2 đèn cột quảng trường; phần nào thiếu thì gán 0 trước khi gộp */
+export const SW_LIT = { none: 0, flood: 1, lamp: 2 };
+export function swLit(g: THREE.BufferGeometry, v: number) {
+  g.setAttribute('aLit', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count).fill(v), 1));
+  return g;
+}
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
 /* vòm cuốn tối trên mặt tường z = zf (hướng ra ngoài theo dấu s): ô chữ nhật + nửa đĩa trên đỉnh */
@@ -71,7 +77,7 @@ export function swBuildBase(out: THREE.BufferGeometry[]) {
   for (let i = 0; i < nl; i++) for (const sx of [-1, 1]) {
     const x = sx * (Q.len / 2 - 5), z = D / 2 + Q.depth * (i + 0.5) / nl;
     out.push(col(boxAt(0.35, SW.lamps.h, 0.35, x, y0 + SW.lamps.h / 2, z), C_POST));
-    out.push(col(boxAt(1.2, 0.5, 0.6, x, y0 + SW.lamps.h, z), C_WALL));
+    out.push(swLit(col(boxAt(1.2, 0.5, 0.6, x, y0 + SW.lamps.h, z), C_WALL), SW_LIT.lamp));
   }
   // cổng vòm vàng (sân khấu) giữa mặt Nam
   const G = SW.gate, zg = D / 2 + G.stageD / 2 + 0.3;
@@ -85,6 +91,7 @@ export function swBuildLegs(out: THREE.BufferGeometry[]) {
   const G = SW.legs, yb = CONFIG.landY + SW.baseH, yt = SW.hubY - 1.5;
   const lerp = (a: THREE.Vector3, b: THREE.Vector3, t: number) => a.clone().lerp(b, t);
   const levels = [0]; for (let k = 1; k <= G.tiers; k++) levels.push(k / (G.tiers + 1));
+  const n0 = out.length;
   for (const s of [1, -1]) {
     const L0 = V(-G.xBot, yb, s * G.zBot), L1 = V(-G.xTop, yt, s * G.zTop);
     const R0 = V(G.xBot, yb, s * G.zBot), R1 = V(G.xTop, yt, s * G.zTop);
@@ -102,6 +109,7 @@ export function swBuildLegs(out: THREE.BufferGeometry[]) {
     out.push(col(boxAt(2 * G.xTop + 2.5, 3.2, 3.2, 0, SW.hubY, s * G.zTop), C_STEEL));   // gối trục
   }
   out.push(col(new THREE.CylinderGeometry(SW.axle.r, SW.axle.r, SW.axle.len, 16).rotateX(Math.PI / 2).translate(0, SW.hubY, 0), C_STEEL));
+  for (let i = n0; i < out.length; i++) swLit(out[i], SW_LIT.flood);   // cả giàn, gối và trục được chiếu trắng ban đêm
 }
 
 /* biển "SUN WHEEL" dưới moay-ơ, mặt Nam (trước trụ giữa của giàn phía Nam) */

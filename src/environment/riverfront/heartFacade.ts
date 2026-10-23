@@ -9,6 +9,12 @@ import type { Tower } from './landmarks';
    (tim đập → DN hiện dần → tim bọc DN, viền chạy sáng → lấp lánh). Cả hai tấm gộp một mesh/một material; pha từng tấm là attribute. */
 const H = CONFIG.riverfront, HC = H.heart;
 const HEART_C = new THREE.Vector2(0.5, 0.8);        // tâm trái tim trong tọa độ UV của tấm
+/* Nhịp tim dùng chung (công trình khác đồng bộ theo, vd. LED Vòng quay Mặt Trời): GLSL theo biến `tb` = mod(t, HEART_BEAT_PERIOD),
+   hệ số theo giai đoạn của chu kỳ HC.cycle (stg = floor(t / 6)); tấm Novotel pha 0 ở cả hai chế độ */
+export const HEART_BEAT_PERIOD = 1.5;
+export const HEART_BEAT_GLSL = 'exp(-pow((tb - 0.12) / 0.09, 2.0)) + 0.8 * exp(-pow((tb - 0.42) / 0.09, 2.0))';
+export const HEART_STAGE_GLSL = '(stg < 0.5 ? 1.0 : stg < 2.5 ? 0.4 : 0.0)';
+export const HEART_CYCLE = HC.cycle;
 
 /* Mặt nạ: tấm cao hơn rộng nên vẽ theo mét (px/m đều hai trục) để trái tim không méo */
 function maskTexture(panelW: number, panelH: number) {
@@ -37,9 +43,9 @@ const frag = `
   void main(){
     vec2 g = vUv * uGrid, id = floor(g), f = fract(g) - 0.5, cuv = (id + 0.5) / uGrid;
     float t = mod(uTime + vPhase, ${HC.cycle.toFixed(1)}), stg = floor(t / 6.0), k = fract(t / 6.0);
-    float tb = mod(t, 1.5);                                                   // nhịp thình thịch: hai nhịp gần nhau rồi nghỉ
-    float beat = exp(-pow((tb - 0.12) / 0.09, 2.0)) + 0.8 * exp(-pow((tb - 0.42) / 0.09, 2.0));
-    float s = 1.0 + ${HC.beat.toFixed(3)} * beat * (stg < 0.5 ? 1.0 : stg < 2.5 ? 0.4 : 0.0);
+    float tb = mod(t, ${HEART_BEAT_PERIOD.toFixed(1)});                                                   // nhịp thình thịch: hai nhịp gần nhau rồi nghỉ
+    float beat = ${HEART_BEAT_GLSL};
+    float s = 1.0 + ${HC.beat.toFixed(3)} * beat * ${HEART_STAGE_GLSL};
     vec2 p = (cuv - uHc) / s + uHc;
     vec3 m = texture2D(uMask, p).rgb;
     float fill = m.r, dn = m.g, edge = m.b;

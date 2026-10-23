@@ -449,7 +449,20 @@ const sunWheelBase = {
   /* ---- chuyển động (GĐ3) ---- */
   speedAccel: 6,                                  // hệ số tốc độ/giây — đổi tốc độ mượt: dừng ↔ ×60 mất ≈ 10 s, dừng ↔ ×1 chưa tới 0,2 s (ước lượng)
   stepMax: 0.1,                                   // s — bước tích phân tối đa khi một khung dài (không bỏ sót đổi tốc độ)
-  placeEps: 1e-4                                  // rad — lệch góc tối thiểu để dựng lại ma trận 64 cabin
+  placeEps: 1e-4,                                 // rad — lệch góc tối thiểu để dựng lại ma trận 64 cabin
+  /* ---- LED ban đêm (GĐ4): emissive trong shader, nhân shared.uNight, không thêm mesh/đèn. Độ sáng là hệ số emissive (ước lượng, chỉnh theo ảnh n1/a2, bloom ngưỡng 0,98) ---- */
+  led: {
+    shows: ['white', 'pink', 'rays', 'heart', 'off'],   // thứ tự uShow 0–4: trắng (n1–n3), hồng tím (a2), tia chạy, nhịp tim (đồng bộ LED trái tim riverfront), tắt
+    show: 0,                                       // kiểu mặc định: trắng
+    spoke: 1.5, rim: 2.2, ring: 1.2, cable: 0.35, hub: 0.6,   // độ sáng 32 thanh chính, viền vành chính, vành phụ/vành moay-ơ, cáp chéo, moay-ơ (ước lượng)
+    flood: 0.32,                                   // giàn tháp đỡ + trục được chiếu trắng (n1–n3): độ sáng ở kiểu trắng; các kiểu màu bằng một nửa, tắt = 0 (ước lượng)
+    cabinRing: 2.0, cabinShell: 0.12,              // viền LED đỏ quanh cabin (hai vòng sát mép dải kính) và ánh đỏ cả vỏ (ước lượng)
+    cabinRingW: 0.22,                              // m — bề cao mỗi vòng viền LED cabin (ước lượng)
+    lamp: 1.6,                                     // đèn cột quảng trường (ánh vàng ấm), sáng mọi kiểu show (ước lượng)
+    pinkWave: 0.8,                                 // rad/s — tốc độ dải màu hồng ↔ tím trượt dọc nan (ước lượng)
+    rayRate: 0.6, rayCount: 1.5,                   // tia chạy: số vòng sóng/giây và số sóng trên một bán kính (≈ 1,1 s một sóng từ moay-ơ ra vành) (ước lượng)
+    heartBase: 0.25                                // nhịp tim: độ sáng nền giữa hai nhịp; đỉnh nhịp cộng thêm 1 (ước lượng)
+  }
 };
 function deriveSunWheel(C: typeof sunWheelBase) {
   const yaw = THREE.MathUtils.degToRad(90 - C.azimuth);          // quay quanh Y: trục X cục bộ (dọc mặt vòng quay) về phương vị 83°, +7° lệch Bắc

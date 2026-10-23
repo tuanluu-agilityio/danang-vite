@@ -5,9 +5,10 @@ import { clearRects } from '../../environment/riverfront/clearance';
 import { shared } from '../../core/shared';
 import { SW } from './profile';
 import { swMaterials, type SwMaterials } from './materials';
-import { swBuildBase, swBuildLegs, swSignGeometry } from './structure';
+import { swBuildBase, swBuildLegs, swSignGeometry, swLit, SW_LIT } from './structure';
 import { swBuildWheel } from './wheel';
 import { swBuildCabins, swPlaceCabins } from './cabins';
+import { swLedU, swShowIndex } from './ledShow';
 
 /* ======================================================================
    VÒNG QUAY MẶT TRỜI (Sun Wheel) — Asia Park, bờ Tây, phía Nam Cầu Trần Thị Lý, z ≈ +2 280
@@ -16,6 +17,7 @@ import { swBuildCabins, swPlaceCabins } from './cabins';
    Draw call: phần tĩnh gộp 1 mesh + phần quay 1 mesh luôn hiện (điểm mốc); cabin + biển hiệu trong details (ẩn khi xa hơn lodDistance).
    Không đổ bóng (tránh thêm lượt vẽ bóng ở góc nhìn cũ), không phản chiếu (lớp 1).
    Giai đoạn 2: hình học tĩnh, vành/nan, 64 cabin. Giai đoạn 3: quay (wheel.rotation.z = θ), cabin chỉ tịnh tiến theo θ nên luôn đứng thẳng, tốc độ đổi mượt.
+   Giai đoạn 4: LED đêm 5 kiểu show trong shader của chính các vật liệu (ledShow.ts), nhịp tim đồng bộ LED trái tim riverfront.
    ====================================================================== */
 export class SunWheel extends BridgeBase<SwMaterials> {
   readonly cfg = SW;     // cho test (window.__app.sunWheel.cfg)
@@ -34,6 +36,7 @@ export class SunWheel extends BridgeBase<SwMaterials> {
     // phần tĩnh: bệ, nhà ga, quảng trường, giàn tháp, trục — một mesh tô màu theo đỉnh
     const parts: THREE.BufferGeometry[] = [];
     swBuildBase(parts); swBuildLegs(parts);
+    parts.forEach((p) => p.attributes.aLit || swLit(p, SW_LIT.none));   // mergeGeometries cần cùng bộ thuộc tính
     const stat = new THREE.Mesh(mergeGeometries(parts), this.mats.concrete);
     parts.forEach((p) => p.dispose());
     stat.name = 'sw-static'; stat.receiveShadow = true;
@@ -94,6 +97,11 @@ export class SunWheel extends BridgeBase<SwMaterials> {
     this.cabins.getMatrixAt(i, this.tmpM); this.tmpM.premultiply(this.cabins.matrixWorld);
     return out.set(this.tmpM.elements[4], this.tmpM.elements[5], this.tmpM.elements[6]).normalize();
   }
+
+  /* ---- LED ban đêm (GĐ4): một uniform chung cho ba vật liệu, không đổi mesh/draw call ---- */
+  /* đặt kiểu show theo tên ('white' | 'pink' | 'rays' | 'heart' | 'off') hoặc chỉ số 0–4; trả chỉ số đang dùng */
+  setShow(k: number | string) { const i = swShowIndex(k); if (i >= 0) swLedU.uShow.value = i; return swLedU.uShow.value; }
+  show() { return SW.led.shows[swLedU.uShow.value]; }
 
   update(dt: number, _elapsed: number, cam: THREE.Camera) {
     this.updateLod(cam);
