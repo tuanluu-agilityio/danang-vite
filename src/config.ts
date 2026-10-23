@@ -470,6 +470,18 @@ const sunWheelBase = {
     pitchMax: 1.4,                                 // rad — giới hạn ngẩng/cúi khi kéo chuột (≈ 80°)
     lookSpeed: 0.005,                              // rad/px — tốc độ xoay khi kéo chuột
     enterTime: 1.6                                 // s — thời gian bay từ góc nhìn hiện tại vào cabin (ước lượng, như flyTo)
+  },
+  /* ---- thời tiết (GĐ6): dừng theo `closed` của preset Bão (không có ngưỡng gió, D-012); cabin lắc theo windFx. Không thêm mesh/đèn ---- */
+  storm: {
+    stopSec: 10,                                   // s — từ lúc bão đóng cửa tới khi vòng quay dừng hẳn, giảm tốc tuyến tính từ tốc độ lúc đó (ước lượng)
+    sway: {
+      ref: 25,                                     // m/s — gió (độ lớn windFx) mà cabin lắc tới biên độ tối đa; biên độ ∝ (gió/ref)², có trần (ước lượng)
+      maxTilt: 0.16,                               // rad — góc nghiêng tối đa của cabin (≈ 9°) (ước lượng)
+      mean: 0.5,                                   // phần nghiêng cố định theo hướng gió; phần còn lại là dao động quanh đó (ước lượng)
+      omega: 1.6,                                  // rad/s — tần số lắc của cabin treo (giá treo ngắn nhưng cabin nặng, có cản) (ước lượng)
+      phase: 2.4,                                  // rad — lệch pha cố định giữa hai cabin liền kề (không dùng rand()) (ước lượng)
+      pivotUp: 3.6                                 // m — điểm treo cao hơn tâm cabin (nửa cabin 2,15 m + giá treo ≈ 1,5 m) (ước lượng)
+    }
   }
 };
 function deriveSunWheel(C: typeof sunWheelBase) {

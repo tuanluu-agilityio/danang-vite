@@ -120,6 +120,8 @@ button[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold),var(--
 .stats .show b{color:var(--gold);}
 #hint,#swRideHint{position:fixed;left:50%;transform:translateX(-50%);top:calc(14px + env(safe-area-inset-top,0px));
   padding:8px 14px;font-size:12px;color:var(--text);}
+#swStormNote{position:fixed;left:50%;transform:translateX(-50%);top:calc(58px + env(safe-area-inset-top,0px));
+  max-width:min(440px,calc(100vw - 32px));padding:8px 14px;font-size:12px;line-height:1.45;color:var(--text);text-align:center;}
 #tourCaption{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
   width:min(440px,calc(100vw - 32px));padding:12px 16px 13px;display:flex;flex-direction:column;gap:4px;transition:opacity .45s;}
 #tourCaption.fade{opacity:0;}

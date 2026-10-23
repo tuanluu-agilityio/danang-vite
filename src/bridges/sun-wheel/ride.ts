@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { camera, controls, canvas } from '../../core/renderer';
 import { clamp, smooth } from '../../common/math';
 import { cam } from '../../views/state';
-import { SW, swCabinPos, swToWorld } from './profile';
+import { weatherFx } from '../../core/shared';
+import { SW, swToWorld } from './profile';
 import type { SunWheel } from './SunWheel';
 
 /* ======================================================================
@@ -13,6 +14,8 @@ import type { SunWheel } from './SunWheel';
    ====================================================================== */
 const R = SW.ride, TAU = Math.PI * 2;
 const E = new THREE.Euler(0, 0, 0, 'YXZ'), Q = new THREE.Quaternion(), L = new THREE.Vector3(), P = new THREE.Vector3(), F = new THREE.Vector3();
+const T = new THREE.Quaternion(), YQ = new THREE.Quaternion(), U = new THREE.Vector3(), Y_AXIS = new THREE.Vector3(0, 1, 0);
+let noteEl: HTMLElement | null = null;
 
 export const swRide = {
   wheel: null as SunWheel | null,
@@ -51,12 +54,26 @@ export const swRide = {
 
   /* Vị trí mắt trong thế giới (tâm cabin + eyeUp) */
   eye(out = new THREE.Vector3()) {
-    swCabinPos(this.cabin, this.wheel.angle(), L);
-    return swToWorld(L.x, L.y + R.eyeUp, L.z, out);
+    this.wheel.cabinPose(this.cabin, L, T);   // có gió thì cabin nghiêng: mắt đi theo tâm cabin và trục lên của nó
+    U.set(0, R.eyeUp, 0).applyQuaternion(T);
+    return swToWorld(L.x + U.x, L.y + U.y, L.z + U.z, out);
   },
 
-  /* Hướng nhìn thế giới */
-  look(out = new THREE.Quaternion()) { return out.setFromEuler(E.set(this.pitch, SW.yaw + this.yaw, 0)); },
+  /* Hướng nhìn thế giới (cabin nghiêng theo gió thì cả tầm nhìn nghiêng theo) */
+  look(out = new THREE.Quaternion()) {
+    out.setFromEuler(E.set(this.pitch, SW.yaw + this.yaw, 0));
+    this.wheel.cabinPose(this.cabin, L, T);
+    if (T.w < 1) { YQ.setFromAxisAngle(Y_AXIS, SW.yaw); out.premultiply(T.premultiply(YQ).multiply(YQ.invert())); }   // phép nghiêng cục bộ → thế giới: Yq · T · Yq⁻¹
+    return out;
+  },
+
+  /* Dòng "vòng quay dừng do bão" chỉ hiện khi đang ngồi cabin và thời tiết đã dừng vòng quay (đổi DOM khi trạng thái đổi) */
+  updateNotice() {
+    noteEl ||= document.getElementById('swStormNote');
+    if (!noteEl) return;
+    const show = this.active() && weatherFx.wheelStopped;
+    if (noteEl.hidden === show) noteEl.hidden = !show;
+  },
 
   /* Lên cabin: nhớ camera cũ, chọn cabin ở đáy, bay vào */
   begin() {

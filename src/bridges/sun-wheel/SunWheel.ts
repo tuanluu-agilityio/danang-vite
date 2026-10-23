@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { BridgeBase } from '../../common/BridgeBase';
 import { clearRects } from '../../environment/riverfront/clearance';
-import { shared } from '../../core/shared';
+import { shared, weatherFx, windFx } from '../../core/shared';
 import { SW } from './profile';
 import { swMaterials, type SwMaterials } from './materials';
 import { swBuildBase, swBuildLegs, swSignGeometry, swLit, SW_LIT } from './structure';
 import { swBuildWheel } from './wheel';
-import { swBuildCabins, swPlaceCabins } from './cabins';
+import { swBuildCabins, swPlaceCabins, swCabinPose, type SwSway } from './cabins';
 import { swLedU, swShowIndex } from './ledShow';
 import { swRide } from './ride';
 
@@ -20,6 +20,7 @@ import { swRide } from './ride';
    Giai đoạn 2: hình học tĩnh, vành/nan, 64 cabin. Giai đoạn 3: quay (wheel.rotation.z = θ), cabin chỉ tịnh tiến theo θ nên luôn đứng thẳng, tốc độ đổi mượt.
    Giai đoạn 4: LED đêm 5 kiểu show trong shader của chính các vật liệu (ledShow.ts), nhịp tim đồng bộ LED trái tim riverfront.
    Giai đoạn 5: ngồi cabin (ride.ts) — camera gắn cabin, tư thế đặt trong update() sau advance().
+   Giai đoạn 6: bão (weatherFx.wheelStopped) giảm tốc tới dừng trong SW.storm.stopSec; có gió thì cabin lắc như con lắc (windFx); mặt ướt do option `weather` của bridgePatch.
    ====================================================================== */
 export class SunWheel extends BridgeBase<SwMaterials> {
   readonly cfg = SW;     // cho test (window.__app.sunWheel.cfg)
@@ -63,6 +64,9 @@ export class SunWheel extends BridgeBase<SwMaterials> {
   private speed = 1;          // hệ số tốc độ hiện tại (đang tiến dần tới speedGoal)
   private speedGoal = 1;      // hệ số tốc độ người dùng chọn
   private placed = NaN;       // góc đã dựng ma trận cabin (NaN = chưa)
+  private placedAmp = 0;      // biên độ lắc đã dựng ma trận cabin
+  private swayT = 0;          // s — đồng hồ lắc cabin (cộng dồn trong advance, deterministic)
+  private stopFrom = -1;      // hệ số tốc độ lúc bắt đầu dừng vì bão (-1 = không đang dừng)
   private tmpM = new THREE.Matrix4();
 
   /* Đặt góc (rad) ngay, cho test và Tour; luôn dựng lại cabin */
@@ -72,21 +76,40 @@ export class SunWheel extends BridgeBase<SwMaterials> {
   setSpeed(k: number) { this.speedGoal = Math.max(0, k); }
   speedNow() { return this.speed; }
   speedTarget() { return this.speedGoal; }
+  /* Hệ số tốc độ lúc bắt đầu dừng vì bão; -1 nếu không đang dừng (cho test) */
+  stopping() { return this.stopFrom; }
   /* Tích phân deterministic `sec` giây (test gọi trực tiếp; update() cũng đi qua đây) */
   advance(sec: number) {
     let left = sec;
+    if (weatherFx.wheelStopped) { if (this.stopFrom < 0) this.stopFrom = this.speed; } else this.stopFrom = -1;
+    const goal = this.stopFrom >= 0 ? 0 : this.speedGoal;
+    // bão: giảm tốc tuyến tính để dừng đúng sau stopSec kể từ tốc độ lúc đó; bình thường: tăng/giảm tốc theo speedAccel
+    const rate = this.stopFrom >= 0 ? this.stopFrom / SW.storm.stopSec : SW.speedAccel;
+    this.swayT += sec;
     while (left > 1e-9) {
       const h = Math.min(left, SW.stepMax); left -= h;
-      const step = SW.speedAccel * h;
-      this.speed = this.speed < this.speedGoal ? Math.min(this.speedGoal, this.speed + step) : Math.max(this.speedGoal, this.speed - step);
+      const step = rate * h;
+      this.speed = this.speed < goal ? Math.min(goal, this.speed + step) : Math.max(goal, this.speed - step);
       this.theta = (this.theta + SW.omega * this.speed * h) % TAU;
     }
     this.apply(false);
   }
-  /* Vành quay (rẻ: chỉ một góc); cabin dựng lại khi nhìn thấy và góc đổi; cabin luôn chỉ tịnh tiến nên đứng thẳng */
+  /* Gió lên cabin theo windFx (thế giới → cục bộ). Lặng gió: amp = 0 (cabin đứng thẳng, ma trận chỉ tịnh tiến) */
+  sway(): SwSway {
+    const S = SW.storm.sway, w = Math.hypot(windFx.x, windFx.z);
+    if (w < 1e-3) return { amp: 0, t: this.swayT, dx: 0, dz: 0 };
+    const c = Math.cos(SW.yaw), s = Math.sin(SW.yaw), dx = (windFx.x * c - windFx.z * s) / w, dz = (windFx.x * s + windFx.z * c) / w;   // nghịch đảo của swToWorld
+    return { amp: Math.min(1, (w / S.ref) ** 2) * S.maxTilt, t: this.swayT, dx, dz };
+  }
+  /* Tư thế cabin i (cục bộ) theo góc và gió hiện tại — ngồi cabin dùng cái này, không đọc ma trận instance */
+  cabinPose(i: number, pos: THREE.Vector3, quat: THREE.Quaternion) { swCabinPose(i, this.theta, this.sway(), pos, quat); }
+  /* Vành quay (rẻ: chỉ một góc); cabin dựng lại khi nhìn thấy và góc đổi hoặc đang lắc gió (64 ma trận, không thêm draw call) */
   private apply(force: boolean) {
     this.wheel.rotation.z = this.theta;
-    if (force || (this.details.visible && !(Math.abs(this.theta - this.placed) < SW.placeEps))) { swPlaceCabins(this.cabins, this.theta); this.placed = this.theta; }
+    const sw = this.sway();
+    if (force || (this.details.visible && (sw.amp > 0 || this.placedAmp > 0 || !(Math.abs(this.theta - this.placed) < SW.placeEps)))) {
+      swPlaceCabins(this.cabins, this.theta, sw.amp > 0 ? sw : null); this.placed = this.theta; this.placedAmp = sw.amp;
+    }
   }
   /* Vị trí thế giới của tâm cabin i (đọc từ ma trận instance) */
   cabinWorld(i: number, out = new THREE.Vector3()) {
@@ -110,6 +133,7 @@ export class SunWheel extends BridgeBase<SwMaterials> {
     this.updateLod(cam);
     this.advance(dt);
     swRide.update(dt);   // đang ngồi cabin: camera theo cabin sau khi vòng quay vừa quay (cùng một khung hình)
+    swRide.updateNotice();   // đang ngồi cabin mà bão đã dừng vòng quay: hiện dòng thông báo
     if (this.details.visible) this.mats.sign.color.setScalar(0.85 + 1.6 * shared.uNight.value);   // chữ sáng hơn khi tối (không phải đèn)
   }
 }

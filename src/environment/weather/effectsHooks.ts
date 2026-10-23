@@ -23,6 +23,7 @@ export function updateHooks(c: WeatherParams, dt: number) {
   weatherFx.boatAway = toward(weatherFx.boatAway, closed ? 1 : 0, dt / O.boatAwaySec);   // thuyền về bến
   weatherFx.showAllowed = !closed && c.rain <= O.showMaxRain && c.wind <= O.showMaxWind;
   weatherFx.swingBlocked = closed;
+  weatherFx.wheelStopped = closed;                                                       // Vòng quay Mặt Trời giảm tốc tới dừng (sun-wheel/SunWheel.ts); hết bão quay lại tốc độ đã chọn
   if (closed && swing && swing.state === 'OPEN') swing.requestClose();                // đang mở thì đóng sớm
   if (closed !== adsOff) { adsOff = closed; setAdsSuppressed(closed); }                // quảng cáo tắt tạm, hết bão trả lại lựa chọn người dùng
 }

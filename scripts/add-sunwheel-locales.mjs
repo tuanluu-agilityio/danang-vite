@@ -87,3 +87,24 @@ for (const [code, vals] of Object.entries(T5)) {
   await writeFile(file, JSON.stringify(json, null, 2) + '\n');
   console.log(code, 'GĐ5', K5.length, 'khóa');
 }
+/* Giai đoạn 6: bão — dòng thông báo khi đang ngồi cabin mà vòng quay đã dừng */
+const K6 = ['swStormNote'];
+const T6 = {
+  vi: ['Vòng quay tạm dừng do thời tiết xấu. Cabin vẫn đung đưa theo gió.'],
+  en: ['The wheel has stopped because of the bad weather. Your cabin still sways in the wind.'],
+  ko: ['악천후로 관람차가 멈췄습니다. 캐빈은 바람에 계속 흔들립니다.'],
+  ja: ['悪天候のため観覧車は停止しました。ゴンドラは風で揺れ続けています。'],
+  zh: ['因天气恶劣，摩天轮已停止运转，轿厢仍会随风摇晃。'],
+  th: ['ชิงช้าสวรรค์หยุดหมุนเพราะสภาพอากาศเลวร้าย กระเช้ายังแกว่งไปตามลม'],
+  ar: ['توقفت العجلة بسبب سوء الطقس، وما زالت المقصورة تتأرجح مع الرياح.'],
+  hi: ['खराब मौसम के कारण व्हील रुक गया है। केबिन अब भी हवा में झूल रहा है।'],
+  ru: ['Колесо остановлено из-за непогоды. Кабина по-прежнему раскачивается на ветру.']
+};
+for (const [code, vals] of Object.entries(T6)) {
+  if (vals.length !== K6.length) throw new Error(`${code}: ${vals.length} khóa, cần ${K6.length}`);
+  const file = join(dir, `${code}.json`);
+  const json = JSON.parse(await readFile(file, 'utf8'));
+  K6.forEach((k, i) => { json[k] = vals[i]; });
+  await writeFile(file, JSON.stringify(json, null, 2) + '\n');
+  console.log(code, 'GĐ6', K6.length, 'khóa');
+}

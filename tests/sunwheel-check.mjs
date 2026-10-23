@@ -79,8 +79,15 @@ try {
   const delta = () => page.evaluate(async () => {
     const { renderer, sunWheel: W } = window.__app;
     const f = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
-    const med = async () => { const xs = []; for (let i = 0; i < 3; i++) { await f(); xs.push(renderer.info.render.calls); } return xs.sort((a, b) => a - b)[1]; };
-    const on = await med(); W.group.visible = false; const off = await med(); W.group.visible = true; await f();
+    const fl = () => !!window.__app.weather?.lightning?.flashing?.();
+    // Tia chớp (bão) cộng 1 draw call lúc nháy, không thuộc vòng quay: bỏ mẫu có chớp, đo lại tới khi cả hai cửa sổ sạch
+    const med = async () => { const xs = []; let flash = false; for (let i = 0; i < 3; i++) { await f(); flash = flash || fl(); xs.push(renderer.info.render.calls); flash = flash || fl(); } return { m: xs.sort((a, b) => a - b)[1], flash }; };
+    let on = 0, off = 0;
+    for (let k = 0; k < 40; k++) {
+      let r = await med(); on = r.m; let bad = r.flash;
+      W.group.visible = false; r = await med(); off = r.m; bad = bad || r.flash; W.group.visible = true; await f();
+      if (!bad) break;
+    }
     return { d: on - off, details: W.details.visible };
   });
   const camLocal = (p, t) => page.evaluate(([p, t]) => {
@@ -396,9 +403,124 @@ try {
   { const r = await RS.snap(); check(r.mode === 'orbit' && r.enabled && !r.hint, `Esc khi không ngồi cabin đổi trạng thái: ${r.mode}`); }
   await page.evaluate(() => window.__app.sunWheel.setSpeed(1));
 
+  // ---- Giai đoạn 6: thời tiết (mục 6, 11.5, 9) ----
+  // Dừng theo `closed` của preset Bão (weatherFx.wheelStopped, không có ngưỡng gió); cabin lắc theo windFx; mặt ướt do option `weather` của bridgePatch.
+  const { setWx } = await import('./weather-lib.mjs');
+  const fxNow = () => page.evaluate(() => ({ stopped: window.__app.weather.fx().wheelStopped, closed: window.__app.weather.state.current.closed }));
+  const cabinTilt = () => page.evaluate(() => {   // góc nghiêng (rad) của 64 cabin so với trục Y, và thành phần ngang của trục lên chiếu theo hướng gió (≤ 0: nghiêng ngược gió, đáy xuôi gió)
+    const { sunWheel: W, windFx, THREE } = window.__app, up = new THREE.Vector3(), wl = Math.hypot(windFx.x, windFx.z);
+    let max = 0, along = -Infinity, min = Infinity; const ys = [];
+    for (let i = 0; i < W.cfg.cabins; i++) {
+      W.cabinUp(i, up); const a = Math.acos(Math.min(1, up.y)); max = Math.max(max, a); min = Math.min(min, a); ys.push(a);
+      if (wl > 1e-3) along = Math.max(along, (up.x * windFx.x + up.z * windFx.z) / wl);
+    }
+    return { max, min, along, a0: ys[0], amp: W.sway().amp, wind: wl, maxTilt: W.cfg.storm.sway.maxTilt, stopSec: W.cfg.storm.stopSec };
+  });
+  const DEG2 = 2 * Math.PI / 180;
+
+  // 5a. `now`: không đổi gì — không dừng, không lắc, cabin đứng thẳng
+  await setWx(page, 'now');
+  await page.evaluate(() => { const W = window.__app.sunWheel; W.setSpeed(60); W.advance(15); });
+  await pickView(page, 'sw', 'swFront'); await camLocal([0, 8, 230], [0, 55, 0]); await frames(page, 4);
+  { const f = await fxNow(), t = await cabinTilt();
+    check(!f.stopped && !f.closed, `now: wheelStopped ${f.stopped}, closed ${f.closed}`);
+    check(t.amp === 0 && t.max <= DEG2, `now: cabin lắc (amp ${t.amp}, nghiêng tối đa ${t.max} rad)`); }
+
+  // 5b. Bão từ ×60: wheelStopped bật, tốc độ giảm tuyến tính và về 0 đúng sau stopSec kể từ lúc bắt đầu dừng; tốc độ người dùng chọn giữ nguyên
+  await setWx(page, 'storm'); await frames(page, 3);
+  { const f = await fxNow(); check(f.stopped && f.closed, `bão: wheelStopped ${f.stopped}, closed ${f.closed} (cần true)`); }
+  const stopAt = (k) => page.evaluate((k) => {
+    const W = window.__app.sunWheel, from = W.stopping(), rate = from / W.cfg.storm.stopSec, s0 = W.speedNow();
+    const tZero = s0 / rate, out = { k, from, s0, tZero, stopSec: W.cfg.storm.stopSec, goal0: W.speedTarget() };
+    W.advance(Math.min(4, tZero / 2)); out.sMid = W.speedNow(); out.expectMid = s0 - rate * Math.min(4, tZero / 2);
+    W.advance(tZero - Math.min(4, tZero / 2) - 0.1); out.sBefore = W.speedNow();
+    W.advance(0.2); out.sAfter = W.speedNow(); out.a1 = W.angle();
+    W.advance(5); out.a2 = W.angle(); out.goal1 = W.speedTarget();
+    return out;
+  }, k);
+  const S60 = await stopAt(60);
+  console.log('GĐ6 dừng từ ×60:', JSON.stringify(S60));
+  check(near(S60.from, 60, 1e-6) && S60.goal0 === 60 && S60.goal1 === 60, `dừng từ ×60: tốc độ lúc dừng ${S60.from}, đích người dùng ${S60.goal0} → ${S60.goal1} (phải giữ 60)`);
+  check(S60.tZero <= S60.stopSec + 1e-6 && S60.tZero >= S60.stopSec - 2, `dừng từ ×60: còn ${S60.tZero} s tới 0, stopSec ${S60.stopSec}`);
+  check(near(S60.sMid, S60.expectMid, 1e-6), `dừng từ ×60: giảm tốc không tuyến tính (${S60.sMid} vs ${S60.expectMid})`);
+  check(S60.sBefore > 0 && S60.sAfter === 0, `dừng từ ×60: trước mốc ${S60.sBefore}, sau mốc ${S60.sAfter} (cần > 0 rồi đúng 0)`);
+  check(S60.a2 === S60.a1, `dừng từ ×60: vòng quay vẫn trôi sau khi dừng (${S60.a1} → ${S60.a2})`);
+  // bão từ ×1 cũng dừng đúng stopSec
+  await setWx(page, 'now'); await frames(page, 3);
+  await page.evaluate(() => { const W = window.__app.sunWheel; W.setSpeed(1); W.advance(15); });
+  await setWx(page, 'storm'); await frames(page, 3);
+  const SP1 = await stopAt(1);
+  console.log('GĐ6 dừng từ ×1:', JSON.stringify(SP1));
+  check(near(SP1.from, 1, 1e-6) && SP1.tZero <= SP1.stopSec + 1e-6 && SP1.tZero >= SP1.stopSec - 2 && SP1.sBefore > 0 && SP1.sAfter === 0 && SP1.a2 === SP1.a1, `dừng từ ×1 không đúng thời gian: ${JSON.stringify(SP1)}`);
+
+  // 5c. Cabin lắc theo gió trong bão: có nghiêng, ≤ maxTilt, đáy xuôi gió, đổi theo thời gian; vẫn không thêm mesh
+  await frames(page, 3);
+  const T1 = await cabinTilt();
+  console.log('GĐ6 cabin lắc:', JSON.stringify(T1));
+  check(T1.wind > 1 && T1.amp > 0, `bão: gió ${T1.wind} m/s, biên độ lắc ${T1.amp} rad (cần > 0)`);
+  check(T1.max > DEG2 && T1.max <= T1.maxTilt + 1e-6, `bão: cabin nghiêng tối đa ${T1.max} rad, cần trong (2°; ${T1.maxTilt}]`);
+  check(T1.along <= 1e-6, `bão: cabin nghiêng về phía gió (thành phần ${T1.along}), đáy phải xuôi gió`);
+  const T2 = await page.evaluate(() => { const W = window.__app.sunWheel, up = new window.__app.THREE.Vector3(); W.cabinUp(0, up); const a = Math.acos(up.y); W.advance(0.7); W.cabinUp(0, up); return { a, b: Math.acos(up.y) }; });
+  check(Math.abs(T2.a - T2.b) > 1e-3, `bão: cabin 0 không đung đưa theo thời gian (${T2.a} → ${T2.b})`);
+  { const m = await page.evaluate(() => { let n = 0; window.__app.sunWheel.group.traverse((o) => { if (o.isMesh) n++; }); return n; });
+    check(m === rideMeshes0, `bão thêm mesh vào vòng quay: ${rideMeshes0} → ${m}`); }
+
+  // 5d. Draw call do vòng quay trong bão = lúc `now` (cùng góc nhìn, ban ngày)
+  const DW = {};
+  for (const [b, v] of OLD) { await pickView(page, b, v); await frames(page, 4); DW[v] = await delta(); }
+  for (const [k, [p, t]] of Object.entries(NEAR)) { await camLocal(p, t); await frames(page, 3); DW[k] = await delta(); }
+  for (const v of SWV.filter((x) => x !== 'swNight')) { await pickView(page, 'sw', v); await frames(page, 4); DW[v] = await delta(); }   // swNight tự chuyển sang đêm nên không đo ở đây
+  console.log('draw call vòng quay trong bão:', JSON.stringify(DW));
+  for (const [, v] of OLD) check(DW[v].d === D[`${v}|0`].d && DW[v].d <= 2, `bão ${v}: vòng quay ${DW[v].d} draw call, lúc now ${D[`${v}|0`].d} (phải bằng, ≤ 2)`);
+  for (const k of Object.keys(NEAR)) check(DW[k].d === D[`${k}|0`].d && DW[k].d <= 6, `bão ${k}: vòng quay ${DW[k].d} draw call, lúc now ${D[`${k}|0`].d} (phải bằng, ≤ 6)`);
+  for (const v of SWV.filter((x) => x !== 'swNight')) check(DW[v].d === DS[`${v}|0|0`].d && DW[v].d <= 6, `bão ${v}: vòng quay ${DW[v].d} draw call, lúc now ${DS[`${v}|0|0`].d} (phải bằng, ≤ 6)`);
+
+  // 5e. Mặt ướt: ba vật liệu có nhánh `weather` (uWet) và có uniform ướt khi mưa
+  const WET = await page.evaluate(() => { const W = window.__app.sunWheel; return { ks: ['concrete', 'steel', 'cabin'].map((n) => W.mats[n].customProgramCacheKey()), wet: window.__app.weather.state.wet }; });
+  check(WET.ks.every((k) => /-w-swled-/.test(k)) && WET.wet > 0.5, `mặt ướt: khoá vật liệu ${WET.ks}, wet ${WET.wet}`);
+
+  // 5f. Đang ngồi cabin khi bão tới: vòng quay dừng, cabin vẫn lắc, camera bám cabin nghiêng, hiện dòng thông báo; hết bão thì ẩn
+  await setWx(page, 'now'); await frames(page, 3);
+  await page.evaluate(() => { const W = window.__app.sunWheel; W.setSpeed(10); W.advance(15); });
+  await pickView(page, 'sw', 'swFront'); await frames(page, 2);
+  await rideClick(); await frames(page, 2);
+  await page.evaluate(() => { window.__app.swRide.blend = 1; });
+  await frames(page, 2);
+  const note = () => page.evaluate(() => { const e = document.getElementById('swStormNote'); return { hidden: e.hidden, text: e.textContent }; });
+  check((await note()).hidden, 'ngồi cabin lúc now: dòng thông báo bão đang hiện');
+  await setWx(page, 'storm'); await frames(page, 4);
+  { const n = await note(); check(!n.hidden && n.text.length > 30 && !/^swStorm/.test(n.text), `ngồi cabin khi bão: dòng thông báo hidden ${n.hidden}, chữ "${n.text}"`); }
+  const rideStorm = await page.evaluate(() => {
+    const { swRide: R, sunWheel: W, camera, THREE } = window.__app, out = { err: 0, tilt: 0 }, e = new THREE.Vector3(), plain = new THREE.Quaternion(), ang = [];
+    W.advance(12);   // vòng quay đã dừng hẳn (stopSec = 10)
+    out.speed = W.speedNow(); out.a0 = W.angle();
+    for (let k = 0; k < 8; k++) {
+      W.advance(0.4); R.update(0);   // lắc tiếp, dựng lại tư thế camera
+      R.eye(e); out.err = Math.max(out.err, e.distanceTo(camera.position));
+      plain.setFromEuler(new THREE.Euler(R.pitch, W.cfg.yaw + R.yaw, 0, 'YXZ')); out.tilt = Math.max(out.tilt, camera.quaternion.angleTo(plain));
+    }
+    out.a1 = W.angle(); out.maxTilt = W.cfg.storm.sway.maxTilt; out.mode = window.__app.cam.mode;
+    return out;
+  });
+  console.log('GĐ6 ngồi cabin trong bão:', JSON.stringify(rideStorm));
+  check(rideStorm.mode === 'swRide' && rideStorm.speed === 0 && rideStorm.a1 === rideStorm.a0, `ngồi cabin khi bão: mode ${rideStorm.mode}, tốc độ ${rideStorm.speed}, góc ${rideStorm.a0} → ${rideStorm.a1} (phải đứng yên)`);
+  check(rideStorm.err < 1e-3, `ngồi cabin khi bão: camera lệch mắt cabin ${rideStorm.err} m`);
+  check(rideStorm.tilt > 1e-3 && rideStorm.tilt <= rideStorm.maxTilt + 1e-3, `ngồi cabin khi bão: camera nghiêng ${rideStorm.tilt} rad theo cabin, cần trong (1e-3; ${rideStorm.maxTilt}]`);
+  await setWx(page, 'now'); await frames(page, 4);
+  check((await note()).hidden, 'hết bão: dòng thông báo vẫn hiện');
+  await page.evaluate(() => { const W = window.__app.sunWheel; W.advance(15); });
+  { const r = await page.evaluate(() => { const W = window.__app.sunWheel; return { s: W.speedNow(), g: W.speedTarget(), st: W.stopping() }; });
+    check(r.s === 10 && r.g === 10 && r.st === -1, `hết bão: tốc độ ${r.s} (cần quay lại 10), đích ${r.g}, stopFrom ${r.st}`); }
+  { const t = await cabinTilt(); check(t.amp === 0 && t.max <= DEG2, `hết bão: cabin vẫn nghiêng (amp ${t.amp}, ${t.max} rad)`); }
+  await page.keyboard.press('Escape'); await frames(page, 2);
+  check((await note()).hidden, 'xuống cabin: dòng thông báo bão vẫn hiện');
+  await RS.flightDone();
+  await setWx(page, 'now');
+  await page.evaluate(() => window.__app.sunWheel.setSpeed(1));
+
   // 7. i18n: 14 khóa mới đủ ở cả 9 locale, không rỗng
   const { readFile } = await import('node:fs/promises');
-  const KEYS = ['bridgeSw', 'vSwFront', 'vSwBase', 'vSwFromTTL', 'vSwNight', 'vSwTop', 'swWheelSpeed', 'swWheelStop', 'swWheelReal', 'swLengthVal', 'swWidthVal', 'swSpan', 'swSpanVal', 'swNote', 'vSwRide', 'swRideHint'];
+  const KEYS = ['swStormNote','bridgeSw', 'vSwFront', 'vSwBase', 'vSwFromTTL', 'vSwNight', 'vSwTop', 'swWheelSpeed', 'swWheelStop', 'swWheelReal', 'swLengthVal', 'swWidthVal', 'swSpan', 'swSpanVal', 'swNote', 'vSwRide', 'swRideHint'];
   for (const code of ['vi', 'en', 'ko', 'ja', 'zh', 'th', 'ar', 'hi', 'ru']) {
     const j = JSON.parse(await readFile(new URL(`../src/i18n/locales/${code}.json`, import.meta.url), 'utf8'));
     const miss = KEYS.filter((k) => typeof j[k] !== 'string' || !j[k].trim());
