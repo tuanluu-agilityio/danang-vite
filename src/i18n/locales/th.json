@@ -397,5 +397,7 @@
   "swShowPink": "ชมพูม่วง",
   "swShowRays": "ลำแสงวิ่ง",
   "swShowHeart": "จังหวะหัวใจ",
-  "swShowOff": "ปิด"
+  "swShowOff": "ปิด",
+  "vSwRide": "นั่งกระเช้า",
+  "swRideHint": "ลากเมาส์เพื่อมองรอบตัว · กด Esc หรือกดปุ่มอีกครั้งเพื่อลง"
 }

@@ -66,3 +66,24 @@ for (const [code, vals] of Object.entries(T4)) {
   await writeFile(file, JSON.stringify(json, null, 2) + '\n');
   console.log(code, 'GĐ4', K4.length, 'khóa');
 }
+/* Giai đoạn 5: ngồi cabin — nút góc nhìn và dòng hướng dẫn khi đang ngồi */
+const K5 = ['vSwRide', 'swRideHint'];
+const T5 = {
+  vi: ['Ngồi cabin', 'Kéo chuột để nhìn quanh · Esc hoặc bấm lại nút để xuống cabin'],
+  en: ['Ride in a cabin', 'Drag to look around · Esc or press the button again to step off'],
+  ko: ['캐빈 탑승', '드래그하여 둘러보기 · Esc 또는 버튼을 다시 눌러 내리기'],
+  ja: ['ゴンドラに乗る', 'ドラッグで見回す · Esc またはもう一度ボタンを押すと降ります'],
+  zh: ['乘坐轿厢', '拖动鼠标环顾四周 · 按 Esc 或再次点击按钮下车'],
+  th: ['นั่งกระเช้า', 'ลากเมาส์เพื่อมองรอบตัว · กด Esc หรือกดปุ่มอีกครั้งเพื่อลง'],
+  ar: ['اركب المقصورة', 'اسحب للنظر حولك · اضغط Esc أو الزر مرة أخرى للنزول'],
+  hi: ['केबिन में बैठें', 'चारों ओर देखने के लिए खींचें · उतरने के लिए Esc दबाएँ या बटन दोबारा दबाएँ'],
+  ru: ['Сесть в кабину', 'Перетаскивайте мышь, чтобы осмотреться · Esc или повторное нажатие кнопки — выйти из кабины']
+};
+for (const [code, vals] of Object.entries(T5)) {
+  if (vals.length !== K5.length) throw new Error(`${code}: ${vals.length} khóa, cần ${K5.length}`);
+  const file = join(dir, `${code}.json`);
+  const json = JSON.parse(await readFile(file, 'utf8'));
+  K5.forEach((k, i) => { json[k] = vals[i]; });
+  await writeFile(file, JSON.stringify(json, null, 2) + '\n');
+  console.log(code, 'GĐ5', K5.length, 'khóa');
+}

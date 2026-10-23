@@ -398,5 +398,7 @@
   "swShowPink": "وردي بنفسجي",
   "swShowRays": "أشعة متحركة",
   "swShowHeart": "نبض القلب",
-  "swShowOff": "إيقاف"
+  "swShowOff": "إيقاف",
+  "vSwRide": "اركب المقصورة",
+  "swRideHint": "اسحب للنظر حولك · اضغط Esc أو الزر مرة أخرى للنزول"
 }

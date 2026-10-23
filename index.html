@@ -144,6 +144,7 @@
     <button data-view="swFromTTL" aria-pressed="false" data-i18n="vSwFromTTL">Từ Cầu Trần Thị Lý</button>
     <button data-view="swNight" aria-pressed="false" data-i18n="vSwNight">Ban đêm</button>
     <button data-view="swTop" aria-pressed="false" data-i18n="vSwTop">Trên cao nhìn xuống</button>
+    <button data-view="swRide" aria-pressed="false" data-i18n="vSwRide">Ngồi cabin</button>
     <label class="mini-select" for="swSpeed"><span data-i18n="swWheelSpeed">Tốc độ quay</span>
       <select id="swSpeed"><option value="0" data-i18n="swWheelStop">Dừng</option><option value="1" data-i18n="swWheelReal" selected>Thật (1×)</option><option value="10">10×</option><option value="60">60×</option></select></label>
     <label class="mini-select" for="swShow"><span data-i18n="swShow">Đèn LED</span>
@@ -180,6 +181,7 @@
   <div class="bar"><i id="wxScenarioBar"></i></div>
 </div>
 <div id="hrLabels" hidden aria-hidden="true"></div>
+<div id="swRideHint" class="panel" hidden data-i18n="swRideHint">Kéo chuột để nhìn quanh · Esc hoặc bấm lại nút để xuống cabin</div>
 <div id="hint" class="panel" hidden data-i18n="walkHint">W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát</div>
 
 <script type="module" src="/src/main.ts"></script>

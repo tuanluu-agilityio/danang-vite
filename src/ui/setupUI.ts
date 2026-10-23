@@ -10,7 +10,7 @@ import type { HanTunnel } from '../bridges/han-tunnel';
 import type { SunWheel } from '../bridges/sun-wheel';
 import type { BridgeKey } from '../views/presets';
 import { cam, keys } from '../views/state';
-import { setView } from '../views/camera';
+import { setView, leaveSwRide } from '../views/camera';
 import { tour, tourBox, tourHooks, initTourCaption, renderTourCaption, exitTour } from '../views/tour';
 import { selectBridge, syncShowLine, toggle } from './panel';
 import { setupAudioUI } from './audioUI';
@@ -83,5 +83,5 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
   initTourCaption();
   canvas.addEventListener('pointerdown', exitTour);
   canvas.addEventListener('wheel', exitTour, { passive: true });
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') exitTour(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { exitTour(); leaveSwRide(true); } });   // Esc cũng xuống khỏi cabin Vòng quay Mặt Trời
 }

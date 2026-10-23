@@ -397,5 +397,7 @@
   "swShowPink": "핑크·보라",
   "swShowRays": "퍼지는 빛줄기",
   "swShowHeart": "심장 박동",
-  "swShowOff": "끄기"
+  "swShowOff": "끄기",
+  "vSwRide": "캐빈 탑승",
+  "swRideHint": "드래그하여 둘러보기 · Esc 또는 버튼을 다시 눌러 내리기"
 }

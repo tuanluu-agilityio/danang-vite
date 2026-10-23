@@ -462,6 +462,14 @@ const sunWheelBase = {
     pinkWave: 0.8,                                 // rad/s — tốc độ dải màu hồng ↔ tím trượt dọc nan (ước lượng)
     rayRate: 0.6, rayCount: 1.5,                   // tia chạy: số vòng sóng/giây và số sóng trên một bán kính (≈ 1,1 s một sóng từ moay-ơ ra vành) (ước lượng)
     heartBase: 0.25                                // nhịp tim: độ sáng nền giữa hai nhịp; đỉnh nhịp cộng thêm 1 (ước lượng)
+  },
+  /* ---- ngồi cabin (GĐ5): camera gắn tâm cabin, không thêm mesh/đèn ---- */
+  ride: {
+    eyeUp: 0.4,                                    // m — mắt cao hơn tâm cabin (ngồi trên ghế, cabin cao 4,3 m) (ước lượng)
+    pitch0: -0.12,                                 // rad — góc nhìn xuống lúc lên cabin, hơi chúi để thấy cầu phía Bắc (ước lượng)
+    pitchMax: 1.4,                                 // rad — giới hạn ngẩng/cúi khi kéo chuột (≈ 80°)
+    lookSpeed: 0.005,                              // rad/px — tốc độ xoay khi kéo chuột
+    enterTime: 1.6                                 // s — thời gian bay từ góc nhìn hiện tại vào cabin (ước lượng, như flyTo)
   }
 };
 function deriveSunWheel(C: typeof sunWheelBase) {

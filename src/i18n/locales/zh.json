@@ -397,5 +397,7 @@
   "swShowPink": "粉紫",
   "swShowRays": "流动光线",
   "swShowHeart": "心跳",
-  "swShowOff": "关闭"
+  "swShowOff": "关闭",
+  "vSwRide": "乘坐轿厢",
+  "swRideHint": "拖动鼠标环顾四周 · 按 Esc 或再次点击按钮下车"
 }

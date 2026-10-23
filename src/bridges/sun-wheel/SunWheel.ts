@@ -9,6 +9,7 @@ import { swBuildBase, swBuildLegs, swSignGeometry, swLit, SW_LIT } from './struc
 import { swBuildWheel } from './wheel';
 import { swBuildCabins, swPlaceCabins } from './cabins';
 import { swLedU, swShowIndex } from './ledShow';
+import { swRide } from './ride';
 
 /* ======================================================================
    VÒNG QUAY MẶT TRỜI (Sun Wheel) — Asia Park, bờ Tây, phía Nam Cầu Trần Thị Lý, z ≈ +2 280
@@ -18,6 +19,7 @@ import { swLedU, swShowIndex } from './ledShow';
    Không đổ bóng (tránh thêm lượt vẽ bóng ở góc nhìn cũ), không phản chiếu (lớp 1).
    Giai đoạn 2: hình học tĩnh, vành/nan, 64 cabin. Giai đoạn 3: quay (wheel.rotation.z = θ), cabin chỉ tịnh tiến theo θ nên luôn đứng thẳng, tốc độ đổi mượt.
    Giai đoạn 4: LED đêm 5 kiểu show trong shader của chính các vật liệu (ledShow.ts), nhịp tim đồng bộ LED trái tim riverfront.
+   Giai đoạn 5: ngồi cabin (ride.ts) — camera gắn cabin, tư thế đặt trong update() sau advance().
    ====================================================================== */
 export class SunWheel extends BridgeBase<SwMaterials> {
   readonly cfg = SW;     // cho test (window.__app.sunWheel.cfg)
@@ -53,6 +55,7 @@ export class SunWheel extends BridgeBase<SwMaterials> {
     this.stats.staticTris = stat.geometry.index ? stat.geometry.index.count / 3 : stat.geometry.attributes.position.count / 3;
     this.stats.wheelTris = wheel.geometry.index ? wheel.geometry.index.count / 3 : wheel.geometry.attributes.position.count / 3;
     this.finalize();
+    swRide.attach(this);
   }
 
   /* ---- chuyển động (GĐ3) ---- */
@@ -106,6 +109,7 @@ export class SunWheel extends BridgeBase<SwMaterials> {
   update(dt: number, _elapsed: number, cam: THREE.Camera) {
     this.updateLod(cam);
     this.advance(dt);
+    swRide.update(dt);   // đang ngồi cabin: camera theo cabin sau khi vòng quay vừa quay (cùng một khung hình)
     if (this.details.visible) this.mats.sign.color.setScalar(0.85 + 1.6 * shared.uNight.value);   // chữ sáng hơn khi tối (không phải đèn)
   }
 }

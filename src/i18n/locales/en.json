@@ -397,5 +397,7 @@
   "swShowPink": "Pink-violet",
   "swShowRays": "Running rays",
   "swShowHeart": "Heartbeat",
-  "swShowOff": "Off"
+  "swShowOff": "Off",
+  "vSwRide": "Ride in a cabin",
+  "swRideHint": "Drag to look around · Esc or press the button again to step off"
 }

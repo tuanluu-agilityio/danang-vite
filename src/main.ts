@@ -26,7 +26,7 @@ import { ThuanPhuocBridge } from './bridges/thuan-phuoc';
 import { TranThiLyBridge } from './bridges/tran-thi-ly';
 import { SongHanBridge } from './bridges/song-han';
 import { HanTunnel } from './bridges/han-tunnel';
-import { SunWheel } from './bridges/sun-wheel';
+import { SunWheel, swRide } from './bridges/sun-wheel';
 import { buildRiverfront, updateRiverfront } from './environment/riverfront';
 import { buildWeather, updateWeather } from './environment/weather';
 import { updateCamera, hrDrive } from './views/camera';
@@ -82,7 +82,7 @@ applyNight(0, 0);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, THREE, dayNight, tours: TOURS, tour, narration, audio };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, THREE, dayNight, tours: TOURS, tour, narration, audio };
 }
 
 /* ============================ Vòng lặp ============================ */

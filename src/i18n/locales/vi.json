@@ -397,5 +397,7 @@
   "swShowPink": "Hồng tím",
   "swShowRays": "Tia chạy",
   "swShowHeart": "Nhịp tim",
-  "swShowOff": "Tắt"
+  "swShowOff": "Tắt",
+  "vSwRide": "Ngồi cabin",
+  "swRideHint": "Kéo chuột để nhìn quanh · Esc hoặc bấm lại nút để xuống cabin"
 }

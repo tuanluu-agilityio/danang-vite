@@ -19,7 +19,9 @@ const VIEWS = [
   // Thời tiết (GĐ6; bản gốc không có: tự bỏ qua nếu thiếu nút)
   ['tp', 'wxRiverMouth'], ['ttl', 'wxTtlStays'], ['dragon', 'wxStreet'],
   // Vòng quay Mặt Trời (GĐ3; bản gốc không có: tự bỏ qua nếu thiếu nút)
-  ['sw', 'swOverview'], ['sw', 'swFront'], ['sw', 'swBase'], ['sw', 'swFromTTL'], ['sw', 'swNight'], ['sw', 'swTop']
+  ['sw', 'swOverview'], ['sw', 'swFront'], ['sw', 'swBase'], ['sw', 'swFromTTL'], ['sw', 'swNight'], ['sw', 'swTop'],
+  // Ngồi cabin (GĐ5): camera gắn cabin, không thêm mesh
+  ['sw', 'swRide']
 ];
 
 async function setNight(page, v) {
@@ -45,6 +47,7 @@ async function measure(browser, url) {
       if (!(await page.$(`button[data-view="${view}"]`))) continue;
       await pickView(page, bridge, view);
       if (view === 'swNight') await setNight(page, night);   // góc này tự chuyển sang đêm khi bấm: trả về ngày/đêm đang đo (rfHearts giữ nguyên cách đo cũ để khớp bảng chuẩn)
+      if (view === 'swRide') await page.evaluate(() => { window.__app.swRide.blend = 1; });   // bỏ chặng bay vào cabin: đo khi camera đã ở trong cabin
       await frames(page, 4);
       out[`${view}|${night ? 'đêm' : 'ngày'}`] = await sample(page);
     }

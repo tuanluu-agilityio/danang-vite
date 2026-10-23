@@ -227,9 +227,178 @@ try {
   check(U.opts.join() === '0,1,10,60', `ô tốc độ: ${U.opts}`);
   check(U.g10 === 10 && U.g0 === 0 && U.g60 === 60 && U.g1 === 1, `ô tốc độ không đặt đúng tốc độ đích: ${JSON.stringify(U)}`);
   check(U.note.length > 40 && !/^sw[A-Z]/.test(U.note) && /2025/.test(U.note), `bảng thông số chưa có ghi chú hiện trạng: ${U.note}`);
+  // ---- Giai đoạn 5: ngồi cabin (mục 5, 11.4, 9) ----
+  // Camera gắn cabin: SunWheel.update đặt tư thế ngay sau advance(), nên giữa hai khung hình camera luôn đúng bằng mắt của cabin (kể cả khi quay ×60)
+  const RS = {
+    snap: () => page.evaluate(() => {
+      const { camera, controls, cam, swRide: R } = window.__app;
+      return { mode: cam.mode, enabled: controls.enabled, maxPolar: controls.maxPolarAngle, pos: camera.position.toArray(), target: controls.target.toArray(), fwd: camera.getWorldDirection(new window.__app.THREE.Vector3()).toArray(), blend: R.blend, cabin: R.cabin, yaw: R.yaw, pitch: R.pitch,
+        pressed: document.querySelector('button[data-view="swRide"]').getAttribute('aria-pressed'), hint: !document.getElementById('swRideHint').hidden, hintText: document.getElementById('swRideHint').textContent };
+    }),
+    /* sai lệch giữa camera và (tâm cabin đang ngồi + eyeUp) trong khung hình hiện tại */
+    err: () => page.evaluate(() => {
+      const { camera, sunWheel: W, swRide: R, THREE } = window.__app, p = new THREE.Vector3();
+      W.cabinWorld(R.cabin, p); p.y += W.cfg.ride.eyeUp;
+      return p.distanceTo(camera.position);
+    }),
+    flightDone: async () => { await page.evaluate(() => { const f = window.__app.cam.flight; if (window.__app.cam.mode === 'fly') f.t = Math.max(f.t, 0.999); }); await page.waitForFunction(() => window.__app.cam.mode !== 'fly', null, { timeout: 240000 }); await frames(page, 2); }
+  };
+  const rideClick = () => page.evaluate(() => document.querySelector('button[data-view="swRide"]').click());   // click DOM thật (cùng bộ xử lý như người bấm), không phụ thuộc cuộn của bảng ở màn nhỏ
+  const near3 = (a, b, tol) => a.every((v, i) => Math.abs(v - b[i]) <= tol);
+  const rideMeshes0 = await page.evaluate(() => { let n = 0; window.__app.sunWheel.group.traverse((o) => { if (o.isMesh) n++; }); return n; });
+
+  await pickView(page, 'sw', 'swFront');
+  await page.evaluate(() => { const W = window.__app.sunWheel; W.setSpeed(0); W.advance(2); W.setAngle(0.3); });
+  await frames(page, 2);
+  const B = await RS.snap();
+  check(B.mode === 'orbit' && B.enabled && B.pressed === 'false' && !B.hint, `trước khi lên cabin: ${JSON.stringify({ m: B.mode, e: B.enabled, p: B.pressed, h: B.hint })}`);
+
+  // 4a. Lên cabin bằng nút Ngồi cabin
+  await rideClick();
+  const E0 = await RS.snap();
+  check(E0.mode === 'swRide' && !E0.enabled, `lên cabin: mode ${E0.mode}, OrbitControls enabled = ${E0.enabled} (cần swRide / false)`);
+  check(E0.pressed === 'true' && E0.hint, `lên cabin: nút aria-pressed ${E0.pressed}, dòng hướng dẫn hiện ${E0.hint}`);
+  check(E0.hintText.length > 20 && !/^swRide/.test(E0.hintText), `dòng hướng dẫn chưa dịch: ${E0.hintText}`);
+  // cabin lên là cabin ở đáy vòng quay (góc gần −π/2 nhất)
+  const board = await page.evaluate(() => {
+    const { sunWheel: W, swRide: R } = window.__app, TAU = Math.PI * 2, th = W.angle();
+    let best = 0, bd = 9; for (let i = 0; i < W.cfg.cabins; i++) { const a = th + i * W.cfg.cabinStep + Math.PI / 2, d = Math.abs(Math.atan2(Math.sin(a), Math.cos(a))); if (d < bd) { bd = d; best = i; } }
+    return { best, got: R.cabin, off: bd };
+  });
+  check(board.got === board.best && board.off <= Math.PI / 64 + 1e-9, `cabin lên không phải cabin ở đáy: ${JSON.stringify(board)}`);
+  // có chặng bay vào cabin (blend < 1 ngay sau khi bấm), rồi bám cabin
+  check(E0.blend < 1, `lên cabin không có chặng bay vào (blend ${E0.blend})`);
+  await page.evaluate(() => { window.__app.swRide.blend = 1; }); await frames(page, 3);
+  const e1 = await RS.err(); check(e1 < 1e-3, `ngồi cabin ×0: camera lệch tâm cabin + eyeUp ${e1} m`);
+  // hướng nhìn mặc định: về Bắc (−Z cục bộ), hơi cúi
+  const L0 = await RS.snap();
+  const sy = Math.sin(7 * Math.PI / 180), cy = Math.cos(7 * Math.PI / 180);
+  const horiz = Math.hypot(L0.fwd[0], L0.fwd[2]);
+  check((L0.fwd[0] * -sy + L0.fwd[2] * -cy) / horiz > 0.999, `hướng nhìn mặc định không về Bắc (−Z cục bộ): ${L0.fwd}`);
+  check(near(L0.fwd[1], Math.sin(L0.pitch), 1e-6), `độ cúi ${L0.fwd[1]} ≠ sin(pitch) ${Math.sin(L0.pitch)}`);
+  // camera theo cabin ở nhiều góc vòng quay (×0); thêm hai góc đưa cabin đang ngồi lên đỉnh (π/2) và xuống đáy (−π/2): ở đỉnh mắt cao ≈ 115 m
+  const ride = await page.evaluate(async () => {
+    const { camera, sunWheel: W, swRide: R } = window.__app, SW = W.cfg, out = { err: 0, maxY: -Infinity, minY: Infinity };
+    const angles = Array.from({ length: 24 }, (_, k) => k * Math.PI / 12); angles.push(Math.PI / 2 - R.cabin * SW.cabinStep, -Math.PI / 2 - R.cabin * SW.cabinStep);
+    for (const th of angles) {
+      W.setAngle(th); await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+      const e = W.cabinWorld(R.cabin); e.y += SW.ride.eyeUp; out.err = Math.max(out.err, e.distanceTo(camera.position));
+    }
+    W.setAngle(Math.PI / 2 - R.cabin * SW.cabinStep); await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))); out.maxY = camera.position.y;
+    W.setAngle(-Math.PI / 2 - R.cabin * SW.cabinStep); await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))); out.minY = camera.position.y;
+    out.topExpect = SW.hubY + SW.cabinR + SW.ride.eyeUp; out.botExpect = SW.hubY - SW.cabinR + SW.ride.eyeUp;
+    return out;
+  });
+  console.log('GĐ5 ride ×0:', JSON.stringify(ride));
+  check(ride.err < 1e-3, `ngồi cabin ×0: camera lệch cabin tới ${ride.err} m khi đổi góc`);
+  check(near(ride.maxY, ride.topExpect, 0.05) && near(ride.minY, ride.botExpect, 0.05), `mắt cao ${ride.minY.toFixed(2)}..${ride.maxY.toFixed(2)} m, cần ${ride.botExpect.toFixed(2)}..${ride.topExpect.toFixed(2)}`);
+  check(ride.maxY - 2.5 > 100, `ở đỉnh vòng quay mắt chỉ cao ${(ride.maxY - 2.5).toFixed(1)} m so với mặt đất (cần ~115 m)`);
+
+  // quay ×60: camera đi theo cabin liên tục, sai lệch giữa các khung = 0 (cùng khung hình), và thật sự di chuyển
+  const fast = await page.evaluate(async () => {
+    const { camera, sunWheel: W, swRide: R } = window.__app, out = { err: 0, maxY: -Infinity, minY: Infinity, th0: 0, th1: 0 };
+    W.setSpeed(60); W.advance(12); out.th0 = W.angle();
+    await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));   // advance() tay làm góc nhảy: chờ vòng lặp thật kéo camera theo rồi mới so
+    for (let k = 0; k < 14; k++) {
+      await new Promise((ok) => requestAnimationFrame(ok));
+      const e = W.cabinWorld(R.cabin).clone(); e.y += W.cfg.ride.eyeUp; out.err = Math.max(out.err, e.distanceTo(camera.position));
+      out.maxY = Math.max(out.maxY, camera.position.y); out.minY = Math.min(out.minY, camera.position.y);
+    }
+    out.th1 = W.angle(); W.setSpeed(0); W.advance(2);
+    return out;
+  });
+  console.log('GĐ5 ride ×60:', JSON.stringify(fast));
+  check(fast.err < 1e-3, `ngồi cabin ×60: camera lệch cabin tới ${fast.err} m (phải cùng khung hình)`);
+  check(Math.abs(fast.th1 - fast.th0) > 0.05 && fast.maxY - fast.minY > 3, `×60: vòng quay không quay hoặc camera không đi theo (Δθ ${fast.th1 - fast.th0}, Δy ${fast.maxY - fast.minY})`);
+
+  // kéo chuột để nhìn quanh: đổi hướng nhìn, KHÔNG làm di chuyển camera (OrbitControls đã tắt)
+  const pt = await page.evaluate(() => { const c = document.getElementById('scene'); for (let y = 20; y < 260; y += 10) for (let x = 20; x < 470; x += 10) if (document.elementFromPoint(x, y) === c) return [x, y]; return null; });
+  check(!!pt, 'không có điểm nào trên canvas để thử kéo chuột');
+  if (pt) {
+    const before = await RS.snap();
+    await page.mouse.move(pt[0], pt[1]); await page.mouse.down(); await page.mouse.move(pt[0] + 60, pt[1] + 20); await page.mouse.up(); await frames(page, 2);
+    const after = await RS.snap();
+    check(near(after.yaw - before.yaw, 60 * 0.005, 0.02) && near(after.pitch - before.pitch, 20 * 0.005, 0.02), `kéo (60, 20) px: yaw ${after.yaw - before.yaw}, pitch ${after.pitch - before.pitch} (cần 0,3 / 0,1)`);
+    check(!near3(after.fwd, before.fwd, 1e-3), 'kéo chuột không đổi hướng nhìn');
+    check((await RS.err()) < 1e-3, 'kéo chuột làm camera rời cabin');
+    await page.mouse.move(pt[0], pt[1]); await page.mouse.down(); await page.mouse.move(pt[0], pt[1] + 4000); await page.mouse.up(); await frames(page, 2);
+    const lim = await RS.snap(); const pm = await page.evaluate(() => window.__app.sunWheel.cfg.ride.pitchMax);
+    check(near(lim.pitch, pm, 1e-9), `giới hạn cúi/ngẩng: pitch ${lim.pitch}, cần ${pm}`);
+  }
+
+  // draw call khi ngồi cabin: ≤ 6, ngày = đêm, quay không đổi (không thêm mesh/đèn)
+  // Cắt khung hình phụ thuộc hướng nhìn (ngẩng hết cỡ thì biển hiệu ở quảng trường nằm ngoài khung → bớt 1 draw call), nên mỗi mẫu đo cùng hướng nhìn mặc định
+  // và vòng quay đã đạt hẳn tốc độ đích (advance 15 s > thời gian tăng/giảm tốc 10 s), không đo lúc đang giảm tốc với camera đang chạy theo cabin.
+  const lookAt = (pitch) => page.evaluate((p) => { const R = window.__app.swRide; R.yaw = 0; R.pitch = p === null ? window.__app.sunWheel.cfg.ride.pitch0 : window.__app.sunWheel.cfg.ride.pitchMax; }, pitch);
+  const settleWheel = (s) => page.evaluate((s) => { const W = window.__app.sunWheel; W.setSpeed(s); W.advance(15); if (s === 0) W.setAngle(0.3); }, s);
+  const DR = {};
+  for (const speed of [0, 60]) for (const night of [0, 1]) {
+    await lookAt(null); await setNight(night); await settleWheel(speed); await frames(page, 4);
+    DR[`${night}|${speed}`] = await delta();
+  }
+  // ngẩng hết cỡ (pitchMax), vòng quay dừng cùng một góc: ngày = đêm, vẫn ≤ 6
+  const DRup = {};
+  for (const night of [0, 1]) { await lookAt('max'); await setNight(night); await settleWheel(0); await frames(page, 4); DRup[night] = await delta(); }
+  console.log('draw call ngồi cabin, ngẩng hết cỡ:', JSON.stringify(DRup));
+  for (const n of [0, 1]) check(DRup[n].d <= 6 && DRup[n].details, `ngồi cabin ngẩng hết cỡ (${n ? 'đêm' : 'ngày'}): vòng quay thêm ${DRup[n].d} draw call (≤ 6), details ${DRup[n].details}`);
+  check(DRup[0].d === DRup[1].d, `ngồi cabin ngẩng hết cỡ: draw call ngày ${DRup[0].d} ≠ đêm ${DRup[1].d}`);
+  await lookAt(null);
+  console.log('draw call ngồi cabin:', JSON.stringify(DR));
+  for (const k of Object.keys(DR)) check(DR[k].d <= 6 && DR[k].details, `ngồi cabin (${k}): vòng quay thêm ${DR[k].d} draw call (≤ 6), details ${DR[k].details}`);
+  check(DR['0|0'].d === DR['1|0'].d && DR['0|60'].d === DR['1|60'].d, `ngồi cabin: draw call ngày ≠ đêm (${DR['0|0'].d}/${DR['1|0'].d})`);
+  check(DR['0|0'].d === DR['0|60'].d, `ngồi cabin: quay làm đổi draw call (${DR['0|0'].d} → ${DR['0|60'].d})`);
+  const rideMeshes1 = await page.evaluate(() => { let n = 0; window.__app.sunWheel.group.traverse((o) => { if (o.isMesh) n++; }); return n; });
+  check(rideMeshes1 === rideMeshes0, `ngồi cabin thêm mesh vào vòng quay: ${rideMeshes0} → ${rideMeshes1}`);
+  await page.evaluate(() => { window.__app.sunWheel.setSpeed(0); window.__app.sunWheel.advance(2); window.__app.sunWheel.setAngle(0.3); }); await setNight(0); await frames(page, 2);
+
+  // 4b. Xuống cabin bằng Esc: bay về chỗ cũ, OrbitControls trả như cũ
+  const checkRestored = async (how) => {
+    const s = await RS.snap();
+    check(s.mode === 'fly', `${how}: sau khi xuống mode ${s.mode}, cần fly (bay về chỗ cũ)`);
+    check(s.pressed === 'false' && !s.hint, `${how}: nút ${s.pressed}, dòng hướng dẫn hiện ${s.hint}`);
+    await RS.flightDone();
+    const r = await RS.snap();
+    check(r.mode === 'orbit' && r.enabled, `${how}: sau chuyến bay mode ${r.mode}, OrbitControls enabled ${r.enabled}`);
+    check(near(r.maxPolar, B.maxPolar, 1e-9), `${how}: maxPolarAngle ${r.maxPolar} ≠ ${B.maxPolar}`);
+    check(near3(r.pos, B.pos, 1e-3) && near3(r.target, B.target, 1e-3), `${how}: camera không về chỗ cũ: ${r.pos} / ${r.target} vs ${B.pos} / ${B.target}`);
+  };
+  await page.keyboard.press('Escape');
+  await checkRestored('Esc');
+  // OrbitControls dùng lại được: kéo chuột làm camera xoay quanh target
+  const o0 = await RS.snap();
+  if (pt) { await page.mouse.move(pt[0], pt[1]); await page.mouse.down(); await page.mouse.move(pt[0] + 40, pt[1]); await page.mouse.up(); await frames(page, 3); }
+  const o1 = await RS.snap();
+  check(!near3(o0.pos, o1.pos, 1e-3), 'sau khi xuống cabin, kéo chuột không xoay được camera (OrbitControls chưa trả)');
+  // xuống bằng cách bấm lại nút (hai lần: vào rồi ra)
+  await pickView(page, 'sw', 'swFront');
+  await rideClick(); await frames(page, 2);
+  const B2 = await RS.snap();
+  check(B2.mode === 'swRide', 'lần 2: không lên được cabin');
+  const sv = await page.evaluate(() => ({ p: window.__app.swRide.saved.pos.toArray(), t: window.__app.swRide.saved.target.toArray() }));
+  await rideClick();
+  { const s = await RS.snap(); check(s.mode === 'fly' && s.pressed === 'false' && !s.hint, `bấm lại nút: mode ${s.mode}, nút ${s.pressed}, hint ${s.hint}`); }
+  await RS.flightDone();
+  { const r = await RS.snap(); check(r.mode === 'orbit' && r.enabled && near3(r.pos, sv.p, 1e-3) && near3(r.target, sv.t, 1e-3), `bấm lại nút: không về chỗ cũ (${r.mode}, ${r.enabled})`); }
+  // đổi góc nhìn khác: thoát ngay, bay tới góc mới (không bay về chỗ cũ)
+  await rideClick(); await frames(page, 2);
+  await page.evaluate(() => document.querySelector('button[data-view="swTop"]').click());
+  { const s = await RS.snap(); check(s.mode === 'fly' && !s.hint && s.pressed === 'false', `đổi góc nhìn khi ngồi: mode ${s.mode}, hint ${s.hint}`); }
+  await RS.flightDone();
+  { const r = await RS.snap(); check(r.mode === 'orbit' && r.enabled, `đổi góc nhìn: sau chuyến bay mode ${r.mode}, enabled ${r.enabled}`); }
+  // bắt đầu Tour khác: thoát cabin, vào đường bay Tour; Esc thoát Tour và trả OrbitControls
+  await rideClick(); await frames(page, 2);
+  await page.evaluate(() => document.querySelector('button[data-view="tpTour"]').click());
+  { const s = await page.evaluate(() => ({ mode: window.__app.cam.mode, then: window.__app.cam.flight.then, hint: !document.getElementById('swRideHint').hidden })); check(s.mode === 'fly' && s.then === 'tour' && !s.hint, `bắt đầu Tour khi ngồi cabin: ${JSON.stringify(s)}`); }
+  await page.keyboard.press('Escape'); await frames(page, 2);
+  { const r = await RS.snap(); check(r.mode === 'orbit' && r.enabled, `thoát Tour sau khi rời cabin: mode ${r.mode}, enabled ${r.enabled}`); }
+  // Esc khi không ngồi: không làm gì
+  await page.keyboard.press('Escape'); await frames(page, 2);
+  { const r = await RS.snap(); check(r.mode === 'orbit' && r.enabled && !r.hint, `Esc khi không ngồi cabin đổi trạng thái: ${r.mode}`); }
+  await page.evaluate(() => window.__app.sunWheel.setSpeed(1));
+
   // 7. i18n: 14 khóa mới đủ ở cả 9 locale, không rỗng
   const { readFile } = await import('node:fs/promises');
-  const KEYS = ['bridgeSw', 'vSwFront', 'vSwBase', 'vSwFromTTL', 'vSwNight', 'vSwTop', 'swWheelSpeed', 'swWheelStop', 'swWheelReal', 'swLengthVal', 'swWidthVal', 'swSpan', 'swSpanVal', 'swNote'];
+  const KEYS = ['bridgeSw', 'vSwFront', 'vSwBase', 'vSwFromTTL', 'vSwNight', 'vSwTop', 'swWheelSpeed', 'swWheelStop', 'swWheelReal', 'swLengthVal', 'swWidthVal', 'swSpan', 'swSpanVal', 'swNote', 'vSwRide', 'swRideHint'];
   for (const code of ['vi', 'en', 'ko', 'ja', 'zh', 'th', 'ar', 'hi', 'ru']) {
     const j = JSON.parse(await readFile(new URL(`../src/i18n/locales/${code}.json`, import.meta.url), 'utf8'));
     const miss = KEYS.filter((k) => typeof j[k] !== 'string' || !j[k].trim());

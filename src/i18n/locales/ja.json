@@ -397,5 +397,7 @@
   "swShowPink": "ピンク・紫",
   "swShowRays": "走る光線",
   "swShowHeart": "ハートビート",
-  "swShowOff": "オフ"
+  "swShowOff": "オフ",
+  "vSwRide": "ゴンドラに乗る",
+  "swRideHint": "ドラッグで見回す · Esc またはもう一度ボタンを押すと降ります"
 }
