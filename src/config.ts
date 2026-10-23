@@ -471,6 +471,14 @@ const sunWheelBase = {
     lookSpeed: 0.005,                              // rad/px — tốc độ xoay khi kéo chuột
     enterTime: 1.6                                 // s — thời gian bay từ góc nhìn hiện tại vào cabin (ước lượng, như flyTo)
   },
+  /* ---- Tour (GĐ7): điểm 4 lên cabin, tua nhanh tới đỉnh rồi giảm tốc; điểm 5 ngắm 4 cầu từ đỉnh; điểm 6 show LED đêm. Không thêm mesh/đèn ---- */
+  tour: {
+    climbSpeed: 40,                                // hệ số tốc độ khi lên đỉnh (ước lượng): với speedAccel = 6, đáy → đỉnh ≈ 18 s, ngắn nhất trong khoảng ×30–×50
+    topSpeed: 1,                                   // hệ số tốc độ khi tới đỉnh: quay thật, cabin nhích chậm quanh đỉnh để ngắm cầu
+    climbSec: 18,                                  // s — thời gian điểm 4 hiện tối thiểu (kể cả khi tắt giọng), đủ để lên tới đỉnh ở climbSpeed (ước lượng)
+    topSec: 12,                                    // s — thời gian điểm 5 hiện tối thiểu (ước lượng)
+    show: 'pink'                                   // kiểu show LED ở điểm 6 (hồng tím, như ảnh a2)
+  },
   /* ---- thời tiết (GĐ6): dừng theo `closed` của preset Bão (không có ngưỡng gió, D-012); cabin lắc theo windFx. Không thêm mesh/đèn ---- */
   storm: {
     stopSec: 10,                                   // s — từ lúc bão đóng cửa tới khi vòng quay dừng hẳn, giảm tốc tuyến tính từ tốc độ lúc đó (ước lượng)

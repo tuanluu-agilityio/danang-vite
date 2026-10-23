@@ -21,7 +21,9 @@ const VIEWS = [
   // Vòng quay Mặt Trời (GĐ3; bản gốc không có: tự bỏ qua nếu thiếu nút)
   ['sw', 'swOverview'], ['sw', 'swFront'], ['sw', 'swBase'], ['sw', 'swFromTTL'], ['sw', 'swNight'], ['sw', 'swTop'],
   // Ngồi cabin (GĐ5): camera gắn cabin, không thêm mesh
-  ['sw', 'swRide']
+  ['sw', 'swRide'],
+  // Tour Vòng quay (GĐ7): đo lúc Tour đang ở điểm 5 (trong cabin ở đỉnh, camera do cabin đặt), cùng ngân sách swRide
+  ['sw', 'swTour']
 ];
 
 async function setNight(page, v) {
@@ -48,8 +50,10 @@ async function measure(browser, url) {
       await pickView(page, bridge, view);
       if (view === 'swNight') await setNight(page, night);   // góc này tự chuyển sang đêm khi bấm: trả về ngày/đêm đang đo (rfHearts giữ nguyên cách đo cũ để khớp bảng chuẩn)
       if (view === 'swRide') await page.evaluate(() => { window.__app.swRide.blend = 1; });   // bỏ chặng bay vào cabin: đo khi camera đã ở trong cabin
+      if (view === 'swTour') await page.evaluate(() => { const d = window.__app.tours.sw.durs; window.__app.tour.t = d.slice(0, 3).reduce((a, x) => a + x, 0) + 0.6 * d[3]; window.__app.swRide.blend = 1; });   // tua tới điểm 5 (đỉnh), bỏ chặng bay vào cabin
       await frames(page, 4);
       out[`${view}|${night ? 'đêm' : 'ngày'}`] = await sample(page);
+      if (view === 'swTour') { await page.keyboard.press('Escape'); await frames(page, 2); }   // thoát Tour: trả tốc độ quay, ngày/đêm, show như cũ
     }
   }
   await page.close();

@@ -35,6 +35,7 @@ Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn
 - Thuyết minh cho ko, ja, zh, th, ar, hi.
 - Dựng lại Cầu Rồng chi tiết theo `prompts/cau-rong.md`.
 - Vòng quay Mặt Trời (Sun Wheel) theo `prompts/vong-quay-mat-troi.md`: đã có đặc tả (GĐ0) và khung GĐ1 (config, `SunWheel` rỗng, dọn nền, `test:sunwheel`); còn hình học, quay, LED, ngồi cabin, thời tiết, Tour (GĐ2–GĐ8). Còn thiếu để chốt số: khoảng cách tâm → mép nước (x), đường kính thật, ảnh cận cabin, video show LED.
+- Vòng quay Mặt Trời GĐ7 (Tour 6 điểm + `swStops` 9 ngôn ngữ, D-017) đã viết, chưa commit; thiếu 18 clip giọng đọc `swStops` vi/en/ru vì `npm run gen:voice` không chạy được trong phiên (cần mạng/duyệt quyền) — chạy lại rồi commit `public/voice/`. GĐ8 còn lại (`KET-QUA.md`, README, `systemPatterns.md`).
 - Bật `strict` TypeScript dần theo thư mục (giai đoạn 2).
 
 ## Lỗi / hạn chế đã biết

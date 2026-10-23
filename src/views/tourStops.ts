@@ -1,6 +1,7 @@
 import type { BridgeKey, Vec3 } from './presets';
 import { CONFIG } from '../config';
 import { hrRoadY } from '../bridges/han-tunnel/profile';
+import { swToWorld } from '../bridges/sun-wheel/profile';
 
 /* ============================ Điểm dừng Tour tự động ============================
    Dữ liệu thuần (tọa độ thế giới, mét): chỉnh điểm dừng ở đây, không cần đụng tới code camera.
@@ -9,7 +10,8 @@ import { hrRoadY } from '../bridges/han-tunnel/profile';
    swing: true — tới điểm này thì tự quay Cầu sông Hàn.
    Hầm sông Hàn: immerse — chạy mô phỏng dìm đốt hầm; cutaway — bật mặt cắt địa chất; interior — luôn hiện nội thất hầm.
    bridge — tới điểm này thì bảng Thông số / danh sách góc nhìn chuyển sang cầu đó (Tour 4 cầu). */
-export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean; immerse?: boolean; cutaway?: boolean; interior?: boolean; bridge?: BridgeKey }
+/* Vòng quay Mặt Trời: sw — 'ride' lên cabin và tua nhanh tới đỉnh, 'top' ngắm từ đỉnh, 'night' xuống cabin rồi bật đêm + show LED; minSec — điểm này hiện ít nhất chừng đó giây (kể cả khi tắt giọng) */
+export interface TourStop { pos: Vec3; target: Vec3; swing?: boolean; immerse?: boolean; cutaway?: boolean; interior?: boolean; bridge?: BridgeKey; sw?: 'ride' | 'top' | 'night'; minSec?: number }
 /* minY: đường bay được phép xuống dưới mặt nước (mặc định 3 m); loop: false — đường bay mở, đi một lần rồi trả điều khiển (mặc định khép kín, lặp);
    segMax: trần thời lượng một đoạn bay, s (mặc định 16) */
 export interface TourDef { view: string; key: string; stops: TourStop[]; minY?: number; loop?: boolean; segMax?: number }
@@ -108,6 +110,18 @@ export const ALL_TOUR: TourStop[] = [
   { pos: [300, 78, -3370], target: [-40, 40, -2900] }                   // từ vịnh: cửa sông, kết thúc
 ];
 
+/* Vòng quay Mặt Trời (tọa độ cục bộ qua swToWorld, ước lượng): toàn cảnh từ sông → chân vòng quay và nhà ga → chính diện (lịch sử) → lên cabin → đỉnh nhìn 4 cầu → ban đêm.
+   Điểm 4–5: đường bay đứng trên không phía Nam vòng quay (z ≥ 60 m, ngoài giàn tháp), chỉ để vào/ra cabin; trong cabin camera do ride.ts đặt. Điểm 6 chếch từ Tây Nam như swNight */
+const sw = (p: Vec3, t: Vec3): Pick<TourStop, 'pos' | 'target'> => ({ pos: swToWorld(...p).toArray() as Vec3, target: swToWorld(...t).toArray() as Vec3 });
+export const SW_TOUR: TourStop[] = [
+  { ...sw([520, 70, 380], [0, 55, 0]), bridge: 'sw' },
+  sw([-20, 5, 75], [0, 40, 0]),
+  sw([0, 8, 230], [0, 55, 0]),
+  { ...sw([40, 118, 90], [0, 70, 0]), sw: 'ride', minSec: CONFIG.sunWheel.tour.climbSec },
+  { ...sw([20, 120, 60], [0, 70, 0]), sw: 'top', minSec: CONFIG.sunWheel.tour.topSec },
+  { ...sw([-120, 25, 200], [0, 60, 0]), sw: 'night' }
+];
+
 /* Mỗi cầu một hành trình: view = tên nút góc nhìn, key = khóa danh sách điểm dừng trong bảng dịch */
 export const TOUR_DEFS = {
   dragon: { view: 'tour', key: 'stops', stops: DRAGON_TOUR },
@@ -115,5 +129,6 @@ export const TOUR_DEFS = {
   tp: { view: 'tpTour', key: 'tpStops', stops: TP_TOUR },
   sh: { view: 'shTour', key: 'shStops', stops: SH_TOUR },
   hr: { view: 'hrTour', key: 'hrStops', stops: HR_TOUR, minY: -30 },  // minY: đường bay được phép xuống dưới mặt nước (mặc định 3 m)
-  all: { view: 'allTour', key: 'allStops', stops: ALL_TOUR, loop: false, segMax: CONFIG.tourAll.segMax }   // Tour 4 cầu: một chiều
+  all: { view: 'allTour', key: 'allStops', stops: ALL_TOUR, loop: false, segMax: CONFIG.tourAll.segMax },   // Tour 4 cầu: một chiều
+  sw: { view: 'swTour', key: 'swStops', stops: SW_TOUR, loop: false, segMax: CONFIG.tourAll.segMax }   // Vòng quay Mặt Trời: một chiều (D-017)
 } satisfies Record<string, TourDef>;

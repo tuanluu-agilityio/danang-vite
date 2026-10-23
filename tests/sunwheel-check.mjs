@@ -518,14 +518,128 @@ try {
   await setWx(page, 'now');
   await page.evaluate(() => window.__app.sunWheel.setSpeed(1));
 
-  // 7. i18n: 14 khóa mới đủ ở cả 9 locale, không rỗng
+  // ---- Giai đoạn 7: Tour Vòng quay Mặt Trời (mục 7, 9, 11) ----
+  // Đường bay mở 6 điểm; điểm 4 ('ride') lên cabin và tua nhanh tới đỉnh, điểm 5 ('top') ngắm 4 cầu từ đỉnh, điểm 6 ('night') xuống cabin + đêm + show LED;
+  // thoát Tour (Esc / hết hành trình / đổi góc nhìn) trả tốc độ quay, ngày/đêm, kiểu show như cũ. Camera trong cabin do ride.ts đặt (cam.mode vẫn 'tour').
   const { readFile } = await import('node:fs/promises');
+  const viJson = JSON.parse(await readFile(new URL('../src/i18n/locales/vi.json', import.meta.url), 'utf8'));
+  const swTourInfo = await page.evaluate(() => {
+    const T = window.__app.tours.sw, c = window.__app.sunWheel.cfg.tour;
+    return T ? { n: T.stops.length, loop: T.loop, durs: [...T.durs], flags: T.stops.map((s) => s.sw ?? null), bridge0: T.stops[0].bridge ?? null, minSec: T.stops.map((s) => s.minSec ?? 0), view: T.view, key: T.key, c } : null;
+  });
+  console.log('GĐ7 Tour:', JSON.stringify(swTourInfo));
+  if (check(!!swTourInfo, 'chưa có Tour sw trong window.__app.tours')) {
+    const I = swTourInfo;
+    check(I.n === 6 && I.loop === false && I.view === 'swTour' && I.key === 'swStops', `Tour sw: ${I.n} điểm, loop ${I.loop}, view ${I.view}, key ${I.key} (cần 6 điểm, đường bay mở)`);
+    check(JSON.stringify(I.flags) === JSON.stringify([null, null, null, 'ride', 'top', 'night']) && I.bridge0 === 'sw', `cờ điểm dừng: ${JSON.stringify(I.flags)}, bridge ${I.bridge0}`);
+    check(I.minSec[3] === I.c.climbSec && I.minSec[4] === I.c.topSec, `minSec điểm 4/5: ${I.minSec[3]}/${I.minSec[4]}, config ${I.c.climbSec}/${I.c.topSec}`);
+    // chỗ trống của điểm k = 0,45·durs[k−1] + 0,55·durs[k] phải ≥ minSec + 1,1 (kể cả khi tắt giọng, dùng thời lượng hiện tại)
+    for (const k of [3, 4]) check(0.45 * I.durs[k - 1] + 0.55 * I.durs[k] >= I.minSec[k] + 1.1, `điểm ${k + 1}: chỗ trống ${(0.45 * I.durs[k - 1] + 0.55 * I.durs[k]).toFixed(1)} s < minSec ${I.minSec[k]} + 1,1`);
+    check(await page.$('button[data-bridge="sw"]') && await page.$('[data-list="sw"] button[data-view="swTour"]'), 'thiếu nút Tour trong nhóm sw');
+  }
+  const swSeek = async (i) => {   // tua tới lúc điểm i hiện (55 % đoạn trước)
+    await page.evaluate((i) => { const d = window.__app.tours.sw.durs; window.__app.tour.t = i === 0 ? 0.01 : d.slice(0, i - 1).reduce((a, x) => a + x, 0) + 0.6 * d[i - 1]; }, i);
+    await frames(page, 3);
+  };
+  const swTourStart = async () => { await pickView(page, 'sw', 'swTour'); await frames(page, 2); };
+  const swState = () => page.evaluate(() => {
+    const { cam, swRide: R, sunWheel: W, dayNight, camera, THREE } = window.__app, f = camera.getWorldDirection(new THREE.Vector3()), s = W.cfg.yaw;
+    return { mode: cam.mode, on: R.tour.on, climbing: R.tour.climbing, out: R.tour.out, touched: R.tour.touched, active: R.active(), goal: W.speedTarget(), speed: W.speedNow(), show: W.show(), night: dayNight.target,
+      selShow: document.getElementById('swShow').value, step: document.getElementById('tourStep').textContent, title: document.getElementById('tourTitle').textContent,
+      north: f.x * -Math.sin(s) + f.z * -Math.cos(s) };   // thành phần hướng nhìn theo phía Bắc cục bộ (−Z cục bộ)
+  });
+  const swReset = async () => {   // trạng thái người dùng trước mỗi kịch bản: ban ngày, show trắng, tốc độ ×10, không Tour
+    await page.keyboard.press('Escape'); await frames(page, 2);
+    await page.evaluate(() => { const W = window.__app.sunWheel; W.setSpeed(10); W.advance(15); W.setShow('white'); document.getElementById('swShow').value = 'white'; });
+    await setNight(0);
+  };
+
+  // 7a. Bắt đầu Tour: chế độ tour, chú thích "1/6", đủ 6 điểm đúng tiêu đề (vi), không trùng
+  await swReset();
+  await swTourStart();
+  { const s = await swState();
+    check(s.mode === 'tour' && s.step.includes('1/6') && s.title === viJson.swStops[0][0], `bắt đầu Tour sw: mode ${s.mode}, "${s.step}", "${s.title}"`);
+    check(!s.on && !s.touched && s.goal === 10, `trước điểm 4 Tour chưa đụng tới vòng quay: on ${s.on}, touched ${s.touched}, tốc độ đích ${s.goal}`); }
+  const titles7 = [];
+  for (const i of [1, 2]) { await swSeek(i); const s = await swState(); titles7.push(s.title); check(s.step.includes(`${i + 1}/6`) && s.title === viJson.swStops[i][0] && !s.on, `điểm ${i + 1}: "${s.step}" "${s.title}" on ${s.on}`); }
+
+  // 7b. Điểm 4: lên cabin — camera ghi đè bởi cabin (mode vẫn 'tour'), tua nhanh climbSpeed, cabin đáy leo tới đỉnh
+  await swSeek(3);
+  { const s = await swState(); titles7.push(s.title);
+    check(s.mode === 'tour' && s.on && s.climbing && s.active && s.touched, `điểm 4: ${JSON.stringify(s)}`);
+    check(s.goal === swTourInfo.c.climbSpeed && s.title === viJson.swStops[3][0], `điểm 4: tốc độ đích ${s.goal} (cần ${swTourInfo.c.climbSpeed}), tiêu đề "${s.title}"`); }
+  await page.evaluate(() => { window.__app.swRide.blend = 1; }); await frames(page, 3);
+  { const e = await RS.err(); check(e < 1e-3, `Tour trong cabin: camera lệch mắt cabin ${e} m`); }
+  const climb = await page.evaluate(() => {   // mô phỏng deterministic (không lẫn vòng lặp thật): lên tới đỉnh rồi giảm tốc về topSpeed
+    const { sunWheel: W, swRide: R } = window.__app, c = W.cfg.tour, p = W.cabinWorld(R.cabin), out = { y0: p.y, cabin: R.cabin, peak: 0 };
+    let t = 0;
+    while (t < 90 && (R.tour.climbing || W.speedNow() > c.topSpeed + 1e-6)) { W.advance(0.1); R.update(0.1); t += 0.1; out.peak = Math.max(out.peak, W.speedNow()); }
+    W.cabinWorld(R.cabin, p);
+    return { ...out, t, y1: p.y, top: W.cfg.hubY + W.cfg.cabinR, speed: W.speedNow(), goal: W.speedTarget(), climbing: R.tour.climbing, climbSec: c.climbSec, topSpeed: c.topSpeed, climbSpeed: c.climbSpeed };
+  });
+  console.log('GĐ7 lên đỉnh:', JSON.stringify(climb));
+  check(climb.y0 < climb.top - 40, `điểm 4: cabin ban đầu không ở đáy vòng quay (y ${climb.y0})`);
+  check(climb.y1 >= climb.top - 0.1, `lên đỉnh: cabin ở y ${climb.y1}, đỉnh ${climb.top} (thấp hơn 0,1 m)`);
+  check(climb.t > 8 && climb.t <= climb.climbSec, `lên đỉnh mất ${climb.t.toFixed(1)} s, cần trong (8; ${climb.climbSec}] s`);
+  check(climb.peak >= climb.climbSpeed * 0.95 && climb.speed <= climb.topSpeed + 1e-3 && !climb.climbing && climb.goal === climb.topSpeed, `lên đỉnh: tốc độ tối đa ${climb.peak}, cuối ${climb.speed}, đích ${climb.goal}`);
+
+  // 7c. Điểm 5: ngắm 4 cầu — đang ở cabin, quay chậm topSpeed, nhìn về Bắc; draw call ngày = đêm, ≤ 6
+  await swSeek(4);
+  { const s = await swState(); titles7.push(s.title);
+    check(s.mode === 'tour' && s.on && !s.climbing && s.goal === swTourInfo.c.topSpeed && s.title === viJson.swStops[4][0], `điểm 5: ${JSON.stringify(s)}`);
+    check(s.north > 0.95, `điểm 5: hướng nhìn lệch Bắc (thành phần ${s.north}, cần > 0,95)`); }
+  await page.evaluate(() => { window.__app.swRide.blend = 1; }); await frames(page, 2);
+  const DT7 = {};
+  for (const night of [0, 1]) { await setNight(night); DT7[night] = await delta(); }
+  console.log('GĐ7 draw call vòng quay khi Tour ở cabin:', JSON.stringify(DT7));
+  check(DT7[0].d === DT7[1].d && DT7[0].d <= 6, `Tour ở cabin: vòng quay ${DT7[0].d} (ngày) / ${DT7[1].d} (đêm) draw call, cần bằng nhau và ≤ 6`);
+  { const m = await page.evaluate(() => { let n = 0; window.__app.sunWheel.group.traverse((o) => { if (o.isMesh) n++; }); return n; }); check(m === rideMeshes0, `Tour thêm mesh vào vòng quay: ${rideMeshes0} → ${m}`); }
+  await setNight(0);
+
+  // 7d. Điểm 6: rời cabin (camera trộn về đường bay), bật đêm + kiểu show của Tour
+  await swSeek(5);
+  { const s = await swState(); titles7.push(s.title);
+    check(s.mode === 'tour' && !s.on && !s.climbing && s.title === viJson.swStops[5][0] && s.step.includes('6/6'), `điểm 6: ${JSON.stringify(s)}`);
+    check(s.night === 1 && s.show === swTourInfo.c.show && s.selShow === swTourInfo.c.show, `điểm 6: đêm ${s.night}, show ${s.show}, ô chọn ${s.selShow} (cần 1 / ${swTourInfo.c.show})`);
+    check(s.touched, 'điểm 6: Tour chưa đánh dấu đã đổi tốc độ / show (touched)'); }
+  { const o = await page.evaluate(() => { const R = window.__app.swRide, o0 = R.tour.out; for (let k = 0; k < 40 && R.tour.out >= 0; k++) R.update(0.1); return { o0, o1: R.tour.out }; });   // trộn 1,6 s: chạy bằng dt cố định (SwiftShader khung rất chậm)
+    check(o.o0 >= 0 && o.o0 < 1 && o.o1 === -1, `rời cabin: trộn camera từ ${o.o0} → ${o.o1} (cần bắt đầu trong [0; 1) và kết thúc −1)`); }
+  await frames(page, 3);   // camera về đường bay do updateTour đặt trong khung thật (vòng R.update ở trên không chạy updateTour)
+  { const e = await RS.err(); check(e > 5, `sau khi rời cabin camera vẫn dính cabin (cách ${e} m)`); }
+  check(new Set(titles7).size === titles7.length, 'có tiêu đề điểm dừng Tour sw bị trùng');
+
+  // 7e. Hết hành trình (đường bay mở): trả orbit và trả lại tốc độ ×10, ban ngày, show trắng
+  await page.evaluate(() => { window.__app.tour.t = window.__app.tours.sw.total; }); await frames(page, 3);
+  { const s = await swState();
+    check(s.mode === 'orbit' && !s.on && !s.touched && !s.active, `hết Tour: ${JSON.stringify(s)}`);
+    check(s.goal === 10 && s.night === 0 && s.show === 'white' && s.selShow === 'white', `hết Tour chưa trả trạng thái: tốc độ ${s.goal} (10), đêm ${s.night} (0), show ${s.show}/${s.selShow} (white)`); }
+
+  // 7f. Esc giữa lúc ngồi cabin của Tour: thoát Tour, trả tốc độ; tua thẳng tới điểm 5 (bỏ qua điểm 4) vẫn vào cabin
+  await swReset(); await swTourStart();
+  await swSeek(4);
+  { const s = await swState(); check(s.on && !s.climbing && s.touched && s.goal === swTourInfo.c.topSpeed, `tua thẳng tới điểm 5: ${JSON.stringify(s)}`); }
+  await page.keyboard.press('Escape'); await frames(page, 3);
+  { const s = await swState(); check(s.mode === 'orbit' && !s.on && !s.touched && s.goal === 10, `Esc giữa cabin Tour: ${JSON.stringify(s)}`); }
+  // 7g. Đổi góc nhìn giữa Tour (setView không gọi exitTour): vòng quay vẫn được trả tốc độ cũ, kể cả điểm 6 đã đổi sang đêm / show hồng
+  await swReset(); await swTourStart();
+  await swSeek(3); await swSeek(5);
+  { const s = await swState(); check(s.touched && s.night === 1 && s.show === swTourInfo.c.show, `chuẩn bị 7g: ${JSON.stringify(s)}`); }
+  await pickView(page, 'sw', 'swFront'); await frames(page, 4);
+  { const s = await swState(); check(!s.on && !s.touched && !s.active && s.goal === 10 && s.night === 0 && s.show === 'white', `đổi góc nhìn giữa Tour: ${JSON.stringify(s)}`); }
+  await RS.flightDone();
+  await page.evaluate(() => window.__app.sunWheel.setSpeed(1));
+  await setNight(0);
+
+  // 7. i18n: 14 khóa mới đủ ở cả 9 locale, không rỗng
   const KEYS = ['swStormNote','bridgeSw', 'vSwFront', 'vSwBase', 'vSwFromTTL', 'vSwNight', 'vSwTop', 'swWheelSpeed', 'swWheelStop', 'swWheelReal', 'swLengthVal', 'swWidthVal', 'swSpan', 'swSpanVal', 'swNote', 'vSwRide', 'swRideHint'];
   for (const code of ['vi', 'en', 'ko', 'ja', 'zh', 'th', 'ar', 'hi', 'ru']) {
     const j = JSON.parse(await readFile(new URL(`../src/i18n/locales/${code}.json`, import.meta.url), 'utf8'));
     const miss = KEYS.filter((k) => typeof j[k] !== 'string' || !j[k].trim());
     check(miss.length === 0, `locale ${code} thiếu khóa Vòng quay: ${miss}`);
     check(/2025/.test(j.swNote || ''), `locale ${code}: swNote thiếu ghi chú hiện trạng (9/2025)`);
+    const st = j.swStops;   // GĐ7: Tour 6 điểm, mỗi điểm [tên, lời]; điểm 3 (lịch sử) ghi hiện trạng
+    check(Array.isArray(st) && st.length === 6 && st.every((p) => Array.isArray(p) && p.length === 2 && p.every((x) => typeof x === 'string' && x.trim())), `locale ${code}: swStops phải có 6 cặp [tên, lời]`);
+    check(Array.isArray(st) && /2025/.test(st[2]?.[1] || '') && new Set(st.map((p) => p[0])).size === 6, `locale ${code}: swStops điểm 3 thiếu hiện trạng 9/2025 hoặc tên điểm trùng`);
   }
   // 7. Console sạch
   check(errors.length === 0, `lỗi console: ${errors.join(' | ')}`);

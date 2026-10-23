@@ -1,4 +1,6 @@
 import { canvas, controls } from '../core/renderer';
+import { CONFIG } from '../config';
+import { swRide } from '../bridges/sun-wheel/ride';
 import { sun } from '../core/lights';
 import { dayNight } from '../core/dayNight';
 import { t, onChange } from '../i18n';
@@ -69,6 +71,21 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
   const swShow = document.getElementById('swShow') as HTMLSelectElement;   // kiểu show LED đêm (GĐ4)
   swShow.addEventListener('change', () => sunWheel.setShow(swShow.value));
   document.querySelector('[data-view="swNight"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
+  /* Tour Vòng quay (GĐ7): lên cabin / đỉnh / xuống do ride.ts xử lý; ở đây chỉ phần giao diện của điểm 6 (đêm + kiểu show) và trả lại khi thoát Tour */
+  let swTourPrev: { night: number; show: string } | null = null;
+  swRide.tour.onEnd = () => {
+    if (!swTourPrev) return;
+    dayNight.target = swTourPrev.night; slider.value = String(swTourPrev.night * 100); syncNight();
+    sunWheel.setShow(swTourPrev.show); swShow.value = swTourPrev.show; swTourPrev = null;
+  };
+  tourHooks.sw = (phase, exit) => {
+    if (phase === 'night') {
+      swTourPrev ||= { night: dayNight.target, show: sunWheel.show() };
+      dayNight.target = 1; slider.value = '100'; syncNight();
+      sunWheel.setShow(CONFIG.sunWheel.tour.show); swShow.value = CONFIG.sunWheel.tour.show;
+    }
+    if (exit) swRide.tourEnd(); else swRide.tourPhase(phase);
+  };
   // Thời tiết: preset + cường độ (GĐ2: chỉ khí quyển)
   setupWeatherUI(toggle);
   window.addEventListener('keydown', (e) => {
