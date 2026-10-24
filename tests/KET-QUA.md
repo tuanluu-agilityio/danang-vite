@@ -2,6 +2,30 @@
 
 Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (gồm bóng đổ, phản chiếu nước, bloom), trung vị 5 khung hình.
 
+## Hiệu năng — tối ưu độ mượt (2026-10-25, nhánh `feature/perf`, D-018)
+
+`npm run test:perf` (`tests/perf-check.mjs`), Chromium SwiftShader (CPU), khung 480×270. Số ms chỉ so tương đối trên cùng máy; chưa đo GPU thật.
+GĐ0 = trước khi tối ưu (`tests/screens/perf/gd0.json`), sau = GĐ1–GĐ5 (`gd15.json`, chạy `--strict`: **đạt**).
+
+| Thao tác | GĐ0: render chậm thêm / program mới | Sau tối ưu |
+|---|---|---|
+| Đêm lần đầu | +5 528 ms / +14 | +29 ms / 0 |
+| Tắt bóng đổ | +11 607 ms / +68 | −2 ms / 0 |
+| Bật bóng đổ | +2 909 ms / +4 | +11 ms / 0 |
+| Bay tới Thuận Phước lần đầu | +4 606 ms / +7 | +0 ms / 0 |
+| Bay tới Hầm lần đầu | +7 477 ms / +5 | +14 ms / 0 |
+| Bật mặt cắt Hầm lần 1 | +12 577 ms / +22 | +5 ms / 0 |
+| Bay tới Vòng quay lần đầu | +4 176 ms / +4 | +2 ms / 0 |
+| Bật mưa | +3 699 ms / 0 | +3 ms / 0 |
+| Đổi chất lượng Thấp / TB / Cao (đêm) | — | ≤ +4 ms / 0 |
+
+- CPU mỗi khung (ngoài render, trung bình 30 khung): overview 1,55 → 0,85 ms; head 22,4 → 0,68 ms; swOverview 38,1 → 0,91 ms (GĐ0 có khung GC lớn); tpBay 1,21 → 15,3 ms ở lần đo này (một khung đột biến trong `traffic`, lần đo GĐ1–2 là 0,73 ms — chưa giải thích, xem memory bank).
+- Khung hình đầu (SwiftShader): 3,3 s → 16,4 s, vì prewarm biên dịch và vẽ trước toàn bộ cảnh trong lúc màn hình chờ còn hiện; program sau khởi động 81 → 157.
+- Bậc chất lượng, draw call ở overview (tối đa 6 khung): ngày Cao 282 / Trung bình 215 / Thấp 116; đêm 306 / 306 / 121. Tự động: khung giả lập 40 ms hạ ≥ 2 bậc, 5 ms nâng về bậc 0.
+- Bundle: `three-*.js` 724 KB → 558 KB (gzip 187 → 144 KB) nhờ không đưa cả namespace THREE vào `__app`.
+- `test:drawcalls` ở bậc Cao (?test): 73/74 phép đo khớp bảng `now` bên dưới; `swTour|đêm` 209 (bảng 207). Thăm dò 4 lần trên cùng bản build: trung vị 209, 209, 209, 208; từng khung 200–223 (camera đang leo cabin) — dao động của phép đo, không do tối ưu.
+- Bộ test khác: `test:tunnel`, `test:riverfront`, `test:sunwheel`, `test:tour`, `test:voice` đạt; `test:weather` đạt khi chạy lại (lần đầu trùng lịch tự quay Cầu sông Hàn 23:00 thứ Bảy, `swingUI.ts`).
+
 ## Bộ test Vòng quay Mặt Trời GĐ8 (2026-10-24, nhánh `feature/sun-wheel`)
 
 Log: `tests/screens/sunwheel-logs/gd8-l0-*.log` (không commit). Lần chạy này trước khi thêm mục 8 (kiểm tra tài liệu) vào `tests/sunwheel-check.mjs`; mục 8 mới chỉ kiểm `node --check` và `npm run build`, chưa chạy.

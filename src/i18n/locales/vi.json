@@ -426,5 +426,10 @@
       "Show LED ban đêm",
       "Khoảng 13 000 bóng LED trên 32 thanh chính đổi màu theo từng kiểu show, cabin viền đỏ. Hành trình kết thúc."
     ]
-  ]
+  ],
+  "quality": "Chất lượng hình",
+  "qAuto": "Tự động",
+  "qHigh": "Cao",
+  "qMed": "Trung bình",
+  "qLow": "Thấp"
 }

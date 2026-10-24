@@ -34,34 +34,37 @@ export function shBuildSignals(bridge: SongHanBridge) {
   bridge.pierNav.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(6), 3);
   bridge.details.add(bridge.pierNav);
 }
+/* Mọi mesh ở đây nằm trong details / swingDetails: SongHanBridge chỉ gọi khi details hiện (vừa hiện lại thì ghi ngay trong khung đó). Không cấp phát mỗi khung (D-018) */
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _qy = new THREE.Quaternion(), _v = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1), X_AXIS = new THREE.Vector3(1, 0, 0);
+const PIN_XZ = [[-1, -2.4], [-1, 2.4], [1, -2.4], [1, 2.4]];
+const setRgb = (a: Float32Array, o: number, r: number, g: number, b: number) => { a[o] = r; a[o + 1] = g; a[o + 2] = b; };
 export function shUpdateSignals(bridge: SongHanBridge, ctrl: SwingController, elapsed: number) {
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), qy = new THREE.Quaternion(), v = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+  const m = _m, q = _q, qy = _qy, v = _v, one = _one;
   const raise = (1 - ctrl.barrier) * THREE.MathUtils.degToRad(84);
-  bridge.barrierSpec.forEach((b, i) => {
-    qy.setFromAxisAngle(UP, b.sz > 0 ? 0 : Math.PI);
-    q.setFromAxisAngle(new THREE.Vector3(1, 0, 0), raise);
-    bridge.arms.setMatrixAt(i, m.compose(v.set(b.x, shRoadY(b.x) + 1.15, b.z), qy.clone().multiply(q), one));
-  });
+  q.setFromAxisAngle(X_AXIS, raise);
+  for (let i = 0; i < bridge.barrierSpec.length; i++) {
+    const b = bridge.barrierSpec[i];
+    qy.setFromAxisAngle(UP, b.sz > 0 ? 0 : Math.PI).multiply(q);
+    bridge.arms.setMatrixAt(i, m.compose(v.set(b.x, shRoadY(b.x) + 1.15, b.z), qy, one));
+  }
   bridge.arms.instanceMatrix.needsUpdate = true;
   const blink = (elapsed % 1) < 0.5, c = bridge.signalLamps.instanceColor.array as Float32Array;
   for (let i = 0; i < 4; i++) {
     const red = ctrl.signal === 'red' ? (ctrl.state === 'REOPEN_TRAFFIC' || blink ? 3 : 0.3) : 0.12;
     const amb = ctrl.signal === 'amber' ? 3 : 0.12, grn = ctrl.signal === 'green' ? 2.2 : 0.1;
-    c.set([red, red * 0.08, red * 0.05, amb, amb * 0.6, 0, grn * 0.1, grn, grn * 0.35], i * 9);
+    setRgb(c, i * 9, red, red * 0.08, red * 0.05); setRgb(c, i * 9 + 3, amb, amb * 0.6, 0); setRgb(c, i * 9 + 6, grn * 0.1, grn, grn * 0.35);
   }
   bridge.signalLamps.instanceColor.needsUpdate = true;
   // đèn hàng hải: đỏ/xanh cố định khi đóng, vàng nhấp nháy khi đang quay hoặc mở
   const moving = ctrl.state !== 'CLOSED', nc = bridge.nav.instanceColor.array as Float32Array, pc = bridge.pierNav.instanceColor.array as Float32Array;
   for (let i = 0; i < 4; i++) {
-    const col = moving ? (blink ? [3, 1.6, 0.1] : [0.2, 0.1, 0]) : (i % 2 ? [0.1, 1.8, 0.4] : [1.8, 0.1, 0.1]);
-    nc.set(col, i * 3);
+    if (moving) { if (blink) setRgb(nc, i * 3, 3, 1.6, 0.1); else setRgb(nc, i * 3, 0.2, 0.1, 0); }
+    else if (i % 2) setRgb(nc, i * 3, 0.1, 1.8, 0.4); else setRgb(nc, i * 3, 1.8, 0.1, 0.1);
   }
-  for (let i = 0; i < 2; i++) pc.set(moving ? (blink ? [3, 1.6, 0.1] : [0.2, 0.1, 0]) : [1.6, 1.6, 1.4], i * 3);
+  for (let i = 0; i < 2; i++) { if (!moving) setRgb(pc, i * 3, 1.6, 1.6, 1.4); else if (blink) setRgb(pc, i * 3, 3, 1.6, 0.1); else setRgb(pc, i * 3, 0.2, 0.1, 0); }
   bridge.nav.instanceColor.needsUpdate = bridge.pierNav.instanceColor.needsUpdate = true;
   // chốt khóa đầu cánh: 1 = đã đẩy vào trụ đón
   const L = SH.swingHalf;
-  [[-1, -2.4], [-1, 2.4], [1, -2.4], [1, 2.4]].forEach(([s, z], i) => {
-    bridge.pins.setMatrixAt(i, m.makeTranslation(s * (L - 0.9 + ctrl.pin * 1.6), SH.deckY - SH.swingDepth + 0.6, z));
-  });
+  for (let i = 0; i < 4; i++) bridge.pins.setMatrixAt(i, m.makeTranslation(PIN_XZ[i][0] * (L - 0.9 + ctrl.pin * 1.6), SH.deckY - SH.swingDepth + 0.6, PIN_XZ[i][1]));
   bridge.pins.instanceMatrix.needsUpdate = true;
 }

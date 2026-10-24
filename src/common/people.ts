@@ -16,8 +16,9 @@ export function createPeople(bridge: { group: THREE.Group; noReflect: THREE.Obje
   bridge.group.add(group); bridge.noReflect.push(group);
   return { list, mesh, group };
 }
+const _pm = new THREE.Matrix4(), _pq = new THREE.Quaternion(), _pv = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);   // vector tạm cấp sẵn (D-018)
 export function stepPeople(P: People, dt: number, elapsed: number) {
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+  const m = _pm, q = _pq, v = _pv, one = _one;
   P.list.forEach((p, i) => {
     const alongZ = p.axis === 'z', key = alongZ ? 'z' : 'x';
     p[key] += p.dir * p.speed * dt; if (p[key] > p.hi) p[key] = p.lo; if (p[key] < p.lo) p[key] = p.hi;

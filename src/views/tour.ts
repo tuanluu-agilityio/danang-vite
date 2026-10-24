@@ -122,6 +122,6 @@ export function updateTour(dt: number) {
     tourHooks.sw?.(s.sw ?? null, false);
     tourHooks.stop?.(s);
   }
-  els.bar.style.width = `${(tour.t / T.total * 100).toFixed(1)}%`;
+  els.bar.style.transform = `scaleX(${(tour.t / T.total).toFixed(3)})`;   // transform: không tính lại bố cục mỗi khung (D-018)
   if (!T.loop && tour.t >= T.total) exitTour();       // hết hành trình một chiều: trả điều khiển, giữ nguyên chỗ đang nhìn
 }

@@ -31,11 +31,12 @@ export const fallenSnapshot = () => pairs.flatMap((p) => [Array.from(p.trunk.ins
 export const fallenState = () => ({ pairs: pairs.length, down: hits.length, angle });
 
 /* Ghi ma trận nghiêng quanh gốc: M' = T(gốc)·R(trục, góc)·Ry(lệch · tiến độ)·T(−gốc)·M */
+const _R = new THREE.Matrix4(), _out = new THREE.Matrix4();   // tạm cấp sẵn (D-018)
 function pose(h: Hit, a: number) {
-  const R = new THREE.Matrix4().makeTranslation(h.base.x, h.base.y, h.base.z)
+  const R = _R.makeTranslation(h.base.x, h.base.y, h.base.z)
     .multiply(r.makeRotationAxis(axis, a)).multiply(m.makeRotationY(h.yaw * a / goal)).multiply(t1.makeTranslation(-h.base.x, -h.base.y, -h.base.z));
-  h.pair.trunk.setMatrixAt(h.i, new THREE.Matrix4().multiplyMatrices(R, h.trunk0));
-  h.pair.crown.setMatrixAt(h.i, new THREE.Matrix4().multiplyMatrices(R, h.crown0));
+  h.pair.trunk.setMatrixAt(h.i, _out.multiplyMatrices(R, h.trunk0));
+  h.pair.crown.setMatrixAt(h.i, _out.multiplyMatrices(R, h.crown0));
   h.pair.trunk.instanceMatrix.needsUpdate = true; h.pair.crown.instanceMatrix.needsUpdate = true;
 }
 

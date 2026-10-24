@@ -14,16 +14,25 @@ export const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 
+/* scale: tỉ lệ độ phân giải bloom so với màn hình (bậc chất lượng, D-018); 0 = tắt bloom, đêm vẽ thẳng như ban ngày */
+export const bloomState = { scale: 1 };
 export function renderFrame(night: number, dt: number) {
   const bloomK = smooth(clamp((night - 0.05) / 0.6, 0, 1));
-  if (bloomK > 0.001) { bloomPass.strength = 0.6 * bloomK; composer.render(dt); }
+  if (bloomK > 0.001 && bloomState.scale > 0) { bloomPass.strength = 0.6 * bloomK; composer.render(dt); }
   else renderer.render(scene, camera);
+}
+
+/* Đổi pixelRatio (bậc chất lượng): cấp lại canvas + framebuffer composer một lần */
+export function setPixelRatio(r: number) {
+  if (Math.abs(renderer.getPixelRatio() - r) < 1e-3) return;
+  renderer.setPixelRatio(r); onResize();
 }
 
 export function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(window.innerWidth, window.innerHeight);
+  if (bloomState.scale > 0 && bloomState.scale < 1) { const pr = renderer.getPixelRatio() * bloomState.scale; bloomPass.setSize(window.innerWidth * pr, window.innerHeight * pr); }
   const h = renderer.getDrawingBufferSize(new THREE.Vector2()).y;
   pScale.value = h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
 }

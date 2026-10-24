@@ -94,12 +94,16 @@ export class SunWheel extends BridgeBase<SwMaterials> {
     }
     this.apply(false);
   }
-  /* Gió lên cabin theo windFx (thế giới → cục bộ). Lặng gió: amp = 0 (cabin đứng thẳng, ma trận chỉ tịnh tiến) */
+  /* Gió lên cabin theo windFx (thế giới → cục bộ). Lặng gió: amp = 0 (cabin đứng thẳng, ma trận chỉ tịnh tiến).
+     Trả một object dùng lại (gọi nhiều lần mỗi khung, D-018): đọc ngay, không giữ lại */
   sway(): SwSway {
-    const S = SW.storm.sway, w = Math.hypot(windFx.x, windFx.z);
-    if (w < 1e-3) return { amp: 0, t: this.swayT, dx: 0, dz: 0 };
-    const c = Math.cos(SW.yaw), s = Math.sin(SW.yaw), dx = (windFx.x * c - windFx.z * s) / w, dz = (windFx.x * s + windFx.z * c) / w;   // nghịch đảo của swToWorld
-    return { amp: Math.min(1, (w / S.ref) ** 2) * S.maxTilt, t: this.swayT, dx, dz };
+    const S = SW.storm.sway, w = Math.hypot(windFx.x, windFx.z), o = swayOut;
+    o.t = this.swayT;
+    if (w < 1e-3) { o.amp = 0; o.dx = 0; o.dz = 0; return o; }
+    const c = Math.cos(SW.yaw), s = Math.sin(SW.yaw);
+    o.dx = (windFx.x * c - windFx.z * s) / w; o.dz = (windFx.x * s + windFx.z * c) / w;   // nghịch đảo của swToWorld
+    o.amp = Math.min(1, (w / S.ref) ** 2) * S.maxTilt;
+    return o;
   }
   /* Tư thế cabin i (cục bộ) theo góc và gió hiện tại — ngồi cabin dùng cái này, không đọc ma trận instance */
   cabinPose(i: number, pos: THREE.Vector3, quat: THREE.Quaternion) { swCabinPose(i, this.theta, this.sway(), pos, quat); }
@@ -138,3 +142,4 @@ export class SunWheel extends BridgeBase<SwMaterials> {
   }
 }
 const TAU = Math.PI * 2;
+const swayOut: SwSway = { amp: 0, t: 0, dx: 0, dz: 0 };

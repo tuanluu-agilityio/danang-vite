@@ -35,7 +35,7 @@ const FRAG = /* glsl */ `
   }`;
 
 export interface Rain { mesh: THREE.InstancedMesh; setCount: (n: number) => void; quality: () => number }
-let rain: (Rain & { u: Record<string, THREE.IUniform>; n: number; offset: THREE.Vector3; step: number; fpsT: number; fpsN: number; baseRatio: number; capped: boolean }) | null = null;
+let rain: (Rain & { u: Record<string, THREE.IUniform>; n: number; offset: THREE.Vector3; step: number; fpsT: number; fpsN: number }) | null = null;
 
 export function buildRain(): Rain {
   const R = CONFIG.weather.rain, L = CONFIG.weather.rainLook, P = CONFIG.weather.perf, rnd = rng(CONFIG.weather.seed + 2);
@@ -59,23 +59,15 @@ export function buildRain(): Rain {
   renderer.setRenderTarget(composer.readBuffer); renderer.compile(mesh, camera, scene);
   renderer.setRenderTarget(rt); mesh.visible = false; mesh.count = 0;
   rain = {
-    mesh, u, n: R.count, offset: u.uOffset.value, step: 0, fpsT: 0, fpsN: 0, baseRatio: renderer.getPixelRatio(), capped: false,
+    mesh, u, n: R.count, offset: u.uOffset.value, step: 0, fpsT: 0, fpsN: 0,
     setCount(n: number) { rain.n = Math.max(0, Math.min(R.count, Math.round(n))); },
     quality: () => rain.step
   };
   return rain;
 }
 
-/* Giới hạn pixelRatio khi mưa hiện; tạnh thì trả ĐÚNG giá trị gốc */
-function capRatio(on: boolean) {
-  if (!rain || on === rain.capped) return;
-  if (on) {
-    rain.baseRatio = renderer.getPixelRatio();
-    const r = Math.min(rain.baseRatio, CONFIG.weather.perf.rainMaxPixelRatio);
-    if (r !== rain.baseRatio) { renderer.setPixelRatio(r); composer.setPixelRatio(r); }
-  } else if (renderer.getPixelRatio() !== rain.baseRatio) { renderer.setPixelRatio(rain.baseRatio); composer.setPixelRatio(rain.baseRatio); }
-  rain.capped = on;
-}
+/* Mưa đang hiện (bộ quản lý chất lượng giới hạn pixelRatio ở CONFIG.perf.rainMaxRatio khi mưa, D-018) */
+export const rainShowing = () => !!rain?.mesh.visible;
 
 /* Mỗi khung: `amount` = cường độ mưa (0–1), `wind` = gió tức thời (m/s), `dir` = hướng gió thổi tới (rad), `blocked` = camera trong hầm / dưới nước */
 export function updateRain(dt: number, amount: number, wind: number, dir: number, blocked: boolean) {
@@ -84,7 +76,6 @@ export function updateRain(dt: number, amount: number, wind: number, dir: number
   const count = Math.round(rain.n * amount * P.adaptiveSteps[rain.step]);
   const on = !blocked && count > 0;
   rain.mesh.visible = on; rain.mesh.count = on ? count : 0;
-  capRatio(on);
   if (!on) { rain.fpsN = 0; return; }
   // Rơi xiên theo gió: vận tốc (wx, −fall, wz), góc nghiêng atan(gió / fall). Cộng dồn trên CPU (double) rồi gói theo hộp
   const wx = Math.cos(dir) * wind, wz = Math.sin(dir) * wind, o = rain.offset;

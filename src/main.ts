@@ -12,6 +12,9 @@ import { buildSky, shadowCenter } from './core/sky';
 import { buildWater, water } from './core/water';
 import { applyNight, stepNight, dayNight } from './core/dayNight';
 import { renderFrame, onResize } from './core/postprocessing';
+import { perf } from './core/perf';
+import { prewarm } from './core/prewarm';
+import { quality } from './core/quality';
 import { buildRiverBanks } from './environment/river';
 import { buildMountains } from './environment/mountains';
 import { buildStreets, finalizeRoads } from './environment/streets';
@@ -35,6 +38,7 @@ import { TOURS, tour } from './views/tour';
 import { audio } from './audio';
 import { narration } from './audio/narration';
 import { setupUI } from './ui/setupUI';
+import { setupQualityUI } from './ui/qualityUI';
 import { updateHrUI } from './ui/hrUI';
 
 initI18n();
@@ -74,48 +78,63 @@ scene.add(sunWheel.group);
 const weather = buildWeather();          // sau buildRiverfront (sau mọi rand()): chụp giá trị gốc khí quyển/đường, dựng mưa (ẩn), điều biến sau applyNight
 weather.attachSwing(songHan.ctrl);       // bão: Cầu sông Hàn không quay (SwingController.canStart)
 const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel];
+const bridgeKeys = ['tp', 'ttl', 'sh', 'hr', 'sw'];   // tên bước khi đo hiệu năng (constructor.name bị đổi khi build)
 createFire();
 createWaterJet();
 setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel });
 onResize();
 applyNight(0, 0);
+quality.init(() => cam.mode === 'fly');   // bậc chất lượng ban đầu (theo thiết bị / lựa chọn đã lưu); không đổi bậc giữa chuyến bay camera
+setupQualityUI();
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
-if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE, dayNight, tours: TOURS, tour, narration, audio };
+/* Chỉ các lớp three mà tests/*.mjs dùng: đưa cả namespace THREE vào một object làm Rollup giữ lại mọi export của three (D-018) */
+const TEST_THREE = { Vector3: THREE.Vector3, Quaternion: THREE.Quaternion, Matrix4: THREE.Matrix4, Euler: THREE.Euler, Box3: THREE.Box3, Raycaster: THREE.Raycaster };
+/* ?test&perf: bật đo thời gian CPU từng bước trong vòng animate (tests/perf-check.mjs) */
+const query = new URLSearchParams(location.search);
+if (query.has('test')) {
+  perf.on = query.has('perf');
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, tours: TOURS, tour, narration, audio, perf, quality };
 }
 
 /* ============================ Vòng lặp ============================ */
 const clock = new THREE.Clock();
-const fpsEl = document.getElementById('fps'), callsEl = document.getElementById('calls'), showEl = document.getElementById('showState');
+const fpsEl = document.getElementById('fps'), callsEl = document.getElementById('calls'), showEl = document.getElementById('showState'), ftimeEl = document.getElementById('ftime');
 let frames = 0, fpsT = 0, fpsLast = performance.now(), firstFrame = true;
 function animate() {
   requestAnimationFrame(animate);
+  const now0 = performance.now();
+  perf.tick(now0);
   const dt = Math.min(clock.getDelta(), 0.05), time = clock.elapsedTime;
+  let pt = perf.start();
   shared.uTime.value = time;
   shadowCenter.set(Math.round(controls.target.x / 8) * 8, 0, Math.round(controls.target.z / 8) * 8);
   stepNight(dt);
-  applyNight(dayNight.night, time);
+  applyNight(dayNight.night, time); pt = perf.lap('night', pt);
   updateWeather(dt, time, dayNight.night, camera);         // điều biến sau applyNight (D-009); camera: mưa quanh camera, tắt trong hầm
   water.material.uniforms.time.value += dt * 0.6 * windFx.waveSpeed;   // sóng trôi nhanh hơn theo gió (mặc định ×1)
+  pt = perf.lap('weather', pt);
   updateShow(dt);
-  updateEffects(dt, time);
-  updateTraffic(dt);
-  updateBoats(dt, time);
-  updateCamera(dt);
-  for (const b of bridges) b.update(dt, time, camera);
+  updateEffects(dt, time); pt = perf.lap('effects', pt);
+  updateTraffic(dt); pt = perf.lap('traffic', pt);
+  updateBoats(dt, time); pt = perf.lap('boats', pt);
+  updateCamera(dt); pt = perf.lap('camera', pt);
+  for (let k = 0; k < bridges.length; k++) { bridges[k].update(dt, time, camera); pt = perf.lap(bridgeKeys[k], pt); }
   hanTunnel.holdBoats(songHan.boats.list);
   updateHrUI(camera);
-  updateRiverfront(dt, time);
+  updateRiverfront(dt, time); pt = perf.lap('riverfront', pt);
   audio.setSwingDistance(camera.position.distanceTo(songHan.center));
-  audio.update(dayNight.night, show.fireOn, show.waterOn, camera.position.distanceTo(mouthW));
+  audio.update(dayNight.night, show.fireOn, show.waterOn, camera.position.distanceTo(mouthW)); pt = perf.lap('audio', pt);
+  quality.update(now0);                                     // bậc chất lượng (tự hạ khi lag), bóng đổ, giới hạn pixelRatio khi mưa
   renderer.info.reset();
-  renderFrame(dayNight.night, dt);
+  renderFrame(dayNight.night, dt); perf.lap('render', pt);   // gồm cả biên dịch shader lần đầu (đồng bộ trên luồng chính)
   frames++; const now = performance.now(); fpsT = (now - fpsLast) / 1000;
   if (fpsT >= 0.5) {
     fpsEl.textContent = String(Math.round(frames / fpsT)); fpsLast = now; callsEl.textContent = String(renderer.info.render.calls);
+    const fs = perf.stats(); ftimeEl.textContent = `${fs.avg.toFixed(1)} · p95 ${fs.p95.toFixed(0)} · max ${fs.max.toFixed(0)}`;
     showEl.textContent = showLabel(); frames = 0; fpsT = 0;
   }
   if (firstFrame) { firstFrame = false; document.getElementById('loading').classList.add('done'); }
 }
+await prewarm();   // biên dịch sẵn shader + upload texture trong lúc còn màn hình chờ (D-018)
 animate();

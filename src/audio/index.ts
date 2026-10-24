@@ -14,7 +14,7 @@ interface AudioState {
   deg: number; pluck: Map<number, AudioBuffer>; noise: AudioBuffer | null; white?: AudioBuffer;
   waterSrc: AudioBufferSourceNode | null; waterGain: GainNode | null; lastFire: boolean; lastWater: boolean; distGain: number;
   master?: GainNode; tone?: BiquadFilterNode; music?: GainNode; sfx?: GainNode; verb?: ConvolverNode; verbSend?: GainNode;
-  droneGain?: GainNode; riverGain?: GainNode; motorGain?: GainNode; swingGain?: number; ducked?: boolean;
+  droneGain?: GainNode; riverGain?: GainNode; motorGain?: GainNode; swingGain?: number; ducked?: boolean; nightSet?: number;
   wxDuck: number; rainGain?: GainNode; windGain?: GainNode; windBp?: BiquadFilterNode; wxRain: number; wxWind: number; wxIndoors: number; patterAt: number;   // thời tiết (GĐ7)
 }
 type AudioCtor = typeof AudioContext;
@@ -34,6 +34,7 @@ export function createAudio() {
 
   function build() {
     const ctx = A.ctx = new ((window.AudioContext || (window as unknown as { webkitAudioContext: AudioCtor }).webkitAudioContext))();
+    A.nightSet = undefined;   // nút mới tạo: lên lịch lại giá trị theo đêm ở khung kế tiếp
     // Chuỗi tổng: nén nhẹ → loa
     A.master = ctx.createGain(); A.master.gain.value = 0;
     const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
@@ -298,9 +299,12 @@ export function createAudio() {
       const now = A.ctx.currentTime;
       A.night = night;
       A.distGain = Math.max(0.12, Math.min(1, 90 / Math.max(distToHead, 1)));
-      A.tone.frequency.setTargetAtTime(9000 - 5200 * night, now, 0.5);    // đêm: âm êm, tối hơn
-      A.verbSend.gain.setTargetAtTime(0.3 + 0.18 * night, now, 0.5);
-      A.droneGain.gain.setTargetAtTime(0.045 + 0.03 * night, now, 0.5);
+      if (Math.abs(night - (A.nightSet ?? -1)) > 1e-3) {   // chỉ lên lịch lại khi đêm đổi (mỗi lời gọi thêm một sự kiện tự động hoá vào dòng thời gian, D-018)
+        A.nightSet = night;
+        A.tone.frequency.setTargetAtTime(9000 - 5200 * night, now, 0.5);    // đêm: âm êm, tối hơn
+        A.verbSend.gain.setTargetAtTime(0.3 + 0.18 * night, now, 0.5);
+        A.droneGain.gain.setTargetAtTime(0.045 + 0.03 * night, now, 0.5);
+      }
       if (fireOn && !A.lastFire) fireWhoosh(now + 0.02);
       if (waterOn !== A.lastWater) A.waterGain.gain.setTargetAtTime(waterOn ? 0.22 * A.distGain : 0, now, waterOn ? 0.15 : 0.6);
       A.lastFire = fireOn; A.lastWater = waterOn;

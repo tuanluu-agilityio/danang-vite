@@ -11,11 +11,13 @@ import type { HrMaterials } from './materials';
    • Mặt cắt địa chất (section): bóc dải đất phía Bắc mặt cắt dọc tim ống Nam, hiện tấm địa chất, nước trong suốt.
      Bóc bằng clippingPlanes + clipIntersection (4 mặt phẳng ⇒ một hình hộp bị loại bỏ), riêng nước dùng discard trong shader.
    • Nước trong (glass): chỉ làm nước trong suốt để thấy hào nạo vét và đốt hầm đang dìm (dùng khi mô phỏng dìm đốt hầm).
-   Tắt thì trả mọi vật liệu về đúng trạng thái ban đầu. */
+   Mặt phẳng cắt gán cố định từ khi dựng (D-018): đổi clippingPlanes/clipIntersection làm mọi vật liệu biên dịch lại shader (~45 vật liệu + nhà,
+   giật vài giây). Tắt = đẩy mặt phẳng đầu ra rất xa: với clipIntersection, điểm chỉ bị cắt khi nằm phía âm của CẢ 4 mặt phẳng ⇒ không điểm nào bị cắt. */
 export const CUT_X = HR.approachHalf + 40;     // m — nửa chiều dài vùng bóc
 export const CUT_Z = HR.z + HR.cutZ;           // m — mặt cắt (thế giới), qua tim ống Nam
 export const CUT_STRIP = 110;                  // m — bề rộng dải bị bóc, phía Bắc mặt cắt
 const Y_TOP = 8, Y_BOT = -45;
+const PLANE_OFF = 1e7;                         // m — hằng số mặt phẳng đầu khi tắt mặt cắt: mọi điểm nằm phía dương ⇒ không cắt
 
 /* Nhãn 3D trên mặt cắt: khóa i18n + tọa độ thế giới */
 export const CUT_LABELS: { key: string; pos: [number, number, number] }[] = [
@@ -77,13 +79,12 @@ export class Cutaway {
   readonly planes: THREE.Plane[];
   readonly plane: THREE.Mesh;
   private mats: THREE.Material[] = [];
-  private orig = new Map<THREE.Material, { clip: THREE.Plane[] | null; inter: boolean }>();
 
   constructor(M: HrMaterials) {
     renderer.localClippingEnabled = true;
     // vùng bị bóc: x ∈ (−CUT_X, CUT_X), z ∈ (CUT_Z − CUT_STRIP, CUT_Z) — clipIntersection nên chỉ phần nằm ngoài CẢ 4 mặt phẳng mới bị cắt
     this.planes = [
-      new THREE.Plane(new THREE.Vector3(-1, 0, 0), -CUT_X), new THREE.Plane(new THREE.Vector3(1, 0, 0), -CUT_X),
+      new THREE.Plane(new THREE.Vector3(-1, 0, 0), PLANE_OFF), new THREE.Plane(new THREE.Vector3(1, 0, 0), -CUT_X),
       new THREE.Plane(new THREE.Vector3(0, 0, -1), CUT_Z - CUT_STRIP), new THREE.Plane(new THREE.Vector3(0, 0, 1), -CUT_Z)
     ];
     // tấm mặt cắt địa chất đặt sát mặt phía Nam, quay mặt về phía Bắc (nơi camera đứng)
@@ -98,7 +99,7 @@ export class Cutaway {
       M.concrete, M.bore, M.roadIn, M.roadOut, M.louver, M.brick, M.wave, M.bed, M.rubble, M.steel, M.lampThr, M.lampIn, M.lampCorr, M.fan, M.sos, M.extinguisher, M.door, M.exit, M.laneGreen, M.guide, M.equip, M.grate, M.basket]);
     scene.traverse((o) => { const i = o as THREE.InstancedMesh; if (i.isInstancedMesh && i.parent && (i.parent as THREE.LOD).isLOD) set.add(i.material as THREE.Material); });
     this.mats = [...set];
-    for (const m of this.mats) this.orig.set(m, { clip: m.clippingPlanes, inter: m.clipIntersection });
+    for (const m of this.mats) { m.clippingPlanes = this.planes; m.clipIntersection = true; m.needsUpdate = true; }   // lúc dựng, trước lần biên dịch đầu
   }
   /* Nước: bỏ các điểm nằm trong máng hầm hở (nước trải vô hạn ở y = 0 sẽ lọt vào máng) và trong vùng bóc khi bật mặt cắt */
   private patchWater() {
@@ -117,7 +118,7 @@ export class Cutaway {
   setSection(on: boolean) {
     if (on === this.section) return;
     this.section = on; this.plane.visible = on;
-    for (const m of this.mats) { m.clippingPlanes = on ? this.planes : this.orig.get(m).clip; m.clipIntersection = on ? true : this.orig.get(m).inter; m.needsUpdate = true; }
+    this.planes[0].constant = on ? -CUT_X : PLANE_OFF;
     (water.material as THREE.ShaderMaterial).uniforms.uCutOn.value = on ? 1 : 0;
     this.applyWater();
   }

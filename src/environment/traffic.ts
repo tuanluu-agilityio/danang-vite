@@ -52,13 +52,17 @@ export function buildTraffic() {
 }
 const HIDDEN_M = new THREE.Matrix4().makeScale(0, 0, 0);
 const _p = new THREE.Vector3();
+const hideAt = (i: number, lamps: boolean) => { vBody.setMatrixAt(i, HIDDEN_M); vCabin.setMatrixAt(i, HIDDEN_M); if (lamps) { vHead.setMatrixAt(i, HIDDEN_M); vTail.setMatrixAt(i, HIDDEN_M); } };
+/* Không cấp phát mỗi khung (D-018). Đèn pha/hậu chỉ hiện khi đêm > 0,3 (applyNight đặt visible trước hàm này): khi ẩn không ghi ma trận đèn;
+   vị trí xe (v.s) vẫn cộng dồn như cũ nên khung đèn hiện lại thì ma trận được ghi đúng chỗ ngay trong khung đó */
 export function updateTraffic(dt: number) {
-  vehicles.forEach((v, i) => {
-    const P = v.path, range = P.max - P.min, T = TYPES[v.type];
-    if (P.hidden) { for (const mm of [vBody, vCabin, vHead, vTail]) mm.setMatrixAt(i, HIDDEN_M); return; } // làn tắt bằng nút bật/tắt
+  const lamps = vHead.visible;
+  for (let i = 0; i < vehicles.length; i++) {
+    const v = vehicles[i], P = v.path, range = P.max - P.min, T = TYPES[v.type];
+    if (P.hidden) { hideAt(i, lamps); continue; } // làn tắt bằng nút bật/tắt
     v.s += v.dir * v.speed * dt;
     if (v.s > P.max) v.s -= range; if (v.s < P.min) v.s += range;
-    if ((P === PATHS.axis || P === PATHS.ttl) && vanished(i, weatherFx.clear)) { for (const mm of [vBody, vCabin, vHead, vTail]) mm.setMatrixAt(i, HIDDEN_M); return; }   // đóng cầu (bão): dọn dần xe trên Cầu Rồng, Trần Thị Lý
+    if ((P === PATHS.axis || P === PATHS.ttl) && vanished(i, weatherFx.clear)) { hideAt(i, lamps); continue; }   // đóng cầu (bão): dọn dần xe trên Cầu Rồng, Trần Thị Lý
     let yaw: number, pitch = 0;
     if (P.axis === 'x') {
       const y = P.profile(v.s), slope = (P.profile(v.s + 1) - P.profile(v.s - 1)) / 2;
@@ -67,13 +71,14 @@ export function updateTraffic(dt: number) {
       _p.set(P.fixed - v.dir * v.lane, CONFIG.roadY + 0.03, v.s); yaw = v.dir > 0 ? -Math.PI / 2 : Math.PI / 2;
     }
     _q.setFromEuler(_e.set(0, yaw, pitch, 'YZX'));
-    const base = _p.clone();
-    placePart(vBody, i, base, _q, 0, 0.3 + T.h / 2, T.len, T.h, T.w);
-    placePart(vCabin, i, base, _q, T.co * T.len, 0.3 + T.h + T.ch / 2, T.cl, T.ch, T.cw);
-    placePart(vHead, i, base, _q, T.len / 2 + 0.04, 0.3 + T.h * 0.6, 0.1, 0.22, T.w * 0.8);
-    placePart(vTail, i, base, _q, -T.len / 2 - 0.04, 0.3 + T.h * 0.6, 0.1, 0.22, T.w * 0.8);
-  });
-  for (const mm of [vBody, vCabin, vHead, vTail]) mm.instanceMatrix.needsUpdate = true;
+    placePart(vBody, i, _p, _q, 0, 0.3 + T.h / 2, T.len, T.h, T.w);
+    placePart(vCabin, i, _p, _q, T.co * T.len, 0.3 + T.h + T.ch / 2, T.cl, T.ch, T.cw);
+    if (!lamps) continue;
+    placePart(vHead, i, _p, _q, T.len / 2 + 0.04, 0.3 + T.h * 0.6, 0.1, 0.22, T.w * 0.8);
+    placePart(vTail, i, _p, _q, -T.len / 2 - 0.04, 0.3 + T.h * 0.6, 0.1, 0.22, T.w * 0.8);
+  }
+  vBody.instanceMatrix.needsUpdate = vCabin.instanceMatrix.needsUpdate = true;
+  if (lamps) vHead.instanceMatrix.needsUpdate = vTail.instanceMatrix.needsUpdate = true;
 }
 
 /* Vùng cấm thuyền quanh công trường dìm đốt hầm (Hầm vượt sông Hàn, z ≈ −1700): chỉ có hiệu lực khi on */
@@ -91,15 +96,15 @@ export function buildBoats() {
   bRoof = new THREE.InstancedMesh(box, MAT.boatRoof, boats.length);
   for (const mm of [bHull, bCabin, bRoof]) { mm.frustumCulled = false; mm.castShadow = true; scene.add(mm); }
 }
+const bq = new THREE.Quaternion(), bBase = new THREE.Vector3(), bM = new THREE.Matrix4(), bS = new THREE.Vector3(), bO = new THREE.Vector3();
 export function updateBoats(dt: number, t: number) {
-  const q = new THREE.Quaternion(), base = new THREE.Vector3();
+  const q = bq, base = bBase, m = bM, s = bS, o = bO;
   boats.forEach((b, i) => {
     b.z += b.dir * b.speed * dt * (1 - weatherFx.boatAway); if (b.z > 2500) b.z = -2500; if (b.z < -2500) b.z = 2500;   // bão: thuyền chậm dần rồi dừng
     if (boatKeepOut.on && b.z > boatKeepOut.z0 && b.z < boatKeepOut.z1) b.z = b.dir > 0 ? boatKeepOut.z0 : boatKeepOut.z1;
     if (vanished(i, weatherFx.boatAway)) { bHull.setMatrixAt(i, HIDDEN_M); bCabin.setMatrixAt(i, HIDDEN_M); bRoof.setMatrixAt(i, HIDDEN_M); return; }   // về bến: ẩn dần
     q.setFromEuler(_e.set(Math.sin(t * 0.9 + i) * 0.015 * windFx.boatRock, 0, Math.sin(t * 1.1 + i * 2) * 0.02 * windFx.boatRock));   // tròng trành tăng theo gió (mặc định ×1)
     base.set(b.x, 0, b.z);
-    const m = new THREE.Matrix4(), s = new THREE.Vector3(), o = new THREE.Vector3();
     bHull.setMatrixAt(i, m.compose(o.set(0, 0.6, 0).applyQuaternion(q).add(base), q, s.set(6.5, 2.6, b.len)));
     bCabin.setMatrixAt(i, m.compose(o.set(0, 3.2, -b.len * 0.05).applyQuaternion(q).add(base), q, s.set(5.4, 2.6, b.len * 0.62)));
     bRoof.setMatrixAt(i, m.compose(o.set(0, 4.7, -b.len * 0.05).applyQuaternion(q).add(base), q, s.set(6.2, 0.35, b.len * 0.7)));
