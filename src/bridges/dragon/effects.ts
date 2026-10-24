@@ -22,10 +22,11 @@ const particleFrag = `varying float vA; varying vec3 vC;
 interface Particles {
   n: number; pos: Float32Array; vel: Float32Array; col: Float32Array; size: Float32Array; alpha: Float32Array;
   life: Float32Array; max: Float32Array; kind: Uint8Array; next: number; acc: number; points?: THREE.Points;
+  idle: boolean;   // khung trước không còn hạt sống và buffer đã ghi 0 ⇒ khi không phun thì bỏ vòng lặp + upload (D-018)
 }
 function makeParticles(n: number, blending: THREE.Blending): Particles {
   const g = new THREE.BufferGeometry();
-  const sys: Particles = { n, pos: new Float32Array(n * 3), vel: new Float32Array(n * 3), col: new Float32Array(n * 3), size: new Float32Array(n), alpha: new Float32Array(n), life: new Float32Array(n), max: new Float32Array(n), kind: new Uint8Array(n), next: 0, acc: 0 };
+  const sys: Particles = { n, pos: new Float32Array(n * 3), vel: new Float32Array(n * 3), col: new Float32Array(n * 3), size: new Float32Array(n), alpha: new Float32Array(n), life: new Float32Array(n), max: new Float32Array(n), kind: new Uint8Array(n), next: 0, acc: 0, idle: false };
   g.setAttribute('position', new THREE.BufferAttribute(sys.pos, 3).setUsage(THREE.DynamicDrawUsage));
   g.setAttribute('aColor', new THREE.BufferAttribute(sys.col, 3).setUsage(THREE.DynamicDrawUsage));
   g.setAttribute('aSize', new THREE.BufferAttribute(sys.size, 1).setUsage(THREE.DynamicDrawUsage));
@@ -42,6 +43,10 @@ export function createWaterJet() { waterJet = makeParticles(CONFIG.waterCount, T
 /* vị trí miệng rồng (thế giới) — âm thanh trình diễn to nhỏ theo khoảng cách camera tới đây */
 export const mouthW = new THREE.Vector3();
 const fwd = new THREE.Vector3();
+function upload(s: Particles) {
+  const a = s.points.geometry.attributes;
+  a.position.needsUpdate = a.aColor.needsUpdate = a.aSize.needsUpdate = a.aAlpha.needsUpdate = true;
+}
 function emit(sys: Particles, count: number, init: (s: Particles, i: number) => void) {
   for (let c = 0; c < count; c++) { const i = sys.next; sys.next = (sys.next + 1) % sys.n; init(sys, i); }
 }
@@ -75,8 +80,10 @@ export function updateEffects(dt: number, time: number) {
       s.life[i] = 0; s.max[i] = 0.45 + rand() * 0.55;
     });
   }
-  for (let i = 0; i < fire.n; i++) {
+  const fireRun = show.fireOn || !fire.idle; let live = 0;
+  for (let i = 0; fireRun && i < fire.n; i++) {
     if (fire.life[i] >= fire.max[i]) { fire.alpha[i] = 0; fire.size[i] = 0; continue; }
+    live++;
     fire.life[i] += dt; const t = Math.min(fire.life[i] / fire.max[i], 1), drag = 1 - 1.4 * dt;
     fire.vel[i * 3] *= drag; fire.vel[i * 3 + 2] *= drag; fire.vel[i * 3 + 1] = fire.vel[i * 3 + 1] * drag + 9 * dt;
     if (windOn) { fire.vel[i * 3] += windFx.x * W.fire * dt; fire.vel[i * 3 + 2] += windFx.z * W.fire * dt; }   // lửa bị gió đánh dạt
@@ -98,9 +105,11 @@ export function updateEffects(dt: number, time: number) {
       s.life[i] = 0; s.max[i] = mist ? 2.2 + rand() : 2.6 + rand() * 0.8;
     });
   }
-  const ground = CONFIG.roadY + 0.2;
-  for (let i = 0; i < waterJet.n; i++) {
+  if (fireRun) { upload(fire); fire.idle = live === 0; }
+  const ground = CONFIG.roadY + 0.2, waterRun = show.waterOn || !waterJet.idle; live = 0;
+  for (let i = 0; waterRun && i < waterJet.n; i++) {
     if (waterJet.life[i] >= waterJet.max[i] || waterJet.pos[i * 3 + 1] < ground) { waterJet.alpha[i] = 0; waterJet.size[i] = 0; waterJet.life[i] = waterJet.max[i]; continue; }
+    live++;
     waterJet.life[i] += dt; const t = waterJet.life[i] / waterJet.max[i], mist = waterJet.kind[i] === 1;
     const drag = 1 - (mist ? 1.2 : 0.08) * dt;
     waterJet.vel[i * 3] *= drag; waterJet.vel[i * 3 + 2] *= drag;
@@ -110,10 +119,7 @@ export function updateEffects(dt: number, time: number) {
     waterJet.col[i * 3] = mist ? 0.9 : 0.62; waterJet.col[i * 3 + 1] = mist ? 0.95 : 0.84; waterJet.col[i * 3 + 2] = 1.0;
     waterJet.alpha[i] = mist ? 0.22 * (1 - t) : 0.75 * (1 - t * 0.6); waterJet.size[i] = mist ? 4 + 6 * t : 0.9 + 0.6 * t;
   }
-  for (const s of [fire, waterJet]) {
-    const a = s.points.geometry.attributes;
-    a.position.needsUpdate = a.aColor.needsUpdate = a.aSize.needsUpdate = a.aAlpha.needsUpdate = true;
-  }
+  if (waterRun) { upload(waterJet); waterJet.idle = live === 0; }
   // Ánh lửa hắt sáng xung quanh
   fireLight.position.copy(mouthW).addScaledVector(fwd, 7);
   fireLight.intensity = show.fireOn ? 380 * (0.75 + 0.25 * Math.sin(time * 37) * Math.sin(time * 23)) : Math.max(0, fireLight.intensity - dt * 1500);

@@ -1,16 +1,23 @@
 # Active Context
 
-_Cập nhật: 2026-10-24 · Nhánh chính: `main` (Sun Wheel đã merge, PR #8)_
+_Cập nhật: 2026-10-25 · Nhánh đang làm: `feature/perf` (từ `main` sau PR #8/#9) · Nhánh chính: `main`_
 
 ## Trạng thái
 - `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`), thời tiết GĐ1–GĐ8 + kịch bản bão có thuyết minh (PR #6), Tour 4 cầu (D-015), Vòng quay Mặt Trời GĐ0–GĐ8 (PR #8, merge `257b905`).
 - `tests/KET-QUA.md` đã cập nhật theo log GD8 (58 góc nhìn `now`, gồm `hr*`, `rf*`, `wx*`).
 
 ## Bước tiếp theo
+0. Tối ưu độ mượt (`feature/perf`, D-018, kế hoạch GĐ0–GĐ5): xem mục "Tối ưu độ mượt" bên dưới.
 1. Tour 4 cầu (`feature/tour-4-cau`, đặc tả `prompts/tour-4-cau.md`, D-015) đã đủ GĐ0–GĐ4: `tour.ts` nhận đường bay mở (`loop: false`, `segMax`, `TourStop.bridge` → `tourHooks.bridge`), `ALL_TOUR` 13 điểm, nút `allTour`, i18n `vTourAll`/`allStops` × 9, thuyết minh vi/en/ru (39 clip). Kết quả test ở `tests/KET-QUA.md`. Chưa kiểm: giọng nghe thật, Tour ban đêm / thời tiết khác `now`. Lời điểm 7 ("Tiếp tục về phía Bắc") đọc lúc camera còn nhìn lại Cầu Rồng; chỉnh `ALL_TOUR[6]` nếu muốn camera quay về hướng Bắc.
 2. Còn mở: tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
 3. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md`.
 4. Vòng quay Mặt Trời (`prompts/vong-quay-mat-troi.md`, D-014/D-016/D-017) đã vào `main` (PR #8). Còn mở: (a) sửa `tests/drawcalls.mjs` để trả ban ngày sau `rfHearts` rồi đo lại bảng (cột "ngày" của `rfBank`, `wx*`, `swOverview/Front/Base/FromTTL` thực ra đo ban đêm, xem `tests/KET-QUA.md`); (b) chạy `test:drawcalls` một mình tại `main` (lần `-Resume` cuối bị TimeoutError do máy quá tải) và `test:drawcalls -- tests/original`; (c) số ước lượng `x ≈ −440`, D ≈ 93 m, trục ≈ 64 m, bệ ≈ 13 m (cần đo khoảng cách tâm → mép nước); (d) nghe thử giọng đọc `swStops`, `/code-review`, FPS GPU thật; (e) khác ảnh tham chiếu: giá treo cabin, lầu hai đầu bệ rỗng, đèn rọi trời.
+
+## Tối ưu độ mượt (2026-10-25, nhánh `feature/perf`, D-018)
+- Đã làm GĐ0–GĐ5: `core/perf.ts` (HUD ms trung bình/p95/max, đo CPU từng bước khi `?test&perf`), `tests/perf-check.mjs` + `npm run test:perf`; `core/prewarm.ts` (compileAsync 2 biến thể + upload texture + vẽ thật một lần mọi object); mặt cắt Hầm `clippingPlanes` cố định (tắt = plane 1e7); bóng đổ không đổi `castShadow` (`lights.ts` `stepShadows`); bỏ cấp phát mỗi khung (xe, thuyền, người, tín hiệu SH, con lăn, cabin, cây đổ), hạt lửa/nước bỏ qua khi rỗng, đèn xe không ghi khi ẩn, thanh Tour dùng `scaleX`, âm thanh chỉ lên lịch khi đêm đổi; `core/quality.ts` + `core/device.ts` + `CONFIG.perf` (7 bậc, Tự động/Cao/TB/Thấp, `?test` = bậc 0, điện thoại không MSAA + bậc Thấp), phản chiếu nước theo chu kỳ / tắt (sampler 1×1), bloom ½ / tắt, giới hạn pixelRatio khi mưa chuyển từ `rain.ts`; ô `#qualitySel` + `ui/qualityUI.ts` + i18n `quality, qAuto, qHigh, qMed, qLow` × 9 (`scripts/add-quality-locales.mjs`); `__app.THREE` chỉ còn 6 lớp (three 724 → 558 KB); normal map nước tính lưới một lần (trùng byte, nhanh ≈ 3,5×).
+- Kết quả (SwiftShader): `test:perf --strict` đạt — mọi thao tác ≤ +29 ms, 0 program mới (GĐ0: 4–12 s). Đạt: `test:tunnel`, `test:riverfront`, `test:sunwheel`, `test:tour`, `test:voice`. `test:drawcalls` 73/74 khớp bảng; `swTour|đêm` 209 vs 207: thăm dò 4 lần trung vị 209/209/209/208, từng khung 200–223 (camera đang leo cabin) — dao động sẵn có của phép đo. `test:weather` lần 1 LỖI do lịch tự quay Cầu sông Hàn 23:00 thứ Bảy (`swingUI.ts`) trùng giờ chạy test; chạy lại sau 23:10: **đạt**.
+- Hạn chế / chưa làm: khung đầu SwiftShader 3,3 → 16,4 s (prewarm); chưa đo GPU thật / điện thoại thật; render target phản chiếu (Water.js) không đổi cỡ được khi chạy; điện thoại khởi động bậc Thấp mà chọn lên Cao thì biên dịch lại một lần (castShadow); `tpBay` CPU 15 ms ở lần đo cuối là một khung đột biến chưa giải thích; font Google vẫn chặn render (đổi sang nạp không đồng bộ thì atlas quảng cáo có thể vẽ trước khi có font).
+- Đề xuất: test bỏ qua lịch tự quay khi `?test` (lỗi phụ thuộc giờ chạy, có từ trước).
 
 ## Kịch bản bão: hành trình + thuyết minh (2026-10-22, nhánh `feature/weather`, chưa commit)
 - Giọng đọc kịch bản bão (vi, en, ru; người dùng đổi 12b-3): khóa `wxStorm` trong `scripts/narration/*.json`, 8 clip mỗi ngôn ngữ. Lời mở đầu nói rõ "kịch bản giả định, không phải bản tin thật", lời cuối nói kịch bản kết thúc.

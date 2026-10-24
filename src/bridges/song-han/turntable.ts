@@ -47,13 +47,15 @@ export function shBuildTurntable(bridge: SongHanBridge) {
   mk.forEach(([x, z, h], i) => { mkm.setMatrixAt(i, m.makeTranslation(x, 0, z)); mkm.setColorAt(i, c.setHex(h)); });
   bridge.details.add(mkm);
 }
+const _rm = new THREE.Matrix4(), _rq = new THREE.Quaternion(), _rq2 = new THREE.Quaternion(), _rq3 = new THREE.Quaternion(), _rv = new THREE.Vector3(), _rone = new THREE.Vector3(1, 1, 1), Z_AXIS = new THREE.Vector3(0, 0, 1);   // tạm cấp sẵn (D-018)
 export function shPlaceRollers(bridge: SongHanBridge, spin: number) {
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), q2 = new THREE.Quaternion(), v = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+  const m = _rm, q = _rq, q2 = _rq2, v = _rv, one = _rone;
   const n = SH.rollers;
+  _rq3.setFromAxisAngle(UP, spin);
   for (let i = 0; i < n; i++) {
     const a = i / n * Math.PI * 2;
     // trục con lăn hướng tâm; con lăn quay quanh trục của nó khi mâm xoay
-    q.setFromAxisAngle(UP, -a).multiply(q2.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2)).multiply(new THREE.Quaternion().setFromAxisAngle(UP, spin));
+    q.setFromAxisAngle(UP, -a).multiply(q2.setFromAxisAngle(Z_AXIS, Math.PI / 2)).multiply(_rq3);
     bridge.rollers.setMatrixAt(i, m.compose(v.set(Math.cos(a) * SH.railR, SH.drumTop + 0.85, Math.sin(a) * SH.railR), q, one));
   }
   bridge.rollers.instanceMatrix.needsUpdate = true;

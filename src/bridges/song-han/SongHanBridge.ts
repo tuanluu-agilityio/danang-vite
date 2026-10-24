@@ -84,7 +84,7 @@ export class SongHanBridge extends BridgeBase<ShMaterials> {
     this.swing.rotation.y = ctrl.angle; this.swing.position.y = ctrl.lift;
     if (prev !== ctrl.angle) { this.rollerSpin += (ctrl.angle - prev) * SH.railR / 0.33; if (this.details.visible) shPlaceRollers(this, this.rollerSpin); }
     this.swingDetails.visible = this.details.visible;
-    shUpdateSignals(this, ctrl, elapsed);
+    if (this.details.visible) shUpdateSignals(this, ctrl, elapsed);   // barie, đèn tín hiệu, đèn hàng hải, chốt: đều trong details / swingDetails
     const n = shared.uNight.value;
     this.mats.crown.emissiveIntensity = n * 2.2; this.mats.drumLight.emissiveIntensity = n * 2.0; this.mats.porthole.emissiveIntensity = n * 0.8;
     this.people.group.visible = this.peopleOn && this.details.visible;

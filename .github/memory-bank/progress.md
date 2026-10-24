@@ -1,6 +1,6 @@
 # Progress
 
-_Cập nhật: 2026-10-22_
+_Cập nhật: 2026-10-25_
 
 ## Đã xong
 | Tính năng | Commit | Kiểm tra |
@@ -26,6 +26,7 @@ _Cập nhật: 2026-10-22_
 | Vòng quay GĐ8: `KET-QUA.md` (sửa `swTour` đêm 209 → 207 theo log), README, memory bank, mục 8 của `sunwheel-check`, ghi chú đo ngày/đêm | — | `build` đạt; `test:drawcalls` đạt (góc cũ chênh 0 đến +2, `sw*` ghi vào KET-QUA, khớp log); `test:tour`, `test:voice`, `test:riverfront`, `test:weather` đạt (log gd8). chạy tay lại 2026-10-24: `test:tunnel` đạt, `test:sunwheel` đầy đủ (gồm mục 8) đạt; chênh đêm − ngày ≈ 21 đã tách (không do vòng quay), xem `tests/KET-QUA.md` |
 | Thời tiết GĐ8: hoàn tất — `KET-QUA.md`, README, memory bank (chưa commit) | — | `build`, toàn bộ bộ test (log `gd8-l0-*`) |
 | Kịch bản bão: hành trình camera như Tour + thuyết minh vi/en/ru khớp từng điểm (D-013); sửa dây không lắc (hình trụ 1 đoạn, lỗi từ GĐ4) (chưa commit) | — | `test:tour`, `test:voice`, `test:weather`, `test:drawcalls` |
+| Tối ưu độ mượt (D-018): prewarm shader, mặt cắt/bóng đổ không biên dịch lại, bỏ cấp phát mỗi khung, bậc chất lượng Tự động/Cao/TB/Thấp + i18n, bundle three −23 % (`feature/perf`) | — | `test:perf --strict` đạt (≤ +29 ms, 0 program mới; GĐ0 4–12 s); `test:drawcalls` 73/74 (swTour đêm dao động); tunnel, riverfront, weather (chạy lại ngoài giờ tự quay), sunwheel, tour, voice đạt |
 | Tour 4 cầu: TTL → Rồng → sông Hàn → Thuận Phước, đường bay mở một chiều, 13 điểm, thuyết minh vi/en/ru, i18n 9 ngôn ngữ (D-015) | `e672add`, `cd52a47` + GĐ4 | `test:drawcalls` (58/58, chênh 0), `test:tour`, `test:voice`, `test:tunnel`, `test:riverfront`, `test:weather` |
 
 Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn AI agent, PR #6 thời tiết + kịch bản bão có thuyết minh), Tour 4 cầu (merge cục bộ `ad963d0`), PR #8 Vòng quay Mặt Trời (merge `257b905`).

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config';
-import { scene } from './renderer';
+import { scene, renderer } from './renderer';
 import { deckY } from '../bridges/dragon/profile';
 
 /* ============================ Ánh sáng ============================ */
@@ -28,4 +28,45 @@ export function buildLights() {
   });
   fireLight = new THREE.PointLight(0xff7a2a, 0, 160, 1.5);
   scene.add(fireLight);
+}
+
+/* Bóng đổ (D-018). Hai nguồn: nút "Bóng đổ" của người dùng (user) và bộ quản lý chất lượng (size = 0 là tắt, every = vẽ lại mỗi n khung).
+   Không đổi sun.castShadow khi đang chạy: đổi nó làm số bóng trong define đổi ⇒ mọi vật liệu có ánh sáng biên dịch lại (giật hàng giây).
+   Tắt: ngừng vẽ shadow map và xoá nó về trắng (độ sâu 1 = không vật nào che) ⇒ mặt nhận bóng sáng như khi không có bóng.
+   Ngoại lệ: điện thoại khởi động ở bậc Thấp thì castShadow = false ngay từ đầu (đỡ lấy mẫu bóng mỗi điểm ảnh); bật lại sau đó thì biên dịch lại một lần. */
+export const shadowState = { user: true, size: CONFIG.shadowMapSize, every: 1 };
+const clearTmp = new THREE.Color();
+let frame = 0, cleared = false;
+function clearShadowMap() {
+  const map = sun.shadow.map;
+  if (!map) return;
+  const rt = renderer.getRenderTarget(), alpha = renderer.getClearAlpha();
+  renderer.getClearColor(clearTmp);
+  renderer.setRenderTarget(map); renderer.setClearColor(0xffffff, 1); renderer.clear();
+  renderer.setRenderTarget(rt); renderer.setClearColor(clearTmp, alpha);
+}
+/* Nút người dùng */
+export function setShadows(on: boolean) { shadowState.user = on; }
+/* Bộ quản lý chất lượng: cạnh shadow map (0 = tắt) và chu kỳ vẽ lại */
+export function setShadowQuality(size: number, every: number) {
+  shadowState.every = Math.max(1, every);
+  if (size > 0 && size !== sun.shadow.mapSize.x) {
+    sun.shadow.mapSize.set(size, size);
+    if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }   // three tạo lại map đúng cỡ ở lần vẽ bóng kế tiếp (cỡ map là uniform: không biên dịch lại)
+  }
+  shadowState.size = size;
+  if (size > 0 && !sun.castShadow) sun.castShadow = true;   // chỉ xảy ra khi khởi động ở bậc Thấp trên điện thoại
+}
+/* Mỗi khung, trước khi vẽ */
+export function stepShadows() {
+  const on = shadowState.user && shadowState.size > 0 && sun.castShadow;
+  if (on) {
+    cleared = false;
+    renderer.shadowMap.autoUpdate = shadowState.every <= 1;
+    if (shadowState.every > 1) renderer.shadowMap.needsUpdate = !sun.shadow.map || frame % shadowState.every === 0;
+    frame++;
+    return;
+  }
+  renderer.shadowMap.autoUpdate = false;
+  if (!cleared && sun.shadow.map) { clearShadowMap(); cleared = true; }
 }

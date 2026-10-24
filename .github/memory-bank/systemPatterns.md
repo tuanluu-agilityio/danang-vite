@@ -54,6 +54,10 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Chi tiết nhỏ, xe, người: layer 1 → không vẽ trong lượt phản chiếu mặt nước.
 - Vật lặp lại → `InstancedMesh`. Ẩn instance = ma trận scale 0 (không xóa, để giữ chỉ số).
 - Vật liệu dùng chung ở `core/materials.ts` (`MAT`); `dispose()` không giải phóng vật liệu dùng chung.
+- **Không đổi program key khi đang chạy (D-018).** Những thứ làm three biên dịch lại MỌI vật liệu liên quan: `castShadow` của đèn, số đèn, `clippingPlanes`/`clipIntersection`, `defines`, `needsUpdate`, render target khác (canvas ↔ composer). Bật/tắt bằng uniform, hằng số mặt phẳng (mặt cắt Hầm đẩy plane ra 1e7), xoá shadow map (`stepShadows`), đổi sampler (phản chiếu tắt). Đo bằng `npm run test:perf -- --strict`: mỗi thao tác phải +0 program.
+- **Biên dịch trước** ở `core/prewarm.ts` (chạy sau `setupUI`, trước `animate()`): `compileAsync` hai biến thể + upload texture + vẽ thật một lần với mọi object hiện, `frustumCulled = false`, mọi level LOD, InstancedMesh rỗng có 1 instance. Object/vật liệu mới tạo SAU prewarm (lúc chạy) sẽ biên dịch lười → tạo sẵn lúc dựng và ẩn.
+- **Hàm chạy mỗi khung không cấp phát:** vector/matrix/quaternion tạm ở cấp module (`_v`, `_m`…), vòng `for` thay `forEach` + mảng tạm, mảng dùng lại (`length = 0`). Không ghi ma trận / upload buffer của mesh đang ẩn (đèn xe ban ngày, hạt lửa không còn hạt, tín hiệu cầu khi `details` ẩn) — nhưng trạng thái tích lũy (vị trí xe) vẫn cộng như cũ để khi hiện lại đúng chỗ.
+- **Bậc chất lượng** (`core/quality.ts`, `CONFIG.perf.steps`): bậc 0 = cảnh gốc, `?test` khóa bậc 0. Hiệu ứng mới tốn GPU nên có nút giảm ở bậc thấp, đổi được khi chạy mà không biên dịch lại (pixelRatio, cỡ RT, chu kỳ vẽ, số instance).
 
 ## Mẫu ngày/đêm và hiệu ứng
 - Đọc `shared.uNight` (0 → 1) trong shader hoặc `update()`; không tự giữ trạng thái ngày/đêm riêng.
@@ -73,7 +77,7 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Thêm/bớt một lời gọi `rand()` ở bất cứ đâu trước cuối chuỗi dựng → toàn bộ nhà/cây/xe xê dịch, draw call lệch bảng chuẩn.
 - `city.ts`: không sửa `avoid()` hay vòng `place()`; nhà nằm trong `InstancedMesh` thuộc `THREE.LOD` (`near` + `far`).
 - `OrbitControls` không cho camera thấp hơn điểm nhìn → góc nhìn sát nước cần `maxPolar` (tới `Math.PI * 0.97`).
-- Mặt cắt địa chất của hầm sửa `clippingPlanes`/`transparent`/`depthWrite` của vật liệu chung → tắt phải trả **đúng** giá trị gốc (test:tunnel kiểm).
+- Mặt cắt địa chất của hầm: `clippingPlanes` gán cố định cho vật liệu chung từ lúc dựng (D-018), tắt = plane đầu ở 1e7; nước vẫn đổi `transparent`/`depthWrite` → tắt phải trả **đúng** giá trị gốc (test:tunnel kiểm).
 - Chữ trên mặt LED / bảng: kiểm tra không bị lật gương theo hướng mặt.
 - Hiệu ứng dịch đỉnh trong vertex shader (lắc dây `sin(π·t)`, võng cáp) cần hình học có đỉnh ở giữa: `CylinderGeometry(1, 1, 1, n)` mặc định 1 đoạn dọc nên dây không cong dù uniform đúng (lỗi GĐ4, phát hiện 2026-10-22). Kiểm hiệu ứng shader bằng **điểm ảnh** (vẽ hai khung, đếm px khác — mẫu trong `tests/weather-check.mjs` mốc 4), không chỉ đọc uniform.
 - Preset camera thấp hơn điểm nhìn mà không có `maxPolar` (vd `swFront`): khung đầu sau chuyến bay OrbitControls kẹp camera lên. Mã nào "nhớ tư thế camera để trả lại" (ngồi cabin) phải chốt qua `controls.update()` (damping tắt) trước khi lưu. Draw call phụ thuộc hướng nhìn (frustum culling mesh nhỏ như biển hiệu): test so ngày/đêm hoặc quay/dừng phải đặt cùng hướng nhìn và để vòng quay đạt tốc độ đích trước khi đo.

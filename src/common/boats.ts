@@ -20,8 +20,9 @@ export function createBoats(bridge: { life: THREE.Group }, list: BridgeBoat[]): 
   for (const mm of [B.hull, B.cabin, B.roof]) { mm.frustumCulled = false; mm.castShadow = true; bridge.life.add(mm); }
   return B;
 }
+const _bq = new THREE.Quaternion(), _bm = new THREE.Matrix4(), _bs = new THREE.Vector3(), _bo = new THREE.Vector3(), _bb = new THREE.Vector3();   // vector tạm cấp sẵn (D-018)
 export function stepBoats(B: Boats, dt: number, elapsed: number, zMin: number, zMax: number) {
-  const q = new THREE.Quaternion(), m = new THREE.Matrix4(), s = new THREE.Vector3(), o = new THREE.Vector3(), base = new THREE.Vector3();
+  const q = _bq, m = _bm, s = _bs, o = _bo, base = _bb;
   B.list.forEach((b, i) => {
     b.z += b.dir * b.speed * dt * (1 - weatherFx.boatAway); if (b.z > zMax) b.z = zMin; if (b.z < zMin) b.z = zMax;
     if (vanished(i, weatherFx.boatAway)) { B.hull.setMatrixAt(i, HIDDEN_M); B.cabin.setMatrixAt(i, HIDDEN_M); B.roof.setMatrixAt(i, HIDDEN_M); return; }   // bão: thuyền về bến, ẩn dần

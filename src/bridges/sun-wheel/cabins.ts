@@ -28,17 +28,19 @@ export function swCabinPose(i: number, theta: number, sway: SwSway | null, outPo
   outPos.y += S.pivotUp; outPos.add(_v);
 }
 
-/* đặt cabin theo góc vòng quay theta (rad) và gió */
+/* đặt cabin theo góc vòng quay theta (rad) và gió. Không cấp phát, không tính lại bounding sphere mỗi lần (D-018): khung bao cố định ở swBuildCabins */
+const _pm = new THREE.Matrix4(), _pp = new THREE.Vector3(), _pq = new THREE.Quaternion(), _one = new THREE.Vector3(1, 1, 1);
 export function swPlaceCabins(mesh: THREE.InstancedMesh, theta: number, sway: SwSway | null = null) {
-  const m = new THREE.Matrix4(), p = new THREE.Vector3(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
-  for (let i = 0; i < SW.cabins; i++) { swCabinPose(i, theta, sway, p, q); mesh.setMatrixAt(i, m.compose(p, q, one)); }
+  for (let i = 0; i < SW.cabins; i++) { swCabinPose(i, theta, sway, _pp, _pq); mesh.setMatrixAt(i, _pm.compose(_pp, _pq, _one)); }
   mesh.instanceMatrix.needsUpdate = true;
-  mesh.computeBoundingSphere();
 }
 
 export function swBuildCabins(mat: THREE.Material) {
   const mesh = new THREE.InstancedMesh(swCabinGeometry(), mat, SW.cabins);
   mesh.name = 'sw-cabins';
   swPlaceCabins(mesh, 0);
+  // Khung bao cố định cho mọi góc quay: vòng cabin đối xứng quanh tâm trục, thêm biên độ lắc gió tối đa (đầu treo lệch ≈ pivotUp·maxTilt)
+  mesh.computeBoundingSphere();
+  mesh.boundingSphere.center.set(0, SW.hubY, 0); mesh.boundingSphere.radius += SW.storm.sway.pivotUp * SW.storm.sway.maxTilt;
   return mesh;
 }

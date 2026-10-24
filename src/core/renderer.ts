@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { device } from './device';
 
 /* ======================= Renderer, scene, camera, controls ======================= */
 export const canvas = document.getElementById('scene') as HTMLCanvasElement;
-export const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+export const renderer = new THREE.WebGLRenderer({ canvas, antialias: !device.phone, powerPreference: 'high-performance' });   // điện thoại: không MSAA (chỉ đặt được lúc tạo context, D-018)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;

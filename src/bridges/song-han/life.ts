@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CONFIG } from '../../config';
 import { MAT } from '../../core/materials';
 import { rng, lerp } from '../../common/math';
-import { createTraffic, stepTraffic, type Traffic } from '../../common/traffic';
+import { createTraffic, stepTraffic, type Traffic, type BridgeVehicle } from '../../common/traffic';
 import { createBoats } from '../../common/boats';
 import { createPeople, type Walker } from '../../common/people';
 import { SH, shRoadY } from './profile';
@@ -42,16 +42,21 @@ export function shBuildLife(bridge: SongHanBridge) {
 }
 
 /* Xe: như hệ chung, nhưng khi không cho vào nhịp quay thì xếp hàng trước barie */
+const before: BridgeVehicle[] = [];          // mảng tạm dùng lại (D-018)
+let saved = new Float64Array(0);           // tốc độ gốc (double: trả lại đúng từng bit)
+const byDist = (a: BridgeVehicle, b: BridgeVehicle) => Math.abs(a.s) - Math.abs(b.s);
 export function shStepTraffic(T: Traffic, dt: number, ctrl: SwingController) {
   const bx = SH.barrierX;
   if (!ctrl.allowEntry) {
     for (const dir of [1, -1]) {
-      const before = T.list.filter((v) => v.dir === dir && (dir > 0 ? v.s < -bx : v.s > bx))
-        .sort((a, b) => Math.abs(a.s) - Math.abs(b.s));
+      before.length = 0;
+      for (const v of T.list) if (v.dir === dir && (dir > 0 ? v.s < -bx : v.s > bx)) before.push(v);
+      before.sort(byDist);
       before.forEach((v, r) => { v.hold = bx + 3 + r * 7.5; });
     }
   }
-  const saved = T.list.map((v) => v.speed);
+  if (saved.length !== T.list.length) saved = new Float64Array(T.list.length);
+  for (let i = 0; i < T.list.length; i++) saved[i] = T.list[i].speed;
   T.list.forEach((v) => {
     if (ctrl.allowEntry || v.hold === undefined) return;
     const stopAt = -v.dir * v.hold, dist = (stopAt - v.s) * v.dir;          // khoảng còn lại tới vị trí dừng

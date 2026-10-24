@@ -53,6 +53,8 @@
     <div id="wxImpact" class="wx-impact" hidden aria-live="off"></div>
     <button id="btnWxStorm" class="toggle" aria-pressed="false">Kịch bản bão</button>
   </div>
+  <label class="mini-select" for="qualitySel"><span data-i18n="quality">Chất lượng hình</span>
+    <select id="qualitySel"><option value="auto" selected>Tự động</option><option value="high" data-i18n="qHigh">Cao</option><option value="medium" data-i18n="qMed">Trung bình</option><option value="low" data-i18n="qLow">Thấp</option></select></label>
 </header>
 
 <nav class="panel views" data-i18n-aria="views" aria-label="Góc nhìn">
@@ -175,6 +177,7 @@
 <div class="panel stats" aria-live="polite">
   <div>FPS <b id="fps">–</b></div>
   <div class="extra"><span data-i18n="drawCalls">Draw call</span> <b id="calls">–</b></div>
+  <div class="extra">ms <b id="ftime">–</b></div>
   <div class="show" id="showLine"><span data-i18n="showLbl">Trình diễn</span> <b id="showState">tắt</b></div>
 </div>
 <div id="tourCaption" class="panel" hidden aria-live="polite">

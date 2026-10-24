@@ -54,20 +54,27 @@ export function createTraffic(bridge: { life: THREE.Group }, { seed, x0, x1, lan
 }
 /* closable: có theo lệnh đóng cầu của thời tiết (bão) không; Hầm vượt sông Hàn truyền false (hầm vẫn lưu thông) */
 const HIDDEN_M = new THREE.Matrix4().makeScale(0, 0, 0);
+const _base = new THREE.Vector3();
+/* Không cấp phát mỗi khung (D-018); đèn pha/hậu ẩn ban ngày nên không ghi ma trận đèn khi ẩn (vị trí xe vẫn cộng dồn) */
 export function stepTraffic(T: Traffic, dt: number, profile: Profile, closable = true) {
-  const range = T.x1 - T.x0, base = new THREE.Vector3();
-  T.list.forEach((v, i) => {
-    const ty = TYPES[v.type];
+  const range = T.x1 - T.x0, base = _base, lamps = shared.uNight.value > 0.3;
+  T.head.visible = T.tail.visible = lamps;
+  for (let i = 0; i < T.list.length; i++) {
+    const v = T.list[i], ty = TYPES[v.type];
     v.s += v.dir * v.speed * dt; if (v.s > T.x1) v.s -= range; if (v.s < T.x0) v.s += range;
-    if (closable && vanished(i, weatherFx.clear)) { for (const mm of [T.body, T.cabin, T.head, T.tail]) mm.setMatrixAt(i, HIDDEN_M); return; }   // đóng cầu (bão): dọn dần xe
+    if (closable && vanished(i, weatherFx.clear)) {   // đóng cầu (bão): dọn dần xe
+      T.body.setMatrixAt(i, HIDDEN_M); T.cabin.setMatrixAt(i, HIDDEN_M); if (lamps) { T.head.setMatrixAt(i, HIDDEN_M); T.tail.setMatrixAt(i, HIDDEN_M); }
+      continue;
+    }
     const y = profile(v.s), slope = (profile(v.s + 1) - profile(v.s - 1)) / 2;
     _q.setFromEuler(_e.set(0, v.dir > 0 ? 0 : Math.PI, Math.atan(slope * v.dir), 'YZX'));
     base.set(v.s, y + 0.03, v.dir * v.lane);                 // tọa độ cục bộ của group cầu
     placePart(T.body, i, base, _q, 0, 0.3 + ty.h / 2, ty.len, ty.h, ty.w);
     placePart(T.cabin, i, base, _q, ty.co * ty.len, 0.3 + ty.h + ty.ch / 2, ty.cl, ty.ch, ty.cw);
+    if (!lamps) continue;
     placePart(T.head, i, base, _q, ty.len / 2 + 0.04, 0.3 + ty.h * 0.6, 0.1, 0.22, ty.w * 0.8);
     placePart(T.tail, i, base, _q, -ty.len / 2 - 0.04, 0.3 + ty.h * 0.6, 0.1, 0.22, ty.w * 0.8);
-  });
-  for (const mm of [T.body, T.cabin, T.head, T.tail]) mm.instanceMatrix.needsUpdate = true;
-  T.head.visible = T.tail.visible = shared.uNight.value > 0.3;
+  }
+  T.body.instanceMatrix.needsUpdate = T.cabin.instanceMatrix.needsUpdate = true;
+  if (lamps) T.head.instanceMatrix.needsUpdate = T.tail.instanceMatrix.needsUpdate = true;
 }

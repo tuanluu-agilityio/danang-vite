@@ -426,5 +426,10 @@
       "LED show at night",
       "About 13,000 LEDs on 32 main spokes change colour in each show style, with red-rimmed cabins. The journey ends here."
     ]
-  ]
+  ],
+  "quality": "Graphics quality",
+  "qAuto": "Auto",
+  "qHigh": "High",
+  "qMed": "Medium",
+  "qLow": "Low"
 }

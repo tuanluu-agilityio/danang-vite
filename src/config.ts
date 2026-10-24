@@ -322,7 +322,7 @@ const weatherBase = {
   perf: {
     rainNear: 1.5,                                      // m — bỏ vệt mưa gần camera hơn mức này (vệt sát mắt phủ cả màn hình = overdraw lớn nhất)
     rainFadeFar: 70,                                    // m — alpha vệt mưa giảm dần về 0 ở khoảng cách này (cho phép hộp/N nhỏ mà vẫn thấy dày)
-    rainMaxPixelRatio: 1.5,                             // pixelRatio tối đa khi mưa đang hiện (trả lại giá trị cũ khi tạnh)
+    // pixelRatio tối đa khi mưa: chuyển sang CONFIG.perf.rainMaxRatio (bộ quản lý chất lượng, D-018)
     adaptiveWindow: 2,                                  // s — cửa sổ đo FPS trung bình để quyết định hạ chất lượng
     adaptiveMinFps: 40,                                 // FPS — dưới mức này thì hạ một bậc chất lượng
     adaptiveSteps: [1, 0.6, 0.35] as number[],          // hệ số nhân rain.count theo bậc chất lượng (bậc 0 = đầy đủ)
@@ -514,8 +514,39 @@ const tourAllBase = {
   holdMin: 6     // s — giữ khung hình tối thiểu ở điểm cuối trước khi trả điều khiển; có giọng đọc thì kéo tới hết clip (ước lượng)
 };
 
+/* ------------------------- Hiệu năng (tối ưu, D-018) -------------------------
+   Đo thời gian khung (HUD) và ngưỡng giật khựng dùng chung cho test:perf / test:weather */
+const perfBase = {
+  hudSamples: 240,    // số khung giữ trong vòng mẫu để tính trung bình / p95 / max trên HUD (≈ 4 s ở 60 FPS)
+  maxHitchMs: 150,    // ms — khung dài nhất cho phép khi đổi trạng thái (đêm, mặt cắt, bóng, bay tới công trình) (ước lượng, theo weather.perf.maxFrameMs)
+  /* Bậc chất lượng, tốt → nhẹ. Chế độ Tự động đi lên/xuống theo thang này; chọn tay Cao/Trung bình/Thấp nhảy tới bậc `manual`.
+     ratio: pixelRatio tối đa (không vượt devicePixelRatio); shadow: cạnh shadow map (px), 0 = tắt bóng; shadowEvery / reflectEvery: vẽ lại bóng / phản chiếu nước
+     mỗi n khung (0 = tắt phản chiếu, mặt nước phản chiếu màu trời); bloom: tỉ lệ độ phân giải bloom ban đêm (0 = tắt); clouds: số tấm mây. Mọi số (ước lượng), chỉnh theo đo trên GPU thật */
+  steps: [
+    { tier: 'high', ratio: 2, shadow: 2048, shadowEvery: 1, reflectEvery: 1, bloom: 1, clouds: 26 },      // = cảnh gốc (bảng draw call chuẩn đo ở bậc này)
+    { tier: 'high', ratio: 1.5, shadow: 2048, shadowEvery: 1, reflectEvery: 1, bloom: 1, clouds: 26 },
+    { tier: 'medium', ratio: 1.5, shadow: 1024, shadowEvery: 2, reflectEvery: 2, bloom: 0.5, clouds: 26 },
+    { tier: 'medium', ratio: 1.25, shadow: 1024, shadowEvery: 2, reflectEvery: 2, bloom: 0.5, clouds: 26 },
+    { tier: 'medium', ratio: 1, shadow: 1024, shadowEvery: 2, reflectEvery: 3, bloom: 0.5, clouds: 18 },
+    { tier: 'low', ratio: 1, shadow: 0, shadowEvery: 1, reflectEvery: 0, bloom: 0, clouds: 12 },
+    { tier: 'low', ratio: 0.75, shadow: 0, shadowEvery: 1, reflectEvery: 0, bloom: 0, clouds: 12 }
+  ],
+  manual: { high: 0, medium: 2, low: 5 } as Record<'high' | 'medium' | 'low', number>,   // bậc ứng với lựa chọn tay
+  adapt: {
+    window: 2,          // s — cửa sổ đo thời gian khung trung bình
+    downMs: 22,         // ms — trung bình cửa sổ trên mức này (≈ dưới 45 FPS) thì hạ một bậc
+    upMs: 12,           // ms — trung bình dưới mức này (≈ trên 80 FPS) liên tục `upHold` giây thì nâng một bậc
+    upHold: 10,         // s
+    cooldown: 3,        // s — tối thiểu giữa hai lần đổi bậc (đổi pixelRatio phải cấp lại framebuffer)
+    ignoreMs: 400       // ms — bỏ khung dài hơn (đổi tab, biên dịch một lần) khỏi trung bình: không hạ chất lượng vì một lần giật
+  },
+  rainMaxRatio: 1.5,    // pixelRatio tối đa khi mưa đang hiện (thay cho weather.perf.rainMaxPixelRatio, áp qua bộ quản lý chất lượng)
+  start: { phone: 5, weak: 2 }   // bậc khởi đầu ở chế độ Tự động: điện thoại / máy tính yếu (≤ 4 GB RAM hoặc ≤ 4 luồng); còn lại bậc 0
+};
+
 export const CONFIG = {
   ...base,
+  perf: perfBase,
   mainTotal: sum(base.mainSpans),
   thuanPhuoc: deriveTp(thuanPhuocBase),
   tranThiLy: deriveTtl(tranThiLyBase),

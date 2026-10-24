@@ -1,7 +1,7 @@
 import { canvas, controls } from '../core/renderer';
 import { CONFIG } from '../config';
 import { swRide } from '../bridges/sun-wheel/ride';
-import { sun } from '../core/lights';
+import { setShadows, shadowState } from '../core/lights';
 import { dayNight } from '../core/dayNight';
 import { t, onChange } from '../i18n';
 import { show, showLabel } from '../bridges/dragon/effects';
@@ -46,7 +46,7 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
     if (show.on && dayNight.target < 0.5) { dayNight.target = 1; slider.value = '100'; syncNight(); } // trình diễn diễn ra lúc 21:00
   });
   btnShadow.addEventListener('click', () => {
-    sun.castShadow = !sun.castShadow; btnShadow.setAttribute('aria-pressed', String(sun.castShadow));
+    setShadows(!shadowState.user); btnShadow.setAttribute('aria-pressed', String(shadowState.user));   // không đổi castShadow (tránh biên dịch lại shader, D-018)
   });
   document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
   document.querySelectorAll<HTMLElement>('[data-bridge]').forEach((b) => b.addEventListener('click', () => selectBridge(b.dataset.bridge as BridgeKey, true)));
