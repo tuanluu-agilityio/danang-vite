@@ -1,16 +1,16 @@
 # Active Context
 
-_Cập nhật: 2026-10-24 · Nhánh đang làm: `feature/sun-wheel` (tạo từ `main`; `feature/tour-4-cau` đã merge) · Nhánh chính: `main`_
+_Cập nhật: 2026-10-24 · Nhánh chính: `main` (Sun Wheel đã merge, PR #8)_
 
 ## Trạng thái
-- `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`), thời tiết GĐ1–GĐ8 + kịch bản bão có thuyết minh (PR #6).
+- `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`), thời tiết GĐ1–GĐ8 + kịch bản bão có thuyết minh (PR #6), Tour 4 cầu (D-015), Vòng quay Mặt Trời GĐ0–GĐ8 (PR #8, merge `257b905`).
 - `tests/KET-QUA.md` đã cập nhật theo log GD8 (58 góc nhìn `now`, gồm `hr*`, `rf*`, `wx*`).
 
 ## Bước tiếp theo
 1. Tour 4 cầu (`feature/tour-4-cau`, đặc tả `prompts/tour-4-cau.md`, D-015) đã đủ GĐ0–GĐ4: `tour.ts` nhận đường bay mở (`loop: false`, `segMax`, `TourStop.bridge` → `tourHooks.bridge`), `ALL_TOUR` 13 điểm, nút `allTour`, i18n `vTourAll`/`allStops` × 9, thuyết minh vi/en/ru (39 clip). Kết quả test ở `tests/KET-QUA.md`. Chưa kiểm: giọng nghe thật, Tour ban đêm / thời tiết khác `now`. Lời điểm 7 ("Tiếp tục về phía Bắc") đọc lúc camera còn nhìn lại Cầu Rồng; chỉnh `ALL_TOUR[6]` nếu muốn camera quay về hướng Bắc.
 2. Còn mở: tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
 3. Sửa dòng giới thiệu Hầm bị lặp ở đầu `README.md`.
-4. Vòng quay Mặt Trời trên `feature/sun-wheel` (đặc tả `prompts/vong-quay-mat-troi.md`, D-014): GĐ1–GĐ7 đã commit; GĐ8 (tài liệu, số đo): lần chạy script 2026-10-24 báo LOI, đã xử lý bằng chạy tay + số đo (xem mục GĐ8 — xử lý lỗi), chưa commit. Đã sửa: `KET-QUA.md` `swTour|đêm` 209 → 207 theo log. Còn lại: (a) `test:tunnel` LỖI (timeout `page.goto`, `tests/lib.mjs:44`, nguyên nhân chưa chứng minh; ứng viên `waitUntil: 'load'`); (b) `test:sunwheel` mục 8 chưa có log; (c) chênh ngày/đêm 19–21 ở `swNight`/`swTop`/`swRide`/`swTour` chưa tách (phần vòng quay đã chênh 0 theo log). Bước tiếp: chạy riêng `test:tunnel` và `test:sunwheel`; chạy `test:drawcalls -- tests/original` cho `sw*`; đo bật/tắt `rf-night-lights`, đèn xe để tách chênh đêm.
+4. Vòng quay Mặt Trời (`prompts/vong-quay-mat-troi.md`, D-014/D-016/D-017) đã vào `main` (PR #8). Còn mở: (a) sửa `tests/drawcalls.mjs` để trả ban ngày sau `rfHearts` rồi đo lại bảng (cột "ngày" của `rfBank`, `wx*`, `swOverview/Front/Base/FromTTL` thực ra đo ban đêm, xem `tests/KET-QUA.md`); (b) chạy `test:drawcalls` một mình tại `main` (lần `-Resume` cuối bị TimeoutError do máy quá tải) và `test:drawcalls -- tests/original`; (c) số ước lượng `x ≈ −440`, D ≈ 93 m, trục ≈ 64 m, bệ ≈ 13 m (cần đo khoảng cách tâm → mép nước); (d) nghe thử giọng đọc `swStops`, `/code-review`, FPS GPU thật; (e) khác ảnh tham chiếu: giá treo cabin, lầu hai đầu bệ rỗng, đèn rọi trời.
 
 ## Kịch bản bão: hành trình + thuyết minh (2026-10-22, nhánh `feature/weather`, chưa commit)
 - Giọng đọc kịch bản bão (vi, en, ru; người dùng đổi 12b-3): khóa `wxStorm` trong `scripts/narration/*.json`, 8 clip mỗi ngôn ngữ. Lời mở đầu nói rõ "kịch bản giả định, không phải bản tin thật", lời cuối nói kịch bản kết thúc.
