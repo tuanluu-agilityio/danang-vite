@@ -14,18 +14,19 @@ import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
 
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7);   // --only=hr: chỉ chạy một Tour
 const STORM = !ONLY || ONLY === 'storm';                                           // --only=storm: chỉ kiểm đường bay kịch bản bão
+// sw = Tour Vòng quay Mặt Trời (đường bay mở, nút trong nhóm sw; điểm 4–5 camera do cabin đặt nên chỉ kiểm đường bay Catmull-Rom, không kiểm cabin: xem test:sunwheel).
 // all = Tour 4 cầu (đường bay mở): nút nằm ngoài danh sách cầu; chạy cuối cùng để không lẫn với lần quay cầu của Tour sông Hàn
-const TOURS = [['dragon', 'tour'], ['tp', 'tpTour'], ['ttl', 'ttlTour'], ['sh', 'shTour'], ['hr', 'hrTour'], ['all', 'allTour']].filter(([b]) => !ONLY || b === ONLY);
+const TOURS = [['dragon', 'tour'], ['tp', 'tpTour'], ['ttl', 'ttlTour'], ['sh', 'shTour'], ['hr', 'hrTour'], ['all', 'allTour'], ['sw', 'swTour']].filter(([b]) => !ONLY || b === ONLY);
 const SAMPLES = 600;
 
 async function checkTours(browser, url) {
   const { page, errors } = await openApp(browser, url);
   const report = {};
   for (const [bridge, view] of TOURS) {
-    const open = bridge === 'all';
-    if (!(await page.$(open ? `button[data-view="${view}"]` : `button[data-bridge="${bridge}"]`))) continue;   // bản gốc không có Hầm sông Hàn, Tour 4 cầu
+    const open = bridge === 'all' || bridge === 'sw';   // đường bay mở
+    if (!(await page.$(bridge === 'all' ? `button[data-view="${view}"]` : `button[data-bridge="${bridge}"]`))) continue;   // bản gốc không có Hầm sông Hàn, Tour 4 cầu
     const r = report[bridge] = { problems: [] };
-    if (open) {   // Cầu sông Hàn phải đang đóng thì điểm có cờ swing mới quay được: nếu lần quay trước chưa xong thì đặt lại
+    if (bridge === 'all') {   // Cầu sông Hàn phải đang đóng thì điểm có cờ swing mới quay được: nếu lần quay trước chưa xong thì đặt lại
       await page.evaluate(() => { const c = window.__app.songHan.ctrl; if (c.state !== 'CLOSED') { c.go('CLOSED'); c.angle = 0; c.lift = 0; c.pin = 1; c.barrier = 0; c.fromTour = false; } });
     } else {
       await page.click(`button[data-bridge="${bridge}"]`);
@@ -63,13 +64,13 @@ async function checkTours(browser, url) {
           if (st === 'IDLE') r.problems.push('Tour hầm không kích hoạt mô phỏng dìm'); else r.immerse = `mô phỏng dìm chạy (“${st}”)`;
         }
       }
-      if ((bridge === 'sh' || open) && i === info.swingAt) {
+      if ((bridge === 'sh' || bridge === 'all') && i === info.swingAt) {
         await frames(page, 2);
         const s = await page.textContent('#swingState');
         r.swing = s !== swing0 ? `cầu tự quay (“${s}”)` : 'KHÔNG quay';
         if (s === swing0) r.problems.push(`tour ${bridge} không kích hoạt quay cầu`);
       }
-      if (open && info.flags[i].bridge) {   // tới cầu mới thì danh sách góc nhìn chuyển sang cầu đó
+      if (bridge === 'all' && info.flags[i].bridge) {   // tới cầu mới thì danh sách góc nhìn chuyển sang cầu đó
         const sel = await page.getAttribute(`button[data-bridge="${info.flags[i].bridge}"]`, 'aria-pressed');
         if (sel !== 'true') r.problems.push(`điểm ${i + 1}: chưa chuyển sang cầu ${info.flags[i].bridge}`);
       }

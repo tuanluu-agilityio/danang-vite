@@ -377,5 +377,54 @@
       "Cửa sông Hàn",
       "Sông Hàn đổ ra vịnh Đà Nẵng. Hành trình kết thúc — kéo chuột để tự khám phá."
     ]
+  ],
+  "bridgeSw": "Vòng quay Mặt Trời",
+  "vSwFront": "Chính diện",
+  "vSwBase": "Dưới chân nhìn lên",
+  "vSwFromTTL": "Từ Cầu Trần Thị Lý",
+  "vSwNight": "Ban đêm",
+  "vSwTop": "Trên cao nhìn xuống",
+  "swWheelSpeed": "Tốc độ quay",
+  "swWheelStop": "Dừng",
+  "swWheelReal": "Thật (1×)",
+  "swLengthVal": "Cao 115 m",
+  "swWidthVal": "≈ 93 m (đường kính)",
+  "swSpan": "Cabin",
+  "swSpanVal": "64 cabin × 6 khách · 15 phút/vòng",
+  "swNote": "Asia Park, khai trương 18/7/2014 (trước là Igosu 108, Nhật Bản). Theo một số nguồn đã ngừng hoạt động từ 9/2025; mô hình thể hiện lúc còn vận hành. Đường kính, bệ và tháp đỡ là ước lượng.",
+  "swShow": "Đèn LED",
+  "swShowWhite": "Trắng",
+  "swShowPink": "Hồng tím",
+  "swShowRays": "Tia chạy",
+  "swShowHeart": "Nhịp tim",
+  "swShowOff": "Tắt",
+  "vSwRide": "Ngồi cabin",
+  "swRideHint": "Kéo chuột để nhìn quanh · Esc hoặc bấm lại nút để xuống cabin",
+  "swStormNote": "Vòng quay tạm dừng do thời tiết xấu. Cabin vẫn đung đưa theo gió.",
+  "swStops": [
+    [
+      "Vòng quay Mặt Trời",
+      "Công viên Châu Á, bờ Tây sông Hàn, cách Cầu Rồng hơn 2 km về phía Nam. Cao 115 m, 64 cabin."
+    ],
+    [
+      "Chân vòng quay và nhà ga",
+      "Bệ nhà ga có ba vòm cuốn, là nơi khách lên cabin. 64 cabin × 6 khách, một vòng quay khoảng 15 phút."
+    ],
+    [
+      "Từ Igosu 108 đến Sun Wheel",
+      "Trước là Igosu 108 ở tháp Biwako (Shiga, Nhật Bản, 1992), được dời về Đà Nẵng và mở ngày 18/7/2014. Theo một số nguồn đã ngừng hoạt động từ 9/2025; mô hình thể hiện lúc còn vận hành."
+    ],
+    [
+      "Lên cabin, tới đỉnh",
+      "Ngoài đời lên tới đỉnh mất khoảng 7,5 phút; mô hình tua nhanh. Cabin treo ngoài vành nên luôn đứng thẳng."
+    ],
+    [
+      "Nhìn về bốn cầu",
+      "Từ độ cao khoảng 115 m, phía Bắc là Cầu Trần Thị Lý (gần nhất, khoảng 1 km), rồi Cầu Rồng, Cầu sông Hàn và Cầu Thuận Phước ở xa."
+    ],
+    [
+      "Show LED ban đêm",
+      "Khoảng 13 000 bóng LED trên 32 thanh chính đổi màu theo từng kiểu show, cabin viền đỏ. Hành trình kết thúc."
+    ]
   ]
 }

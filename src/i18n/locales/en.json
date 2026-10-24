@@ -377,5 +377,54 @@
       "Han River mouth",
       "The Han River flows into Da Nang Bay. The journey ends here — drag the mouse to explore on your own."
     ]
+  ],
+  "bridgeSw": "Sun Wheel",
+  "vSwFront": "Front view",
+  "vSwBase": "From the base, looking up",
+  "vSwFromTTL": "From Tran Thi Ly Bridge",
+  "vSwNight": "At night",
+  "vSwTop": "Aerial, looking down",
+  "swWheelSpeed": "Rotation speed",
+  "swWheelStop": "Stopped",
+  "swWheelReal": "Real (1×)",
+  "swLengthVal": "115 m tall",
+  "swWidthVal": "≈ 93 m (diameter)",
+  "swSpan": "Cabins",
+  "swSpanVal": "64 cabins × 6 passengers · 15 min/turn",
+  "swNote": "Asia Park, opened 18 July 2014 (formerly Igosu 108, Japan). Some sources report it closed in September 2025; the model shows it in operation. Diameter, base and support towers are estimates.",
+  "swShow": "LED lights",
+  "swShowWhite": "White",
+  "swShowPink": "Pink-violet",
+  "swShowRays": "Running rays",
+  "swShowHeart": "Heartbeat",
+  "swShowOff": "Off",
+  "vSwRide": "Ride in a cabin",
+  "swRideHint": "Drag to look around · Esc or press the button again to step off",
+  "swStormNote": "The wheel has stopped because of the bad weather. Your cabin still sways in the wind.",
+  "swStops": [
+    [
+      "Sun Wheel",
+      "Asia Park, on the west bank of the Han River, over 2 km south of Dragon Bridge. 115 m tall, 64 cabins."
+    ],
+    [
+      "Foot of the wheel and the station",
+      "The station base has three arches, where passengers board. 64 cabins × 6 passengers, about 15 minutes per turn."
+    ],
+    [
+      "From Igosu 108 to Sun Wheel",
+      "It began as Igosu 108 at Biwako Tower (Shiga, Japan, 1992), was moved to Da Nang and opened on 18 July 2014. Some sources report it closed in September 2025; the model shows it in operation."
+    ],
+    [
+      "Into a cabin, up to the top",
+      "In real life the ride to the top takes about 7.5 minutes; the model fast-forwards. Cabins hang outside the rim, so they stay upright."
+    ],
+    [
+      "Looking toward the four bridges",
+      "From about 115 m up, to the north lie Tran Thi Ly Bridge (nearest, about 1 km), then Dragon Bridge, Han River Bridge and, far away, Thuan Phuoc Bridge."
+    ],
+    [
+      "LED show at night",
+      "About 13,000 LEDs on 32 main spokes change colour in each show style, with red-rimmed cabins. The journey ends here."
+    ]
   ]
 }

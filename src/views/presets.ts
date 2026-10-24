@@ -1,6 +1,7 @@
 import { CONFIG } from '../config';
 import { shRoadY } from '../bridges/song-han/profile';
 import { hrRoadY } from '../bridges/han-tunnel/profile';
+import { swToWorld } from '../bridges/sun-wheel/profile';
 
 /* ============================ Góc nhìn có sẵn ============================
    Dữ liệu thuần (tọa độ thế giới, mét). pos: vị trí camera, target: điểm nhìn,
@@ -8,7 +9,9 @@ import { hrRoadY } from '../bridges/han-tunnel/profile';
 export type Vec3 = [number, number, number];
 export interface ViewPreset { pos: Vec3; target: Vec3; maxPolar?: number }
 
-const TPZ = CONFIG.thuanPhuoc.z, SHZ = CONFIG.songHan.z, HRZ = CONFIG.hanTunnel.z, HRC = HRZ + CONFIG.hanTunnel.cutZ;
+const TPZ = CONFIG.thuanPhuoc.z, SHZ = CONFIG.songHan.z, HRZ = CONFIG.hanTunnel.z, HRC = HRZ + CONFIG.hanTunnel.cutZ, TTLZ = CONFIG.tranThiLy.z;
+/* Góc nhìn đặt theo hệ cục bộ của Vòng quay Mặt Trời (X dọc mặt vòng quay, Z về mặt Nam) */
+const sw = (p: Vec3, t: Vec3, maxPolar?: number): ViewPreset => ({ pos: swToWorld(...p).toArray() as Vec3, target: swToWorld(...t).toArray() as Vec3, ...(maxPolar ? { maxPolar } : {}) });
 
 export const VIEWS: Record<string, ViewPreset> = {
   overview: { pos: [-430, 330, 560], target: [0, 12, 0] },
@@ -38,6 +41,13 @@ export const VIEWS: Record<string, ViewPreset> = {
   wxRiverMouth: { pos: [260, 36, TPZ - 330], target: [0, 30, TPZ] },
   wxTtlStays: { pos: [70, 14.6, 1300 + 9], target: [-140, 60, 1300], maxPolar: Math.PI * 0.97 },
   wxStreet: { pos: [-299, 1.8, 120], target: [-200, 8, 0], maxPolar: Math.PI * 0.97 },
+  // Vòng quay Mặt Trời (tọa độ cục bộ của công trình → thế giới bằng swToWorld; tất cả là ước lượng, chỉnh khi xem ảnh)
+  swOverview: sw([180, 80, 260], [0, 55, 0]),                          // toàn cảnh chếch từ phía bờ sông (Đông, Nam)
+  swFront: sw([0, 8, 230], [0, 55, 0]),                                // chính diện mặt Nam, thấp
+  swBase: sw([-20, 4.3, 70], [0, 40, 0], Math.PI * 0.97),              // đứng trên quảng trường nhìn lên
+  swFromTTL: { pos: [-215, 20, TTLZ + 10], target: swToWorld(0, 60, 0).toArray() as Vec3 },   // từ Cầu Trần Thị Lý nhìn xuống phía Nam (~1 km)
+  swNight: sw([-120, 25, 200], [0, 60, 0]),                            // chếch từ phía Tây Nam, dùng ban đêm
+  swTop: sw([0, 190, 120], [0, 60, 0]),                                // trên cao nhìn xuống
   // Hầm vượt sông Hàn
   hrOverview: { pos: [-560, 230, HRZ - 520], target: [0, -4, HRZ] },
   hrCutaway: { pos: [-95, 30, HRC - 110], target: [0, -10, HRC], maxPolar: Math.PI * 0.97 },
@@ -47,5 +57,5 @@ export const VIEWS: Record<string, ViewPreset> = {
   hrSimCam: { pos: [-110, 70, HRZ - 95], target: [0, -4, HRZ] }
 };
 /* Góc nhìn mặc định khi chọn từng cầu */
-export const BRIDGE_HOME = { dragon: 'overview', tp: 'tpBay', ttl: 'ttlOverview', sh: 'shOverview', hr: 'hrOverview' } as const;
+export const BRIDGE_HOME = { dragon: 'overview', tp: 'tpBay', ttl: 'ttlOverview', sh: 'shOverview', hr: 'hrOverview', sw: 'swOverview' } as const;
 export type BridgeKey = keyof typeof BRIDGE_HOME;

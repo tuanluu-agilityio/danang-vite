@@ -26,6 +26,7 @@ import { ThuanPhuocBridge } from './bridges/thuan-phuoc';
 import { TranThiLyBridge } from './bridges/tran-thi-ly';
 import { SongHanBridge } from './bridges/song-han';
 import { HanTunnel } from './bridges/han-tunnel';
+import { SunWheel, swRide } from './bridges/sun-wheel';
 import { buildRiverfront, updateRiverfront } from './environment/riverfront';
 import { buildWeather, updateWeather } from './environment/weather';
 import { updateCamera, hrDrive } from './views/camera';
@@ -68,18 +69,20 @@ scene.add(songHan.group);
 const hanTunnel = new HanTunnel();     // sau mọi lệnh dựng có dùng rand(): chỉ dọn nhà, cây trên tuyến bằng cách thu nhỏ instance
 scene.add(hanTunnel.group);
 const riverfront = buildRiverfront();    // sau HanTunnel: dọn nhà bị đè bằng scale 0, không đụng chuỗi rand()
+const sunWheel = new SunWheel();         // sau buildRiverfront, trước buildWeather: dọn nền bằng scale 0, không đụng chuỗi rand()
+scene.add(sunWheel.group);
 const weather = buildWeather();          // sau buildRiverfront (sau mọi rand()): chụp giá trị gốc khí quyển/đường, dựng mưa (ẩn), điều biến sau applyNight
 weather.attachSwing(songHan.ctrl);       // bão: Cầu sông Hàn không quay (SwingController.canStart)
-const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel];
+const bridges = [thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel];
 createFire();
 createWaterJet();
-setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel });
+setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel });
 onResize();
 applyNight(0, 0);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 if (new URLSearchParams(location.search).has('test')) {
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, songHan, hr: hanTunnel, riverfront, weather, hrDrive, THREE, dayNight, tours: TOURS, tour, narration, audio };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE, dayNight, tours: TOURS, tour, narration, audio };
 }
 
 /* ============================ Vòng lặp ============================ */

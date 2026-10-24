@@ -63,6 +63,7 @@
     <button data-bridge="ttl" aria-pressed="false" data-i18n="bridgeTtl">Cầu Trần Thị Lý</button>
     <button data-bridge="sh" aria-pressed="false" data-i18n="bridgeSh">Cầu sông Hàn</button>
     <button data-bridge="hr" aria-pressed="false" data-i18n="bridgeHr">Hầm sông Hàn</button>
+    <button data-bridge="sw" aria-pressed="false" data-i18n="bridgeSw">Vòng quay Mặt Trời</button>
   </div>
   <button class="tour-all" data-view="allTour" aria-pressed="false" data-i18n="vTourAll">Tour 4 cầu</button>
   <div class="view-list" data-list="dragon">
@@ -144,6 +145,20 @@
     <button id="btnHrFollow" class="toggle" aria-pressed="true" data-i18n="hrFollow">Camera theo dõi khi dìm</button>
     <button id="btnHrLife" class="toggle" aria-pressed="true" data-i18n="hrTraffic">Xe cộ</button>
   </div>
+  <div class="view-list" data-list="sw" hidden>
+    <button data-view="swTour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
+    <button data-view="swOverview" aria-pressed="false" data-i18n="vTtlOverview">Toàn cảnh</button>
+    <button data-view="swFront" aria-pressed="false" data-i18n="vSwFront">Chính diện</button>
+    <button data-view="swBase" aria-pressed="false" data-i18n="vSwBase">Dưới chân nhìn lên</button>
+    <button data-view="swFromTTL" aria-pressed="false" data-i18n="vSwFromTTL">Từ Cầu Trần Thị Lý</button>
+    <button data-view="swNight" aria-pressed="false" data-i18n="vSwNight">Ban đêm</button>
+    <button data-view="swTop" aria-pressed="false" data-i18n="vSwTop">Trên cao nhìn xuống</button>
+    <button data-view="swRide" aria-pressed="false" data-i18n="vSwRide">Ngồi cabin</button>
+    <label class="mini-select" for="swSpeed"><span data-i18n="swWheelSpeed">Tốc độ quay</span>
+      <select id="swSpeed"><option value="0" data-i18n="swWheelStop">Dừng</option><option value="1" data-i18n="swWheelReal" selected>Thật (1×)</option><option value="10">10×</option><option value="60">60×</option></select></label>
+    <label class="mini-select" for="swShow"><span data-i18n="swShow">Đèn LED</span>
+      <select id="swShow"><option value="white" data-i18n="swShowWhite" selected>Trắng</option><option value="pink" data-i18n="swShowPink">Hồng tím</option><option value="rays" data-i18n="swShowRays">Tia chạy</option><option value="heart" data-i18n="swShowHeart">Nhịp tim</option><option value="off" data-i18n="swShowOff">Tắt</option></select></label>
+  </div>
 </nav>
 
 <section class="panel specs" data-i18n-aria="specs" aria-label="Thông số">
@@ -175,6 +190,8 @@
   <div class="bar"><i id="wxScenarioBar"></i></div>
 </div>
 <div id="hrLabels" hidden aria-hidden="true"></div>
+<div id="swRideHint" class="panel" hidden data-i18n="swRideHint">Kéo chuột để nhìn quanh · Esc hoặc bấm lại nút để xuống cabin</div>
+<div id="swStormNote" class="panel" hidden data-i18n="swStormNote">Vòng quay tạm dừng do thời tiết xấu. Cabin vẫn đung đưa theo gió.</div>
 <div id="hint" class="panel" hidden data-i18n="walkHint">W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát</div>
 
 <script type="module" src="/src/main.ts"></script>

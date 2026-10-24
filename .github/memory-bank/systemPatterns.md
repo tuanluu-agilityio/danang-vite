@@ -39,6 +39,14 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Cây/dây/thuyền chỉ đổi qua shader hoặc ma trận instance (`wind.ts`, `fallen.ts`); cây đổ dùng cặp thân–tán `InstancedMesh`, lưu ma trận gốc để `stand()` khôi phục đúng.
 - Kịch bản bão (`scenario.ts`) chạy theo `dt` đã kẹp 0,05 s; kết thúc phải trả preset, ngày/đêm và thanh cường độ cũ.
 
+## Mẫu: công trình chuyển động + ngồi cabin (`bridges/sun-wheel/`)
+- Chuyển động là tích phân deterministic `advance(dt)` (bước ≤ `stepMax`), không phụ thuộc khung hình: kiểm bằng số (×1 đúng 2π/10 sau 90 s, ×60 đúng 60 lần).
+- Cabin là một `InstancedMesh` chỉ tịnh tiến (đứng thẳng, không xoay theo góc); ma trận chỉ dựng lại khi `details` hiện và góc lệch ≥ `placeEps`. Ma trận instance là float32, nên so sánh vị trí dùng ngưỡng ~1e-4 m, không 1e-6.
+- Ngồi cabin là chế độ camera `'swRide'` (`views/camera.ts`); tư thế đặt trong `SunWheel.update()` sau `advance()`, không trong `updateCamera()` (tránh giật một bước `dt`). Mọi đường rời chế độ đi qua `dropRide()`.
+- Tour dùng `tourHooks.sw` (khe riêng, không dùng `tourHooks.stop` của Hầm) và giữ `cam.mode = 'tour'`; cabin ghi đè camera sau `updateTour()` (D-017).
+- Thời tiết điều khiển bằng `weatherFx.wheelStopped` (= `closed`); dừng là giảm tuyến tính trong `stopSec`, không đổi tốc độ đích người dùng chọn.
+- Đo draw call góc `sw*`: đặt hướng nhìn mặc định và để tốc độ đạt đích trước khi đo (frustum culling biển hiệu nhỏ). Tổng cảnh ngày/đêm có thể lệch do phần khác của cảnh, nên kiểm chênh 0 bằng cách đo riêng nhóm vòng quay (bật/tắt group).
+
 ## Mẫu hiệu năng
 - Shader đã biên dịch sẵn lúc `buildWeather()` (mưa, chớp có hai biến thể): đổi preset không được làm tăng `renderer.info.programs`.
 - Mưa/chớp là mesh ẩn tới lúc cần; three.js chỉ đếm geometry khi được vẽ lần đầu, nên đo rò rỉ phải vẽ trước một khung.
@@ -68,3 +76,4 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Mặt cắt địa chất của hầm sửa `clippingPlanes`/`transparent`/`depthWrite` của vật liệu chung → tắt phải trả **đúng** giá trị gốc (test:tunnel kiểm).
 - Chữ trên mặt LED / bảng: kiểm tra không bị lật gương theo hướng mặt.
 - Hiệu ứng dịch đỉnh trong vertex shader (lắc dây `sin(π·t)`, võng cáp) cần hình học có đỉnh ở giữa: `CylinderGeometry(1, 1, 1, n)` mặc định 1 đoạn dọc nên dây không cong dù uniform đúng (lỗi GĐ4, phát hiện 2026-10-22). Kiểm hiệu ứng shader bằng **điểm ảnh** (vẽ hai khung, đếm px khác — mẫu trong `tests/weather-check.mjs` mốc 4), không chỉ đọc uniform.
+- Preset camera thấp hơn điểm nhìn mà không có `maxPolar` (vd `swFront`): khung đầu sau chuyến bay OrbitControls kẹp camera lên. Mã nào "nhớ tư thế camera để trả lại" (ngồi cabin) phải chốt qua `controls.update()` (damping tắt) trước khi lưu. Draw call phụ thuộc hướng nhìn (frustum culling mesh nhỏ như biển hiệu): test so ngày/đêm hoặc quay/dừng phải đặt cùng hướng nhìn và để vòng quay đạt tốc độ đích trước khi đo.

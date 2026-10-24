@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
 
-const KEYS = { dragon: 'stops', ttl: 'ttlStops', tp: 'tpStops', sh: 'shStops', all: 'allStops' };   // all = Tour 4 cầu (đường bay mở)
-const VIEWS = { dragon: 'tour', ttl: 'ttlTour', tp: 'tpTour', sh: 'shTour', all: 'allTour' };
+const KEYS = { dragon: 'stops', ttl: 'ttlStops', tp: 'tpStops', sh: 'shStops', all: 'allStops', sw: 'swStops' };   // all = Tour 4 cầu, sw = Tour Vòng quay Mặt Trời (đều đường bay mở)
+const VIEWS = { dragon: 'tour', ttl: 'ttlTour', tp: 'tpTour', sh: 'shTour', all: 'allTour', sw: 'swTour' };
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -71,7 +71,7 @@ try {
       const d = await durs(bridge), n = d.length;
       for (let k = 0; k < n; k++) {
         // đường bay mở: điểm đầu hiện từ lúc bắt đầu (không có đoạn trước), điểm cuối hiện tới hết đoạn giữ
-        const open = bridge === 'all', before = open && k === 0 ? 0 : 0.45 * d[(k + n - 1) % n], own = open && k === n - 1 ? d[k] : 0.55 * d[k];
+        const open = bridge === 'all' || bridge === 'sw', before = open && k === 0 ? 0 : 0.45 * d[(k + n - 1) % n], own = open && k === n - 1 ? d[k] : 0.55 * d[k];
         const window_ = before + own, clip = manifest[lang][key][k].d;
         check(window_ >= clip + 1.1, `${lang}/${key}-${k}: chỗ trống ${window_.toFixed(1)}s < clip ${clip}s`);
       }
@@ -144,5 +144,5 @@ try {
   await page.close();
 } finally { await browser.close(); server.close(); }
 
-console.log(problems.length ? 'LỖI:\n - ' + problems.join('\n - ') : 'Giọng thuyết trình: đạt (vi + en + ru, 5 tour, 41 điểm dừng + 8 mốc kịch bản bão mỗi ngôn ngữ).');
+console.log(problems.length ? 'LỖI:\n - ' + problems.join('\n - ') : 'Giọng thuyết trình: đạt (vi + en + ru, 6 tour, 47 điểm dừng + 8 mốc kịch bản bão mỗi ngôn ngữ).');
 process.exit(problems.length ? 1 : 0);

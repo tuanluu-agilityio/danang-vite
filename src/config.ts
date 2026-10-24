@@ -409,6 +409,104 @@ const weatherBase = {
   monthPreset: ['monsoon', 'monsoon', 'now', 'now', 'summer', 'summer', 'summer', 'summer', 'rain', 'rain', 'monsoon', 'monsoon'] as string[]   // preset tự chọn theo tháng 1–12, chỉ khi URL không có ?test (ước lượng theo mùa khí hậu)
 };
 
+/* ---------------------------- Vòng quay Mặt Trời (Sun Wheel) ----------------------------
+   Asia Park, bờ Tây, phía Nam Cầu Trần Thị Lý. Mét, độ, giây; tọa độ thế giới (z âm là phía Bắc), mặt đất y = landY.
+   Đã có nguồn: 115 m, 64 cabin × 6 khách, ~15 phút/vòng, 980 t, 13 000 LED trên 32 thanh, mở 18/7/2014, trước là "Igosu 108" (Biwako Tower, Shiga, 1992, 108 m)
+   (Wikipedia, danang.gov.vn, vietnamtourism.vn, vietnambooking). Tọa độ tâm và hướng mặt phẳng do người dùng đo trên Google Maps (2026-10-22).
+   Phần còn lại (đường kính, bệ, tháp đỡ, vị trí x) là ước lượng đo tỉ lệ trên ảnh. Theo một số nguồn vòng quay đã ngừng từ 9/2025; mô hình thể hiện lúc còn vận hành. */
+const sunWheelBase = {
+  lat: 16.040525, lon: 108.228459,   // ° — tâm vòng quay (người dùng đo); so Cầu Rồng (16,06116°N; 108,22719°E): 2 282 m về Nam, 136 m về Đông
+  z: 2280,                           // m — theo khoảng cách Nam–Bắc tới Cầu Rồng (mô hình coi sông thẳng)
+  x: -440,                           // m — (ước lượng) 262 mép kè + ~180 m vào bờ Tây, đọc trên ảnh vệ tinh; không lấy từ kinh độ vì sông thật lệch Đông dần về phía Nam
+  azimuth: 83,                       // ° — phương vị mặt phẳng vòng quay (83°↔263°, Đông Đông Bắc – Tây Tây Nam); trục quay 173°↔353°
+  height: 115,                       // m — đỉnh cabin so với mặt đất (có nguồn)
+  cabins: 64, seats: 6,              // số cabin, khách mỗi cabin (có nguồn: 384 khách)
+  spokes: 32, leds: 13000,           // thanh chính mang LED, tổng số LED (có nguồn)
+  period: 900,                       // s — một vòng ≈ 15 phút (có nguồn)
+  speeds: [0, 1, 10, 60],            // hệ số tốc độ quay: dừng, thật, ×10, ×60
+  mass: 980,                         // t (có nguồn, một nguồn)
+  rimR: 46.5,                        // m — bán kính vành (ước lượng, suy từ height = baseH + 2·(rimR + cabinH); đường kính ≈ 93 m)
+  cabinH: 4.5,                       // m — cabin + giá treo, treo ngoài vành (ước lượng)
+  baseH: 13,                         // m — mặt sàn mái bệ so với mặt đất; cabin thấp nhất chạm sàn này (ước lượng)
+  baseLen: 100, baseDepth: 30,       // m — bệ dọc mặt vòng quay, và bề sâu theo trục quay (ước lượng)
+  plaza: { len: 120, depth: 70 },    // m — quảng trường lát đá phía mặt Nam, nối vào bệ (ước lượng)
+  clearMargin: 6,                    // m — lề dọn nhà/cây quanh nền
+  lodDistance: 1500,                 // m — xa hơn thì ẩn cabin, chi tiết nhà ga
+  /* ---- hình học (GĐ2), đọc tỉ lệ từ ảnh n1 (chính diện) và a1 (flycam); toàn bộ là ước lượng ---- */
+  rim: { gap: 5, tube: 0.45, ties: 64 },          // m — hai vòng vành chính cách nhau 5 m theo trục quay, bán kính ống 0,45 m; 64 thanh giằng giữa hai vòng (ước lượng)
+  ring2: 0.65, ring2Tube: 0.25,                   // vành phụ ở 0,65 R (theo ảnh n2), ống 0,25 m (ước lượng)
+  hubRing: 7, hubRingTube: 0.3,                   // m — vành nhỏ quanh moay-ơ, bán kính 7 m (ước lượng)
+  hub: { r: 2.6, len: 7 },                        // m — moay-ơ: bán kính, dài theo trục quay (ước lượng)
+  spokeR: 0.22, cableR: 0.07, cables: 64,         // m — bán kính 32 thanh chính và 64 cáp chéo mảnh (ước lượng; n1 thấy nhiều hơn 32 đường)
+  axle: { r: 1.3, len: 24 },                      // m — trục tĩnh theo phương 173°/353°, dài qua hai mặt giàn (ước lượng)
+  legs: { zTop: 10, zBot: 13, xBot: 26, xTop: 3, w: 1.2, brace: 0.5, tiers: 5 },   // m — giàn tháp hình thang mỗi bên mặt vòng quay: mặt giàn cách mặt vòng quay 10 m ở trục, 13 m ở chân; chân rộng ±26 m trên mặt bệ, đỉnh ±3 m; tiết diện chân 1,2 m, giằng 0,5 m; 5 tầng giằng ngang (ước lượng, n1)
+  cabin: { r: 1.5, len: 1.3, glass: 0.8 },        // m — cabin hình viên nang đứng: bán kính 1,5, thân thẳng 1,3 (cao 4,3 m), dải kính cao ±0,8 m quanh giữa (ước lượng)
+  station: { towerW: 17, towerH: 15, archW: 7, archH: 8.5, archX: 21, panel: 0.55, deckPlanters: 8 },   // m — tháp vuông hai đầu bệ rộng 17, cao 15; 3 vòm cuốn rộng 7, cao 8,5, cách nhau 21 m; ốp đá xám (hệ số màu 0,55); 8 bồn cây trên sàn mái (ước lượng, n1)
+  pavilion: { w: 12, h1: 4, h2: 3, roof1: 3, roof2: 2.6 },   // m — lầu trên tháp: rộng 12, tầng dưới cao 4, tầng trên 3, mái dưới cao 3, mái trên 2,6 (ước lượng, n1/a1)
+  gate: { r: 9, tube: 0.9, stageD: 8 },           // m — cổng vòm vàng giữa mặt Nam (sân khấu): bán kính vòm 9, ống 0,9, sân khấu sâu 8 (ước lượng, a1)
+  sign: { w: 16, h: 3.2, below: 13 },             // m — biển "SUN WHEEL" rộng 16, cao 3,2, tâm thấp hơn trục 13 m, mặt Nam (ước lượng, n1)
+  lamps: { n: 8, h: 8 },                          // cột đèn quảng trường: số cột, cao m (ước lượng)
+  /* ---- chuyển động (GĐ3) ---- */
+  speedAccel: 6,                                  // hệ số tốc độ/giây — đổi tốc độ mượt: dừng ↔ ×60 mất ≈ 10 s, dừng ↔ ×1 chưa tới 0,2 s (ước lượng)
+  stepMax: 0.1,                                   // s — bước tích phân tối đa khi một khung dài (không bỏ sót đổi tốc độ)
+  placeEps: 1e-4,                                 // rad — lệch góc tối thiểu để dựng lại ma trận 64 cabin
+  /* ---- LED ban đêm (GĐ4): emissive trong shader, nhân shared.uNight, không thêm mesh/đèn. Độ sáng là hệ số emissive (ước lượng, chỉnh theo ảnh n1/a2, bloom ngưỡng 0,98) ---- */
+  led: {
+    shows: ['white', 'pink', 'rays', 'heart', 'off'],   // thứ tự uShow 0–4: trắng (n1–n3), hồng tím (a2), tia chạy, nhịp tim (đồng bộ LED trái tim riverfront), tắt
+    show: 0,                                       // kiểu mặc định: trắng
+    spoke: 1.5, rim: 2.2, ring: 1.2, cable: 0.35, hub: 0.6,   // độ sáng 32 thanh chính, viền vành chính, vành phụ/vành moay-ơ, cáp chéo, moay-ơ (ước lượng)
+    flood: 0.32,                                   // giàn tháp đỡ + trục được chiếu trắng (n1–n3): độ sáng ở kiểu trắng; các kiểu màu bằng một nửa, tắt = 0 (ước lượng)
+    cabinRing: 2.0, cabinShell: 0.12,              // viền LED đỏ quanh cabin (hai vòng sát mép dải kính) và ánh đỏ cả vỏ (ước lượng)
+    cabinRingW: 0.22,                              // m — bề cao mỗi vòng viền LED cabin (ước lượng)
+    lamp: 1.6,                                     // đèn cột quảng trường (ánh vàng ấm), sáng mọi kiểu show (ước lượng)
+    pinkWave: 0.8,                                 // rad/s — tốc độ dải màu hồng ↔ tím trượt dọc nan (ước lượng)
+    rayRate: 0.6, rayCount: 1.5,                   // tia chạy: số vòng sóng/giây và số sóng trên một bán kính (≈ 1,1 s một sóng từ moay-ơ ra vành) (ước lượng)
+    heartBase: 0.25                                // nhịp tim: độ sáng nền giữa hai nhịp; đỉnh nhịp cộng thêm 1 (ước lượng)
+  },
+  /* ---- ngồi cabin (GĐ5): camera gắn tâm cabin, không thêm mesh/đèn ---- */
+  ride: {
+    eyeUp: 0.4,                                    // m — mắt cao hơn tâm cabin (ngồi trên ghế, cabin cao 4,3 m) (ước lượng)
+    pitch0: -0.12,                                 // rad — góc nhìn xuống lúc lên cabin, hơi chúi để thấy cầu phía Bắc (ước lượng)
+    pitchMax: 1.4,                                 // rad — giới hạn ngẩng/cúi khi kéo chuột (≈ 80°)
+    lookSpeed: 0.005,                              // rad/px — tốc độ xoay khi kéo chuột
+    enterTime: 1.6                                 // s — thời gian bay từ góc nhìn hiện tại vào cabin (ước lượng, như flyTo)
+  },
+  /* ---- Tour (GĐ7): điểm 4 lên cabin, tua nhanh tới đỉnh rồi giảm tốc; điểm 5 ngắm 4 cầu từ đỉnh; điểm 6 show LED đêm. Không thêm mesh/đèn ---- */
+  tour: {
+    climbSpeed: 40,                                // hệ số tốc độ khi lên đỉnh (ước lượng): với speedAccel = 6, đáy → đỉnh ≈ 18 s, ngắn nhất trong khoảng ×30–×50
+    topSpeed: 1,                                   // hệ số tốc độ khi tới đỉnh: quay thật, cabin nhích chậm quanh đỉnh để ngắm cầu
+    climbSec: 18,                                  // s — thời gian điểm 4 hiện tối thiểu (kể cả khi tắt giọng), đủ để lên tới đỉnh ở climbSpeed (ước lượng)
+    topSec: 12,                                    // s — thời gian điểm 5 hiện tối thiểu (ước lượng)
+    show: 'pink'                                   // kiểu show LED ở điểm 6 (hồng tím, như ảnh a2)
+  },
+  /* ---- thời tiết (GĐ6): dừng theo `closed` của preset Bão (không có ngưỡng gió, D-012); cabin lắc theo windFx. Không thêm mesh/đèn ---- */
+  storm: {
+    stopSec: 10,                                   // s — từ lúc bão đóng cửa tới khi vòng quay dừng hẳn, giảm tốc tuyến tính từ tốc độ lúc đó (ước lượng)
+    sway: {
+      ref: 25,                                     // m/s — gió (độ lớn windFx) mà cabin lắc tới biên độ tối đa; biên độ ∝ (gió/ref)², có trần (ước lượng)
+      maxTilt: 0.16,                               // rad — góc nghiêng tối đa của cabin (≈ 9°) (ước lượng)
+      mean: 0.5,                                   // phần nghiêng cố định theo hướng gió; phần còn lại là dao động quanh đó (ước lượng)
+      omega: 1.6,                                  // rad/s — tần số lắc của cabin treo (giá treo ngắn nhưng cabin nặng, có cản) (ước lượng)
+      phase: 2.4,                                  // rad — lệch pha cố định giữa hai cabin liền kề (không dùng rand()) (ước lượng)
+      pivotUp: 3.6                                 // m — điểm treo cao hơn tâm cabin (nửa cabin 2,15 m + giá treo ≈ 1,5 m) (ước lượng)
+    }
+  }
+};
+function deriveSunWheel(C: typeof sunWheelBase) {
+  const yaw = THREE.MathUtils.degToRad(90 - C.azimuth);          // quay quanh Y: trục X cục bộ (dọc mặt vòng quay) về phương vị 83°, +7° lệch Bắc
+  const cabinR = C.rimR + C.cabinH / 2;                          // bán kính tâm cabin, treo ngoài vành
+  const hubY = base.landY + C.baseH + C.cabinH + C.rimR;      // cao độ trục ≈ 66,5 so với mặt nước (≈ 64 so với mặt đất)
+  const topY = hubY + C.rimR + C.cabinH;                         // đỉnh cabin ≈ 117,5 so với mặt nước (115 m so với mặt đất)
+  const omega = 2 * Math.PI / C.period;                          // rad/s ở tốc độ thật
+  const cabinStep = 2 * Math.PI / C.cabins;
+  /* nền cần dọn: bệ + quảng trường theo hệ cục bộ (X dọc mặt, Z về mặt Nam), đổi sang khung bao trục thế giới */
+  const local = { x0: -Math.max(C.baseLen, C.plaza.len) / 2, x1: Math.max(C.baseLen, C.plaza.len) / 2, z0: -C.baseDepth / 2, z1: C.baseDepth / 2 + C.plaza.depth };
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  const pts = [[local.x0, local.z0], [local.x1, local.z0], [local.x1, local.z1], [local.x0, local.z1]].map(([lx, lz]) => [C.x + lx * c + lz * s, C.z - lx * s + lz * c]);
+  const site = { x0: Math.min(...pts.map((p) => p[0])), x1: Math.max(...pts.map((p) => p[0])), z0: Math.min(...pts.map((p) => p[1])), z1: Math.max(...pts.map((p) => p[1])) };
+  return { ...C, yaw, cabinR, hubY, topY, omega, cabinStep, local, site };
+}
+
 /* ---- Tour 4 cầu ----
    Hành trình một chiều Trần Thị Lý → Cầu Rồng → Cầu sông Hàn → Thuận Phước (~4,2 km), điểm dừng ở views/tourStops.ts (ALL_TOUR) */
 const tourAllBase = {
@@ -423,6 +521,7 @@ export const CONFIG = {
   tranThiLy: deriveTtl(tranThiLyBase),
   songHan: deriveSh(songHanBase),
   hanTunnel: deriveHr(hanTunnelBase),
+  sunWheel: deriveSunWheel(sunWheelBase),
   riverfront: riverfrontBase,
   weather: weatherBase,
   tourAll: tourAllBase

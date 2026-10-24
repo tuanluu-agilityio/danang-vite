@@ -1,4 +1,6 @@
 import { canvas, controls } from '../core/renderer';
+import { CONFIG } from '../config';
+import { swRide } from '../bridges/sun-wheel/ride';
 import { sun } from '../core/lights';
 import { dayNight } from '../core/dayNight';
 import { t, onChange } from '../i18n';
@@ -7,9 +9,10 @@ import type { ThuanPhuocBridge } from '../bridges/thuan-phuoc';
 import type { TranThiLyBridge } from '../bridges/tran-thi-ly';
 import type { SongHanBridge } from '../bridges/song-han';
 import type { HanTunnel } from '../bridges/han-tunnel';
+import type { SunWheel } from '../bridges/sun-wheel';
 import type { BridgeKey } from '../views/presets';
 import { cam, keys } from '../views/state';
-import { setView } from '../views/camera';
+import { setView, leaveSwRide } from '../views/camera';
 import { tour, tourBox, tourHooks, initTourCaption, renderTourCaption, exitTour } from '../views/tour';
 import { selectBridge, syncShowLine, toggle } from './panel';
 import { setupAudioUI } from './audioUI';
@@ -19,7 +22,7 @@ import { setupRiverfrontUI } from './riverfrontUI';
 import { setupWeatherUI } from './weatherUI';
 
 /* Gắn mọi bảng điều khiển: ngày/đêm, bóng đổ, trình diễn, chọn cầu, góc nhìn, nút bật/tắt từng cầu, bàn phím */
-export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge; hanTunnel: HanTunnel }) {
+export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge; hanTunnel: HanTunnel; sunWheel: SunWheel }) {
   const btnNight = document.getElementById('btnNight'), slider = document.getElementById('timeSlider') as HTMLInputElement;
   const btnShow = document.getElementById('btnShow'), btnShadow = document.getElementById('btnShadow');
   const syncNight = () => {
@@ -62,6 +65,27 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPh
   // Hai bờ sông: đèn trái tim, chế độ đối đáp/đồng bộ, quảng cáo; góc nhìn "Trái tim hai bờ" tự chuyển sang đêm
   setupRiverfrontUI(toggle);
   document.querySelector('[data-view="rfHearts"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
+  // Vòng quay Mặt Trời: tốc độ quay; góc nhìn ban đêm tự chuyển sang đêm
+  const swSpeed = document.getElementById('swSpeed') as HTMLSelectElement;
+  swSpeed.addEventListener('change', () => sunWheel.setSpeed(Number(swSpeed.value)));
+  const swShow = document.getElementById('swShow') as HTMLSelectElement;   // kiểu show LED đêm (GĐ4)
+  swShow.addEventListener('change', () => sunWheel.setShow(swShow.value));
+  document.querySelector('[data-view="swNight"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
+  /* Tour Vòng quay (GĐ7): lên cabin / đỉnh / xuống do ride.ts xử lý; ở đây chỉ phần giao diện của điểm 6 (đêm + kiểu show) và trả lại khi thoát Tour */
+  let swTourPrev: { night: number; show: string } | null = null;
+  swRide.tour.onEnd = () => {
+    if (!swTourPrev) return;
+    dayNight.target = swTourPrev.night; slider.value = String(swTourPrev.night * 100); syncNight();
+    sunWheel.setShow(swTourPrev.show); swShow.value = swTourPrev.show; swTourPrev = null;
+  };
+  tourHooks.sw = (phase, exit) => {
+    if (phase === 'night') {
+      swTourPrev ||= { night: dayNight.target, show: sunWheel.show() };
+      dayNight.target = 1; slider.value = '100'; syncNight();
+      sunWheel.setShow(CONFIG.sunWheel.tour.show); swShow.value = CONFIG.sunWheel.tour.show;
+    }
+    if (exit) swRide.tourEnd(); else swRide.tourPhase(phase);
+  };
   // Thời tiết: preset + cường độ (GĐ2: chỉ khí quyển)
   setupWeatherUI(toggle);
   window.addEventListener('keydown', (e) => {
@@ -76,5 +100,5 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel }: { thuanPh
   initTourCaption();
   canvas.addEventListener('pointerdown', exitTour);
   canvas.addEventListener('wheel', exitTour, { passive: true });
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') exitTour(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { exitTour(); leaveSwRide(true); } });   // Esc cũng xuống khỏi cabin Vòng quay Mặt Trời
 }

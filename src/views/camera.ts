@@ -8,6 +8,7 @@ import { VIEWS, type ViewPreset } from './presets';
 import { narration } from '../audio/narration';
 import { cam, keys } from './state';
 import { getWeather } from '../environment/weather';
+import { swRide } from '../bridges/sun-wheel/ride';
 import { TOUR_VIEWS, activeTour, setActiveTour, tour, tourBox, showTourCaption, startTour, updateTour } from './tour';
 
 /* ============================ Góc nhìn & điều khiển camera ============================ */
@@ -18,8 +19,32 @@ const walk = { x: -240, z: 17.4, yaw: 0 };
 /* Mắt thích nghi khi lái vào/ra hầm: độ phơi sáng nhân hệ số k, về 0,7 trong hầm (τ ≈ 0,5 s ⇒ ổn định sau ~1,5 s) rồi trả về 1 */
 const eye = { k: 1 };
 
+/* Ngồi cabin Vòng quay Mặt Trời (cam.mode = 'swRide'): tư thế camera do SunWheel.update đặt (ride.ts). Mọi đường rời chế độ (flyTo, setView, kịch bản bão) đi qua dropRide() */
+const rideHint = () => document.getElementById('swRideHint');
+function dropRide() {
+  if (cam.mode !== 'swRide') return;
+  cam.mode = 'orbit'; controls.enabled = true;
+  document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+  rideHint().hidden = true;
+}
+export function enterSwRide() {
+  if (cam.mode === 'swRide' || !swRide.wheel) return;
+  swRide.begin();
+  cam.flight.then = null; cam.mode = 'swRide'; controls.enabled = false;
+  document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === 'swRide')));
+  rideHint().hidden = false;
+}
+/* Xuống cabin: restore = true thì bay về chỗ đã đứng trước khi lên và trả OrbitControls như cũ (Esc, bấm lại nút); false thì giữ nguyên chỗ (đã có chuyến bay khác nối tiếp) */
+export function leaveSwRide(restore = true) {
+  if (cam.mode !== 'swRide') return;
+  const s = swRide.saved;
+  if (restore) flyTo({ pos: s.pos.toArray() as [number, number, number], target: s.target.toArray() as [number, number, number], maxPolar: s.maxPolar });
+  else dropRide();
+}
+
 /* Bay mượt tới một góc nhìn; then = 'tour' để bắt đầu Tour khi tới nơi */
 export function flyTo(v: ViewPreset, then: 'tour' | null = null) {
+  dropRide();
   const flight = cam.flight;
   flight.then = then;
   controls.maxPolarAngle = v.maxPolar || Math.PI * 0.495;
@@ -28,6 +53,8 @@ export function flyTo(v: ViewPreset, then: 'tour' | null = null) {
 }
 export function setView(name: string) {
   narration.stop();
+  if (name === 'swRide' && cam.mode === 'swRide') { leaveSwRide(true); return; }   // bấm lại nút Ngồi cabin = xuống
+  dropRide();
   document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
   document.getElementById('hint').hidden = name !== 'walk';
   const tourKey = TOUR_VIEWS[name];
@@ -36,11 +63,13 @@ export function setView(name: string) {
   if (name === 'drive') { cam.mode = 'drive'; controls.enabled = false; drive.x = -700; return; }
   if (name === 'tpDrive') { cam.mode = 'tpDrive'; controls.enabled = false; tpDrive.x = -1300; return; }
   if (name === 'hrDrive') { cam.mode = 'hrDrive'; controls.enabled = false; hrDrive.x = -1000; eye.k = 1; return; }
+  if (name === 'swRide') { enterSwRide(); return; }
   if (name === 'walk') { cam.mode = 'walk'; controls.enabled = false; walk.x = -240; walk.z = 17.4; walk.yaw = 0; canvas.focus(); return; }
   flyTo(VIEWS[name]);
 }
 /* Kịch bản bão nắm camera (chế độ 'storm'): bỏ chọn nút góc nhìn, tắt Tour / lái xe / đi bộ; updateCamera() đọc scenario.pose() mỗi khung */
 export function followScenario() {
+  dropRide();
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
   document.getElementById('hint').hidden = true;
   tourBox().hidden = true; document.body.classList.remove('touring');
@@ -57,6 +86,8 @@ export function updateCamera(dt: number) {
     if (flight.t >= 1) { if (flight.then === 'tour') startTour(); else { cam.mode = 'orbit'; controls.enabled = true; } }
   } else if (cam.mode === 'tour') {
     updateTour(dt);
+  } else if (cam.mode === 'swRide') {
+    /* tư thế do SunWheel.update đặt (sau khi vòng quay quay, cùng khung hình); không gọi controls.update() */
   } else if (cam.mode === 'storm') {
     const sc = getWeather()?.scenario;
     if (sc?.running && sc.cameraOwned) { sc.pose(sc.t, camera.position, controls.target); camera.lookAt(controls.target); }

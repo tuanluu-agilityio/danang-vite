@@ -38,8 +38,8 @@ function fitDurations(T: Tour) {
   const n = T.stops.length;
   T.durs.splice(0, n, ...T.base);
   for (let k = 0; k < n; k++) {
-    const clip = narration.duration(T.key, k);
-    if (clip === null) continue;
+    const spoken = narration.duration(T.key, k), clip = Math.max(spoken ?? 0, T.stops[k].minSec ?? 0);   // minSec: giữ điểm này ít nhất chừng đó giây dù không có giọng
+    if (spoken === null && !T.stops[k].minSec) continue;
     const prev = (k + n - 1) % n, before = !T.loop && k === 0 ? 0 : (1 - SWITCH) * T.durs[prev];
     T.durs[k] = Math.max(T.durs[k], (clip + PAD - before) / (!T.loop && k === n - 1 ? 1 : SWITCH));
   }
@@ -61,7 +61,8 @@ export const setTourSwingHook = (fn: () => void) => { onTourSwingStop = fn; };
 export const setActiveTour = (k: TourKey) => { activeTour = TOURS[k]; };
 /* Móc cho công trình có hành vi riêng ở từng điểm dừng (Hầm sông Hàn: mặt cắt, mô phỏng dìm) và khi thoát Tour */
 /* bridge: Tour 4 cầu tới cầu khác thì đổi bảng Thông số / danh sách góc nhìn (setupUI gắn selectBridge, tránh vòng import panel → camera → tour) */
-export const tourHooks: { stop: ((s: TourStop) => void) | null; exit: (() => void) | null; bridge: ((k: BridgeKey) => void) | null } = { stop: null, exit: null, bridge: null };
+/* sw: Tour Vòng quay Mặt Trời — gọi mỗi khi đổi điểm dừng (null = điểm thường) và khi thoát Tour (exit = true), sau khi cam.mode đã về 'orbit' */
+export const tourHooks: { stop: ((s: TourStop) => void) | null; exit: (() => void) | null; bridge: ((k: BridgeKey) => void) | null; sw: ((phase: TourStop['sw'] | null, exit: boolean) => void) | null } = { stop: null, exit: null, bridge: null, sw: null };
 
 /* Giọng bật/tắt hoặc đổi ngôn ngữ: tính lại thời lượng (giữ nguyên vị trí trên đường bay) rồi đọc lại điểm dừng hiện tại */
 function syncNarration() {
@@ -99,6 +100,7 @@ export function exitTour() {
   cam.flight.then = null; cam.mode = 'orbit'; controls.enabled = true;
   els.box.hidden = true; document.body.classList.remove('touring');
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+  tourHooks.sw?.(null, true);
 }
 export function updateTour(dt: number) {
   const T = activeTour;
@@ -117,6 +119,7 @@ export function updateTour(dt: number) {
     const s = T.stops[near];
     if (s.swing && onTourSwingStop) onTourSwingStop();
     if (s.bridge) tourHooks.bridge?.(s.bridge);
+    tourHooks.sw?.(s.sw ?? null, false);
     tourHooks.stop?.(s);
   }
   els.bar.style.width = `${(tour.t / T.total * 100).toFixed(1)}%`;
