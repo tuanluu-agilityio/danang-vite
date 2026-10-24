@@ -43,6 +43,7 @@ src/
     tran-thi-ly/     Cầu Trần Thị Lý
     song-han/        Cầu sông Hàn + SwingController
     han-tunnel/      Hầm vượt sông Hàn (vỏ hầm, nội thất, máng hầm hở, cửa hầm, đáy sông, mặt cắt, mô phỏng dìm)
+    sun-wheel/       Vòng quay Mặt Trời (bệ + nhà ga, khung tháp, vành và nan, 64 cabin, LED đêm, ngồi cabin, Tour)
   environment/       sông Hàn, núi, đường phố, thành phố, cây, giao thông
     riverfront/      hai bờ sông: địa danh thật, mặt dựng LED trái tim + "DN", bảng quảng cáo, chi tiết dải đi bộ
     weather/         thời tiết: khí quyển 4 preset, mưa + mặt ướt, gió (cây, dây, thuyền), bão (chớp, đóng cầu, kịch bản 120 s), nắng hè, cây đổ, âm thanh

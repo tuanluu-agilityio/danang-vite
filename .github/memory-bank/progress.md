@@ -22,6 +22,8 @@ _Cập nhật: 2026-10-22_
 | Thời tiết GĐ5: bão — chớp, đóng cầu, cầu quay, trình diễn | `1b39173` | `test:drawcalls`, `test:weather` |
 | Thời tiết GĐ6: bảng "Ảnh hưởng tới cầu", góc nhìn `wx*`, i18n | `c169343` | `test:drawcalls`, `test:weather` |
 | Thời tiết GĐ7: kịch bản bão 120 s, nắng hè, cây đổ, âm thanh | `edced8b` | `test:drawcalls`, `test:weather`, `test:tour` |
+| Vòng quay Mặt Trời GĐ1–GĐ7: khung, hình học, quay + góc `sw*`, LED đêm, ngồi cabin, thời tiết (dừng, lắc, ướt), panel + Tour 6 điểm + `swStops` (D-014, D-016, D-017) | `52ad574` … `028dede` | `test:sunwheel`, `test:drawcalls`, `test:tour`, `test:voice` |
+| Vòng quay GĐ8: `KET-QUA.md` (sửa `swTour` đêm 209 → 207 theo log), README, memory bank, mục 8 của `sunwheel-check`, ghi chú đo ngày/đêm | — | `build` đạt; `test:drawcalls` đạt (góc cũ chênh 0 đến +2, `sw*` ghi vào KET-QUA, khớp log); `test:tour`, `test:voice`, `test:riverfront`, `test:weather` đạt (log gd8). chạy tay lại 2026-10-24: `test:tunnel` đạt, `test:sunwheel` đầy đủ (gồm mục 8) đạt; chênh đêm − ngày ≈ 21 đã tách (không do vòng quay), xem `tests/KET-QUA.md` |
 | Thời tiết GĐ8: hoàn tất — `KET-QUA.md`, README, memory bank (chưa commit) | — | `build`, toàn bộ bộ test (log `gd8-l0-*`) |
 | Kịch bản bão: hành trình camera như Tour + thuyết minh vi/en/ru khớp từng điểm (D-013); sửa dây không lắc (hình trụ 1 đoạn, lỗi từ GĐ4) (chưa commit) | — | `test:tour`, `test:voice`, `test:weather`, `test:drawcalls` |
 | Tour 4 cầu: TTL → Rồng → sông Hàn → Thuận Phước, đường bay mở một chiều, 13 điểm, thuyết minh vi/en/ru, i18n 9 ngôn ngữ (D-015) | `e672add`, `cd52a47` + GĐ4 | `test:drawcalls` (58/58, chênh 0), `test:tour`, `test:voice`, `test:tunnel`, `test:riverfront`, `test:weather` |
@@ -34,8 +36,8 @@ Tất cả đã vào `main` (PR #1 hầm, PR #2 riverfront, PR #3 hướng dẫn
 - Thời tiết: sóng bạc đầu cửa sông, bơm hầm, tàu cao `ship` của Cầu sông Hàn, ảo ảnh mặt cầu chưa có.
 - Thuyết minh cho ko, ja, zh, th, ar, hi.
 - Dựng lại Cầu Rồng chi tiết theo `prompts/cau-rong.md`.
-- Vòng quay Mặt Trời (Sun Wheel) theo `prompts/vong-quay-mat-troi.md`: đã có đặc tả (GĐ0) và khung GĐ1 (config, `SunWheel` rỗng, dọn nền, `test:sunwheel`); còn hình học, quay, LED, ngồi cabin, thời tiết, Tour (GĐ2–GĐ8). Còn thiếu để chốt số: khoảng cách tâm → mép nước (x), đường kính thật, ảnh cận cabin, video show LED.
-- Vòng quay Mặt Trời GĐ7 (Tour 6 điểm + `swStops` 9 ngôn ngữ, D-017) đã viết, chưa commit; thiếu 18 clip giọng đọc `swStops` vi/en/ru vì `npm run gen:voice` không chạy được trong phiên (cần mạng/duyệt quyền) — chạy lại rồi commit `public/voice/`. GĐ8 còn lại (`KET-QUA.md`, README, `systemPatterns.md`).
+- Vòng quay Mặt Trời (Sun Wheel) theo `prompts/vong-quay-mat-troi.md`: GĐ1–GĐ7 đã có (xem bảng trên). Còn thiếu để chốt số: khoảng cách tâm → mép nước (x), đường kính thật, ảnh cận cabin, video show LED.
+- Vòng quay Mặt Trời: chưa đo bản gốc (`test:drawcalls -- tests/original`) cho các góc cũ; cột "ngày" của `rfBank`, `wxRiverMouth`, `wxTtlStays`, `wxStreet`, `swOverview`, `swFront`, `swBase`, `swFromTTL` trong `KET-QUA.md` thực ra đo ban đêm (lỗi `tests/drawcalls.mjs` sau `rfHearts`, có từ trước; đề xuất sửa + đo lại). Vòng quay chưa có ảnh `sunwheel-gd8/` (GĐ8 không có bước nhìn kết quả).
 - Bật `strict` TypeScript dần theo thư mục (giai đoạn 2).
 
 ## Lỗi / hạn chế đã biết

@@ -641,6 +641,14 @@ try {
     check(Array.isArray(st) && st.length === 6 && st.every((p) => Array.isArray(p) && p.length === 2 && p.every((x) => typeof x === 'string' && x.trim())), `locale ${code}: swStops phải có 6 cặp [tên, lời]`);
     check(Array.isArray(st) && /2025/.test(st[2]?.[1] || '') && new Set(st.map((p) => p[0])).size === 6, `locale ${code}: swStops điểm 3 thiếu hiện trạng 9/2025 hoặc tên điểm trùng`);
   }
+  // 8. GĐ8 (tài liệu và đo đạc): mọi góc sw* đều có trong VIEWS của drawcalls.mjs và trong bảng KET-QUA.md; README có mục vòng quay
+  const SW_VIEWS = ['swOverview', 'swFront', 'swBase', 'swFromTTL', 'swNight', 'swTop', 'swRide', 'swTour'];
+  const drawSrc = await readFile(new URL('./drawcalls.mjs', import.meta.url), 'utf8');
+  const ketSrc = await readFile(new URL('./KET-QUA.md', import.meta.url), 'utf8');
+  const readmeSrc = await readFile(new URL('../README.md', import.meta.url), 'utf8');
+  check(SW_VIEWS.every((v) => drawSrc.includes(`'${v}'`)), `drawcalls.mjs thiếu góc sw*: ${SW_VIEWS.filter((v) => !drawSrc.includes(`'${v}'`))}`);
+  check(SW_VIEWS.every((v) => new RegExp(`^\\| ${v} \\|`, 'm').test(ketSrc)), `KET-QUA.md thiếu dòng draw call của: ${SW_VIEWS.filter((v) => !new RegExp(`^\\| ${v} \\|`, 'm').test(ketSrc))}`);
+  check(readmeSrc.includes('sun-wheel/'), 'README mục Cấu trúc thiếu src/bridges/sun-wheel/');
   // 7. Console sạch
   check(errors.length === 0, `lỗi console: ${errors.join(' | ')}`);
 } finally { await browser.close(); srv.close(); }
