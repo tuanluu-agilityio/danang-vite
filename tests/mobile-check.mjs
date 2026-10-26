@@ -130,8 +130,16 @@ try {
     await pick(P.page, '#langSelect', code);
     for (const sh of ['settings', 'views']) {
       await P.page.evaluate((s) => window.__app.ui.openSheet(s), sh);
-      const over = await P.page.evaluate(() => [...document.querySelectorAll('.brand, .views, .view-list:not([hidden])')].filter((e) => e.offsetParent && e.scrollWidth > e.clientWidth + 1).length);
-      check(`${code} ${sh}: không tràn ngang`, over === 0);
+      await frames(P.page, 2);
+      // Không dùng offsetParent (.panel là position:fixed). Tờ không hiện lúc đo = LỖI, không bỏ qua
+      const r = await P.page.evaluate(([vis, need]) => {
+        const visible = new Function('return ' + vis)();
+        const shown = document.querySelector(need);
+        const over = [...document.querySelectorAll('.brand, .views, #brandBody, .view-list:not([hidden])')].filter((e) => visible(e) && e.scrollWidth > e.clientWidth + 1).map((e) => e.className || e.id);
+        return { shown: !!shown && visible(shown), over };
+      }, [VISIBLE.toString(), sh === 'settings' ? '#brandBody' : '.view-list:not([hidden])']);
+      check(`${code} ${sh}: tờ hiện và không tràn ngang`, r.shown && r.over.length === 0);
+      if (r.over.length) console.log('   tràn:', r.over.join(', '));
     }
     if (code === 'ar') {
       await P.page.evaluate(() => window.__app.ui.openSheet('settings'));   // vòng trên mở 'views' cuối cùng nên .brand đang ẩn (rộng 0)
