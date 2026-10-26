@@ -4,8 +4,9 @@
 //   Mục 3: chữ hướng dẫn cảm ứng, ẩn Đi bộ, sheet tự đóng khi Tour/bão, vệt mờ cuộn của hàng chip.
 //
 //   npm run build && npm run test:mobile
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
+import { serveDir, launch, openApp, frames, waitFlight, pick } from './lib.mjs';
 
 const problems = [];
 const check = (name, ok) => { if (!ok) problems.push(name); console.log(`${ok ? 'đạt ' : 'LỖI '} ${name}`); return ok; };
@@ -119,6 +120,35 @@ try {
   check('kịch bản bão: sheet đóng', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
   check('kịch bản bão: chữ touch', await visibleAll(P.page, ['#wxScenario .hint-touch']) && await hiddenAll(P.page, ['#wxScenario .hint-mouse']));
   await P.page.evaluate(() => document.getElementById('btnWxStorm').click());
+
+  // Mục 4 — i18n 9 ngôn ngữ cho khóa mới, không tràn chữ, RTL
+  await P.page.evaluate(() => window.__app.ui.closeSheets());
+  const KEYS = ['settings', 'close', 'tourExitTouch', 'wxStormHintTouch', 'swRideHintTouch'];
+  for (const code of ['vi', 'en', 'ko', 'ja', 'zh', 'th', 'ar', 'hi', 'ru']) {
+    const json = JSON.parse(fs.readFileSync(`src/i18n/locales/${code}.json`, 'utf8'));
+    check(`${code}: đủ 5 khóa`, KEYS.every((k) => typeof json[k] === 'string' && json[k].length > 0));
+    await pick(P.page, '#langSelect', code);
+    for (const sh of ['settings', 'views']) {
+      await P.page.evaluate((s) => window.__app.ui.openSheet(s), sh);
+      const over = await P.page.evaluate(() => [...document.querySelectorAll('.brand, .views, .view-list:not([hidden])')].filter((e) => e.offsetParent && e.scrollWidth > e.clientWidth + 1).length);
+      check(`${code} ${sh}: không tràn ngang`, over === 0);
+    }
+    if (code === 'ar') {
+      await P.page.evaluate(() => window.__app.ui.openSheet('settings'));   // vòng trên mở 'views' cuối cùng nên .brand đang ẩn (rộng 0)
+      await frames(P.page, 2);
+      check('ar: dir=rtl, sheet trọn bề ngang', await P.page.evaluate(() => document.documentElement.dir === 'rtl' && Math.abs(document.querySelector('.brand').getBoundingClientRect().width - innerWidth) < 2));
+      await P.page.evaluate(() => window.__app.ui.closeSheets());
+      await P.page.evaluate(() => { document.querySelector('.seg').scrollLeft = 0; });
+      await frames(P.page, 3);
+      check('ar: hàng chip lúc nghỉ có mờ cuối', (await fade()).end);
+      await P.page.evaluate(() => { const s = document.querySelector('.seg'); s.scrollLeft = -s.scrollWidth; });   // RTL: cuối dòng là scrollLeft âm
+      await frames(P.page, 3);
+      const fa = await fade();
+      check('ar: cuộn tới cuối thì mờ đầu, hết mờ cuối', fa.start && !fa.end);
+      await P.page.evaluate(() => { document.querySelector('.seg').scrollLeft = 0; });
+    }
+  }
+  await pick(P.page, '#langSelect', 'vi');
   allErrors.push(...P.errors); await P.page.close();
 
   // cửa sổ máy tính hẹp (chuột): gọn nhưng giữ nút Đi bộ + chữ chuột

@@ -431,5 +431,10 @@
   "qAuto": "자동",
   "qHigh": "높음",
   "qMed": "중간",
-  "qLow": "낮음"
+  "qLow": "낮음",
+  "settings": "설정",
+  "close": "닫기",
+  "tourExitTouch": "장면을 터치하면 종료됩니다",
+  "wxStormHintTouch": "화면을 드래그하면 카메라를 직접 조작합니다 — 날씨는 계속 진행됩니다",
+  "swRideHintTouch": "드래그하여 둘러보기 · 버튼을 다시 누르면 캐빈에서 내립니다"
 }

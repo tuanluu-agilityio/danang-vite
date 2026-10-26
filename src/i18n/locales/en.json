@@ -431,5 +431,10 @@
   "qAuto": "Auto",
   "qHigh": "High",
   "qMed": "Medium",
-  "qLow": "Low"
+  "qLow": "Low",
+  "settings": "Settings",
+  "close": "Close",
+  "tourExitTouch": "Tap the scene to exit",
+  "wxStormHintTouch": "Drag the scene to take the camera — the weather keeps running",
+  "swRideHintTouch": "Drag to look around · tap the button again to leave the cabin"
 }

@@ -1,4 +1,5 @@
 import { CONFIG } from '../config';
+import { onChange } from '../i18n';
 
 /* ===== Chế độ gọn (điện thoại): body.compact + hai tờ Cài đặt / Góc nhìn (body.sheet-*) ===== */
 export type Sheet = 'none' | 'settings' | 'views';
@@ -54,6 +55,7 @@ function wireSegFade() {
   window.addEventListener('resize', update);
   segFadeUpdate = update;
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(update).observe(seg);
+  onChange(update);   // đổi ngôn ngữ đổi bề rộng chip nhưng không đổi hộp .seg nên ResizeObserver không báo
 }
 let segFadeUpdate = () => {};
 
