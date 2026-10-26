@@ -1,10 +1,11 @@
 // Kiểm tra giao diện điện thoại (kế hoạch feature/mobile-ui).
 //   Mục 1: hạ tầng chế độ gọn (body.compact, sheet).
 //   Mục 2: bố cục gọn — thanh trên, thanh dưới, hai sheet (Cài đặt, Góc nhìn).
+//   Mục 3: chữ hướng dẫn cảm ứng, ẩn Đi bộ, sheet tự đóng khi Tour/bão, vệt mờ cuộn của hàng chip.
 //
 //   npm run build && npm run test:mobile
 import { fileURLToPath } from 'node:url';
-import { serveDir, launch, openApp, frames } from './lib.mjs';
+import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
 
 const problems = [];
 const check = (name, ok) => { if (!ok) problems.push(name); console.log(`${ok ? 'đạt ' : 'LỖI '} ${name}`); return ok; };
@@ -85,7 +86,47 @@ try {
   const v = (await rects(P.page, ['[data-list="sh"]']))[0];
   check('xoay: sheet trong màn hình', !!v && v.top >= 0 && v.bottom <= 390);
   await P.page.setViewportSize({ width: 390, height: 844 });
+  await P.page.evaluate(() => window.__app.ui.closeSheets());
+
+  // Mục 3 — chữ cảm ứng, hover, sheet tự đóng, vệt mờ hàng chip
+  await P.page.evaluate(() => { document.querySelector('.seg').scrollLeft = 0; });   // chạm chip ở mục 2 đã cuộn hàng chip
+  await frames(P.page, 3);
+  const fade = () => P.page.evaluate(() => { const c = document.querySelector('.seg').classList; return { start: c.contains('more-start'), end: c.contains('more-end') }; });
+  const f0 = await fade();
+  check('hàng chip: chưa cuộn thì mờ cuối, không mờ đầu', f0.end && !f0.start);
+  await P.page.evaluate(() => { const s = document.querySelector('.seg'); s.scrollLeft = s.scrollWidth; });
+  await frames(P.page, 3);
+  const f1 = await fade();
+  check('hàng chip: cuộn tới cuối thì hết mờ cuối, mờ đầu', !f1.end && f1.start);
+  await P.page.screenshot({ path: 'tests/screens/mobile/t3-bar-fade-end.png' });
+  await P.page.evaluate(() => { document.querySelector('.seg').scrollLeft = 0; });
+  await frames(P.page, 3);
+  await P.page.screenshot({ path: 'tests/screens/mobile/t3-bar-fade.png' });
+  await P.page.evaluate(() => document.querySelector('[data-bridge="dragon"]').click());
+  await P.page.evaluate(() => window.__app.ui.openSheet('views'));
+  await frames(P.page, 2);
+  check('cảm ứng: ẩn nút Đi bộ (tờ Góc nhìn đang mở)', await visibleAll(P.page, ['[data-list="dragon"] [data-view="overview"]']) && await hiddenAll(P.page, ['[data-view="walk"]']));
+  await P.page.tap('[data-list="dragon"] [data-view="tour"]'); await waitFlight(P.page);
+  check('Tour: sheet đóng, chú thích hiện', await P.page.evaluate(() => !/sheet-/.test(document.body.className) && !document.getElementById('tourCaption').hidden));
+  const [cap, bar] = await rects(P.page, ['#tourCaption', '.views']);
+  check('Tour: chú thích không bị thanh dưới che', cap.bottom <= bar.top + 1);
+  check('cảm ứng: chữ thoát là bản touch', await visibleAll(P.page, ['#tourCaption .hint-touch']) && await hiddenAll(P.page, ['#tourCaption .hint-mouse']));
+  check('cảm ứng: không hiện khóa i18n thô', await P.page.evaluate(() => !/Touch$/.test(document.querySelector('#tourCaption .hint-touch').textContent)));
+  await P.page.screenshot({ path: 'tests/screens/mobile/t3-tour-touch.png' });
+  await P.page.keyboard.press('Escape');
+  await P.page.evaluate(() => window.__app.ui.openSheet('settings'));
+  await P.page.evaluate(() => document.getElementById('btnWxStorm').click());
+  check('kịch bản bão: sheet đóng', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
+  check('kịch bản bão: chữ touch', await visibleAll(P.page, ['#wxScenario .hint-touch']) && await hiddenAll(P.page, ['#wxScenario .hint-mouse']));
+  await P.page.evaluate(() => document.getElementById('btnWxStorm').click());
   allErrors.push(...P.errors); await P.page.close();
+
+  // cửa sổ máy tính hẹp (chuột): gọn nhưng giữ nút Đi bộ + chữ chuột
+  const N = await openApp(browser, srv.url, { width: 700, height: 700 });
+  check('máy tính hẹp: compact, Đi bộ hiện', await N.page.evaluate(() => document.body.classList.contains('compact')) && await N.page.evaluate(() => { window.__app.ui.openSheet('views'); return document.querySelector('[data-view="walk"]').offsetParent !== null; }));
+  await N.page.evaluate(() => { document.getElementById('tourCaption').hidden = false; });
+  check('chuột: chữ thoát là bản chuột', await visibleAll(N.page, ['#tourCaption .hint-mouse']) && await hiddenAll(N.page, ['#tourCaption .hint-touch']));
+  allErrors.push(...N.errors); await N.page.close();
 
   // Mỗi lúc chỉ mở một trang: hai trang cùng chạy vòng vẽ làm SwiftShader quá tải (page.goto hết giờ)
   const L = await openApp(browser, srv.url, { width: 844, height: 390, mobile: true });

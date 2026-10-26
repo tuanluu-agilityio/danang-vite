@@ -60,7 +60,7 @@ export function apply(code: string) {
   root.lang = code; root.dir = LOCALES[code]._dir || 'ltr';
   loadFont(code);
   document.title = t('title');
-  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => { const v = t(el.dataset.i18n); if (v !== el.dataset.i18n) el.textContent = v; });   // khóa chưa có bản dịch: giữ chữ mặc định trong HTML
   document.querySelectorAll<HTMLElement>('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
   const sel = document.getElementById('langSelect') as HTMLSelectElement;
   if (sel && sel.value !== code) sel.value = code;

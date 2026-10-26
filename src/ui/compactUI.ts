@@ -40,14 +40,44 @@ function wireSheets() {
   new ResizeObserver(() => { if (ui.compact && ui.sheet === 'none') document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px'); }).observe(bar);
 }
 
+/* Vệt mờ trên hàng chip .seg: .more-start / .more-end khi còn nội dung bị cuộn khuất ở đầu / cuối dòng (RTL: scrollLeft ≤ 0, đầu dòng ở bên phải) */
+function wireSegFade() {
+  const seg = document.querySelector<HTMLElement>('.seg');
+  if (!seg) return;
+  const update = () => {
+    const max = seg.scrollWidth - seg.clientWidth;
+    const pos = Math.abs(seg.scrollLeft);   // quãng đã cuộn từ đầu dòng, đúng cả LTR lẫn RTL
+    seg.classList.toggle('more-start', ui.compact && pos > 8);
+    seg.classList.toggle('more-end', ui.compact && max - pos > 8);
+  };
+  seg.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  segFadeUpdate = update;
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(update).observe(seg);
+}
+let segFadeUpdate = () => {};
+
+/* Tour / kịch bản bão bật lên thì đóng tờ đang mở (class của body đổi) */
+function wireAutoClose() {
+  let was = false;
+  new MutationObserver(() => {
+    const on = document.body.classList.contains('touring') || document.body.classList.contains('wxrun');
+    if (on && !was && ui.sheet !== 'none') closeSheets();
+    was = on;
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+}
+
 export function setupCompactUI() {
   wireSheets();
+  wireSegFade();
+  wireAutoClose();
   const mq = window.matchMedia(CONFIG.ui.compactQuery);
   const apply = () => {
     const was = ui.compact;
     ui.compact = mq.matches;
     document.body.classList.toggle('compact', ui.compact);
     if (was && !ui.compact) closeSheets();   // ra khỏi chế độ gọn: không để tờ mở dở
+    segFadeUpdate();
   };
   mq.addEventListener('change', apply);
   apply();
