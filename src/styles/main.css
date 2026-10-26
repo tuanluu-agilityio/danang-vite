@@ -16,7 +16,7 @@
 }
 [hidden]{display:none!important;}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(--text);font-family:var(--font-body);}
-#scene{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;}
+#scene{position:fixed;inset:0;width:100%;height:100%;height:100dvh;display:block;outline:none;touch-action:none;}
 .panel{position:fixed;background:var(--panel);border:1px solid var(--panel-line);border-radius:6px;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
 .brand{top:calc(14px + env(safe-area-inset-top,0px));inset-inline-start:calc(14px + env(safe-area-inset-left,0px));
@@ -166,6 +166,8 @@ html:is([lang=th],[lang=hi],[lang=ar]) #wxScenario p{line-height:1.7;}
    Đóng: thanh trên (tên + nút Cài đặt) và thanh dưới (chip cầu, Tour 4 cầu, nút Góc nhìn).
    Mở: body.sheet-settings → .brand thành tờ đáy; body.sheet-views → danh sách góc nhìn hiện trên thanh dưới. */
 body.compact .panel{-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+body.compact .panel{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;background:rgba(10,18,22,.92);}   /* bỏ blur: GPU khỏi làm mờ lại canvas dưới panel mỗi khung; nền đục bù lại */
+body.compact #btnMusic[aria-pressed="true"] .eq rect{animation:none;}   /* animation vô hạn buộc dựng lại lớp mỗi khung */
 body.compact .specs,body.compact .stats{display:none;}   /* màn nhỏ: không đủ chỗ cho bảng Thông số và FPS */
 body.compact .panel button{min-height:40px;font-size:13px;}
 body.compact .panel select{min-height:40px;font-size:13px;}

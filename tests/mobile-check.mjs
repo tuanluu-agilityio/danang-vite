@@ -121,6 +121,17 @@ try {
   check('kịch bản bão: chữ touch', await visibleAll(P.page, ['#wxScenario .hint-touch']) && await hiddenAll(P.page, ['#wxScenario .hint-mouse']));
   await P.page.evaluate(() => document.getElementById('btnWxStorm').click());
 
+  // Mục 5 — hiệu năng điện thoại: safe-area, bỏ blur khi gọn, gộp resize
+  check('viewport-fit=cover', await P.page.evaluate(() => /viewport-fit=cover/.test(document.querySelector('meta[name=viewport]').content)));
+  check('gọn: panel không backdrop-filter', await P.page.evaluate(() => [...document.querySelectorAll('.panel')].every((e) => { const s = getComputedStyle(e); return (s.backdropFilter || s.webkitBackdropFilter || 'none') === 'none'; })));
+  const nResize = await P.page.evaluate(async () => {
+    const r = window.__app.renderer, orig = r.setSize.bind(r); let c = 0; r.setSize = (...a) => { c++; return orig(...a); };
+    for (let i = 0; i < 5; i++) window.dispatchEvent(new Event('resize'));
+    await new Promise((ok) => setTimeout(ok, 400)); await new Promise((ok) => requestAnimationFrame(ok));
+    r.setSize = orig; return c;
+  });
+  check('resize gộp: setSize 1 lần cho 5 sự kiện', nResize === 1);
+
   // Mục 4 — i18n 9 ngôn ngữ cho khóa mới, không tràn chữ, RTL
   await P.page.evaluate(() => window.__app.ui.closeSheets());
   const KEYS = ['settings', 'close', 'tourExitTouch', 'wxStormHintTouch', 'swRideHintTouch'];
@@ -177,6 +188,7 @@ try {
   const b = await rects(D.page, ['.brand']);
   check('máy tính: .brand neo trái 14 px, .views rộng 228 px', b.length === 1 && Math.abs(b[0].left - 14) < 1
     && await D.page.evaluate(() => getComputedStyle(document.querySelector('.views')).width === '228px'));
+  check('máy tính: vẫn blur', await D.page.evaluate(() => /blur/.test(getComputedStyle(document.querySelector('.brand')).backdropFilter)));
   check('máy tính: không có nút sheet', await hiddenAll(D.page, ['#btnSettings', '#btnViewsSheet', '.sheet-close']));
   allErrors.push(...D.errors); await D.page.close();
 

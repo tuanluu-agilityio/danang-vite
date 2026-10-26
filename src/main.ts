@@ -11,7 +11,7 @@ import { buildLights } from './core/lights';
 import { buildSky, shadowCenter } from './core/sky';
 import { buildWater, water } from './core/water';
 import { applyNight, stepNight, dayNight } from './core/dayNight';
-import { renderFrame, onResize } from './core/postprocessing';
+import { renderFrame, onResize, scheduleResize } from './core/postprocessing';
 import { perf } from './core/perf';
 import { prewarm } from './core/prewarm';
 import { quality } from './core/quality';
@@ -44,7 +44,7 @@ import { updateHrUI } from './ui/hrUI';
 
 initI18n();
 void narration.init();
-window.addEventListener('resize', onResize);
+window.addEventListener('resize', scheduleResize); window.addEventListener('orientationchange', scheduleResize);
 
 /* ============================ Khởi tạo ============================ */
 buildLights();
