@@ -39,6 +39,7 @@ import { audio } from './audio';
 import { narration } from './audio/narration';
 import { setupUI } from './ui/setupUI';
 import { setupQualityUI } from './ui/qualityUI';
+import { setupCompactUI, ui as compactState, openSheet, closeSheets, reveal } from './ui/compactUI';
 import { updateHrUI } from './ui/hrUI';
 
 initI18n();
@@ -86,6 +87,7 @@ onResize();
 applyNight(0, 0);
 quality.init(() => cam.mode === 'fly');   // bậc chất lượng ban đầu (theo thiết bị / lựa chọn đã lưu); không đổi bậc giữa chuyến bay camera
 setupQualityUI();
+setupCompactUI();
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 /* Chỉ các lớp three mà tests/*.mjs dùng: đưa cả namespace THREE vào một object làm Rollup giữ lại mọi export của three (D-018) */
@@ -94,7 +96,7 @@ const TEST_THREE = { Vector3: THREE.Vector3, Quaternion: THREE.Quaternion, Matri
 const query = new URLSearchParams(location.search);
 if (query.has('test')) {
   perf.on = query.has('perf');
-  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, tours: TOURS, tour, narration, audio, perf, quality };
+  (window as unknown as { __app: unknown }).__app = { renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, tours: TOURS, tour, narration, audio, perf, quality, ui: { ui: compactState, openSheet, closeSheets, reveal } };
 }
 
 /* ============================ Vòng lặp ============================ */

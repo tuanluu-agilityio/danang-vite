@@ -12,7 +12,7 @@
 //   npm run build && node tests/perf-check.mjs [--label=gd0] [--compare=tests/screens/perf/gd0.json] [--strict]
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
-import { serveDir, launch, openApp, frames, pickView } from './lib.mjs';
+import { serveDir, launch, openApp, frames, pickView, tap } from './lib.mjs';
 import { setWx } from './weather-lib.mjs';
 
 const arg = (k) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
@@ -46,7 +46,7 @@ try {
     }
   };
   const setNight = (n) => page.evaluate((n) => { const d = window.__app.dayNight; d.target = d.night = n; }, n);
-  const click = (sel) => page.click(sel);
+  const click = (sel) => tap(page, sel);
   await hitch('đêm lần đầu', () => setNight(1));
   await hitch('về ngày', () => setNight(0));
   await hitch('đêm lần 2', () => setNight(1));
