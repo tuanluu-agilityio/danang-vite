@@ -27,7 +27,14 @@
     <div class="eyebrow" data-i18n="eyebrow">Sông Hàn · 16,061°N · 108,227°E</div>
     <label class="lang"><span hidden data-i18n="language">Ngôn ngữ</span><select id="langSelect" data-i18n-aria="language" aria-label="Ngôn ngữ"></select></label>
   </div>
-  <h1><span data-i18n="h1" class="h1-main">Đà Nẵng</span></h1>
+  <div class="brand-head">
+    <h1><span data-i18n="h1" class="h1-main">Đà Nẵng</span></h1>
+    <button id="btnSettings" aria-expanded="false" aria-controls="brandBody" data-i18n-aria="settings" aria-label="Cài đặt">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M6.9 1h2.2l.4 1.9 1.2.5 1.6-1.1 1.6 1.6-1.1 1.6.5 1.2 1.9.4v2.2l-1.9.4-.5 1.2 1.1 1.6-1.6 1.6-1.6-1.1-1.2.5-.4 1.9H6.9l-.4-1.9-1.2-.5-1.6 1.1-1.6-1.6 1.1-1.6-.5-1.2L.8 9.1V6.9l1.9-.4.5-1.2-1.1-1.6 1.6-1.6 1.6 1.1 1.2-.5zM8 5.6a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 0 0 0-4.8z"/></svg>
+    </button>
+    <button class="sheet-close" data-i18n-aria="close" aria-label="Đóng"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M3.5 3.5l9 9m0-9l-9 9"/></svg></button>
+  </div>
+  <div id="brandBody">
   <div class="row">
     <button id="btnNight" aria-pressed="false">Chuyển sang đêm</button>
     <button id="btnShadow" aria-pressed="true" data-i18n="shadows">Bóng đổ</button>
@@ -55,6 +62,7 @@
   </div>
   <label class="mini-select" for="qualitySel"><span data-i18n="quality">Chất lượng hình</span>
     <select id="qualitySel"><option value="auto" selected>Tự động</option><option value="high" data-i18n="qHigh">Cao</option><option value="medium" data-i18n="qMed">Trung bình</option><option value="low" data-i18n="qLow">Thấp</option></select></label>
+  </div>
 </header>
 
 <nav class="panel views" data-i18n-aria="views" aria-label="Góc nhìn">
@@ -68,6 +76,11 @@
     <button data-bridge="sw" aria-pressed="false" data-i18n="bridgeSw">Vòng quay Mặt Trời</button>
   </div>
   <button class="tour-all" data-view="allTour" aria-pressed="false" data-i18n="vTourAll">Tour 4 cầu</button>
+  <button id="btnViewsSheet" aria-expanded="false">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg>
+    <span data-i18n="views">Góc nhìn</span>
+  </button>
+  <button class="sheet-close" data-i18n-aria="close" aria-label="Đóng"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M3.5 3.5l9 9m0-9l-9 9"/></svg></button>
   <div class="view-list" data-list="dragon">
   <button data-view="tour" aria-pressed="false" data-i18n="vTour">Tour tự động</button>
   <button data-view="overview" aria-pressed="true" data-i18n="vOverview">Toàn cảnh trên cao</button>

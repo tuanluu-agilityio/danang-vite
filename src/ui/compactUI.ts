@@ -24,7 +24,24 @@ export function reveal(el: Element | null) {
   else closeSheets();
 }
 
+/* Nút mở/đóng tờ; chạm khung 3D, chọn góc nhìn, Esc thì đóng; ghi --bar-h (cao thanh dưới) cho khung chú thích Tour / Kịch bản bão */
+function wireSheets() {
+  const toggle = (s: Sheet) => () => openSheet(ui.sheet === s ? 'none' : s);   // bấm lại thì đóng
+  document.getElementById('btnSettings')?.addEventListener('click', toggle('settings'));
+  document.getElementById('btnViewsSheet')?.addEventListener('click', toggle('views'));
+  document.querySelectorAll('.sheet-close').forEach((b) => b.addEventListener('click', () => closeSheets()));
+  document.getElementById('scene')?.addEventListener('pointerdown', () => { if (ui.sheet !== 'none') closeSheets(); });   // thêm cạnh listener exitTour sẵn có (setupUI.ts)
+  document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => { if (ui.sheet !== 'none') closeSheets(); }));
+  // Esc khi có tờ mở: đóng tờ; KHÔNG chặn các listener Esc sẵn có (thoát Tour, xuống cabin vẫn chạy như trước)
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ui.sheet !== 'none') closeSheets(); });
+  const bar = document.querySelector<HTMLElement>('.views');
+  if (!bar || typeof ResizeObserver === 'undefined') return;
+  // chỉ đo lúc thanh đóng: tờ Góc nhìn làm .views cao lên, tờ Cài đặt ẩn .views
+  new ResizeObserver(() => { if (ui.compact && ui.sheet === 'none') document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px'); }).observe(bar);
+}
+
 export function setupCompactUI() {
+  wireSheets();
   const mq = window.matchMedia(CONFIG.ui.compactQuery);
   const apply = () => {
     const was = ui.compact;

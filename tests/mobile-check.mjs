@@ -1,11 +1,29 @@
-// Kiểm tra giao diện điện thoại (kế hoạch feature/mobile-ui). Mục 1: hạ tầng chế độ gọn (body.compact, sheet).
+// Kiểm tra giao diện điện thoại (kế hoạch feature/mobile-ui).
+//   Mục 1: hạ tầng chế độ gọn (body.compact, sheet).
+//   Mục 2: bố cục gọn — thanh trên, thanh dưới, hai sheet (Cài đặt, Góc nhìn).
 //
 //   npm run build && npm run test:mobile
 import { fileURLToPath } from 'node:url';
-import { serveDir, launch, openApp } from './lib.mjs';
+import { serveDir, launch, openApp, frames } from './lib.mjs';
 
 const problems = [];
 const check = (name, ok) => { if (!ok) problems.push(name); console.log(`${ok ? 'đạt ' : 'LỖI '} ${name}`); return ok; };
+
+/* Phần tử "đang hiện": có hộp hiển thị. Không dùng offsetParent vì .panel là position:fixed (offsetParent luôn null) */
+const VISIBLE = (el) => (el.checkVisibility ? el.checkVisibility() : el.getClientRects().length > 0);
+/* Hộp getBoundingClientRect() của các phần tử đang hiện (mọi phần tử khớp từng selector) */
+const rects = (page, sels) => page.evaluate(([sels, vis]) => {
+  const visible = new Function('return ' + vis)();
+  return sels.flatMap((s) => [...document.querySelectorAll(s)].filter(visible).map((el) => { const b = el.getBoundingClientRect(); return { sel: s, left: b.left, top: b.top, right: b.right, bottom: b.bottom, width: b.width, height: b.height }; }));
+}, [sels, VISIBLE.toString()]);
+const allMatch = (page, sels, want) => page.evaluate(([sels, vis, want]) => {
+  const visible = new Function('return ' + vis)();
+  return sels.every((s) => { const els = [...document.querySelectorAll(s)]; return els.length > 0 && els.every((el) => visible(el) === want); });
+}, [sels, VISIBLE.toString(), want]);
+const hiddenAll = (page, sels) => allMatch(page, sels, false);
+const visibleAll = (page, sels) => allMatch(page, sels, true);
+/* Hai hộp chồng nhau khi phần giao có diện tích > 0,5 px mỗi chiều */
+const noOverlap = (r) => r.every((a, i) => r.every((b, j) => j <= i || Math.min(a.right, b.right) - Math.max(a.left, b.left) <= 0.5 || Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) <= 0.5));
 
 const srv = await serveDir(fileURLToPath(new URL('../dist/', import.meta.url)));
 const browser = await launch();
@@ -20,14 +38,67 @@ try {
   check('chỉ một sheet', await P.page.evaluate(() => document.body.classList.contains('sheet-views') && !document.body.classList.contains('sheet-settings')));
   await P.page.evaluate(() => window.__app.ui.closeSheets());
   check('đóng hết', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
+
+  // Mục 2 — bố cục gọn (trang dọc P)
+  P.page.setDefaultTimeout(60000);   // một lần chạm không cần 4 phút; thiếu phần tử thì báo lỗi sớm
+  await frames(P.page, 2);
+  // đóng: các panel đang hiện chiếm ≤ 22 % diện tích, không chồng nhau, nằm trọn trong màn hình
+  const r = await rects(P.page, ['.brand', '.views', '.specs', '.stats']);
+  check('đóng: diện tích panel ≤ 22 %', r.reduce((s, b) => s + b.width * b.height, 0) <= 0.22 * 390 * 844);
+  check('đóng: không chồng nhau', noOverlap(r));
+  check('đóng: trong màn hình', r.every((b) => b.left >= 0 && b.top >= 0 && b.right <= 390 && b.bottom <= 844));
+  check('đóng: #brandBody ẩn, .view-list ẩn', await hiddenAll(P.page, ['#brandBody', '.view-list']));
+  const btns = await rects(P.page, ['#btnSettings', '#btnViewsSheet', '.tour-all']);
+  check('nút thanh ≥ 40 px', btns.length === 3 && btns.every((b) => b.height >= 40));
+  check('.views không tràn ngang', await P.page.evaluate(() => { const v = document.querySelector('.views'); return v.scrollWidth <= v.clientWidth; }));
+  // settings
+  await P.page.tap('#btnSettings');
+  const s = (await rects(P.page, ['.brand']))[0];
+  check('settings: cao ≤ 70 %, chạm đáy', s.height <= 0.7 * 844 + 1 && Math.abs(s.bottom - 844) < 2);
+  check('settings: có #weatherSel, #qualitySel, #langSelect hiện', await visibleAll(P.page, ['#weatherSel', '#qualitySel', '#langSelect']));
+  check('settings: .views ẩn', await hiddenAll(P.page, ['.views']));
+  check('settings: aria-expanded', await P.page.evaluate(() => document.getElementById('btnSettings').getAttribute('aria-expanded') === 'true'));
+  await P.page.tap('#scene', { position: { x: 200, y: 100 } });
+  check('chạm canvas đóng sheet', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
+  // nút đóng ✕ và Esc
+  await P.page.tap('#btnSettings');
+  await P.page.tap('.brand .sheet-close');
+  check('nút ✕ đóng sheet cài đặt', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
+  await P.page.tap('#btnSettings'); await P.page.tap('#btnSettings');
+  check('bấm lại #btnSettings thì đóng', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
+  await P.page.tap('#btnViewsSheet'); await P.page.keyboard.press('Escape');
+  check('Esc đóng sheet góc nhìn', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
+  // views
+  await P.page.tap('#btnViewsSheet');
+  check('views: lưới góc nhìn Cầu Rồng hiện', await visibleAll(P.page, ['[data-list="dragon"] [data-view="overview"]']));
+  check('views: cao ≤ 55 % + thanh', (await rects(P.page, ['[data-list="dragon"]']))[0].height <= 0.55 * 844 + 1);
+  check('views: lưới 2 cột', await P.page.evaluate(() => getComputedStyle(document.querySelector('[data-list="dragon"]')).gridTemplateColumns.split(' ').length === 2));
+  check('views: .views không tràn ngang', await P.page.evaluate(() => { const v = document.querySelector('.views'); return v.scrollWidth <= v.clientWidth; }));
+  await P.page.tap('[data-view="head"]');
+  check('chọn góc nhìn: sheet đóng, camera bay', await P.page.evaluate(() => !/sheet-/.test(document.body.className) && ['fly', 'orbit'].includes(window.__app.cam.mode)));
+  // chip cầu
+  await P.page.tap('[data-bridge="sh"]'); await P.page.tap('#btnViewsSheet');
+  check('chip sh: danh sách sh hiện, swing-box trọn hàng', await visibleAll(P.page, ['[data-list="sh"] #btnSwing']));
+  check('chip sh: swing-box chiếm 2 cột', await P.page.evaluate(() => { const l = document.querySelector('[data-list="sh"]').getBoundingClientRect(), b = document.querySelector('[data-list="sh"] .swing-box').getBoundingClientRect(); return b.width > 0.8 * l.width; }));
+  // xoay khi sheet mở
+  await P.page.setViewportSize({ width: 844, height: 390 }); await frames(P.page, 3);
+  const v = (await rects(P.page, ['[data-list="sh"]']))[0];
+  check('xoay: sheet trong màn hình', !!v && v.top >= 0 && v.bottom <= 390);
+  await P.page.setViewportSize({ width: 390, height: 844 });
   allErrors.push(...P.errors); await P.page.close();
 
+  // Mỗi lúc chỉ mở một trang: hai trang cùng chạy vòng vẽ làm SwiftShader quá tải (page.goto hết giờ)
   const L = await openApp(browser, srv.url, { width: 844, height: 390, mobile: true });
   check('ngang 844×390: body.compact', await L.page.evaluate(() => document.body.classList.contains('compact')));
   allErrors.push(...L.errors); await L.page.close();
 
   const D = await openApp(browser, srv.url, { width: 1280, height: 800 });
   check('máy tính 1280×800: không compact', await D.page.evaluate(() => !document.body.classList.contains('compact')));
+  // máy tính không đổi
+  const b = await rects(D.page, ['.brand']);
+  check('máy tính: .brand neo trái 14 px, .views rộng 228 px', b.length === 1 && Math.abs(b[0].left - 14) < 1
+    && await D.page.evaluate(() => getComputedStyle(document.querySelector('.views')).width === '228px'));
+  check('máy tính: không có nút sheet', await hiddenAll(D.page, ['#btnSettings', '#btnViewsSheet', '.sheet-close']));
   allErrors.push(...D.errors); await D.page.close();
 
   check('console sạch', allErrors.length === 0);
