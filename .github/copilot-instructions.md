@@ -46,6 +46,10 @@ npm run test:tour      -- [tests/original]
 npm run test:tunnel
 npm run test:riverfront
 npm run test:voice
+npm run test:weather
+npm run test:sunwheel
+npm run test:perf      -- [--strict]   # khung dài nhất, số shader biên dịch thêm
+npm run test:mobile    # giao diện điện thoại — chạy khi đổi index.html / styles / ui
 npm run gen:voice      # sinh lại clip thuyết minh đã đổi (-- --force: tất cả)
 ```
 

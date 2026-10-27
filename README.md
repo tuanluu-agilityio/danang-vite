@@ -24,6 +24,11 @@ npm run test:drawcalls -- [thư-mục-bản-gốc]   # draw call ở 18 góc nh�
 npm run test:tour      -- [thư-mục-bản-gốc]   # 5 Tour + Tour 4 cầu (đường bay mở): chú thích, đường bay, quay cầu sông Hàn, mặt cắt + mô phỏng dìm của hầm
 npm run test:tunnel                           # hầm: trắc dọc, mặt cắt bật/tắt, mắt thích nghi, mô phỏng dìm, ảnh chụp vào tests/screens/
 npm run test:riverfront                       # hai bờ: nhà bị dọn, hướng mặt LED, bật/tắt trái tim, quảng cáo, ảnh chụp vào tests/screens/
+npm run test:voice                            # thuyết minh: đủ clip, thời lượng khớp điểm dừng Tour và kịch bản bão
+npm run test:weather                          # thời tiết: preset, mưa/gió/bão, đóng cầu, kịch bản 120 s, không rò rỉ bộ nhớ
+npm run test:sunwheel                         # Vòng quay Mặt Trời: kích thước, quay, cabin, LED, ngồi cabin, thời tiết, Tour
+npm run test:perf     -- [--strict]           # độ mượt: khung dài nhất và số shader biên dịch thêm khi đổi đêm/mặt cắt/bóng/mưa
+npm run test:mobile                           # điện thoại: bố cục gọn dọc/ngang, sheet, tràn chữ 9 ngôn ngữ, RTL
 ```
 
 `tests/original/index.html` là file gốc chỉ sửa hai chỗ: link three từ CDN đổi sang `/three/…` (server kiểm tra lấy từ `node_modules/three`) và thêm móc `?test`. Truyền `tests/original` làm tham số để so sánh hai bản với nhau. Trình duyệt kiểm tra dựng hình bằng CPU (SwiftShader) nên mỗi script chạy khoảng 10–20 phút.
@@ -48,7 +53,7 @@ src/
     weather/         thời tiết: khí quyển 4 preset, mưa + mặt ướt, gió (cây, dây, thuyền), bão (chớp, đóng cầu, kịch bản 120 s), nắng hè, cây đổ, âm thanh
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
   audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
-  ui/                bảng điều khiển, nút quay cầu, âm thanh
+  ui/                bảng điều khiển, nút quay cầu, âm thanh, chất lượng hình, chế độ gọn cho điện thoại (compactUI.ts)
   i18n/              index.ts + locales/{vi,en,ko,ja,zh,th,ar,hi,ru}.json
   styles/main.css
 ```
