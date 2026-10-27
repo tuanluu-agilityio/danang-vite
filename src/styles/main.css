@@ -16,7 +16,7 @@
 }
 [hidden]{display:none!important;}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(--text);font-family:var(--font-body);}
-#scene{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;}
+#scene{position:fixed;inset:0;width:100%;height:100%;height:100dvh;display:block;outline:none;touch-action:none;}
 .panel{position:fixed;background:var(--panel);border:1px solid var(--panel-line);border-radius:6px;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
 .brand{top:calc(14px + env(safe-area-inset-top,0px));inset-inline-start:calc(14px + env(safe-area-inset-left,0px));
@@ -34,7 +34,7 @@ h1 .h1-main{color:var(--gold);font-weight:600;font-size:1em;letter-spacing:inher
 .lang select{appearance:none;-webkit-appearance:none;font:500 11.5px/1.2 var(--font-body);color:var(--text);
   background:rgba(255,255,255,.04);border:1px solid rgba(230,189,106,.32);border-radius:4px;
   padding-block:5px;padding-inline:8px 22px;cursor:pointer;max-width:132px;}
-.lang select:hover{background:rgba(230,189,106,.12);}
+@media (hover:hover){.lang select:hover{background:rgba(230,189,106,.12);}}
 .lang select:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 .lang select option{background:var(--ink);color:var(--text);}
 .lang::after{content:"";position:absolute;inset-inline-end:8px;top:50%;width:6px;height:6px;margin-top:-5px;
@@ -59,7 +59,7 @@ html:is([lang=th],[lang=hi],[lang=ar]) #tourCaption p{line-height:1.7;}
 button{font:500 12.5px/1.2 var(--font-body);color:var(--text);background:rgba(255,255,255,.04);
   border:1px solid rgba(230,189,106,.32);border-radius:4px;padding:8px 11px;cursor:pointer;
   transition:background .15s,border-color .15s,color .15s;}
-button:hover{background:rgba(230,189,106,.12);}
+@media (hover:hover){button:hover{background:rgba(230,189,106,.12);}}
 button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 button[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#1a1206;border-color:var(--gold);}
 .slider{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);}
@@ -130,6 +130,9 @@ body.touring .specs{display:none;}
 #tourCaption .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
 #tourCaption .step{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--han);font-variant-numeric:tabular-nums;}
 #tourCaption .exit{font-size:10.5px;color:var(--muted);}
+/* Chữ hướng dẫn hai bản: chuột (mặc định) / cảm ứng (thiết bị không có hover) */
+.hint-touch{display:none;}
+@media (hover:none){.hint-mouse{display:none;}.hint-touch{display:inline;}[data-view="walk"],#hint{display:none!important;}}
 #tourCaption h2{margin:0;font-family:var(--font-display);font-weight:600;font-size:24px;line-height:1.1;color:var(--gold);text-wrap:balance;}
 #tourCaption p{margin:0;font-size:12.5px;line-height:1.5;color:var(--text);}
 #tourCaption .bar{height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:4px;}
@@ -156,25 +159,71 @@ html:is([lang=th],[lang=hi],[lang=ar]) #wxScenario p{line-height:1.7;}
 #hrLabels{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
 .hr-label{position:absolute;left:0;top:0;padding:3px 7px;font:500 11px/1.2 var(--font-body);color:var(--text);background:rgba(10,18,30,.72);border:1px solid rgba(230,189,106,.55);border-radius:4px;white-space:nowrap;will-change:transform;}
 .hr-label::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:rgba(230,189,106,.7);}
-@media (max-width:760px){
-  h1{font-size:26px;}
-  html:is([lang=ko],[lang=ja],[lang=zh],[lang=th],[lang=ar],[lang=hi]) h1{font-size:22px;}
-  .brand{padding:10px 12px;gap:8px;}
-  .views{top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:calc(10px + env(safe-area-inset-left,0px));
-    right:calc(10px + env(safe-area-inset-right,0px));width:auto;flex-direction:row;overflow-x:auto;padding:8px;}
-  .views .label{display:none;}
-  .views button{flex:0 0 auto;}
-  .seg{flex:0 0 auto;margin:0;display:flex;}
-  .mini-select{flex:0 0 auto;flex-direction:row;align-items:center;}
-  .swing-box{flex:0 0 auto;flex-direction:row;align-items:center;margin:0;}
-  .swing-note{display:none;}
-  .views{max-height:none;overflow-y:visible;}
-  .seg button{flex:0 0 auto;}
-  .view-list{flex-direction:row;}
-  .specs{display:none;}
-  #tourCaption{bottom:calc(66px + env(safe-area-inset-bottom,0px));}
-  #tourCaption h2{font-size:20px;}
-  .stats{display:none;} /* màn hẹp: bảng tiêu đề đã chiếm hết bề ngang */
-  .stats .extra{display:none;}
-}
+/* Phần tử riêng của chế độ gọn: máy tính không hiện nút, hai khối bọc trong suốt nên bố cục .brand giữ nguyên */
+.brand-head,#brandBody{display:contents;}
+#btnSettings,#btnViewsSheet,.sheet-close{display:none;}
+/* ===== Chế độ gọn (điện thoại): body.compact do compactUI.ts đặt theo CONFIG.ui.compactQuery =====
+   Đóng: thanh trên (tên + nút Cài đặt) và thanh dưới (chip cầu, Tour 4 cầu, nút Góc nhìn).
+   Mở: body.sheet-settings → .brand thành tờ đáy; body.sheet-views → danh sách góc nhìn hiện trên thanh dưới. */
+body.compact .panel{-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+body.compact .panel{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;background:rgba(10,18,22,.92);}   /* bỏ blur: GPU khỏi làm mờ lại canvas dưới panel mỗi khung; nền đục bù lại */
+body.compact #btnMusic[aria-pressed="true"] .eq rect{animation:none;}   /* animation vô hạn buộc dựng lại lớp mỗi khung */
+body.compact .specs,body.compact .stats{display:none;}   /* màn nhỏ: không đủ chỗ cho bảng Thông số và FPS */
+body.compact .panel button{min-height:40px;font-size:13px;}
+body.compact .panel select{min-height:40px;font-size:13px;}
+body.compact #btnSettings,body.compact .sheet-close{align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;padding:0;}
+body.compact #btnSettings svg,body.compact .sheet-close svg{width:18px;height:18px;}
+/* Thanh trên: chỉ tên + nút Cài đặt, neo trên-trái */
+body.compact .brand{top:calc(8px + env(safe-area-inset-top,0px));inset-inline-start:calc(8px + env(safe-area-inset-left,0px));
+  max-width:calc(100vw - 16px);padding:6px;padding-inline-start:12px;gap:10px;}
+body.compact .brand-head{display:flex;align-items:center;gap:10px;min-width:0;}
+body.compact .brand h1{flex:1 1 auto;min-width:0;font-size:20px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.compact #btnSettings{display:inline-flex;}
+body.compact .eyebrow,body.compact .brand-top,body.compact #brandBody{display:none;}
+/* Tờ Cài đặt: tờ đáy cuộn dọc, ô ngôn ngữ + toàn bộ điều khiển; thanh dưới ẩn trong lúc mở */
+body.compact.sheet-settings .brand{top:auto;bottom:0;inset-inline:0;max-width:none;max-height:70dvh;overflow-y:auto;overscroll-behavior:contain;
+  padding:12px calc(14px + env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px));
+  border-bottom:0;border-radius:14px 14px 0 0;}
+body.compact.sheet-settings .brand-head{order:-1;}
+body.compact #btnSettings[aria-expanded="true"],body.compact #btnViewsSheet[aria-expanded="true"]{background:rgba(230,189,106,.16);border-color:rgba(230,189,106,.55);color:var(--gold);}
+body.compact.sheet-settings .brand .sheet-close{display:inline-flex;}
+body.compact.sheet-settings .brand-top{display:flex;flex-wrap:wrap;}
+body.compact.sheet-settings .eyebrow{display:block;}
+body.compact.sheet-settings #brandBody{display:flex;flex-direction:column;gap:10px;}
+body.compact.sheet-settings .views{display:none;}
+/* Thanh dưới: toàn bề ngang, một hàng; hàng chip cầu cuộn ngang (chính .views không tràn ngang) */
+body.compact .views{top:auto;bottom:0;inset-inline:0;width:auto;max-height:none;overflow:visible;
+  flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px;
+  padding:8px calc(8px + env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px));
+  border-bottom:0;border-radius:14px 14px 0 0;}
+body.compact .views .label{display:none;}
+body.compact .seg{display:flex;flex:1 1 0;min-width:0;margin:0;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;}
+body.compact .seg::-webkit-scrollbar{display:none;}
+/* Vệt mờ báo hàng chip còn cuộn được (compactUI.ts bật .more-start / .more-end; theo hướng chữ: start = đầu dòng) */
+body.compact .seg.more-end{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);}
+body.compact .seg.more-start{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 28px),transparent);}
+body.compact .seg.more-start.more-end{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent);}
+html[dir=rtl] body.compact .seg.more-end{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 28px),transparent);}
+html[dir=rtl] body.compact .seg.more-start{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);}
+html[dir=rtl] body.compact .seg.more-start.more-end{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent);}
+body.compact .seg button{flex:0 0 auto;min-height:36px;padding:6px 10px;font-size:13px;white-space:nowrap;overflow-wrap:normal;scroll-snap-align:start;}
+body.compact .tour-all,body.compact #btnViewsSheet{flex:0 0 auto;margin:0;white-space:nowrap;}
+body.compact #btnViewsSheet{display:inline-flex;align-items:center;gap:6px;}
+body.compact #btnViewsSheet svg{width:16px;height:16px;flex:0 0 auto;}
+body.compact .view-list{display:none;}
+/* Tờ Góc nhìn: danh sách của cầu đang chọn thành lưới 2 cột, phía trên thanh dưới */
+body.compact.sheet-views .views .label{display:block;order:-3;flex:1 1 auto;margin:0;}
+body.compact.sheet-views .views .sheet-close{display:inline-flex;order:-2;margin-inline-start:auto;}
+body.compact.sheet-views .view-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-content:start;
+  order:-1;flex:1 0 100%;min-width:0;max-height:55dvh;overflow-y:auto;overscroll-behavior:contain;}
+body.compact.sheet-views .view-list .swing-box,body.compact.sheet-views .view-list .mini-select{grid-column:1 / -1;}
+body.compact.sheet-views .view-list .toggle{margin-top:0;}
+/* Khung chú thích Tour / Kịch bản bão: ngay trên thanh dưới (--bar-h do compactUI.ts ghi) */
+body.compact #tourCaption,body.compact #wxScenario{bottom:calc(var(--bar-h,60px) + 8px);max-height:34dvh;overflow-y:auto;}
+body.compact.touring #wxScenario{bottom:calc(var(--bar-h,60px) + 16px + 34dvh);}
+body.compact #tourCaption h2{font-size:20px;}
+body.compact.sheet-settings .brand,body.compact.sheet-views .views{z-index:10;}   /* tờ đang mở nằm trên chú thích Tour/bão (không z-index thì chú thích đứng sau trong DOM nên đè lên) */
+/* Dòng hướng dẫn: dưới thanh trên; #swStormNote thấp hơn để không chồng #swRideHint (có thể hiện cùng lúc) */
+body.compact #hint,body.compact #swRideHint{top:calc(64px + env(safe-area-inset-top,0px));max-width:calc(100vw - 24px);box-sizing:border-box;text-align:center;}
+body.compact #swStormNote{top:calc(124px + env(safe-area-inset-top,0px));max-width:calc(100vw - 24px);box-sizing:border-box;}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}

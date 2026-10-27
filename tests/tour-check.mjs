@@ -10,7 +10,7 @@
 //
 //   npm run build && node tests/tour-check.mjs [thư-mục-bản-gốc]
 import { fileURLToPath } from 'node:url';
-import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
+import { serveDir, launch, openApp, frames, waitFlight, tap } from './lib.mjs';
 
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7);   // --only=hr: chỉ chạy một Tour
 const STORM = !ONLY || ONLY === 'storm';                                           // --only=storm: chỉ kiểm đường bay kịch bản bão
@@ -29,11 +29,11 @@ async function checkTours(browser, url) {
     if (bridge === 'all') {   // Cầu sông Hàn phải đang đóng thì điểm có cờ swing mới quay được: nếu lần quay trước chưa xong thì đặt lại
       await page.evaluate(() => { const c = window.__app.songHan.ctrl; if (c.state !== 'CLOSED') { c.go('CLOSED'); c.angle = 0; c.lift = 0; c.pin = 1; c.barrier = 0; c.fromTour = false; } });
     } else {
-      await page.click(`button[data-bridge="${bridge}"]`);
+      await tap(page, `button[data-bridge="${bridge}"]`);
       await waitFlight(page);
     }
     const swing0 = await page.textContent('#swingState');
-    await page.click(`button[data-view="${view}"]`);
+    await tap(page, `button[data-view="${view}"]`);
     await waitFlight(page);
     await frames(page, 2);
     if (await page.evaluate(() => window.__app.cam.mode) !== 'tour') r.problems.push('không vào chế độ tour');

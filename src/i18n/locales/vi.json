@@ -431,5 +431,10 @@
   "qAuto": "Tự động",
   "qHigh": "Cao",
   "qMed": "Trung bình",
-  "qLow": "Thấp"
+  "qLow": "Thấp",
+  "settings": "Cài đặt",
+  "close": "Đóng",
+  "tourExitTouch": "Chạm vào cảnh để thoát",
+  "wxStormHintTouch": "Kéo màn hình để tự điều khiển camera — thời tiết vẫn chạy",
+  "swRideHintTouch": "Kéo để nhìn quanh · bấm lại nút để xuống cabin"
 }

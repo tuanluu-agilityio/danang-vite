@@ -9,7 +9,7 @@
 //   npm run build && node tests/voice-check.mjs
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
-import { serveDir, launch, openApp, frames, waitFlight } from './lib.mjs';
+import { serveDir, launch, openApp, frames, waitFlight, tap, pick } from './lib.mjs';
 
 const KEYS = { dragon: 'stops', ttl: 'ttlStops', tp: 'tpStops', sh: 'shStops', all: 'allStops', sw: 'swStops' };   // all = Tour 4 cầu, sw = Tour Vòng quay Mặt Trời (đều đường bay mở)
 const VIEWS = { dragon: 'tour', ttl: 'ttlTour', tp: 'tpTour', sh: 'shTour', all: 'allTour', sw: 'swTour' };
@@ -50,7 +50,7 @@ try {
   });
   const lastPlay = () => page.evaluate(() => window.__plays.filter((u) => u !== 'pause').at(-1));
   const durs = (bridge) => page.evaluate((b) => [...window.__app.tours[b].durs], bridge);
-  const setLang = async (code) => { await page.selectOption('#langSelect', code); await frames(page, 2); };
+  const setLang = async (code) => { await pick(page, '#langSelect', code); await frames(page, 2); };
   const seek = async (bridge, i) => {   // tua tới lúc chú thích chuyển sang điểm i
     await page.evaluate(({ b, i }) => {
       const T = window.__app.tours[b], d = T.durs, n = d.length, p = (i + n - 1) % n;
@@ -61,8 +61,8 @@ try {
 
   for (const [bridge, key] of Object.entries(KEYS)) {
     await setLang('vi');
-    if (bridge !== 'all') { await page.click(`button[data-bridge="${bridge}"]`); await waitFlight(page); }
-    await page.click(`button[data-view="${VIEWS[bridge]}"]`); await waitFlight(page);
+    if (bridge !== 'all') { await tap(page, `button[data-bridge="${bridge}"]`); await waitFlight(page); }
+    await tap(page, `button[data-view="${VIEWS[bridge]}"]`); await waitFlight(page);
     await frames(page, 2);
 
     // 2. Đoạn bay đủ dài cho giọng đọc
@@ -91,8 +91,8 @@ try {
 
   // 4. Nút tắt/bật giọng và ngôn ngữ chưa có giọng
   await setLang('vi');
-  await page.click('button[data-bridge="ttl"]'); await waitFlight(page);
-  await page.click('button[data-view="ttlTour"]'); await waitFlight(page); await frames(page, 2);
+  await tap(page, 'button[data-bridge="ttl"]'); await waitFlight(page);
+  await tap(page, 'button[data-view="ttlTour"]'); await waitFlight(page); await frames(page, 2);
   const withVoice = await durs('ttl');
   await page.evaluate(() => document.getElementById('btnVoice').click()); await frames(page, 2);
   const mute = await durs('ttl');

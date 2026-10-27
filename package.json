@@ -15,6 +15,7 @@
     "test:tunnel": "node tests/tunnel-check.mjs",
     "test:riverfront": "node tests/riverfront-check.mjs",
     "test:weather": "node tests/weather-check.mjs",
+    "test:mobile": "node tests/mobile-check.mjs",
     "test:sunwheel": "node tests/sunwheel-check.mjs",
     "test:perf": "node tests/perf-check.mjs"
   },

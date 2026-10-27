@@ -431,5 +431,10 @@
   "qAuto": "自动",
   "qHigh": "高",
   "qMed": "中",
-  "qLow": "低"
+  "qLow": "低",
+  "settings": "设置",
+  "close": "关闭",
+  "tourExitTouch": "点按场景即可退出",
+  "wxStormHintTouch": "拖动屏幕可自行控制相机——天气继续进行",
+  "swRideHintTouch": "拖动可环顾四周 · 再次点按按钮可离开轿厢"
 }

@@ -544,9 +544,17 @@ const perfBase = {
   start: { phone: 5, weak: 2 }   // bậc khởi đầu ở chế độ Tự động: điện thoại / máy tính yếu (≤ 4 GB RAM hoặc ≤ 4 luồng); còn lại bậc 0
 };
 
+/* ------------------------- Giao diện gọn (điện thoại) -------------------------
+   Chế độ gọn bật khi cửa sổ khớp compactQuery: bảng điều khiển thu thành hai tờ (Cài đặt / Góc nhìn) */
+const uiBase = {
+  compactQuery: '(max-width: 760px), (max-height: 500px)',   // media query bật chế độ gọn: điện thoại dọc (≤ 760 px rộng) hoặc ngang (≤ 500 px cao)
+  resizeDebounceMs: 120   // ms — chờ sau khi đổi cỡ cửa sổ / xoay máy rồi mới tính lại bố cục (ước lượng)
+};
+
 export const CONFIG = {
   ...base,
   perf: perfBase,
+  ui: uiBase,
   mainTotal: sum(base.mainSpans),
   thuanPhuoc: deriveTp(thuanPhuocBase),
   tranThiLy: deriveTtl(tranThiLyBase),

@@ -431,5 +431,10 @@
   "qAuto": "自動",
   "qHigh": "高",
   "qMed": "中",
-  "qLow": "低"
+  "qLow": "低",
+  "settings": "設定",
+  "close": "閉じる",
+  "tourExitTouch": "シーンをタップして終了",
+  "wxStormHintTouch": "画面をドラッグしてカメラを操作 — 天気はそのまま進行します",
+  "swRideHintTouch": "ドラッグして見回す · もう一度ボタンを押すとゴンドラから降ります"
 }

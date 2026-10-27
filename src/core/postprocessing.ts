@@ -6,6 +6,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { renderer, scene, camera } from './renderer';
 import { pScale } from './shared';
 import { clamp, smooth } from '../common/math';
+import { CONFIG } from '../config';
 
 /* Bloom chỉ dùng khi trời tối: ban ngày vẫn vẽ thẳng như trước (không tốn thêm) */
 export const composer = new EffectComposer(renderer);
@@ -26,6 +27,13 @@ export function renderFrame(night: number, dt: number) {
 export function setPixelRatio(r: number) {
   if (Math.abs(renderer.getPixelRatio() - r) < 1e-3) return;
   renderer.setPixelRatio(r); onResize();
+}
+
+/* Gộp các sự kiện resize / orientationchange liên tiếp (xoay máy bắn nhiều lần) thành một onResize(), sau resizeDebounceMs kể từ sự kiện cuối */
+let resizeTimer = 0;
+export function scheduleResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => requestAnimationFrame(onResize), CONFIG.ui.resizeDebounceMs);
 }
 
 export function onResize() {

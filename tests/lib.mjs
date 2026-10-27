@@ -35,8 +35,8 @@ export async function launch() {
 }
 
 /** Mở trang với ?test, chặn font Google (không cần cho kiểm tra), chờ khung hình đầu. */
-export async function openApp(browser, url, { width = 480, height = 270 } = {}) {
-  const page = await browser.newPage({ viewport: { width, height } });
+export async function openApp(browser, url, { width = 480, height = 270, mobile = false } = {}) {
+  const page = await browser.newPage(mobile ? { viewport: { width, height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : { viewport: { width, height } });
   const errors = []; page.setDefaultTimeout(240000);
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error' && !/fonts\.(googleapis|gstatic)|ERR_FAILED|net::/.test(m.text())) errors.push(m.text()); });
@@ -56,10 +56,24 @@ export async function waitFlight(page) {
   await page.waitForFunction(() => window.__app.cam.mode !== 'fly', null, { timeout: 240000 });
 }
 
+/** Bấm một phần tử: ở chế độ gọn thì mở đúng tờ chứa nó trước (reveal), chờ 1 khung, rồi bấm. */
+export async function tap(page, sel) {
+  await page.evaluate((s) => window.__app.ui?.reveal(document.querySelector(s)), sel);
+  await frames(page, 1);
+  await page.click(sel);
+}
+
+/** Như tap nhưng cho ô chọn (select). */
+export async function pick(page, sel, value) {
+  await page.evaluate((s) => window.__app.ui?.reveal(document.querySelector(s)), sel);
+  await frames(page, 1);
+  await page.selectOption(sel, value);
+}
+
 /** Chọn cầu rồi bấm nút góc nhìn. */
 export async function pickView(page, bridge, view) {
-  await page.click(`button[data-bridge="${bridge}"]`);
+  await tap(page, `button[data-bridge="${bridge}"]`);
   await waitFlight(page);
-  await page.click(`button[data-view="${view}"]`);
+  await tap(page, `button[data-view="${view}"]`);
   await waitFlight(page);
 }
