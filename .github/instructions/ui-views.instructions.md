@@ -11,3 +11,11 @@ description: Quy ước giao diện, góc nhìn và Tour
 - **Điều khiển:** dùng `toggle(id, fn)` và `selectBridge` của `ui/panel.ts`; UI riêng công trình đặt trong `ui/<prefix>UI.ts` và nối trong `setupUI.ts`. Chữ hiển thị luôn qua `t()`, cập nhật lại khi đổi ngôn ngữ (`onChange`).
 - Nhãn 3D bằng `div` định vị theo camera (mẫu `ui/hrUI.ts`), không dùng sprite chữ.
 - Kiểm tra RTL (`ar`) khi thêm khối giao diện mới.
+
+## Điện thoại — chế độ gọn (D-019)
+- `body.compact` bật khi cửa sổ khớp `CONFIG.ui.compactQuery` (`ui/compactUI.ts`). CSS cho điện thoại viết dưới `body.compact …`, **không** dùng `@media (max-width)`. Màn hình máy tính (không khớp) phải giữ nguyên bố cục.
+- Khi gọn, `.panel.brand` là sheet **Cài đặt** (`body.sheet-settings`), `.views` là sheet **Góc nhìn** (`body.sheet-views`). Nút mới đặt trong `.brand` hoặc `.view-list` sẽ tự vào đúng sheet; đặt chỗ khác thì phải có chỗ hiện trên thanh trên/dưới. Mở/đóng bằng `openSheet()`, `closeSheets()`, `reveal(el)`. Sheet tự đóng khi `body` có `touring` hoặc `wxrun`.
+- Chú thích, lớp phủ mới (kiểu `#tourCaption`, `#wxScenario`) phải có `z-index` < 10: sheet đang mở có `z-index:10` và phải nằm trên chúng, nếu không sẽ có nút không bấm được (lỗi đã gặp ở nút dừng bão).
+- Chữ hướng dẫn có hai bản: `.hint-mouse` và `.hint-touch` (khóa i18n riêng, vd. `tourExitTouch`). Hiệu ứng hover đặt trong `@media (hover:hover)`.
+- Hàng chip `.seg` cuộn ngang khi gọn, có mờ cạnh (`.more-start`/`.more-end`, lật theo RTL); `.views` không được tràn ngang.
+- Đổi giao diện thì chạy `npm run test:mobile` (dọc 390×844, ngang 844×390, tràn chữ 9 ngôn ngữ, RTL, bấm được khi sheet mở).

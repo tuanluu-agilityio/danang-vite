@@ -1,13 +1,14 @@
 # Active Context
 
-_Cập nhật: 2026-10-27 · Nhánh đang làm: `feature/mobile-ui` (từ `main` sau khi merge `feature/perf`, plan `6401786`, code `8605bd5..312e11b`) · Nhánh chính: `main`_
+_Cập nhật: 2026-10-27 · Nhánh đang làm: `docs/mobile-agent-notes` (hướng dẫn agent cho chế độ gọn) · `feature/mobile-ui` đã merge `main` (`fc53fdd`) và push · Nhánh chính: `main`_
 
 ## Trạng thái
-- `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`), thời tiết GĐ1–GĐ8 + kịch bản bão có thuyết minh (PR #6), Tour 4 cầu (D-015), Vòng quay Mặt Trời GĐ0–GĐ8 (PR #8, merge `257b905`).
+- `main` đã có đủ: Hầm vượt sông Hàn (PR #1), hai bờ sông + tối ưu draw call + thuyết minh tiếng Nga (PR #2), bộ hướng dẫn AI agent + memory bank (PR #3, qua `feature/riverfront`), thời tiết GĐ1–GĐ8 + kịch bản bão có thuyết minh (PR #6), Tour 4 cầu (D-015), Vòng quay Mặt Trời GĐ0–GĐ8 (PR #8, merge `257b905`), tối ưu độ mượt (D-018, merge `ecebdf8`), giao diện điện thoại (D-019, merge `fc53fdd`).
+- Quy tắc chế độ gọn cho agent đã ghi ở `.github/instructions/ui-views.instructions.md` và `tests.instructions.md`; lệnh test đầy đủ ở `copilot-instructions.md` §5 và README.
 - `tests/KET-QUA.md` đã cập nhật theo log GD8 (58 góc nhìn `now`, gồm `hr*`, `rf*`, `wx*`).
 
 ## Bước tiếp theo
-1. Giao diện điện thoại (`feature/mobile-ui`, D-019) đã xong GĐ code + chạy đủ bộ test: xem mục "Giao diện điện thoại" bên dưới. Chờ người dùng: đo trên điện thoại thật, duyệt bản dịch, rồi PR (nhánh chưa merge `main`).
+1. Giao diện điện thoại (`feature/mobile-ui`, D-019) đã xong GĐ code + chạy đủ bộ test: xem mục "Giao diện điện thoại" bên dưới. Đã merge `main` (`fc53fdd`, gồm sửa sau review cuối `fced484`: sheet nằm trên chú thích Tour/bão) và push. Còn: đo trên điện thoại thật, duyệt bản dịch; để lại từ review cuối: chip cao 36 px (< 44 px), câu hướng dẫn xuống cabin trỏ tới nút trong sheet Góc nhìn.
 2. Tối ưu độ mượt (`feature/perf`, D-018, kế hoạch GĐ0–GĐ5): xem mục "Tối ưu độ mượt" bên dưới.
 3. Tour 4 cầu (`feature/tour-4-cau`, đặc tả `prompts/tour-4-cau.md`, D-015) đã đủ GĐ0–GĐ4: `tour.ts` nhận đường bay mở (`loop: false`, `segMax`, `TourStop.bridge` → `tourHooks.bridge`), `ALL_TOUR` 13 điểm, nút `allTour`, i18n `vTourAll`/`allStops` × 9, thuyết minh vi/en/ru (39 clip). Kết quả test ở `tests/KET-QUA.md`. Chưa kiểm: giọng nghe thật, Tour ban đêm / thời tiết khác `now`. Lời điểm 7 ("Tiếp tục về phía Bắc") đọc lúc camera còn nhìn lại Cầu Rồng; chỉnh `ALL_TOUR[6]` nếu muốn camera quay về hướng Bắc.
 4. Còn mở: tự chọn preset theo tháng khi không có `?test` (12b-6). Làm xong phải chạy lại `test:weather` và `test:drawcalls`, vì đổi mặc định hiển thị.
