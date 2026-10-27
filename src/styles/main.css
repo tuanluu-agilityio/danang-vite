@@ -222,6 +222,7 @@ body.compact.sheet-views .view-list .toggle{margin-top:0;}
 body.compact #tourCaption,body.compact #wxScenario{bottom:calc(var(--bar-h,60px) + 8px);max-height:34dvh;overflow-y:auto;}
 body.compact.touring #wxScenario{bottom:calc(var(--bar-h,60px) + 16px + 34dvh);}
 body.compact #tourCaption h2{font-size:20px;}
+body.compact.sheet-settings .brand,body.compact.sheet-views .views{z-index:10;}   /* tờ đang mở nằm trên chú thích Tour/bão (không z-index thì chú thích đứng sau trong DOM nên đè lên) */
 /* Dòng hướng dẫn: dưới thanh trên; #swStormNote thấp hơn để không chồng #swRideHint (có thể hiện cùng lúc) */
 body.compact #hint,body.compact #swRideHint{top:calc(64px + env(safe-area-inset-top,0px));max-width:calc(100vw - 24px);box-sizing:border-box;text-align:center;}
 body.compact #swStormNote{top:calc(124px + env(safe-area-inset-top,0px));max-width:calc(100vw - 24px);box-sizing:border-box;}

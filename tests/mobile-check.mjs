@@ -27,6 +27,12 @@ const visibleAll = (page, sels) => allMatch(page, sels, true);
 /* Hai hộp chồng nhau khi phần giao có diện tích > 0,5 px mỗi chiều */
 const noOverlap = (r) => r.every((a, i) => r.every((b, j) => j <= i || Math.min(a.right, b.right) - Math.max(a.left, b.left) <= 0.5 || Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) <= 0.5));
 
+/* Phần tử ở tâm (đã cuộn vào tầm nhìn) có là chính nó hoặc con của nó — không bị chú thích/panel khác che */
+const topAtCenter = (page, sel) => page.evaluate((sel) => {
+  const el = document.querySelector(sel); el.scrollIntoView({ block: 'nearest' });
+  const b = el.getBoundingClientRect(), t = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+  return !!t && (t === el || el.contains(t));
+}, sel);
 const srv = await serveDir(fileURLToPath(new URL('../dist/', import.meta.url)));
 const browser = await launch();
 const allErrors = [];
@@ -42,7 +48,7 @@ try {
   check('đóng hết', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
 
   // Mục 2 — bố cục gọn (trang dọc P)
-  P.page.setDefaultTimeout(60000);   // một lần chạm không cần 4 phút; thiếu phần tử thì báo lỗi sớm
+  P.page.setDefaultTimeout(180000);   // máy bận (SwiftShader) có khung hình dài > 60 s; thiếu phần tử vẫn báo lỗi sau 3 phút
   await frames(P.page, 2);
   // đóng: các panel đang hiện chiếm ≤ 22 % diện tích, không chồng nhau, nằm trọn trong màn hình
   const r = await rects(P.page, ['.brand', '.views', '.specs', '.stats']);
@@ -114,11 +120,20 @@ try {
   check('cảm ứng: chữ thoát là bản touch', await visibleAll(P.page, ['#tourCaption .hint-touch']) && await hiddenAll(P.page, ['#tourCaption .hint-mouse']));
   check('cảm ứng: không hiện khóa i18n thô', await P.page.evaluate(() => !/Touch$/.test(document.querySelector('#tourCaption .hint-touch').textContent)));
   await P.page.screenshot({ path: 'tests/screens/mobile/t3-tour-touch.png' });
+  // Tờ Góc nhìn mở lúc Tour chạy phải nằm trên chú thích: nút cuối lưới chạm được
+  await P.page.evaluate(() => window.__app.ui.openSheet('views')); await frames(P.page, 2);
+  await P.page.evaluate(() => { const b = [...document.querySelectorAll('.view-list button')].filter((e) => e.checkVisibility()).pop(); b.dataset.lastView = '1'; });
+  check('Tour + tờ Góc nhìn: nút cuối lưới không bị chú thích che', await topAtCenter(P.page, '[data-last-view]'));
+  await P.page.evaluate(() => window.__app.ui.closeSheets());
   await P.page.keyboard.press('Escape');
   await P.page.evaluate(() => window.__app.ui.openSheet('settings'));
   await P.page.evaluate(() => document.getElementById('btnWxStorm').click());
   check('kịch bản bão: sheet đóng', await P.page.evaluate(() => !/sheet-/.test(document.body.className)));
   check('kịch bản bão: chữ touch', await visibleAll(P.page, ['#wxScenario .hint-touch']) && await hiddenAll(P.page, ['#wxScenario .hint-mouse']));
+  // Tờ Cài đặt mở lúc kịch bản bão chạy phải nằm trên chú thích: nút dừng bão chạm được
+  await P.page.evaluate(() => window.__app.ui.openSheet('settings')); await frames(P.page, 2);
+  check('bão + tờ Cài đặt: #btnWxStorm không bị chú thích che', await topAtCenter(P.page, '#btnWxStorm'));
+  await P.page.evaluate(() => window.__app.ui.closeSheets());
   await P.page.evaluate(() => document.getElementById('btnWxStorm').click());
 
   // Mục 5 — hiệu năng điện thoại: safe-area, bỏ blur khi gọn, gộp resize
@@ -180,6 +195,10 @@ try {
   // Mỗi lúc chỉ mở một trang: hai trang cùng chạy vòng vẽ làm SwiftShader quá tải (page.goto hết giờ)
   const L = await openApp(browser, srv.url, { width: 844, height: 390, mobile: true });
   check('ngang 844×390: body.compact', await L.page.evaluate(() => document.body.classList.contains('compact')));
+  await L.page.evaluate(() => document.getElementById('btnWxStorm').click()); await frames(L.page, 3);   // sheet tự đóng khi bão bắt đầu (MutationObserver) nên mở sau
+  await L.page.evaluate(() => window.__app.ui.openSheet('settings')); await frames(L.page, 2);
+  check('ngang: bão + tờ Cài đặt: #btnWxStorm không bị chú thích che', await topAtCenter(L.page, '#btnWxStorm'));
+  await L.page.evaluate(() => { window.__app.ui.closeSheets(); document.getElementById('btnWxStorm').click(); });
   allErrors.push(...L.errors); await L.page.close();
 
   const D = await openApp(browser, srv.url, { width: 1280, height: 800 });

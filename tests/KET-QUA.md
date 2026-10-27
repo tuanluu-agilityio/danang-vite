@@ -2,6 +2,8 @@
 
 Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (gồm bóng đổ, phản chiếu nước, bloom), trung vị 5 khung hình.
 
+Khung test mặc định 480×270 khớp `(max-height: 500px)` nên cả bộ test chạy ở chế độ gọn (không blur): draw call không đổi; số hitch của `test:perf` không so sát được với mốc D-018 (đo khi còn blur).
+
 ## Giao diện điện thoại (2026-10-27, nhánh `feature/mobile-ui`, D-019)
 
 Chỉ đổi DOM/CSS/i18n, không đổi mã dựng cảnh. Chạy tuần tự từng lệnh trên cùng máy (log `tests/screens/mobile/t6-*.log`, không commit):
@@ -10,7 +12,7 @@ Chỉ đổi DOM/CSS/i18n, không đổi mã dựng cảnh. Chạy tuần tự t
 |---|---|
 | `npm run build` | đạt |
 | `npm run test:mobile` | đạt (dọc 390×844, ngang 844×390, máy tính 1280×800; 9 ngôn ngữ × 2 tờ: tờ hiện, không tràn ngang; `ar` RTL; console sạch) |
-| `npm run test:drawcalls` | 74/74 phép đo khớp bảng `now` bên dưới ở mọi góc cũ, chênh 0. Ngoại lệ đã biết: `swTour` ngày 187 (bảng 188), đêm 209 (bảng 207) — dao động sẵn có (D-018) |
+| `npm run test:drawcalls` | 72/74 khớp, chênh 0; `swTour` ngày 187 vs 188, đêm 209 vs 207 = dao động đã biết (D-018) |
 | `npm run test:tour` | đạt (8/8 tour) |
 | `npm run test:voice` | đạt (vi + en + ru, 6 tour, 47 điểm dừng + 8 mốc bão) |
 | `npm run test:tunnel`, `test:riverfront`, `test:weather`, `test:sunwheel` | đạt |

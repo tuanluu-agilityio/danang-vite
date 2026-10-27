@@ -63,6 +63,7 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - `src/ui/compactUI.ts`: trạng thái gọn + `openSheet/closeSheets/reveal`; CSS gọn đều đặt sau `body.compact` trong `src/styles/main.css`; ngưỡng ở `CONFIG.ui.compactQuery`. Panel không chuyển DOM, chỉ đổi vai bằng class `sheet-*` trên `body`.
 - Phần tử nằm trong panel có thể đang bị tờ đóng che → test dùng `tap`/`pick` (`tests/lib.mjs`, gọi `__app.ui.reveal`), KHÔNG gọi `page.click` trực tiếp. Kiểm "đang hiện" bằng `checkVisibility()`, vì `offsetParent` luôn null với phần tử `position: fixed`.
 - Chữ hướng dẫn khác nhau chuột/cảm ứng: hai `<span>` ẩn/hiện bằng `(hover:none)`, không dò `navigator`. Khóa i18n mới thêm bằng script `scripts/add-*-locales.mjs`; `apply()` có chốt bỏ qua khóa thiếu thay vì hiện nguyên khóa.
+
 ## Mẫu ngày/đêm và hiệu ứng
 - Đọc `shared.uNight` (0 → 1) trong shader hoặc `update()`; không tự giữ trạng thái ngày/đêm riêng.
 - Đèn: emissive + bloom (`core/postprocessing.ts`). Không thêm đèn động mới.
