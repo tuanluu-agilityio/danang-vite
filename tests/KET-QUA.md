@@ -2,6 +2,30 @@
 
 Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (gồm bóng đổ, phản chiếu nước, bloom), trung vị 5 khung hình.
 
+## Giao diện điện thoại (2026-10-27, nhánh `feature/mobile-ui`, D-019)
+
+Chỉ đổi DOM/CSS/i18n, không đổi mã dựng cảnh. Chạy tuần tự từng lệnh trên cùng máy (log `tests/screens/mobile/t6-*.log`, không commit):
+
+| Lệnh | Kết quả |
+|---|---|
+| `npm run build` | đạt |
+| `npm run test:mobile` | đạt (dọc 390×844, ngang 844×390, máy tính 1280×800; 9 ngôn ngữ × 2 tờ: tờ hiện, không tràn ngang; `ar` RTL; console sạch) |
+| `npm run test:drawcalls` | 74/74 phép đo khớp bảng `now` bên dưới ở mọi góc cũ, chênh 0. Ngoại lệ đã biết: `swTour` ngày 187 (bảng 188), đêm 209 (bảng 207) — dao động sẵn có (D-018) |
+| `npm run test:tour` | đạt (8/8 tour) |
+| `npm run test:voice` | đạt (vi + en + ru, 6 tour, 47 điểm dừng + 8 mốc bão) |
+| `npm run test:tunnel`, `test:riverfront`, `test:weather`, `test:sunwheel` | đạt |
+| `npm run test:perf -- --strict` | đạt, 0 program mới; draw call overview Cao/TB/Thấp ngày 282/215/116, đêm 306/306/121; tự động hạ 2 bậc |
+
+Đo giả lập điện thoại (`tests/screens/mobile/emulate.mjs`, tạm, không commit): Playwright `devices['iPhone 12']` (dpr 3), mở trang KHÔNG `?test` (bậc Tự động, `device.phone`), chờ `#loading.done`, đọc `#ftime`/`#fps` sau 20 s ở `overview` (góc nhìn mở đầu). Cả ba lần bậc hiển thị "Tự động · Thấp"; `body.compact` bật.
+
+| Cấu hình | Tải xong | FPS | ms trung bình · p95 · max | Draw call | Canvas |
+|---|---|---|---|---|---|
+| Dọc 390×844, CPU ×4 | 9,6 s | 6 | 181 · 267 · 267 | 77 | 292×498 |
+| Ngang 844×390, CPU ×4 | 80,0 s | 1 | 1016 · 1016 · 1016 | 117 | 562×255 |
+| Dọc 390×844, không giảm tốc | 28,3 s | 1 | 869 · 869 · 869 | 77 | 390×664 |
+
+Chưa đo máy thật; SwiftShader chỉ so tương đối. Các số ms ở trên dao động mạnh giữa ba lần (lần ngang/không giảm tốc chậm hơn lần dọc ×4 vì tải máy và mẫu quá ít: perf chỉ có 1–2 khung trong cửa sổ), nên KHÔNG dùng để kết luận FPS điện thoại. Ảnh từng trạng thái: `tests/screens/mobile/{P,L}-*.png`, `E-*.png`. Còn lại cho người dùng: đo trên điện thoại thật (FPS, safe-area tai thỏ/thanh home, cảm giác chạm hàng chip) và bản dịch 7 ngôn ngữ do người bản ngữ duyệt.
+
 ## Hiệu năng — tối ưu độ mượt (2026-10-25, nhánh `feature/perf`, D-018)
 
 `npm run test:perf` (`tests/perf-check.mjs`), Chromium SwiftShader (CPU), khung 480×270. Số ms chỉ so tương đối trên cùng máy; chưa đo GPU thật.

@@ -59,6 +59,10 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - **Hàm chạy mỗi khung không cấp phát:** vector/matrix/quaternion tạm ở cấp module (`_v`, `_m`…), vòng `for` thay `forEach` + mảng tạm, mảng dùng lại (`length = 0`). Không ghi ma trận / upload buffer của mesh đang ẩn (đèn xe ban ngày, hạt lửa không còn hạt, tín hiệu cầu khi `details` ẩn) — nhưng trạng thái tích lũy (vị trí xe) vẫn cộng như cũ để khi hiện lại đúng chỗ.
 - **Bậc chất lượng** (`core/quality.ts`, `CONFIG.perf.steps`): bậc 0 = cảnh gốc, `?test` khóa bậc 0. Hiệu ứng mới tốn GPU nên có nút giảm ở bậc thấp, đổi được khi chạy mà không biên dịch lại (pixelRatio, cỡ RT, chu kỳ vẽ, số instance).
 
+## Mẫu giao diện điện thoại (`body.compact`, D-019)
+- `src/ui/compactUI.ts`: trạng thái gọn + `openSheet/closeSheets/reveal`; CSS gọn đều đặt sau `body.compact` trong `src/styles/main.css`; ngưỡng ở `CONFIG.ui.compactQuery`. Panel không chuyển DOM, chỉ đổi vai bằng class `sheet-*` trên `body`.
+- Phần tử nằm trong panel có thể đang bị tờ đóng che → test dùng `tap`/`pick` (`tests/lib.mjs`, gọi `__app.ui.reveal`), KHÔNG gọi `page.click` trực tiếp. Kiểm "đang hiện" bằng `checkVisibility()`, vì `offsetParent` luôn null với phần tử `position: fixed`.
+- Chữ hướng dẫn khác nhau chuột/cảm ứng: hai `<span>` ẩn/hiện bằng `(hover:none)`, không dò `navigator`. Khóa i18n mới thêm bằng script `scripts/add-*-locales.mjs`; `apply()` có chốt bỏ qua khóa thiếu thay vì hiện nguyên khóa.
 ## Mẫu ngày/đêm và hiệu ứng
 - Đọc `shared.uNight` (0 → 1) trong shader hoặc `update()`; không tự giữ trạng thái ngày/đêm riêng.
 - Đèn: emissive + bloom (`core/postprocessing.ts`). Không thêm đèn động mới.
@@ -81,3 +85,5 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Chữ trên mặt LED / bảng: kiểm tra không bị lật gương theo hướng mặt.
 - Hiệu ứng dịch đỉnh trong vertex shader (lắc dây `sin(π·t)`, võng cáp) cần hình học có đỉnh ở giữa: `CylinderGeometry(1, 1, 1, n)` mặc định 1 đoạn dọc nên dây không cong dù uniform đúng (lỗi GĐ4, phát hiện 2026-10-22). Kiểm hiệu ứng shader bằng **điểm ảnh** (vẽ hai khung, đếm px khác — mẫu trong `tests/weather-check.mjs` mốc 4), không chỉ đọc uniform.
 - Preset camera thấp hơn điểm nhìn mà không có `maxPolar` (vd `swFront`): khung đầu sau chuyến bay OrbitControls kẹp camera lên. Mã nào "nhớ tư thế camera để trả lại" (ngồi cabin) phải chốt qua `controls.update()` (damping tắt) trước khi lưu. Draw call phụ thuộc hướng nhìn (frustum culling mesh nhỏ như biển hiệu): test so ngày/đêm hoặc quay/dừng phải đặt cùng hướng nhìn và để vòng quay đạt tốc độ đích trước khi đo.
+- `env(safe-area-inset-*)` luôn bằng 0 nếu thiếu `viewport-fit=cover` trong `<meta viewport>` (index.html): tai thỏ/thanh home vẫn đè lên thanh dưới mà không báo lỗi. Có `cover` thì mọi mép cố định phải tự cộng `env(...)`.
+- Chế độ gọn không có `?test`-only nào: đo giả lập điện thoại phải mở trang KHÔNG `?test` (bậc chất lượng Tự động, `device.phone`), khi đó không có `__app`, tự chờ `#loading.done` và đọc `#ftime`/`#fps` bằng `textContent` (HUD ẩn).
