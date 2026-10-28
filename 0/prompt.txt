@@ -1,0 +1,12 @@
+tại sao Entire không ask question như sau?
+
+<pasted_content id="46b1">
+Entire: Active <agent> session detected
+
+Link this commit to session context?
+  [Y]es / [n]o / [a]lways (remember my choice):
+</pasted_content id="46b1">
+
+---
+
+revert lại commit trước đó. Tôi muốn tự add manualy
