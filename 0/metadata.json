@@ -31,14 +31,14 @@
     }
   },
   "redaction": {
-    "replacements": 0,
+    "replacements": 22,
     "layers": {
       "betterleaks": 0,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
       "credentialed_uri": 0,
-      "entropy": 0,
+      "entropy": 22,
       "key_context": 0,
       "provider_token": 0,
       "shell_stdin": 0
@@ -96,6 +96,37 @@
       "collapse": {
         "target": "tool_pair",
         "label": "Skill: superpowers:writing-plans",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01PvR25aXS4ALvfR9hw7B1rq",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:subagent-driven-development"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "254afb5956b6",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 442,
+        "end": 443,
+        "entry_ids": [
+          "448d39a3-ca86-42a5-a0e5-61d3d9728752"
+        ],
+        "tool_use_id": "toolu_01PvR25aXS4ALvfR9hw7B1rq"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01PvR25aXS4ALvfR9hw7B1rq"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:subagent-driven-development",
         "default_collapsed": true
       }
     }
