@@ -1,0 +1,1 @@
+/superpowers:subagent-driven-development dựa vào plans trong docs/superpowers/plans/2026-10-29-buy-me-a-coffe.md tạo tính năng Buy me a coffee cho dự án

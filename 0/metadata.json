@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M6H5J42D2ZGJP0DHHS3QVDYE",
+  "session_id": "64a00b44-7901-44c5-9a55-e9afd7a844dc",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-03T16:58:32.201291Z",
+  "branch": "feature/donate-momo",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/superpowers/plans/2026-10-29-buy-me-a-coffee.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "2452debba9ce",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 74230,
+    "cache_read_tokens": 132599,
+    "output_tokens": 2527,
+    "api_call_count": 3
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-superpowers:subagent-driven-development-2026-11-03T16:57:45.895594Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "superpowers:subagent-driven-development"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "2452debba9ce",
+      "timestamp": "2026-11-03T16:57:45.895594Z",
+      "native": {
+        "command": "/superpowers:subagent-driven-development"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/superpowers:subagent-driven-development",
+        "default_collapsed": true
+      }
+    }
+  ]
+}
