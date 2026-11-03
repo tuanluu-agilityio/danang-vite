@@ -1,0 +1,66 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M6H4X7BT5YQT4Y4MC0P9709X",
+  "session_id": "498d4c44-95a5-4c70-b357-d7058ad09d21",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-03T16:47:06.0148175Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "docs/superpowers/plans/2026-10-29-buy-me-a-coffee.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "80a44489a352",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 96949,
+    "cache_read_tokens": 839064,
+    "output_tokens": 14274,
+    "api_call_count": 9
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-superpowers:writing-plans-2026-10-29T16:35:17.4834023Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "superpowers:writing-plans"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "80a44489a352",
+      "timestamp": "2026-10-29T16:35:17.4834023Z",
+      "native": {
+        "command": "/superpowers:writing-plans"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/superpowers:writing-plans",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 1
+  }
+}
