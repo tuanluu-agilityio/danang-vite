@@ -1,0 +1,69 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M6Y6B57QT8QZ3HD06HVA4PJN",
+  "session_id": "c79a2a35-c34b-42a9-a4e0-badd8c35046b",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-08T18:22:27.9475202Z",
+  "branch": "feature/explore-du-luon",
+  "checkpoints_count": 4,
+  "save_step_count": 1,
+  "files_touched": [
+    "src/config.ts",
+    "src/explore/chase.ts",
+    "src/explore/flight.ts",
+    "tests/explore-check.mjs"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "76aee788dfb8",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 34,
+    "cache_creation_tokens": 85782,
+    "cache_read_tokens": 825023,
+    "output_tokens": 14359,
+    "api_call_count": 13
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 4,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-superpowers:brainstorming-2026-11-08T17:56:04.9597548Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "superpowers:brainstorming"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "50399ee4b9ae",
+      "timestamp": "2026-11-08T17:56:04.9597548Z",
+      "native": {
+        "command": "/superpowers:brainstorming"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/superpowers:brainstorming",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 4
+  }
+}
