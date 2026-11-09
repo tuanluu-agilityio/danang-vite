@@ -3,8 +3,11 @@
   "checkpoint_id": "01M70PJERQS2C4SREFK9E0T3SF",
   "strategy": "manual-commit",
   "branch": "feature/du-luon-hieu-ung-dem",
-  "checkpoints_count": 17,
-  "files_touched": null,
+  "checkpoints_count": 20,
+  "files_touched": [
+    "src/ui/swingUI.ts",
+    "tests/explore-check.mjs"
+  ],
   "sessions": [
     {
       "metadata": "/0/metadata.json",
@@ -12,14 +15,28 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 0
+    "input_tokens": 21,
+    "cache_creation_tokens": 9048,
+    "cache_read_tokens": 1445731,
+    "output_tokens": 5661,
+    "api_call_count": 8,
+    "subagent_tokens": {
+      "input_tokens": 228,
+      "cache_creation_tokens": 61383,
+      "cache_read_tokens": 535001,
+      "output_tokens": 18279,
+      "api_call_count": 7
+    }
   },
   "redaction": {
     "replacements": 9,
