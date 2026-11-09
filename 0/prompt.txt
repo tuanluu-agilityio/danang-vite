@@ -1,0 +1,9 @@
+/superpowers:brainstorming hiện tại project có chế độ dù lượn mỗi lần truy cập. Tôi muốn lên plan để cập nhật 5 slot dù lượn cho dự án. Khi một người chọn chế độ dù lượn sẽ hiển thị số slot còn lại. Mọi người điền tên giới hạn 9 ký tự đại diện. Khi bay trên chế độ dù lượn họ cũng nhìn thấy những người khác đang bay. Giữ nguyên các phần còn lại của dự án
+
+---
+
+Khách lạ tình cờ vào trang và gặp nhau trên bầu trời đà nẵng
+
+---
+
+Tôi đang deploy lên netlify. Chúng ta có thể sử dụng các dịch vụ miễn phí cho phần backend này
