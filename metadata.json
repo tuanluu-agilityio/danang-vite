@@ -1,0 +1,65 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M70VSQMYC5GZR4WNKDVXB551",
+  "strategy": "manual-commit",
+  "branch": "feature/du-luon-nhieu-nguoi",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "index.html",
+    "package.json",
+    "scripts/add-multi-locales.mjs",
+    "src/explore/index.ts",
+    "src/explore/multi/index.ts",
+    "src/explore/multi/labels.ts",
+    "src/explore/multi/remote.ts",
+    "src/i18n/locales/ar.json",
+    "src/i18n/locales/en.json",
+    "src/i18n/locales/hi.json",
+    "src/i18n/locales/ja.json",
+    "src/i18n/locales/ko.json",
+    "src/i18n/locales/ru.json",
+    "src/i18n/locales/th.json",
+    "src/i18n/locales/vi.json",
+    "src/i18n/locales/zh.json",
+    "src/main.ts",
+    "src/styles/main.css",
+    "tests/multi-check.mjs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 7770,
+    "cache_read_tokens": 1217934,
+    "output_tokens": 2987,
+    "api_call_count": 5,
+    "subagent_tokens": {
+      "input_tokens": 96,
+      "cache_creation_tokens": 300272,
+      "cache_read_tokens": 3475571,
+      "output_tokens": 40732,
+      "api_call_count": 45
+    }
+  },
+  "redaction": {
+    "replacements": 9,
+    "layers": {
+      "betterleaks": 5,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 4,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
