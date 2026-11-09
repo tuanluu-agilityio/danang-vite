@@ -3,7 +3,7 @@
   "checkpoint_id": "01M70KB1TWHBH7NGYRFEB2QV4Z",
   "strategy": "manual-commit",
   "branch": "feature/den-dem-toa-nha",
-  "checkpoints_count": 1,
+  "checkpoints_count": 10,
   "files_touched": [
     "src/config.ts",
     "src/core/water.ts",
@@ -17,19 +17,26 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2,
-    "cache_creation_tokens": 52941,
-    "cache_read_tokens": 0,
-    "output_tokens": 512,
-    "api_call_count": 1
+    "input_tokens": 16,
+    "cache_creation_tokens": 66643,
+    "cache_read_tokens": 1266385,
+    "output_tokens": 9050,
+    "api_call_count": 8
   },
   "redaction": {
-    "replacements": 0,
+    "replacements": 3,
     "layers": {
-      "betterleaks": 0,
+      "betterleaks": 3,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
