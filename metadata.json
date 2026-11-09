@@ -3,7 +3,7 @@
   "checkpoint_id": "01M70GZ9MV6KZ1525W2885E5PV",
   "strategy": "manual-commit",
   "branch": "feature/du-luon-hieu-ung-dem",
-  "checkpoints_count": 8,
+  "checkpoints_count": 17,
   "files_touched": [
     "src/ui/swingUI.ts",
     "tests/explore-check.mjs"
@@ -22,19 +22,26 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 10,
-    "cache_creation_tokens": 37071,
-    "cache_read_tokens": 356817,
-    "output_tokens": 4636,
-    "api_call_count": 4
+    "input_tokens": 12,
+    "cache_creation_tokens": 39426,
+    "cache_read_tokens": 488493,
+    "output_tokens": 8666,
+    "api_call_count": 5
   },
   "redaction": {
-    "replacements": 0,
+    "replacements": 3,
     "layers": {
-      "betterleaks": 0,
+      "betterleaks": 3,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
