@@ -1,0 +1,158 @@
+cập nhật dự án với các màu sắc trên các tòa nhà đa dạng hơn là chỉ 1 màu trắng hiện tại. bạn có thể tham khảo ảnh: https://furamavietnam.com/wp-content/uploads/2026/07/33-1662171125-da-nang-1.jpg
+
+---
+
+chỉ ban đêm giống ảnh, ban ngày như hiện tại
+
+---
+
+màu vàng ấm đặc trưng, các tòa nhà cao tầng lung linh ánh đèn và ánh đèn phản chiếu xuống bờ sông
+
+---
+
+có
+
+---
+
+C
+
+---
+
+đồng ý
+
+---
+
+<agent-message from="ac357913f04b91a86">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Two questions are left. I checked the spec against `shaders.ts`, `city.ts`, `site.ts`, `water.ts`, `prewarm.ts` and `dayNight.ts`. Everything else I could decide myself or the spec leaves to the builder.
+  
+  **1. Should the vertical streak and brighter reflection (G5) apply to everything in the mirror, or only to the city buildings?**
+  
+  - **Why it's unclear:** §3 says bridge LEDs, the LED heart facade, billboards and the Sun Wheel don't change, and that riverfront landmarks "keep their appearance". G5 only talks about "city lights".
+  - **The technical catch:** the mirror is one 512² texture holding everything not on layer 1, including the landmarks, the bridge parts that aren't on layer 1, and anything else bright. A streak done in the water shader, which §7 suggests, will also stretch and brighten those reflections.
+  - **Why it changes the plan:**
+    - If §3 covers only the objects themselves, one water-shader change is enough. A luminance threshold would then simply make the bridge LEDs the strongest streaks.
+    - If those reflections must stay as they are today, the shader has to tell buildings from everything else in the mirror. For example, it could write a mask into the mirror's alpha from the building materials, which affects how that alpha is handled. It can't be a separate pass, because §4 requires zero extra render passes.
+    - A wrong guess means rebuilding the G5 approach after the screenshot review.
+  
+  **2. Should the Thuận Phước buildings actually get the blue towers (G3) and LED outlines (G4), or only the warm windows (G1)?**
+  
+  - **The conflict:** §5 says these buildings get "G1–G4", and §8 records that the effect was extended to them. But `site.ts:47` sets height to `8 + rnd() * hMax` with `hMax` of 40 or 28, so the tallest is under 48 m. With G4's threshold of about 60 m, no building there can ever get an LED outline. If "tall tower" uses the same threshold, G2's tower boost and G3 won't appear either.
+  - **Why it changes the plan:**
+    - If the threshold is meant literally, the Thuận Phước variant is G1 only, and the spec's "G1–G4" is just loose wording. No extra work is needed.
+    - If the user expects to see these effects there, it needs a separate height threshold or a relative "tallest in this area" rule. That means an extra shader option and config value, and a different mix of colours around that bridge.
+</agent-message>
+
+---
+
+như bạn đề xuất
+
+---
+
+ok
+
+---
+
+Native
+
+---
+
+Đồng ý với hiện tại
+
+---
+
+không chạy toàn bộ test được không?
+
+---
+
+<agent-message from="a447fe47d31a53cac">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ## Code review: feature/den-dem-toa-nha (fbb36fb..ff5184c)
+  
+  I read all the code in the diff, plus `cutaway.ts`, `corridor.ts`, `clearance.ts`, `prewarm.ts`, `dayNight.ts`, `sky.ts` and `site.ts`. `npm run typecheck` passes. I ran no tests or browser, so every finding comes from reading the source.
+  
+  **Verdict: ready to merge with fixes.** There are no Critical issues. Two Important issues should be fixed, and both are small.
+  
+  ### Strengths
+  - Night contributions are multiplied by `uNight`, and the mirror streak is behind a runtime branch, so no new program variant appears at runtime.
+  - The hash comes from `instanceMatrix`, with no division by size and no `rand()` use.
+  - The `windows` shader text for landmarks is unchanged, and the cache keys are separated correctly.
+  
+  ### Critical
+  None.
+  
+  ### Important
+  
+  **1. Water can flood with light when the slider sits around 65–90 % (`src/core/water.ts:45,52`).**
+  - The streak turns on at `uNight > 0.6`, but `dayNight.ts:22` sets sun elevation to `lerp(40,-7,m)`, so the sun only reaches the horizon at m ≈ 0.85.
+  - From 0.6 to 0.85 the mirror still holds a bright sky, clamped to 0..1 in the byte render target. Sky above the 0.35 threshold is added back at gain 2.8.
+  - At m = 0.8 the fade is 0.5, so a full-bright sky pixel adds up to about +0.9 to the reflection.
+  - Effect on the user: the river goes pale or washed out across its whole surface. It flashes for about half a second on the day/night button (`stepNight` rate 1.6/s), and it stays that way if the slider (`setupUI.ts:36`) is parked in that range. It also clashes with the "no sudden pop" goal.
+  - This is the same problem Task 2's ruling tried to solve, but the 0.6 gate is too low. The test covers only 0.5, so it cannot catch this. I did not confirm the size visually.
+  - Fix: tie the fade to the sun being below the horizon, for example `uNight > 0.85` with `smoothstep(0.85, 1.0, uNight)`. Then add a `dusk` sample at 0.75. The user approved the look only at full night, and that look stays unchanged.
+  
+  **2. Per-building colour identity is interpolated and fed to a very sensitive hash (`src/common/shaders.ts:14,36,49`).**
+  - `vBId` is an ordinary interpolated varying holding world coordinates in the thousands.
+  - `bHash` computes `fract(sin(dot)*43758)`, so a one-ulp interpolation difference gives a completely different result.
+  - Many desktop GPUs interpolate equal vertex values exactly, which would explain why SwiftShader looks fine. GLSL does not guarantee this, and barycentric-style interpolation, common on mobile GPUs, may not be exact.
+  - Effect on the user: on affected GPUs, single towers would speckle between yellow, blue and LED colours and shimmer as the camera moves. The spec names flicker and a "rainbow" city as failures. No real GPU has been measured for this branch.
+  - Fix: declare the ID as flat (`flat varying vec2 vBId` works because three defines `varying` as `in`/`out` on WebGL2), and do the same for `vBSize` and `vBBase` so they are truly constant per instance.
+  
+  ### Minor
+  1. **Low quality tier does wasted work (`water.ts:45-51`).** With `reflectState.every = 0`, all 8 taps still run on every water pixel at night against a 1×1 texture, on the devices least able to afford it. A uniform that switches the streak off when the mirror is off would avoid recompiling.
+  2. **Thin LEDs can crawl in motion (`shaders.ts:23-24`).** The `step()` bands have hard edges and are 1.4–3 m wide. Near the LOD limit of 2,200 m, 1.4 m is under a pixel at 1080p, so edges will crawl during Tour or camera moves. Bloom makes this more visible. It does not affect a still camera. A distance fade or `fwidth`-based smoothing would fix it.
+  3. **Streak clamps at the mirror edge (`water.ts:49`).** With reach 0.16, V can go past the top edge of the mirror, so samples repeat the edge row. This can only produce short smears from bright objects cut off by that edge.
+  4. **Misplaced comments.**
+     - `config.ts:522-523`: the "Hiệu năng" header now sits above `cityNightBase` instead of `perfBase`.
+     - `shaders.ts:7`: the `patchWindows` comment now sits above `f1`.
+  5. **Dead indirection (`water.ts:49,53`).** `STREAK_SIGN` is always replaced with `1.0`.
+  6. **Test script exports (`tests/citynight-check.mjs:26,31,37`).** `export` in a top-level script does nothing. The hard-coded `STREAK_REF`, `DUSK_REF` and `NOMIRROR_REF` will go stale if the scene changes.
+  
+  ### Review Focus results
+  | # | Item | Result |
+  |---|---|---|
+  | 1 | Scale-0 instances | Clean. Corridor, riverfront and Song Han use `makeScale(0,0,0)`, which makes the triangles degenerate on both near and far levels. The corridor check is by position. Sun Wheel clearing goes through `clearance.ts`. |
+  | 2 | Day to night | At `uNight` 0.5 it is clean: windows, LEDs and far glow are linear in `uNight`, and the streak is off. **The problem is at 0.6–0.85** (Important 1). |
+  | 3 | `reflectState.every = 0` | Clean. The flat fog-colour texture gives a uniform result, so no false streak. Fog is at or below the 0.35 threshold in clear weather for m ≥ 0.6, and shader errors are not a concern. Wasted cost only (Minor 1). I did not compute fog values under weather presets. |
+  | 4 | Tunnel cutaway | Clean. `cutaway.ts:100` selects by LOD parent, so `nearMat` and the patched `farMat` both get the clipping planes at build time. The clipping counts are part of three's program key alongside the custom key. The clipping shader chunks are untouched. No cutaway, wetness or weather code chains or replaces `onBeforeCompile` on these two materials. `patchWater` and the streak patch touch different strings. |
+  | 5 | Landmarks | Clean. Key is still `windows` and the GLSL matches apart from whitespace. |
+  
+  ### Other requested checks
+  - **Day output:** unchanged by construction, since every new term is multiplied by `uNight`, and that is exactly 0 in the day state. Diffuse is untouched.
+  - **Non-instanced `perBuilding`:** both callers are `InstancedMesh`, so the unset-varying path is never reached. If it were, the GLSL would still link but the values would be undefined. A guard is not needed today.
+  - **Prewarm:** covers `windows-city`, `far-glow` and the water change. `compile` traverses all objects, including hidden LOD levels, for both the canvas and render-target variants. `far-glow` is one extra program, because `farMat` used to share the default one.
+  - **Invariants:** `rand()` order, `build*` order, no new lights, no i18n needed, and `CONFIG.cityNight` carries Vietnamese comments and units. All fine.
+  
+  ### Declined to judge
+  - **Colour and brightness tuning at full night:** the user approved it from a screenshot.
+  - **Draw call and `test:perf` numbers:** not run, by the user's choice. By construction no mesh or pass is added.
+  - **Real streak cost on GPU or phone:** cannot be measured here, and the branch's own notes already list it as unmeasured.
+  - **Whether a specific GPU shows Important 2:** needs real hardware. I rate it on the missing guarantee and the cheap fix.
+  - **The test-threshold rulings (`warmDominant`, streak, `dusk`/`noMirror` baselines):** reasonable as test-only choices, except that `dusk` leaves the gap noted in Important 1.
+  - **The `.worktrees`/`.superpowers` exclusion ruling:** repository housekeeping with no effect on the app.
+  - **Weather presets combined with the night streak (lightning brightness in the mirror):** outside the spec, and I did not trace it far enough to claim a defect.
+</agent-message>
+
+---
+
+<task-notification>
+<task-id>bu7n24bln</task-id>
+<tool-use-id>toolu_015LQ6uoZMDa9rbkZoCP2HTW</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\f6229dbf-bd2f-4392-8020-d0a67d2eb390\tasks\bu7n24bln.output</output-file>
+<status>failed</status>
+<summary>Background command "Start the brainstorming visual companion server" failed with exit code 143</summary>
+</task-notification>
+
+---
+
+push và create a pull request, merge đến main và update các file cho AI model cần thiết
+
+---
+
+<task-notification>
+<task-id>brmw2p0mw</task-id>
+<tool-use-id>toolu_01BFRuer93y8sUVZBg2UqxuM</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\f6229dbf-bd2f-4392-8020-d0a67d2eb390\tasks\brmw2p0mw.output</output-file>
+<status>completed</status>
+<summary>Background command "Push the branch and open the pull request" completed (exit code 0)</summary>
+</task-notification>
