@@ -3,8 +3,18 @@
   "checkpoint_id": "01M70R0SYT4NZPTG5B6HG5W22E",
   "strategy": "manual-commit",
   "branch": "feature/du-luon-nhieu-nguoi",
-  "checkpoints_count": 2,
-  "files_touched": null,
+  "checkpoints_count": 3,
+  "files_touched": [
+    "README.md",
+    "package.json",
+    "server/multi/.gitignore",
+    "server/multi/package-lock.json",
+    "server/multi/package.json",
+    "server/multi/src/worker.ts",
+    "server/multi/tsconfig.json",
+    "server/multi/wrangler.toml",
+    "tests/multi-unit/worker.integration.mjs"
+  ],
   "sessions": [
     {
       "metadata": "/0/metadata.json",
@@ -12,6 +22,13 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
