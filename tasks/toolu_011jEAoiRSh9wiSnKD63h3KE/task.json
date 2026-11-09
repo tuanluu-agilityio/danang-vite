@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_011jEAoiRSh9wiSnKD63h3KE",
+  "agent_id": "a10f24aab347dfaa5",
+  "task_description": "Final review fix wave",
+  "token_usage": {
+    "input_tokens": 224,
+    "cache_creation_tokens": 283721,
+    "cache_read_tokens": 21794593,
+    "output_tokens": 117943,
+    "api_call_count": 110
+  },
+  "started_at": "2026-11-10T05:12:30.597723+07:00",
+  "completed_at": "2026-11-10T06:06:37.1768507+07:00"
+}
