@@ -3,7 +3,7 @@
   "checkpoint_id": "01M6ZE4WNJZAQM5GTWV3XKQNMQ",
   "strategy": "manual-commit",
   "branch": "feature/explore-du-luon",
-  "checkpoints_count": 5,
+  "checkpoints_count": 7,
   "files_touched": [
     "index.html",
     "src/config.ts",
@@ -29,14 +29,21 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 50,
-    "cache_creation_tokens": 152778,
-    "cache_read_tokens": 2540420,
-    "output_tokens": 28367,
-    "api_call_count": 21,
+    "input_tokens": 56,
+    "cache_creation_tokens": 245051,
+    "cache_read_tokens": 2631421,
+    "output_tokens": 30455,
+    "api_call_count": 23,
     "subagent_tokens": {
       "input_tokens": 0,
       "cache_creation_tokens": 0,
@@ -46,14 +53,14 @@
     }
   },
   "redaction": {
-    "replacements": 0,
+    "replacements": 4,
     "layers": {
       "betterleaks": 0,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
       "credentialed_uri": 0,
-      "entropy": 0,
+      "entropy": 4,
       "key_context": 0,
       "provider_token": 0,
       "shell_stdin": 0
