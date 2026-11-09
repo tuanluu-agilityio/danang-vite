@@ -3,8 +3,24 @@
   "checkpoint_id": "01M70WSBJJKR3ZW94R0Y4JTMZW",
   "strategy": "manual-commit",
   "branch": "feature/du-luon-nhieu-nguoi",
-  "checkpoints_count": 2,
-  "files_touched": null,
+  "checkpoints_count": 3,
+  "files_touched": [
+    "index.html",
+    "scripts/add-multi-locales.mjs",
+    "src/explore/chooser.ts",
+    "src/explore/multi/lobby.ts",
+    "src/i18n/locales/ar.json",
+    "src/i18n/locales/en.json",
+    "src/i18n/locales/hi.json",
+    "src/i18n/locales/ja.json",
+    "src/i18n/locales/ko.json",
+    "src/i18n/locales/ru.json",
+    "src/i18n/locales/th.json",
+    "src/i18n/locales/vi.json",
+    "src/i18n/locales/zh.json",
+    "src/styles/main.css",
+    "tests/multi-check.mjs"
+  ],
   "sessions": [
     {
       "metadata": "/0/metadata.json",
@@ -12,6 +28,13 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
