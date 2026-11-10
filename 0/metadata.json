@@ -121,6 +121,37 @@
         "label": "Skill: superpowers:executing-plans",
         "default_collapsed": true
       }
+    },
+    {
+      "id": "claude-skill-toolu_01D7MCwTmc8eZGmGXPvCMkbA",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:test-driven-development"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "bf560d443cc0",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 412,
+        "end": 413,
+        "entry_ids": [
+          "6ff10a57-efe8-4424-bc15-14e05193a101"
+        ],
+        "tool_use_id": "toolu_01D7MCwTmc8eZGmGXPvCMkbA"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01D7MCwTmc8eZGmGXPvCMkbA"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:test-driven-development",
+        "default_collapsed": true
+      }
     }
   ],
   "session_metrics": {
