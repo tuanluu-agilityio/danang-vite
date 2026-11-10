@@ -1,0 +1,5 @@
+/superpowers:brainstorming tôi muốn chuyển đổi source code từ typescript đến Rust để tối ưu hóa performance
+
+---
+
+1 vài người dùng report rằng ứng dụng hiện tại quá lag. Có thể chúng ta có nhiều tính năng 3D nên khiến cho ứng dụng dễ lag nhưng tôi không chắc. Cần bạn review và đánh giá performance
