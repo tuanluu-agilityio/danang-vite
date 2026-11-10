@@ -1,0 +1,128 @@
+<agent-message from="a587148416da404ae">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Trạng thái:** DONE_WITH_CONCERNS
+  
+  **Commit:** `c26f5ab` feat(traffic): thông số và hình học siêu xe, xe tay ga, buýt nhỏ
+  
+  **Test:** `npm run test:traffic:unit` qua 11/11. `npm run typecheck` không lỗi. Trước khi viết code, bộ test thất bại 5/5. Tôi đã thử tạm đảo điều kiện lật mặt thì test kiểm hướng mặt báo lỗi, rồi trả lại như cũ.
+  
+  **Số đỉnh:** siêu xe 628, buýt 464, xe tay ga 636, tổng 1 728 (trần là 2 000). Cả ba khớp kích thước trong config và chạm mặt đường.
+  
+  **Lưu ý:**
+  - **Chưa xem bằng mắt.** Theo brief, tôi không chạy test trình duyệt. Ba lớp tấm dán hông buýt (viền trắng, dải xanh, cửa sổ) cách nhau 8 mm, có thể nhấp nháy khi nhìn từ rất xa. Task sau nên xem ảnh, nếu nhấp nháy thì tăng khoảng cách giữa các lớp.
+  - **Test hướng mặt chỉ kiểm thân xe siêu xe.** Nếu kiểm cả xe thì điều kiện ≥ 95 % không đạt, vì bánh xe và cánh gió có nhiều mặt đúng nhưng quay về phía tâm. Để bù, tôi thêm một test: ở cả ba loại, pháp tuyến phải khớp chiều quấn tam giác.
+  - **Kích thước siêu xe** ghi "xấp xỉ McLaren 720S, khoảng 4,54 × 1,93 × 1,20 m" kèm `(ước lượng)`, vì tôi không kiểm được nguồn của hãng.
+  - **Bánh xe** toàn màu lốp, không có mâm bạc, vì bảng màu trong brief không có màu mâm. Siêu xe bỏ hai hốc gió hai bên hông (brief không liệt kê).
+  - **Ngoài brief, `shapes.ts` export thêm `vhLoft` và `CAR_BODY`** để test kiểm được hướng mặt của thân xe.
+  
+  Báo cáo đầy đủ: `D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-10-xe-co-thuc-te\task-1-report.md`
+</agent-message>
+
+---
+
+<agent-message from="a8b4fbdf3e63ce6fa">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Spec compliance: ✅**
+  
+  **Quality: Approved** (no Critical or Important findings). I ran `npm run test:traffic:unit` once and 11/11 pass. I did not run typecheck.
+  
+  All required items are present:
+  - The `vehiclesBase` block sits before `export const CONFIG`, and `vehicles` is the last key (`src/config.ts:259-289`, `:308`).
+  - `VehicleTypeId` is exported and the interface matches the brief.
+  - `shapes.ts` exports `Role`, `VEHICLE_TYPES`, `vhBuildTypeGeometry` and `vhBuildFleetGeometry`, all cached.
+  - Geometry is indexed with `position`, `normal`, `color` and `aRole`, and has no `uv`.
+  - The `package.json` script is added.
+  - `shapes.ts` contains no `0xRRGGBB` constants.
+  - `rand()` is not used.
+  - The McLaren 720S dimensions are cited and still marked `(ước lượng)` (`src/config.ts:262`, `:267`).
+  
+  **Critical / Important:** none.
+  
+  **Minor**
+  1. **Bus height margin is thin.** The roof is at 2.70, but the AC unit on top reaches 2.76 + 0.08 = 2.84 (`src/common/vehicles/shapes.ts:198`). That is +5.2 % against `types.bus.h = 2.7` (`src/config.ts:269`), close to the 6 % test tolerance (`tests/traffic-unit/shapes.test.ts:378`). A small tweak to the AC unit would push the test past the limit, so either raise `h` to about 2.84 or lower the AC unit.
+  2. **The outward-face test covers only the car body.** The check at `tests/traffic-unit/shapes.test.ts:429-433` runs on `vhLoft(CAR_BODY)` alone, as the brief asked. The second check (`:435-441`) only confirms that the stored normal matches the winding. `Faces.face` (`shapes.ts:69-81`) always makes the two consistent and orients them by the `inside` point. A wrong `inside` point in a bus, bike, `side`, `end` or `dome` part would therefore pass every test. A cheap extra check is that the normal for non-loft parts points away from the type's bounding-box centre, with some tolerance.
+  3. **Threshold and sunk-below-road checks are loose.**
+     - The `x.n.dot(x.attr) < 2.9` threshold (`tests/traffic-unit/shapes.test.ts:438`) allows about a 15° warp per quad. That is fine today, but a loft change could trip it without any real winding error.
+     - `min.y` is checked, but `build()` (`shapes.ts:147-153`) never re-seats y. If an artist moves a wheel, the test fails, which is the right behaviour. It does not distinguish "wheel sunk" from "body sunk".
+  4. **Naming and exports.**
+     - `part` and `V` (`shapes.ts:88`, `:104`) lack the `vh*` prefix.
+     - `Sec`, `CAR_BODY` and `vhLoft` are exported only for tests.
+     - The cached per-type geometry (`shapes.ts:227-230`) is returned shared and mutable. Later tasks must not translate or scale it. `vhBuildFleetGeometry` correctly clones it.
+  5. **Color regex is narrow.** The `config.test.ts:327` regex `0x[0-9a-fA-F]{6}` ignores short or uppercase `0X` forms. This is acceptable for the intent.
+  
+  **⚠️ Not verifiable from this diff**
+  - The shader side of the vertex contract is untested here: `aPaint`, `aAccent.brg`, `aPart` and the `Role` handling in the vertex shader are later tasks. The `Role` values are only checked as integers from 0 to 5.
+  - The final vertex total is only checked against `maxVerts`. I did not read the actual count; the test passes.
+  - Visual correctness (the stripe slope on the bus, the windscreen glass, z-fighting of the 0.008 m plate offsets in `shapes.ts:190-193`, the tiny headlamp boxes) needs eyes on a render.
+  - The reference file `docs/superpowers/specs/tham-chieu/xe-co/xe-dung-thu.html`, cited in the `shapes.ts` header comment, is gitignored, so those measurements cannot be checked.
+</agent-message>
+
+---
+
+<agent-message from="a75e0bdd456be669a">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Trạng thái:** DONE_WITH_CONCERNS
+  **Commit:** `25b2ac0` feat(traffic): mỗi hệ xe một lệnh vẽ, xe có dáng thật thay khối hộp
+  **Kiểm tra:** typecheck không lỗi; test:traffic:unit đạt 11/11; test:boats:unit đạt 17/17; build đạt. Không chạy test trình duyệt nào, đúng như yêu cầu.
+  
+  **Đã làm:** mỗi hệ trong 5 hệ xe giờ chỉ còn một `InstancedMesh`, tên `traffic-city`, `ttl-traffic`, `tp-traffic`, `sh-traffic`, `hr-traffic`. Không còn mesh hộp nào cho xe. `vhMaterial` đã thay các `MAT.*` cũ của xe trong tập vật liệu bị mặt cắt bóc ở `cutaway.ts`. Thứ tự gọi `rand()`/`rnd()` không đổi: trong diff chỉ dòng chọn màu bị sửa, và vẫn chỉ ô tô gọi `colors[Math.floor(rand() * colors.length)]`.
+  
+  **Lựa chọn của tôi:**
+  - Đèn bật khi `uNight ≥ 0,3` (`step`), bản cũ là `> 0,3`; chỉ khác đúng tại 0,3.
+  - Đèn được cộng vào phần phát sáng, không còn là vật liệu Basic riêng như trước.
+  - Độ nhám / kim loại lấy từ config (0,4 / 0,2), bản cũ là 0,35 / 0,5.
+  
+  **Lo ngại:**
+  - `BridgeBase.dispose()` gọi `geometry.dispose()`, việc này sẽ xóa buffer GPU dùng chung với các hệ xe khác. Hiện app không gọi hàm này ở đâu nên chưa ảnh hưởng.
+  - Chưa kiểm hình dáng, đèn và draw call trên trình duyệt; việc đó thuộc Task 3.
+  
+  **Báo cáo đầy đủ:** `D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-10-xe-co-thuc-te\task-2-report.md`
+</agent-message>
+
+---
+
+<agent-message from="afde3dd7ccc402614">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Tuân thủ spec: ✅**
+  **Chất lượng: Approved**
+  
+  ## Critical
+  Không có.
+  
+  ## Important
+  Không có.
+  
+  ## Minor
+  1. **`src/common/BridgeBase.ts:76-77` cùng `src/common/vehicles/fleet.ts:19-20`: dispose một cầu sẽ phá buffer dùng chung.** `BridgeBase.dispose()` gọi `geometry.dispose()` cho fleet xe của cầu. Trong three r165, lời gọi đó gỡ mọi attribute và index của geometry khỏi `WebGLAttributes`, tức xóa buffer GL mà mọi fleet khác (`traffic-city` và các cầu còn lại) đang dùng chung. Lần cập nhật sau three tạo buffer mới, nhưng VAO đã lưu của các fleet khác vẫn trỏ vào buffer cũ: `bindingStates.needsUpdate` chỉ so đối tượng attribute, không so buffer handle. Kết quả: xe ở mọi hệ khác biến mất hoặc vẽ sai. Hiện chưa có nơi nào gọi `dispose()` của cầu (grep chỉ thấy phần định nghĩa, gồm cả `TranThiLyBridge.ts:53`), nên lỗi này mới tiềm ẩn. Implementer đã tự nêu lo ngại này. Nên để dispose bỏ qua geometry của fleet xe, hoặc ghi chú ngay tại `vhCreateFleet`.
+  2. **`src/common/vehicles/fleet.ts:20`: các fleet dùng chung đối tượng `boundingBox` / `boundingSphere`.** Nếu sau này có code gọi `computeBoundingBox()` trên geometry của một fleet thì giá trị của mọi fleet đều đổi theo. Hiện vô hại vì `frustumCulled = false`, và `InstancedMesh` tự tính bounding sphere riêng trên mesh.
+  3. **`src/common/vehicles/material.ts:50`: ngưỡng bật đèn đổi từ `> 0.3` thành `≥ 0.3` (`step`).** Khác biệt chỉ xảy ra đúng tại 0,3 và implementer đã ghi lại. Comment dòng 49 ("ẩn mesh đèn khi uNight ≤ 0.3") khớp với hành vi cũ.
+  
+  ## Đã kiểm theo các rủi ro được nêu
+  - **(a) Chuỗi `rand()` / `rnd()`:** so từng dòng cũ với mới, không đổi.
+    - `src/environment/traffic.ts`: vẫn đủ ba lời gọi theo đúng thứ tự: loại, vị trí, rồi `colors[Math.floor(rand() * colors.length)]` chỉ trong nhánh ô tô của ternary.
+    - `src/common/traffic.ts:21-23`: vẫn loại, vị trí, tốc độ, màu ô tô; mặc định `bus = 0.08` giữ nguyên.
+    - `vhCreateFleet` / `vhSetInfo` không gọi `rand`; màu áo chọn theo hash chỉ số `(i*7+3) % n`.
+    - Thứ tự `build*()` trong `main.ts` không đổi.
+  - **(b) GLSL so với r165:**
+    - `color_pars_vertex` khai báo `vColor` là `vec3` khi `USE_COLOR` (`color` có itemSize 3, `shapes.ts:60`), nên gán `vColor.rgb = …` hợp lệ.
+    - Bản vá đặt sau `#include <color_vertex>`, tức sau `vColor *= color`.
+    - `aPart`, `aRole`, `aType`, `aPaint`, `aAccent`, `vLamp` được khai báo ở đầu shader; `aPart` / `aRole` có trong geometry (`shapes.ts:60,190`).
+    - `begin_vertex` có trong cả `depth.glsl.js:33` lẫn meshphysical. `emissivemap_fragment` nằm sau khai báo `totalEmissiveRadiance`.
+    - Depth material khai báo đủ `aPart` / `aType`.
+    - Màu instance chuyển hex → tuyến tính qua `Color.setHex`, giống `setColorAt` cũ. `uHead` / `uTail` dùng `setRGB` tuyến tính, đúng giá trị `MAT.headLamp` / `MAT.tailLamp` cũ.
+  - **(c) Tên đã xóa:** grep `src/` và `tests/` không còn `vBody`, `vCabin`, `vHead`, `vTail` (trừ khóa i18n Đầu/Đuôi rồng, không liên quan), `busColor`, `MAT.vehicle`, `MAT.glass`, `MAT.headLamp`, `MAT.tailLamp`, `placePart`, `CAR_COLORS`, `BIKE_COLORS`, `TYPES` của xe. Phần còn lại chỉ là comment, `TYPES` riêng trong `tests/lib.mjs` và `tests/boats-unit`, cùng tên một test trong `tests/traffic-unit/config.test.ts:22`. Không còn ai đọc `traffic.body/cabin/head/tail`.
+  - **(d) Hướng và vị trí xe:**
+    - Hộp cũ có đèn pha ở `+len/2` theo trục X cục bộ, tức mũi về +X. Hình học mới cũng mũi +X (`shapes.ts:7`), nên quaternion dùng lại nguyên được.
+    - Bỏ độ nâng 0,3 m là đúng, vì hình học mới lấy y = 0 tại mặt đường. Các phần cộng `+0.02` / `+0.03` của base giữ nguyên.
+  - **Hình học dùng chung:** `vhBuildFleetGeometry()` được cache (`shapes.ts:185-187`), nên mọi fleet dùng chung một đối tượng attribute và index, tức cùng buffer GPU.
+  - **Mỗi khung:** không cấp phát (`_m`, `_one`, `_base`, `_p` đều là biến cấp module).
+  - **Các yêu cầu khác của brief:** `dayNight.ts` đã bỏ `vHead` / `vTail`. `materials.ts` xóa 4 vật liệu, `glass` chỉ xe dùng. `cutaway.ts` dùng `vhMaterial`. 5 tên fleet đúng như brief. `trafficTest` và `__app.traffic` đúng như brief. File trong `src/common/vehicles/` không có hằng màu `0xRRGGBB`.
+  
+  ## ⚠️ Không kiểm được từ diff
+  - Draw call thực tế: mỗi hệ xe đúng 1 lệnh vẽ, góc nhìn cũ không tăng. Cần `test:drawcalls`, để Task 3.
+  - Chuỗi `rand()` khớp ở runtime: mục `randKept` của `test:traffic` (Task 3).
+  - Hình, màu và đèn đêm/ngày bằng mắt; shader biên dịch không lỗi trên GPU / SwiftShader; bóng đổ chỉ vẽ đúng một loại xe mỗi instance.
+  - Các kết quả typecheck, `test:traffic:unit` 11/11, `test:boats:unit` 17/17 và build đều là lời báo cáo của implementer; theo yêu cầu, review không chạy lại.
+  - Thay đổi hình ảnh có chủ đích theo brief: buýt mọi cầu giờ cùng màu vàng `busBody`, trước đây TP/SH xanh, HR và TTL hai sắc vàng khác nhau. Lamp mesh ban ngày giờ hiện với màu `headDay` / `tailDay`; roughness/metalness đổi từ 0,35/0,5 sang 0,4/0,2.
+  
+</agent-message>
