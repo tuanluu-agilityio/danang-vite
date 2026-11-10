@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01DpheutntmQFsuH3mFt2xZK",
+  "agent_id": "aa021e13c9c1040dc",
+  "subagent_type": "general-purpose",
+  "task_description": "Builder check on spec",
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 68998,
+    "cache_read_tokens": 463021,
+    "output_tokens": 6541,
+    "api_call_count": 9
+  },
+  "started_at": "2026-11-10T11:43:56.9595302+07:00",
+  "completed_at": "2026-11-10T11:45:16.970235+07:00"
+}
