@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_016UcV1y8iD7JE5sLy1CWU2X",
+  "agent_id": "a98005c927088ba40",
+  "subagent_type": "general-purpose",
+  "task_description": "Builder check boat spec",
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 62046,
+    "cache_read_tokens": 208509,
+    "output_tokens": 4877,
+    "api_call_count": 5
+  },
+  "started_at": "2026-11-10T13:02:29.2200699+07:00",
+  "completed_at": "2026-11-10T13:04:58.5267677+07:00"
+}
