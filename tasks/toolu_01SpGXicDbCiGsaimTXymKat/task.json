@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01SpGXicDbCiGsaimTXymKat",
+  "agent_id": "a060341c4c7ea220b",
+  "subagent_type": "general-purpose",
+  "task_description": "Builder check bản thiết kế xe cộ",
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 112935,
+    "cache_read_tokens": 381609,
+    "output_tokens": 10540,
+    "api_call_count": 6
+  },
+  "started_at": "2026-11-10T21:59:29.005827+07:00",
+  "completed_at": "2026-11-10T22:01:31.424129+07:00"
+}
