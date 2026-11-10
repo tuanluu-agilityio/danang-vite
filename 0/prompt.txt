@@ -1,0 +1,5 @@
+Một khi review đồng ý specs. Hãy tạo plan và thực hiện. Tôi đồng ý với plan bạn tạo, không cần hỏi lại. Một khi có plan hãy tiến hành update mà k cần hỏi ý tôi. Sau khi thực hiện xong, chỉ cần gửi tôi bản demo mà không cần chạy full test. Bạn clear chưa?
+
+---
+
+nên đổi model sang opus hoặc sonnet khi implement plan
