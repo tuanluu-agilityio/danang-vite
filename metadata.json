@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M727PSE0ZCB76PJ0BWCGW9EM",
+  "strategy": "manual-commit",
+  "branch": "feature/thu-gon-bang-dieu-khien",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".github/instructions/tests.instructions.md",
+    ".github/instructions/ui-views.instructions.md",
+    ".github/memory-bank/activeContext.md",
+    ".github/memory-bank/decisions.md",
+    ".github/memory-bank/progress.md",
+    ".github/memory-bank/systemPatterns.md",
+    "docs/superpowers/specs/2026-11-10-thu-gon-bang-dieu-khien-design.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 4,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
