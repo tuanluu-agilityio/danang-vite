@@ -1,0 +1,177 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M71FSB91TBWA205C0E0FNMYK",
+  "session_id": "c801f642-ccc4-4e19-825a-b74befbd485e",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-10T01:05:03.7522122Z",
+  "branch": "feature/du-luon-nhieu-nguoi",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "docs/superpowers/plans/2026-11-09-du-luon-nhieu-nguoi.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "990d517fba89",
+  "checkpoint_transcript_start": 1181,
+  "transcript_lines_at_start": 1181,
+  "compact_transcript_start": 92,
+  "token_usage": {
+    "input_tokens": 9,
+    "cache_creation_tokens": 187586,
+    "cache_read_tokens": 642102,
+    "output_tokens": 1264,
+    "api_call_count": 4,
+    "subagent_tokens": {
+      "input_tokens": 0,
+      "cache_creation_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "api_call_count": 0
+    }
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_019V8fVZwpAz3f5XmZThkgHC",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:writing-plans"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "dade6180a36f",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 357,
+        "end": 358,
+        "entry_ids": [
+          "c2493bf2-b42a-48fa-9a80-a9c6d7552a92"
+        ],
+        "tool_use_id": "toolu_019V8fVZwpAz3f5XmZThkgHC"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_019V8fVZwpAz3f5XmZThkgHC"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:writing-plans",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01FxrSf3cWWLkcGmxkTECPU9",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:executing-plans"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "dade6180a36f",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 442,
+        "end": 443,
+        "entry_ids": [
+          "75f8f5ce-3124-4b7f-8a62-ed2b51fe55c8"
+        ],
+        "tool_use_id": "toolu_01FxrSf3cWWLkcGmxkTECPU9"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01FxrSf3cWWLkcGmxkTECPU9"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:executing-plans",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_014bA1yMe6JSw9GGUyejjn2x",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:test-driven-development"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "dade6180a36f",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 459,
+        "end": 460,
+        "entry_ids": [
+          "d80c2144-66f9-43d9-ba9e-83a593d647d2"
+        ],
+        "tool_use_id": "toolu_014bA1yMe6JSw9GGUyejjn2x"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_014bA1yMe6JSw9GGUyejjn2x"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:test-driven-development",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01JsYajhqmYauE7RCD9UGMLh",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:finishing-a-development-branch"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "90f98176fcb4",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 1039,
+        "end": 1040,
+        "entry_ids": [
+          "0365e339-f927-4224-9814-de0793361740"
+        ],
+        "tool_use_id": "toolu_01JsYajhqmYauE7RCD9UGMLh"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01JsYajhqmYauE7RCD9UGMLh"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:finishing-a-development-branch",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 16
+  }
+}
