@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M72W6C6H11RCBBY6AS4YV7QB",
+  "strategy": "manual-commit",
+  "branch": "feature/tau-thuyen-song-han",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "src/config.ts",
+    "src/environment/boats/crowd.ts",
+    "src/environment/boats/hulls.ts",
+    "src/environment/boats/material.ts",
+    "src/environment/traffic.ts",
+    "tests/boats-check.mjs",
+    "tests/boats-unit/config.test.ts",
+    "tests/boats-unit/crowd.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 88,
+    "cache_creation_tokens": 300298,
+    "cache_read_tokens": 9528295,
+    "output_tokens": 23525,
+    "api_call_count": 36,
+    "subagent_tokens": {
+      "input_tokens": 42,
+      "cache_creation_tokens": 252548,
+      "cache_read_tokens": 1774046,
+      "output_tokens": 23362,
+      "api_call_count": 20
+    }
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
