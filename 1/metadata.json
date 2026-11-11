@@ -1,0 +1,57 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M75YHTW87JXJK7F40TQSV2G0",
+  "session_id": "cfbf6fb1-5faf-4660-9f00-508deb60dc5d",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-11T18:40:06.8277327Z",
+  "branch": "feature/nguoi-di-dao-that",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/superpowers/plans/2026-11-12-nguoi-di-dao-that.md",
+    "src/explore/index.ts",
+    "src/explore/multi/index.ts",
+    "src/explore/stroll/avatars.ts",
+    "src/explore/stroll/blocky.ts",
+    "src/explore/stroll/index.ts",
+    "src/explore/stroll/rig.ts",
+    "tests/stroll-unit/avatars.test.ts",
+    "vite.config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5-2",
+  "turn_id": "23bab38bdf24",
+  "checkpoint_transcript_start": 424,
+  "transcript_lines_at_start": 424,
+  "compact_transcript_start": 29,
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 6134,
+    "cache_read_tokens": 407912,
+    "output_tokens": 529,
+    "api_call_count": 2,
+    "subagent_tokens": {
+      "input_tokens": 66,
+      "cache_creation_tokens": 126962,
+      "cache_read_tokens": 2546449,
+      "output_tokens": 39783,
+      "api_call_count": 32
+    }
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 3
+  }
+}

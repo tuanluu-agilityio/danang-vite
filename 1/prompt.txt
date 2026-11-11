@@ -1,0 +1,42 @@
+<agent-message from="a800f75fdc27a4fc4">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Task 2 xong, commit `6fff98a` trên `feature/toi-uu-hieu-nang-cay` (worktree `toi-uu-cay`, chưa push). Đã chạy thật: `npm run typecheck` đạt, `npm run test:trees:unit` 9/9 đạt, `npm run build` đạt, đo trên GPU thật bằng script tạm.
+  
+  **File sửa**
+  - Tạo `src/core/passLod.ts`.
+  - Sửa `src/common/trees/shapes.ts`, `src/environment/trees.ts`, `src/bridges/thuan-phuoc/site.ts`, `src/core/water.ts`, `tests/trees-unit/shapes.test.ts`.
+  - `src/config.ts`: chỉ thêm `trees.shade.lodDetail: 0` (ghi chú tiếng Việt, "(ước lượng)").
+  - Không sửa `tests/trees-check.mjs`: nó đọc `treesTest.meshes().tris`, và `tris` vẫn là bản đầy đủ (640). Tôi không chạy file đó. Đã thêm `lodTris` (160) vào kết quả `treesTest.meshes()`.
+  
+  **Cách làm**
+  - `trShadeCrownGeo(detail = 1)` chỉ đổi mức chia của `IcosahedronGeometry`; bố cục cụm và thứ tự `rng` không đổi. Test xác nhận mặc định vẫn 640 tam giác.
+  - Tôi không so từng byte với bản cũ: với `detail = 1` mã chỉ khác một hằng số nên hình học trùng, nhưng chưa có kiểm tra tự động nào cho điều này.
+  - `trShadeCrownLodGeo()` trả buffer gộp `[đầy đủ | thưa]` không index. Số đỉnh: `fullCount` = 1920, `lodCount` = 480, tổng 2400.
+  - `passLodAdd` đặt `drawRange (0, full)`. `onBeforeShadow` đổi sang `(full, lod)`; `onAfterShadow` trả lại theo bộ đếm gương, nên lượt bóng bên trong lượt gương vẫn giữ bản thưa. Trạng thái giữ theo geometry; không cấp phát mỗi khung.
+  - `water.ts` bọc `draw.apply` bằng `passLodEnter` / `passLodLeave` trong `try / finally`.
+  - Cây đổ, dọn cây, gió chỉ đọc hoặc sửa `instanceMatrix`. Bản thưa nằm sau trong buffer nên chúng không bị ảnh hưởng (đọc mã, không chạy test).
+  - Hộp bao / cầu bao: bản thưa nằm trong cầu đơn vị; test hộp bao lệch ≤ 0,12 mỗi chiều đạt.
+  
+  **Số đo GPU thật, góc mặc định ban ngày, 1920×1080**
+  
+  | | Bản gốc | Bản mới |
+  |---|---|---|
+  | `render.calls` | 269 | 269 |
+  | `render.triangles` | 5 070 520 | 4 216 120 (giảm 854 400 = 890 × 480 × 2) |
+  | `drawRange` hai lưới tán sau một khung | `count` null (mặc định) | `(0, 1920)` = `(0, fullCount)` |
+  | Thời gian GPU, trung vị / min / max (ms) | 20,76 / 17,16 / 27,88 và 19,86 / 17,62 / 29,43 | 14,29 / 13,85 / 36,52 và 14,10 / 12,81 / 21,18 |
+  
+  - Thời gian GPU giảm khoảng 5,5–6,5 ms (khoảng 28–30 %) qua hai lượt đo xen kẽ. Máy có thể đang tải nên có nhiễu; khung đầu mỗi lượt thường cao (36 ms), nên lấy trung vị.
+  - Đo bằng timer query, 12 lần vẽ mỗi mẫu, 9 mẫu.
+  - Ảnh trước / sau: `...\scratchpad\cay-base.png` và `...\scratchpad\cay-new.png`.
+    - Cây lượt chính trông như nhau; thuyền ở vị trí khác vì cảnh có chuyển động, không liên quan thay đổi này.
+    - Tôi chưa xác nhận bằng mắt bóng cây và ảnh cây trên nước. Ở góc này, bóng và bóng phản chiếu cây rất nhỏ nên ảnh không đủ để khẳng định. Nên kiểm cận cảnh hoặc để `test:trees` chạy.
+  - Script đo: `...\scratchpad\cay-gpu.mjs`. Nó nhận tham số `<repo> <distDir> <nhãn>`, khác mẫu `gpu.mjs` ở chỗ có thêm tham số đường dẫn dist.
+  
+  **Lệch plan / rủi ro**
+  - Worktree không có `node_modules`; lệnh chạy được nhờ `node_modules` ở thư mục gốc `D:\2026 - Tuan\danang-vite` (Node tìm lên thư mục cha). Không cần cài thêm.
+  - Chưa chạy `test:trees`, `test:drawcalls`, `test:weather` (người điều phối chạy sau). Cần để ý khi chạy:
+    - Cây đổ và tải lại cảnh.
+    - Chế độ `shadowEvery > 1`: logic lồng nhau chỉ được kiểm bằng đọc mã, chưa chạy thật.
+  - `passLodInfo(geo)` là hàm export thêm ngoài danh sách plan, dùng cho `treesTest`.
+</agent-message>
