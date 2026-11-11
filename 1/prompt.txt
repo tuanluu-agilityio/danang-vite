@@ -1,0 +1,9 @@
+review performance của project. Tìm những chỗ khiến cho ứng dụng bị lag và tối ưu chúng. Cập nhật các AI model files tương ứng
+
+---
+
+Sau khi đo xong, nhiệm vụ của bạn là tạo specs -> plans và implement update trên một branch mới. Sau khi update hoàn thành, tạo pull request và merge vào main. Không cần hỏi lại, nếu có issue và cần tôi quyết định thì note lại và report cho tôi. Bạn đã rõ yêu cầu chưa?
+
+---
+
+nên chọn model phù hợp cho từng task. Fable 5.2 chỉ để lên specs và plans không implement
