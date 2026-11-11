@@ -3,9 +3,32 @@
   "checkpoint_id": "01M75WH5ZTAKWZT69157BK8NYA",
   "strategy": "manual-commit",
   "branch": "feature/nguoi-di-dao-that",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
-    "src/explore/multi/params.ts"
+    "index.html",
+    "src/common/people/gait.ts",
+    "src/common/people/kinds.ts",
+    "src/common/people/material.ts",
+    "src/config.ts",
+    "src/explore/multi/params.ts",
+    "src/explore/multi/protocol.ts",
+    "src/explore/multi/session.ts",
+    "src/explore/stroll/avatars.ts",
+    "src/explore/stroll/index.ts",
+    "src/explore/stroll/keys.ts",
+    "src/explore/stroll/map.ts",
+    "src/explore/stroll/motion.ts",
+    "src/explore/stroll/touch.ts",
+    "src/i18n/locales/ar.json",
+    "src/i18n/locales/en.json",
+    "src/i18n/locales/hi.json",
+    "src/i18n/locales/ja.json",
+    "src/i18n/locales/ko.json",
+    "src/i18n/locales/ru.json",
+    "src/i18n/locales/th.json",
+    "src/i18n/locales/vi.json",
+    "src/i18n/locales/zh.json",
+    "src/styles/main.css"
   ],
   "sessions": [
     {
@@ -21,20 +44,27 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 8,
-    "cache_creation_tokens": 879,
-    "cache_read_tokens": 838125,
-    "output_tokens": 932,
-    "api_call_count": 3,
+    "input_tokens": 12,
+    "cache_creation_tokens": 5109,
+    "cache_read_tokens": 1177468,
+    "output_tokens": 4181,
+    "api_call_count": 5,
     "subagent_tokens": {
-      "input_tokens": 54,
-      "cache_creation_tokens": 118463,
-      "cache_read_tokens": 2406700,
-      "output_tokens": 27488,
-      "api_call_count": 27
+      "input_tokens": 56,
+      "cache_creation_tokens": 147764,
+      "cache_read_tokens": 2421070,
+      "output_tokens": 27649,
+      "api_call_count": 28
     }
   },
   "redaction": {
