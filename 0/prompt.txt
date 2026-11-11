@@ -1,0 +1,1 @@
+review performance của project. Tìm những chỗ khiến cho ứng dụng bị lag và tối ưu chúng. Cập nhật các AI model files tương ứng
