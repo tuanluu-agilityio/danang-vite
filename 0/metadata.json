@@ -125,6 +125,37 @@
         "label": "Skill: superpowers:subagent-driven-development",
         "default_collapsed": true
       }
+    },
+    {
+      "id": "claude-skill-toolu_011qHwtZKGcBZNCnBj7NMprT",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:finishing-a-development-branch"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "eba0fcb3db94",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 2682,
+        "end": 2683,
+        "entry_ids": [
+          "2ac8ab7b-6482-449b-8e1d-53c5b4f5dae1"
+        ],
+        "tool_use_id": "toolu_011qHwtZKGcBZNCnBj7NMprT"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_011qHwtZKGcBZNCnBj7NMprT"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:finishing-a-development-branch",
+        "default_collapsed": true
+      }
     }
   ],
   "session_metrics": {
