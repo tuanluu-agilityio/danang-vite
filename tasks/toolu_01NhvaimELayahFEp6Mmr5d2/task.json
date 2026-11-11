@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01NhvaimELayahFEp6Mmr5d2",
+  "agent_id": "a6a246ec431d88f2c",
+  "subagent_type": "general-purpose",
+  "task_description": "Rà bản thiết kế đi dạo",
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 105664,
+    "cache_read_tokens": 682257,
+    "output_tokens": 12564,
+    "api_call_count": 10
+  },
+  "started_at": "2026-11-11T12:15:21.2683125+07:00",
+  "completed_at": "2026-11-11T12:17:58.7926427+07:00"
+}
