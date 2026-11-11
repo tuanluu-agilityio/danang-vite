@@ -3,7 +3,7 @@
   "checkpoint_id": "01M75XQ8J72QJCYQA7DHYXH81A",
   "strategy": "manual-commit",
   "branch": "feature/nguoi-di-dao-that",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     ".gitignore",
     "package.json",
@@ -17,20 +17,27 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 8,
-    "cache_creation_tokens": 3250,
-    "cache_read_tokens": 531149,
-    "output_tokens": 350,
-    "api_call_count": 2,
+    "input_tokens": 12,
+    "cache_creation_tokens": 13154,
+    "cache_read_tokens": 919301,
+    "output_tokens": 7013,
+    "api_call_count": 4,
     "subagent_tokens": {
-      "input_tokens": 50,
-      "cache_creation_tokens": 41238,
-      "cache_read_tokens": 2941401,
-      "output_tokens": 28789,
-      "api_call_count": 23
+      "input_tokens": 54,
+      "cache_creation_tokens": 114819,
+      "cache_read_tokens": 2955771,
+      "output_tokens": 29369,
+      "api_call_count": 25
     }
   },
   "redaction": {

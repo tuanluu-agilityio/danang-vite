@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M75XQ8J72QJCYQA7DHYXH81A",
+  "session_id": "cfbf6fb1-5faf-4660-9f00-508deb60dc5d",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-11T18:25:36.4767031Z",
+  "branch": "feature/nguoi-di-dao-that",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "tests/stroll-unit/glb.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5-2",
+  "turn_id": "4d7acc38c5f6",
+  "checkpoint_transcript_start": 395,
+  "transcript_lines_at_start": 395,
+  "compact_transcript_start": 27,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 9904,
+    "cache_read_tokens": 388152,
+    "output_tokens": 6663,
+    "api_call_count": 2,
+    "subagent_tokens": {
+      "input_tokens": 4,
+      "cache_creation_tokens": 73581,
+      "cache_read_tokens": 14370,
+      "output_tokens": 580,
+      "api_call_count": 2
+    }
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 2
+  }
+}
