@@ -1,0 +1,111 @@
+<agent-message from="a638604ab9e620ffe">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Status: DONE
+  Commit: 316d00b feat(stroll): máy chủ có nhóm 5 slot đi dạo, giao thức tương thích khách cũ
+  Tests: typecheck sạch; test:multi:unit 58/58 (RED trước khi sửa: 48 pass / 10 fail); test:multi:worker TẤT CẢ ĐẠT (gồm 3 kiểm mới cho nhóm đi dạo).
+  Concerns: không có. Hai điểm cần biết:
+  - Test cũ "connect nhận lobby" sửa kỳ vọng thêm `walkers: []`, theo brief (lobby luôn có walkers).
+  - Một file rác `o.msg.t` ở gốc repo (tôi lỡ tạo do một lệnh shell lỗi) đã xóa. Git status sạch; các file `0` / `150` không đụng.
+  Review Focus 4 (tab dù lượn cũ, máy chủ mới có người đi dạo) đã có test: khách cũ nhận slot bay khi 5 chỗ đi dạo đầy, lobby.flyers chỉ gồm người bay, pos có bank ra f 7 phần tử.
+  Không deploy Cloudflare.
+  Report: D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-di-dao\task-1-report.md
+</agent-message>
+
+---
+
+<agent-message from="a89c3c893c391eccd">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  - ✅ Spec compliant. All brief items are present: params, protocol types, the `room.ts` API (`walkSlotOf`, `kindOf`, `slotOf` unchanged, `hasFlyers` over both groups, `restore` with `kind`), the `Att.kind` round-trip in `worker.ts`, all nine Step 1 tests and the Step 5 integration test.
+  - ⚠️ Cannot verify from the diff:
+    - Hibernation wake-up for a walker. The `SkyObject` constructor hunk is cut off. `list: Att[]` is passed to `room.restore`, which now reads `kind`, so it works only if the constructor forwards `kind` as the report claims. No test exercises this; the `restore` unit test covers only the room side.
+    - The `typecheck` and `test:multi:worker` results are the implementer's claim and were not re-run.
+  
+  ### Strengths
+  - Old-client compatibility is sound.
+    - `join` without `kind` takes the fly path (`room.ts` `onJoin`, `walk` is only `m.kind === 'walk'`).
+    - Fly `pos` still requires `bank`, still gives a 7-element `f`, and still clamps to floor 7 / ceiling 800.
+    - `w` is only added when non-empty (`flush`), and `f` is always present. A walker-only broadcast gives an old client an empty `f` and an unknown field it ignores.
+    - The `rejected` / `joined` replies for flyers are byte-identical to before.
+  - `flush` merges both groups into one broadcast, so `posMaxPerSec`, `broadcastMs` and `maxMsgBytes` apply to both. The `dirty` handling is preserved.
+  - `dispatch` in `worker.ts` handles a change of kind, which also covers a slot release. `(a.kind === 'walk') !== walk` forces a rewrite, and a released slot drops `kind` from the attachment.
+  - Tests assert concrete values (clamp results, exact `joined`/`rejected` payloads, slot reuse, the `w`/`f` shape). The integration test is added against the real Worker.
+  
+  ### Issues
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  - `src/explore/multi/params.ts` (the `poseMax` line in `stroll`): the global constraint says every param line has a Vietnamese comment, a unit and `(ước lượng)`. `poseMax` has no unit or `(ước lượng)`, and `slots` says "theo thiết kế" without `(ước lượng)`. Add "(không đơn vị)" and the qualifier, or note that it is an enum fixed by design.
+  - `src/explore/multi/params.ts`: `stroll` was inserted before `clockSlewMs`, which separates it from its `clock*` siblings. The `clockSlewMs` line's comment alignment was also changed, so the diff touches an unrelated line. Move `stroll` to the end of the object and restore the original spacing.
+  - `tests/multi-unit/room.test.ts`: the test titled "khách cũ ... parse được theo ServerMsg cũ" only checks `JSON.parse(...).t === 'pos'` and the shape of `f`. It does not assert that the old fields are unchanged when `w` is present. Adding a `deepEqual` on the `{t, f}` projection would make the compatibility claim an actual check.
+  - `server/multi/src/room.ts` (`message`): a client that holds a fly slot and sends `join kind:'walk'` is silently ignored (`holding` returns `[]`). That matches the old behaviour for a repeat `join`, but it leaves the Task 2/3 client with no reply. Consider documenting this in the protocol comment.
+  - `server/multi/src/room.ts` (`sweep`): sweeping fly slots first and then walk slots is fine. `released` is sent per slot, so a connection that holds only one slot gets exactly one.
+  
+  ### Assessment
+  **Task quality:** Approved
+  **Reasoning:** The server and protocol changes meet the brief and keep old-client behaviour unchanged. The tests check real values, including the clamps, group separation, release paths and restore. Only minor param-comment and test-strength polish remains.
+</agent-message>
+
+---
+
+<agent-message from="abab5392bd13d3695">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Trạng thái: DONE_WITH_CONCERNS
+  Commit: 868939d feat(stroll): lõi bản đồ va chạm 2D thuần + fuzz
+  Test: `npm run typecheck` không lỗi; `npm run test:stroll:unit` đạt 14/14, khoảng 2,4 s. Bộ test gồm fuzz 200 000 bước 0–3 m, fuzz 20 000 bước 0–60 m và một fuzz thêm cho tường mỏng.
+  Chỉ mục: lưới đều ô 16 m. Vật cản phủ hơn 64 ô vào danh sách riêng và tra tuyến tính.
+  Trượt: chia bước con ≤ radius/2; mỗi bước con thử cả hai trục, rồi chỉ x, rồi chỉ z, không được thì dừng. Không cấp phát.
+  Lo ngại:
+  1. Oracle chỉ kiểm điểm cuối như brief không bắt được lỗi xuyên tường: kiểm đột biến bỏ chia bước con mà fuzz của brief vẫn đạt. Vì vậy tôi thêm fuzz tường mỏng: 3 tường 5 cm chia kín 4 ngăn, nhân vật không được đổi ngăn. Test này bắt được đột biến đó.
+  2. Thêm ngoài brief: nếu điểm xuất phát nằm trong tường thấp (đáp xuống giữa tường) thì bước đó bỏ qua mọi tường thấp để thoát ra. Trong lúc đó nhân vật đi dọc bên trong tường được.
+  3. Nhân vật dừng cách tường tối đa một bước con, không chia đôi để sát hơn.
+  4. Tâm nhân vật nhảy qua được khe giữa hai vùng hẹp hơn 0,175 m. Task 3 không nên để khe hẹp như vậy giữa các vùng.
+  5. `stNearestValid` tốn kém trong trường hợp xấu nhất (khoảng 2,5 triệu lần thử khi không có điểm hợp lệ trong 80 m), nên không gọi mỗi khung.
+  6. Lúc ghi `map.ts`, một tiến trình nào đó (nghi là hook) chạy nội dung file như lệnh shell. Nó tạo các file rỗng `tmin)`, `zn.x1`, `zn.z1` ở gốc repo và ghi lại `0` (cùng lúc 13:05:22). Đây có thể là nguồn của file `0` lạ trước đây. Tôi đã xóa ba file mới, để nguyên `0`; không thấy file `150`.
+  Báo cáo đầy đủ: D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-di-dao\task-2-report.md
+</agent-message>
+
+---
+
+<agent-message from="ac4ddd0bad81a5b01">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  - ✅ Spec compliant. All names in the brief's Interfaces block are present with the stated signatures (`map.ts:55-58`, `82`, `89`, `94`, `98`, `109`, `138`, `145`, `166`, `202`). The module imports nothing (`map.ts:47-53`), so it does not touch three, CONFIG or the DOM. `stMove` splits the move into `n = ceil(len/(R/2))` substeps (`map.ts:150`) and tries both axes, then x only, then z only, else stops (`map.ts:153-156`). `stNearestValid` searches expanding rings out to 80 m (`map.ts:164-177`). `stSegClear` counts only infinitely tall solids and stops at the edge of the open zones (`map.ts:202-239`). `package.json:30` adds the script. Every test case in the brief is present (`map.test.ts:293-461`), including the 200 000-step fuzz with seed 20261111, steps of 0–3 m and feet 0 or 1.2, checked by a linear oracle that does not use the grid (`map.test.ts:272-289`).
+  - Two additions go beyond the brief, and both are justified:
+    - **Low-wall escape** (`map.ts:149`). Without it, a character that lands inside a low wall can never move again: every substep ends inside the wall's inflated area and is rejected.
+    - **Thin-wall fuzz** (`map.test.ts:465-484`). The brief's endpoint oracle cannot catch tunnelling, and the report's mutation check (`n = 1` still passes the brief's own oracle) shows this test is what closes that gap.
+  - ⚠️ Cannot verify from the diff: the RED/GREEN runs and the mutation results in the report. I did not re-run the suite.
+  
+  ### Strengths
+  - **The tunnelling bound holds.** Each solid inflated by the radius is at least 2R = 0.7 m wide (a circle of `r → 0` still gives 0.7 m). That is well above the substep length R/2 = 0.175 m, so no substep can jump across it. The 5 cm walls in the thin-wall fuzz test exactly this edge case.
+  - **Corner squeeze is safe.** Two rectangles touching at a corner (or a rectangle and a circle) have inflated areas that overlap with radius R, so a diagonal step cannot slip through. The endpoint is checked after every substep, so even clipping the rounded corner of the inflated area never leaves the character in an invalid spot.
+  - **The grid is correct.** A solid is indexed by its bounding box (`map.ts:70-80`). `stHit` looks up the cells covering the box [x±R, z±R] (`map.ts:128`). Any solid closer than R therefore shares at least one cell with the query, so none is missed. Solids added via `stAddSolids` are indexed immediately (`map.ts:91`). Solids spanning more than 64 cells go to the `big` list, which is scanned linearly (`map.ts:74`, `127`). The numeric key `stKey` means `Map.get` does not allocate (`map.ts:67`).
+  - **No allocation in the hot paths.** `stMove`, `stValid`, `stHit`, `stHitOne` and `stSegClear` use only scalars and indexed for loops. No closures, temporary arrays or iterators.
+  - **`stSegClear` is accurate.** Rectangles use the slab method and circles a quadratic, both with a start-inside case returning 0 (`map.ts:180-198`). The zone chain uses a 1e-7 tolerance at shared edges (`map.ts:211`). When it hits the 64-iteration cap it returns a shorter value, which is the safe direction for a camera.
+  - **The oracle is genuinely independent.** It scans linearly with `Math.hypot`/`Math.max` (`map.test.ts:276-289`), shares no code with `map.ts`, and also checks that `stValid` is never stricter than the oracle (`map.test.ts:447`).
+  - **Shared zone edge.** Zones are closed on their boundary (`map.ts:102`), so walking across A|B is not blocked. `map.test.ts:317-323` and `396` confirm this.
+  
+  ### Issues
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  1. **The low-wall escape is too broad** (`map.ts:149`). When the start is inside a low wall, the whole step ignores every low wall, not just the one being left. In a long frame (large `dx`), the character can pass through a second low wall. A character can also keep walking along inside a wall (a railing) as long as each frame starts inside it. The practical leak is small (about 6 cm per frame), and zones still keep the character off the water. Narrower option: ignore only the low walls that overlap the start point, or require each substep not to go deeper into them. At minimum, Task 4 must know about this behaviour.
+  2. **No escape when the start is inside a tall solid or outside every zone.** `stValid(…, Infinity)` is then false, so `f = feet` and every substep fails: the character freezes completely (`map.ts:149-156`). This follows the brief (the caller uses `stNearestValid`), but it is easy to forget in Task 6, which adds buildings at runtime with `stAddSolids`, and when closing a gate. A comment at `stMove` saying "start invalid → caller must call stNearestValid" would make this explicit.
+  3. **A malformed solid is silently ignored** (`map.ts:71-74`). A `kind: 'rect'` missing `x0/x1/z0/z1` (or a `circle` missing `r`) produces NaN cell indices, the loops never run, and the solid is never indexed. Meanwhile `stSegClear` in full-scan mode (`map.ts:227-229`) still sees it, so the two paths disagree. Task 6 will be converting about 8 000 boxes from the scene, so a dev assert or a skip with a warning would help.
+  4. **`stNearestValid` uses straight-line distance** (`map.ts:166-177`). The result can land on the other side of a tall wall (for example in a sealed courtyard), or on the opposite bank if it is within 80 m. This is correct per the brief, but Task 3/4 should be aware of it when evacuating people from a closed bridge span.
+  5. **Zones are checked at the centre point only.** Task 3 needs to inset land zones by about R from the embankment edge, or the character's body will overhang the water (spec failure criterion "đứng trên mặt nước"). Gaps narrower than R/2 between two zones can be crossed, as the report already notes (concern 3).
+  6. **The cell-range code is duplicated three times** (`map.ts:73-79`, `128-133`, `226-237`), along with the "skip low wall + `stSegEnter`" body repeated three times in `stSegClear` (`map.ts:228`, `232`, `236`). It is DRY-able, but acceptable while it keeps things allocation-free.
+  7. **Environment issue in the report (concern 5).** A hook executes file contents as shell commands, which created stray files at the repo root. The untracked `0` file is still there. This is outside the diff, but the user should check the hook. Otherwise every file containing `>` risks creating junk files or overwriting a file.
+  
+  ### Assessment
+  **Task quality:** Approved
+  **Reasoning:** The collision core meets the brief. The no-tunnelling bound (inflated width ≥ 2R > substep R/2), the grid lookup and `stSegClear` are all correct by construction, and the independent tests, including the thin-wall fuzz, really do catch tunnelling. The remaining items are behaviour notes for Tasks 3/4/6 and small DRY/robustness points.
+</agent-message>
