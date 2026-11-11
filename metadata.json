@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M75Q801R05HSSGHEP80JSQ0K",
+  "strategy": "manual-commit",
+  "branch": "feature/di-dao",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "index.html",
+    "scripts/add-stroll-locales.mjs",
+    "src/config.ts",
+    "src/explore/chooser.ts",
+    "src/explore/index.ts",
+    "src/explore/stroll/index.ts",
+    "src/explore/stroll/keys.ts",
+    "src/explore/stroll/touch.ts",
+    "src/i18n/locales/ar.json",
+    "src/i18n/locales/en.json",
+    "src/i18n/locales/hi.json",
+    "src/i18n/locales/ja.json",
+    "src/i18n/locales/ko.json",
+    "src/i18n/locales/ru.json",
+    "src/i18n/locales/th.json",
+    "src/i18n/locales/vi.json",
+    "src/i18n/locales/zh.json",
+    "src/styles/main.css",
+    "tests/mobile-check.mjs",
+    "tests/stroll-check.mjs",
+    "tests/stroll-unit/keys.test.ts",
+    "tests/stroll-unit/touch.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 46,
+    "cache_creation_tokens": 205732,
+    "cache_read_tokens": 2898343,
+    "output_tokens": 10146,
+    "api_call_count": 18,
+    "subagent_tokens": {
+      "input_tokens": 218,
+      "cache_creation_tokens": 446648,
+      "cache_read_tokens": 11570676,
+      "output_tokens": 70139,
+      "api_call_count": 107
+    }
+  },
+  "redaction": {
+    "replacements": 5,
+    "layers": {
+      "betterleaks": 5,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
