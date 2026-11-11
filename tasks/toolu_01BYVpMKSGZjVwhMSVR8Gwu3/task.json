@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01BYVpMKSGZjVwhMSVR8Gwu3",
+  "agent_id": "ae5918c00455690b3",
+  "task_description": "Task 6: tài liệu D-030",
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 96925,
+    "cache_read_tokens": 1685705,
+    "output_tokens": 16405,
+    "api_call_count": 22
+  },
+  "started_at": "2026-11-12T03:25:14.7612069+07:00",
+  "completed_at": "2026-11-12T03:29:28.4628479+07:00"
+}

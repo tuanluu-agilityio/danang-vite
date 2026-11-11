@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01Do5phw3YbX3bWDknmQWtLc",
+  "agent_id": "adcd8def556dfbf41",
+  "task_description": "Review toàn nhánh D-030",
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 161700,
+    "cache_read_tokens": 3376455,
+    "output_tokens": 33411,
+    "api_call_count": 30
+  },
+  "started_at": "2026-11-12T03:25:17.9705843+07:00",
+  "completed_at": "2026-11-12T03:33:38.0564453+07:00"
+}
