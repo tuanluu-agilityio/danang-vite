@@ -1,0 +1,629 @@
+<agent-message from="afe6cb709ca9edc46">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Trạng thái:** DONE_WITH_CONCERNS
+  **Commit:** `7018342 feat(trees): hình học cây bóng mát và cây dừa`
+  **Test:** Lần chạy đầu `test:trees:unit` lỗi vì chưa có module (bước "đỏ" của TDD). Sau khi viết code, `test:trees:unit` đạt 8/8 và `typecheck` không lỗi. Không chạy test nào khác, đúng brief.
+  **Số tam giác:** tán cây bóng mát 640/700, thân và cành 150/150, tàu dừa 396/450, thân dừa 120/120, dừa tĩnh 180/260.
+  
+  **Lưu ý:**
+  1. Brief chỉ nói kích thước thân dừa là "đơn vị trước khi instance nhân 0,8" mà không đặt tên, nên tôi thêm trường `CONFIG.trees.palm.trunkWidth = 0.8`. `trPalmStaticGeo` đã dùng trường này; Task 2 nên dùng cùng trường cho tỉ lệ ngang thân dừa. Vì vậy độ lệch đỉnh thật là 0,35 × 0,8 = 0,28 m.
+  2. `crownScale` đặt 0,38 thay vì 0,42 như ví dụ trong brief, để tàu dài khoảng 3–4,5 m. Với h = 10 m tàu dài 2,9–4,4 m.
+  3. Ô trắng đặc trong texture tàu lá chỉ khoảng 8 × 31 px. Nhìn từ xa, búi ngọn và quả dừa có thể bị `alphaTest` cắt mất. Tôi đã đặt uv của chúng sát góc (0,015), nhưng cần kiểm trong trình duyệt ở Task 2.
+  4. Dòng `Co-Authored-By` trong commit ghi Claude Opus 5.5 (theo cấu hình của phiên), không phải Claude Fable 5.2 như contract.
+  
+  **Cần người quyết:** không có mục bắt buộc. Mục 1 và mục 4 là các lựa chọn an toàn tôi đã tự làm.
+  
+  **File báo cáo:** `D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-cay-va-nguoi-thuc-te\task-1-report.md`
+</agent-message>
+
+---
+
+<agent-message from="ae73599bb165b94bd">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  
+  - ✅ Spec compliant. The diff has a hunk for every listed file: `shapes.ts`, `textures.ts`, `shapes.test.ts`, `config.ts` and `package.json`.
+  - Interface check against the brief:
+    - **Shade trunk:** 150 triangles (at the cap), y from 0 to 1 via the `scale(1, 1/max.y)` normalisation at `shapes.ts:117-118`, fork at `S.fork` = 0.5, 6 branches.
+    - **Shade crown:** 8 blobs × 80 triangles = 640. Vertices are clamped to radius 1.1 at `shapes.ts:139`, and `color` is a grey brightness of 0.4 to 1.
+    - **Palm trunk:** 10 segments × 6 sides × 2 = 120 triangles, base radius 0.35 and top radius 0.2, bend `x = bend·y²`, alternating ring colours.
+    - **Palm crown:** 14 fronds × 6 segments × 4 = 336, plus the crown tuft (20) and 5 nuts (40) = 396. Frond UVs are u in {0, 0.5, 1} and v in [0.1, 1]; tuft and nut UVs are (0.015, 0.015), inside the solid cell.
+    - **Palm static:** 60 trunk + 8 tuft + 8 fronds × 7 × 2 = 180 triangles. Every frond triangle has a reversed copy with an inverted normal. Winding gives an upward top-face normal (side × dir = +Y).
+  - All five geometries carry `position`, `normal`, `uv` and `color`.
+  - No `rand()` call in the new code; it uses `rng(seed)` with seeds 4801 and 9127. `shapes.ts` does not import `textures.ts`, and the test does not import it either.
+  - Textures are drawn on canvas. The frond texture has a transparent background, stroke width 5.2 px on a 8.5 px step, and a solid white square at the `[0, 0.06]²` corner. No new dependencies.
+  - `CONFIG.trees.maxTris` and `palm.bend` use the required names. `trunkWidth` and `crownScale` (0.38) are within the controller's rulings. Every config line has a Vietnamese comment, a unit and "(ước lượng)".
+  - The `test:trees:unit` script matches the pattern of the other unit-test scripts. Function prefix is `tr*` and comments are in Vietnamese with `/* ===== */` header blocks.
+  - ⚠️ Cannot verify from the diff: the implementer's claimed results (8/8 tests, typecheck clean, RED then GREEN). I did not re-run them. I checked the triangle-count arithmetic and the tube winding by reading the code, and both are consistent.
+  - ⚠️ Frond-texture mipmap behaviour at distance (solid cell only 8×31 px). This is a Task 2 check in the browser, and the implementer already flagged it.
+  
+  ### Strengths
+  - Triangle budgets are used deliberately: 150/150 for the shade trunk, 640/700 for the shade crown, 396/450 for the palm crown, 120/120 for the palm trunk and 180/260 for the static palm.
+  - `trTube` with the `flat` option gives the exact y = 0 base and y = 1 top that the contract needs. The ring basis is right-handed, so faces wind outward.
+  - The tests assert real geometry: the UV regions, the scar-ring alternation, the base and top radii, the edge variation of the crown, and a reversed-triangle lookup for the static palm. They also check that all normals are unit length.
+  - `trSolid` and `trPaint` keep every merged part on the same four attributes, so `mergeGeometries` does not fail on mismatched attributes.
+  
+  ### Issues
+  
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  - `src/common/trees/shapes.ts:224` — the palm tip is returned as `spine` (a variable assigned from `top.clone()`), which is fine. The frond-width taper `Math.sin(π·(0.12+0.88u)·0.999)` is non-zero at u = 1, so the last quad does not narrow to a point and only the final triangle (`tri(L4[3], R4[3], tip)`) closes it. This is cosmetic only.
+  - `tests/trees-unit/shapes.test.ts:441` — the leaf-triangle filter relies on the colour rule `g > r + 0.1`. It would silently skip the check if the palette changed, but `leaf >= 32` guards that case.
+  - `shapes.ts:112` — for the centre branch (i = 0), `yaw` is computed and used only through `dx/dz` with `reach` 0.1. This is harmless but slightly obscure.
+  
+  ### Assessment
+  
+  **Task quality:** Approved
+  
+  **Reasoning:** All five geometries and both textures match the brief's contracts, caps and attribute requirements. The tests are substantive and the global constraints are respected: no shared `rand()`, no external images, config comments in the right form. Only cosmetic Minor items remain.
+</agent-message>
+
+---
+
+<agent-message from="afaa1a1605a0f89e8">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Trạng thái:** DONE_WITH_CONCERNS
+  
+  **Commit:** `8c56cdd feat(people): hình học, dáng đi và vật liệu người đi bộ` (trên `feature/cay-va-nguoi-thuc-te`, chưa push). Dòng Co-Authored-By ghi Claude Opus 5.5 theo dặn trong lời giao việc, không dùng dòng Fable trong contract.
+  
+  **Đã làm:**
+  - Tạo bốn module `gait`, `shapes`, `material`, `kinds` trong `src/common/people/`, tên và chữ ký đúng như brief.
+  - Thêm `CONFIG.people` vào `src/config.ts` và lệnh `test:people:unit` vào `package.json`, đặt ngay sau phần cây, không đụng phần cây.
+  - Hình người gộp có 853 đỉnh (trần 900), cao 1,785 m tính cả chóp nón.
+  
+  **Test:**
+  - RED: lần chạy đầu cả ba file test đều lỗi vì chưa có module.
+  - GREEN: `test:people:unit` đạt 19/19, `typecheck` đạt, `test:trees:unit` vẫn đạt 8/8.
+  - Ở lần chạy đầu sau khi viết code có 2 test hỏng do chính test: so `-0` với `0`, và so số double với giá trị lưu Float32. Đã sửa test, không sửa code.
+  
+  **Lưu ý:**
+  - **Shader chưa được biên dịch thật**, vì node không có WebGL. Tôi chỉ chạy `onBeforeCompile` trên shader chuẩn của three 0.165 để thấy đủ 3 chỗ vá đều được thay. Nếu có lỗi cú pháp GLSL thì test trình duyệt ở Task 5 mới bắt được.
+  - Task 5 phải gọi `setColorAt` cho mọi người. Không có `instanceColor` thì màu da, áo, quần không được gán và người sẽ trắng.
+  - Tôi đặt chân và tay trái ở −Z, vì người hướng +X thì bên trái là −Z. Bản thử để ở +Z. Hình đối xứng nên không đổi gì, chỉ có tay giơ chụp ảnh (`aPart` 4, tay phải) nằm phía +Z.
+  - Có thêm vài khóa cấu hình ngoài brief (`bob`, `sway`, `photo`, `palette`, `roughness`) để shader không còn số cứng.
+  
+  **Cần người quyết:**
+  - `dragon.headBias = 0.6` do tôi tự định nghĩa (brief để "…"): đó là phần người đứng lan can đặt ở nửa cầu phía đầu rồng.
+  - Tôi không thêm vật liệu người vào tập bóc mặt cắt hầm trong `cutaway.ts`, vì vật liệu người cũ cũng không có trong đó. Nếu Task 5 thấy người lọt vào vùng bóc thì thêm vào.
+  
+  Báo cáo đầy đủ: D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-cay-va-nguoi-thuc-te\task-4-report.md
+</agent-message>
+
+---
+
+<agent-message from="a3de4ee6236a8bf7f">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  
+  - ✅ Spec compliant. All 7 listed files and both modifications have hunks. Interfaces and test coverage match the brief, and the kind-mix tolerance is ±2 per the controller ruling.
+  - ⚠️ Cannot verify from the diff:
+    - The GLSL in `material.ts` has never been compiled. The report admits this and nothing in the diff exercises it, so the first real check is Task 5's browser test.
+    - "7 màu áo cũ đứng đầu" in `shirts` (`src/config.ts`) needs comparing with `people.ts`. That file is outside the diff.
+    - I did not run any tests, relying on the report's 19/19 `test:people:unit` and typecheck results.
+  
+  Checks I ran by reading the code:
+  - **Gait vs spec §5:** `ppAngles` and `pAngles()` (`material.ts:183-196`) agree line by line.
+    - Hip: `lerp(0.12A, 0.22, run)`.
+    - Knee: `2A·sw² + 0.06` blends to `0.38 + 1.5·sr²`.
+    - Shoulder: `A(0.65 + 0.5·run)` gives 1.15A at run.
+    - Elbow: `0.16 + 1.25·run` gives about 1.41 at run.
+  - **Cadence:** `ppCadence` matches `ω = 2πv / (4·L·sin A)`. Run is 8.8 rad/s, about 1.4 Hz.
+  - **Lean, bob, sway:** these use the spec values (0.17 rad, 4 cm and 7.5 cm, 1.8 cm).
+  - **`rand()`:** `kinds.ts` uses only `rng(seed)`.
+  - **Constraints:**
+    - No emissive, texture, light or new dependency.
+    - Geometry is 853 vertices, under the 900 cap.
+    - Every `CONFIG.people` line carries a Vietnamese comment, a unit and "(ước lượng)".
+    - Unit tests import only `config`, `gait`, `shapes` and `kinds`.
+  
+  ### Strengths
+  
+  - The CPU/GLSL mirroring is explicit and tested. `gait.ts:5-7` and `material.ts:169` cross-reference each other as maintenance reminders.
+  - The `kinds.ts` pairing logic guarantees by construction that a leader never accompanies anyone and is always `walk`: followers are picked so `i±1` is not also a follower, and stand/run are drawn only from non-leaders (`kinds.ts:128-137`).
+  - `shapes.test.ts` checks vertex attributes in depth: exact `aPivot`/`aPivot2` values, `aSeg` only on limbs, every attribute finite, and backpack and shoe orientation.
+  - Every shader constant comes from config, including the extras `bob`, `sway`, `photo` and `palette`.
+  
+  ### Issues
+  
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  - `material.ts:202` vs `material.ts:207`: the run-lean rotation is applied to positions of all parts, legs included, but `ppLean` for normals is zeroed for legs (`aPart` 1..2).
+    - Leg lighting is therefore off by 0.17 rad at full run.
+    - Fix: apply the same lean to leg normals, or exempt legs from the position rotation if that was intended.
+    - If the trial build did the same, it is cosmetic only.
+  - `material.ts:216`, `material.ts:208`: colour depends on `#ifdef USE_INSTANCING_COLOR`. A builder that forgets `setColorAt` gets white people with no error.
+    - Task 5 should assert that `instanceColor` exists.
+    - `aPants` must be passed linear, as `material.ts:162` says; `CONFIG.people.pants` holds sRGB hex, so Task 5 must convert via `THREE.Color`.
+  - `kinds.ts:125-134`: every person's scale and phase are drawn before the kinds are chosen, so adding or removing a `mix` entry reshuffles all assignments. This is harmless for determinism.
+  
+  ### Assessment
+  
+  **Task quality:** Approved
+  
+  **Reasoning:** The gait maths, geometry and kind assignment match spec §5 and the brief. The constraints (900-vertex cap, no `rand()`, config-only parameters) are respected and the tests assert real behaviour. The only open risk is the uncompiled GLSL, which Task 5's browser run will settle, plus a minor lean/normal inconsistency on legs.
+</agent-message>
+
+---
+
+<task-notification>
+<task-id>afacf1c78383c3235</task-id>
+<tool-use-id>toolu_01MLvR8FwsJFxfdkk9PuBxwC</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\f1564775-243a-4c2d-bea4-7e11bac72a4f\tasks\afacf1c78383c3235.output</output-file>
+<status>completed</status>
+<summary>Agent "Implement Task 2: wire new trees" is waiting on its own background work</summary>
+<note>This agent stopped with background work of its own still running. It may resume on its own when that work completes or reports, and the same task-id notifies again if it does; the result below may be interim.</note>
+<result>This agent has not reported yet: it is waiting on its own background work and will deliver its report through SubagentHandback when that finishes.
+</result>
+<usage><subagent_tokens>181185</subagent_tokens><tool_uses>51</tool_uses><duration_ms>1399388</duration_ms></usage>
+</task-notification>
+
+---
+
+<agent-message from="afacf1c78383c3235">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Trạng thái:** DONE_WITH_CONCERNS
+  **Commit:** `88ff1e5` feat(trees): cây bóng mát và cây dừa thay quả cầu và nón ở khu phố, Thuận Phước
+  
+  **Test:**
+  - Bản gốc (RED, `8c56cdd`): chỉ `meshCount` LỖI, các kiểm tra khác đạt. Mốc đã chép vào test: cây 890 / 246 / 128, 3 cặp thân–tán, số cây bị dọn 26 / 2 / 0.
+  - Sau khi sửa (GREEN): `test:trees` có chụp ảnh **tất cả ĐẠT**. Ma trận cây đổ dựng lại trùng gốc, gió bão `treeLean` 0,03, 7 tốc độ tàu trùng `main`, không lỗi console.
+  - `test:trees:unit` đạt 8/8; `typecheck` và `build` đạt.
+  - `test:perf -- --strict` chạy một lần (khoảng 90 phút): **đạt**, +0 program, render dài nhất ≤ 77 ms (ngưỡng 150). Số đo đã ghi vào mục "Kết quả" của plan.
+  
+  **Lo ngại:**
+  - Render trên SwiftShader chậm hơn 1,6–1,9 lần so với lần đo 2026-11-09, khung đầu 26,6 s (trước 9,2 s). Lần đo đó có trước D-026/027 nên không cùng mốc, và lúc chạy máy đang có tải khác. Tổng tam giác cây khoảng 0,93 triệu (trước khoảng 0,17 triệu), vẽ ở cả lượt bóng và phản chiếu. Đã ghi mục "Cần người dùng quyết" trong plan.
+  - Ở gốc repo có file rỗng `0` không được theo dõi, tạo lúc 00:38, không phải do tôi tạo. Tôi không commit, không xóa.
+  
+  **Thay đổi ngoài brief:**
+  - Vá gió cho `MAT.trunk` để tán dừa không rời thân.
+  - Mở rộng dải đặc của texture tàu lá để búi ngọn và quả không bị mất khi nhìn xa (do mipmap).
+  - Thêm `trYaw` vào `shapes.ts`.
+  
+  **Báo cáo:** `D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-cay-va-nguoi-thuc-te\task-2-report.md`
+</agent-message>
+
+---
+
+<agent-message from="aadc3d9259ccc7704">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  
+  - ✅ **Đúng spec.** Đã đối chiếu từng mục của brief với diff:
+    - Ma trận instance khớp bảng của brief.
+      - Thân bóng mát `(r, h+0.6r, r)`, có yaw: `trees.ts:325-326`, `site.ts:165-166`.
+      - Tán bóng mát giữ nguyên vị trí và tỉ lệ cũ, cùng `q`: `trees.ts:327`, `site.ts:167`.
+      - Thân dừa `(wk, h, wk)` với `wk = CONFIG.trees.palm.trunkWidth = 0.8` (`config.ts:715`): `trees.ts:341`.
+      - Tán dừa đặt tại `(x + bendX·cosθ, landY + h, z − bendX·sinθ)`, đúng bằng `Ry(θ)·(bendX, 0, 0)` theo quy ước three. Khớp đỉnh thân `(bend·wk, 1·h, 0)` của hình (`shapes.ts:114`, `x = bend·y²`): `trees.ts:342`.
+    - Các lời gọi `rand()` / `rnd()` giữ nguyên biểu thức và thứ tự (`trees.ts:323,328,339`, `site.ts:163,168`). `trYaw` dùng `rng` (mulberry32, `math.ts:4`) nên hạt liên tiếp `seed·7919 + i` vẫn phân bố đều.
+    - Vật liệu đúng brief (`materials.ts:270-272`). Grep `MAT.trunk|leaf|palm`: chỉ `trees.ts` và `site.ts` tạo lưới với ba vật liệu này, cả hai dùng hình `tr*` có thuộc tính `color`. Các chỗ còn lại chỉ dùng chúng làm tập lọc: cutaway, corridor, clearance, hideBankTrees, fallen, promenade.
+    - `treesTest`, 6 tên lưới, `__app.trees` và script `test:trees` đều có. Test đủ 10 mục.
+  - ⚠️ **Không xác minh được từ diff:**
+    - Các kết quả chạy (posKept, randKept, pairs 3, cleared 26/2/0, fallenRestore, perf) là lời báo của implementer, tôi không chạy lại theo ràng buộc.
+    - Bước 8 trong plan vẫn để `[ ]` dù đã commit (plan dòng 61). Controller tự đánh dấu.
+  
+  **Kiểm tra phụ thuộc (đọc code ngoài diff, mỗi rủi ro một lần kiểm):**
+  - **`fallen.ts:21-26`:** thân phải liền trước tán, cùng `count`, thân dùng `MAT.trunk`. Thứ tự `scene.add(t1,c1,t2,c2)` (`trees.ts:345`) và `details.add(trunks, crowns)` (`site.ts:172`) không đổi. Hàm `pose` (dòng 35-41) xoay cả hai ma trận quanh gốc thân nên tương thích với yaw. Lọc `s.x < 0.01` dùng scale tán. Sau khi decompose, scale tán vẫn là `(r, 0.85r, r)` vì yaw chỉ xoay quanh Y.
+  - **`promenade.ts:36-42` (`collectTrees`):** `s.x` của tán bóng mát vẫn là `r`. Với dừa thì `r` không được dùng (vòng đèn cố định `rr = 1.9`, dòng 106).
+  - **Dọn cây scale 0** (`SongHanBridge.ts:66-72`, `corridor.ts:20-24`, `clearance.ts:51-55`): cả ba đọc vị trí rồi `setMatrixAt(i, makeScale(0,0,0))`. Ma trận được thay toàn bộ, yaw không ảnh hưởng. Ngưỡng cây cố định (`±1`, `hw 1.5`), không đọc scale thân nên thân bóng mát rộng ra (`s.x = r`) cũng không đổi kết quả.
+  - **Tập dọn khi dữ liệu hiện tại:** vị trí thân không đổi nên tập thân bị dọn bằng tập cũ. Tập cũ bằng tập tán cũ, vì tán cũ trùng `xz` với thân. Test cho thấy số tán dọn mới bằng mốc và tán dọn ⊆ thân dọn. Hai điều này ép hai tập bằng nhau.
+  - **Vá gió `MAT.trunk`:** không mesh nào khác dùng vật liệu này nên không có tác dụng phụ ngoài cây. `cutaway.ts:104` gắn `clippingPlanes` vào cùng vật liệu, nhưng điều này đã đúng với leaf/palm từ trước và tương thích với `customProgramCacheKey`.
+    - Độ dịch phụ thuộc độ cao thế giới của điểm và pha theo `instanceMatrix[3].xz` (`wind.ts:28-33`). Thân và tán bóng mát chung tâm nên nghiêng giống hệt nhau.
+    - Tâm tán dừa lệch thân ≤ 0,28 m nên pha lệch ≤ 0,06 rad. Ở ngọn 12 m, lệch dịch ≈ 12·treeSway·0,06, cỡ 1–2 cm, không thấy được. Vá này đúng và có lý do.
+  - **Dải đặc của texture tàu lá** (`textures.ts:230-231`): `CanvasTexture` mặc định ClampToEdge, mẫu tại uv 0,015 vẫn nằm trong texel đặc tới mức mip khoảng 16 px. Tàu lá dùng `v ≥ 0,1` nên không chạm dải ở mức gần. Thay đổi đúng và có lý do. Mặt trái nhỏ: ở mip trung bình, gốc tàu lá (`v ≈ 0,1–0,15`) có thể ăn chút trắng đặc từ dải, chỉ thấy từ xa.
+  
+  ### Strengths
+  - Bảng ma trận của brief được làm đúng tới từng chi tiết. Công thức đỉnh thân dừa sau khi xoay khớp chính xác với `shapes.ts:114`.
+  - Không đụng chuỗi `rand()`: yaw lấy từ `rng` riêng theo chỉ số, dùng hạt riêng cho mỗi khu.
+  - Lưới Thuận Phước tạo riêng, có comment vì sao (`BridgeBase.dispose` hủy hình học).
+  - Test lấy mốc trên code chưa sửa và có quy trình RED/GREEN rõ. Có thêm kiểm "tán dừa nằm trên đỉnh thân" (`trees-check.mjs:557-559`). `fallenRestore` so ma trận bằng `===`.
+  - Comment đầu `wind.ts` ghi lại lựa chọn vá thân như brief yêu cầu.
+  
+  ### Issues
+  
+  #### Critical (Must Fix)
+  Không có.
+  
+  #### Important (Should Fix)
+  Không có.
+  
+  #### Minor (Nice to Have)
+  1. **`tests/trees-check.mjs:577-583`: `clearedStayZero` chỉ kiểm một chiều** (tán dọn ⇒ thân dọn). Nếu sau này đổi vùng dọn và mép vùng rơi vào 0,28 m lệch giữa thân và tán dừa, có thể thân bị dọn mà tán còn, tức tán dừa lơ lửng. Test vẫn ĐẠT trong trường hợp đó. Sửa: kiểm hai tập `zeroIdx` bằng nhau, hoặc thêm mốc số thân đã dọn.
+  2. **`src/environment/riverfront/promenade.ts:109` (ngoài diff, phụ thuộc bị ảnh hưởng): đèn dây quanh thân dừa có thể lơ lửng.** Đèn đặt tại `(t.x + 0.3, Y+1…7, t.z)`, với `t.x, t.z` là tâm tán. Tâm tán nay lệch thân tới 0,28 m theo hướng yaw.
+     - Cũ: đèn cách trục 0,3 m, sát mặt vỏ (bán kính 0,28).
+     - Mới, ở độ cao Y+1 (thân gần như chưa cong): đèn cách trục 0,02–0,58 m tùy yaw, trong khi bán kính thân ≈ 0,23 m. Có cây đèn cách vỏ khoảng 0,35 m.
+     - Ảnh đêm của implementer không thấy lỗi, nhưng góc chụp không đủ gần để loại trừ.
+     - Cách sửa rẻ: với dừa, trừ lại `bendX·(cosθ, −sinθ)` hoặc lấy `xz` từ thân. Có thể để Task 3 hoặc Task 6.
+  3. **`tests/trees-check.mjs:558`:** ngưỡng `0.35 * 0.8` viết cứng thay vì đọc `CONFIG.trees.palm.bend / trunkWidth`. Đổi config thì test báo sai.
+  4. **Hiệu năng (khuyến nghị, không chặn):**
+     - Thấy không ổn trên GPU thật thì có thể chuyển cả 4 lưới cây khu phố sang layer 1 (`renderer.ts:20`, `lights.ts:17`), như D-027 đã làm với `traffic-city`.
+       - Cái được: bỏ toàn bộ ≈ 0,9 triệu tam giác khỏi lượt phản chiếu, bóng đổ giữ nguyên.
+       - Cái mất: hàng cây ven kè không còn soi bóng trên mặt sông. Thấy rõ ở góc thấp gần nước, ít thấy ở toàn cảnh.
+       - Phải chuyển cả thân lẫn tán. Chỉ chuyển tán thì phản chiếu còn thân trơ trụi.
+     - Tắt `castShadow` của tán: rẻ hơn ở lượt bóng nhưng mất bóng cây trên dải đi bộ, thay đổi thị giác dễ thấy hơn. Không khuyên.
+     - Giảm `blobs` / `fronds` trong config: rủi ro thấp nhất về hình, nhưng đi ngược G1/G2.
+  
+  ### Assessment
+  
+  **Task quality:** Approved
+  
+  **Reasoning:**
+  - Ma trận instance, vật liệu và chuỗi ngẫu nhiên đúng brief.
+  - Đã đọc code `fallen.ts`, `promenade.ts`, `wind.ts` và ba chỗ dọn cây (scale 0), cả ba thay toàn bộ ma trận: quy ước mới không làm hỏng chỗ nào.
+  - Ba thay đổi ngoài brief (vá thân, dải đặc texture, `trYaw`) đều đúng và cần thiết.
+  - Còn lại chỉ là việc nhỏ: test dọn cây kiểm một chiều, đèn dây quanh thân dừa có thể lơ lửng.
+  
+  Kiểm tra đã chạy: chỉ đọc code (diff và các file phụ thuộc nêu trên); không chạy `typecheck`, unit test hay test trình duyệt.
+</agent-message>
+
+---
+
+<task-notification>
+<task-id>ad8f56921e1e93753</task-id>
+<tool-use-id>toolu_01CsVhtMn17timkN8mdGNQ92</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\f1564775-243a-4c2d-bea4-7e11bac72a4f\tasks\ad8f56921e1e93753.output</output-file>
+<status>completed</status>
+<summary>Agent "Implement Task 3: tunnel palms" is waiting on its own background work</summary>
+<note>This agent stopped with background work of its own still running. It may resume on its own when that work completes or reports, and the same task-id notifies again if it does; the result below may be interim.</note>
+<result>This agent has not reported yet: it is waiting on its own background work and will deliver its report through SubagentHandback when that finishes.
+</result>
+<usage><subagent_tokens>86242</subagent_tokens><tool_uses>34</tool_uses><duration_ms>610265</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>buxja9vfr</task-id>
+<tool-use-id>toolu_014MQMaQnHY2ozCYVr31nPX7</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\f1564775-243a-4c2d-bea4-7e11bac72a4f\tasks\buxja9vfr.output</output-file>
+<status>completed</status>
+<summary>Background command "Start the visual companion server" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<agent-message from="ad8f56921e1e93753">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Status:** DONE_WITH_CONCERNS
+  **Commit:** f059090 feat(trees): hàng dừa cửa hầm dùng dáng dừa mới
+  **Tests:** typecheck and build pass. `test:trees` passes (Tất cả ĐẠT). `test:tunnel` passes. The new tunnelPalms check shows the tunnel group unchanged at 0 InstancedMesh and 4 Mesh, and `hr-concrete` going from 25104 to 56016 triangles. No other heavy test was run.
+  **Concern:** `hr-concrete` grows by about 31k triangles (about 150 palms at 180 triangles, two-sided). Draw calls are unchanged, but I did not measure performance.
+  **Choices you may want to check:**
+  - I did not use `prepColored` for the palms, because it overwrites vertex colours. The geometry is pushed straight into `concreteParts` with its own colours, after `rotateY`, `translate` and deleting `uv`.
+  - Yaw comes from a hash of the palm index, so `rnd()` still has exactly one call per palm and the `rng(7001)` sequence is unchanged.
+  - The first `test:trees` run hit the new tunnel-portal screenshot step and timed out in `pickView`, because the UI is hidden at that point. I set the camera directly instead and reran; the second run passed.
+  **Screenshot:** `trees-tunnel-portal.png` shows the east-portal palm rows looking like palms, with fronds visible from both sides.
+  **Plan:** Task 3 checkboxes ticked in the plan file and committed.
+  **Report:** D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-cay-va-nguoi-thuc-te\task-3-report.md
+</agent-message>
+
+---
+
+<agent-message from="a08166e390905ed8e">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  
+  - ✅ Spec compliant. One deviation from the brief is benign: the brief says to push through `prepColored`, but the implementer pushes directly (`outdoor.ts:122-125`). That is correct, because `prepColored` would overwrite the palm's own vertex colours.
+  - ⚠️ Cannot verify without a browser:
+    - The `trees-tunnel-portal.png` image: that fronds are visible from both sides and the palms read as palms.
+    - The `test:tunnel` and `test:trees` results, which I only read in the report.
+  
+  ### Strengths
+  
+  - `rnd()` order is preserved (`outdoor.ts:122-123`). `h = 8 + rnd()*4` is still evaluated once per palm, in the same `forEach` position. The new yaw comes from an index hash. `trPalmStaticGeo` uses its own `rng(P.seed + 7)`, so the shared `rand()` and the `rng(7001)` sequence are untouched. The hash formula handles negative `%` correctly.
+  - The attribute set is correct for `mergeGeometries`:
+    - `trunk` and `husk` carry position, normal, uv and color, non-indexed (`trGeo` at `shapes.ts:25-30`; `trPaint` calls `toNonIndexed`). The frond geometry comes from `trGeo` as well.
+    - After the merge, `deleteAttribute('uv')` leaves position, normal and color, non-indexed, with item sizes 3, 3, 3. That is exactly what `prepColored` outputs for the other parts, so the merge cannot return null or drop attributes.
+  - The concrete material uses vertex colours: `han-tunnel/materials.ts:48` sets `vertexColors: true`. The palm greens therefore show, and the old palms used the same path.
+  - The triangle count reconciles. The code gives 224 palms per `outdoor.ts:121-122` and `config.ts:214-215` (15×2 per side in the first loop, 41×2 in the second, times 2 sides). Each new palm is 60 (trunk) + 8 (husk) + 8 fronds × 14 = 180 triangles. 224 × (180 − 42 old) = 30912, which equals 56016 − 25104 exactly, assuming the old cylinder-plus-cone count of 42.
+  - Two-sidedness is handled correctly. The `tri()` helper (`shapes.ts:171-175`) emits a reversed-winding copy with negated normals. The concrete material is `FrontSide` and does not set `side`, so only one of each pair is rasterised. There is no z-fighting, and the back faces are lit with the correct normal. The duplication is the right approach unless the shared material becomes `DoubleSide`, which would affect every concrete surface.
+  - The side effects I checked are all unaffected:
+    - Cutaway: `cutaway.ts:101,104` clips via `M.concrete`, the same material as before, so palms are cut like the old ones.
+    - Distance hiding and layers: `HanTunnel.ts:58` sets `hr-concrete` to layer 1 as before, and `BridgeBase.finalize` is unchanged.
+    - The concrete material has no wet or night patch (`materials.ts:48`).
+    - The draw call count is unchanged.
+  - `typecheck` and `test:trees:unit` both pass (8/8).
+  
+  ### Issues
+  
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  - `outdoor.ts:119-125` and `config.ts:717`: the 20160 reversed back-face triangles are half of the +31k. `hr-concrete` casts shadows (`BridgeBase.ts:52`), so this extra load applies to the main pass and the shadow pass, and it is permanent, day and night. The implementer reports "~150 palms" but the real count is 224. It is functionally correct, and the spec and plan accepted two-sided fronds. Recommended follow-up: the pending `test:perf` / `test:drawcalls` comparison should include the tunnel views. If it is too heavy, drop `staticFronds` from 8 to 6.
+  - `tests/trees-check.mjs` section 11 (the `tn` check): the assertions are real, since the `inst` and `mesh` counts are compared with the pre-change baseline and `tris > 25104` catches a revert. The `tris` computation handles indexed geometry correctly. They are weak in three ways:
+    - The triangle assertion is only a lower bound and would still pass if the palm geometry were wrong or grey.
+    - It checks no palm attribute set, colour, or exact count (224 × 180).
+    - `if (!MAIN_TUNNEL)` is dead code, because the constant is always set.
+    Suggested fix: assert `tris === 25104 + 224 * 138`, or at least `tris >= 56000`.
+  - `tests/trees-check.mjs:189`: the camera is set directly to the `hrPortalE` preset values (`presets.ts:55`: pos `[800, 11, HRZ+8]`, target `[585, 2.5, HRZ]`; `HRZ+8` equals −1692). These values are hard-coded, so they would drift silently if the preset changes. This is consistent with the neighbouring `aim()` shots, which also set the camera directly. `pickView` is not used after this point (only `aim`, `setNight`, `setWx`), so the later checks stay consistent. The remaining risk is that shot 2 onward relies on `aim` fully overriding the camera.
+  
+  ### Assessment
+  
+  **Task quality:** Approved
+  
+  **Reasoning:** The change meets the brief and keeps the seeded `rng(7001)` / `rand()` sequence intact. The merged palm geometry is attribute-compatible with the other concrete parts, renders correctly one-sided-per-face under `FrontSide` with vertex colours, and nothing special-cased on `hr-concrete` is affected. The only real cost is +31k triangles in a shadow-casting mesh, which still needs the perf comparison.
+  
+  I ran `npm run typecheck` (pass) and `npm run test:trees:unit` (8/8 pass). I only read the diff, the report, `shapes.ts`, `geometry.ts:70-82`, `BridgeBase.ts`, `materials.ts`, `cutaway.ts` and `presets.ts`. I did not run `test:trees`, `test:tunnel`, the build or any Chromium tests.
+</agent-message>
+
+---
+
+<task-notification>
+<task-id>a8f1655b2f1666f62</task-id>
+<tool-use-id>toolu_01KiN6wxPww8biTNRunEkCFF</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\f1564775-243a-4c2d-bea4-7e11bac72a4f\tasks\a8f1655b2f1666f62.output</output-file>
+<status>completed</status>
+<summary>Agent "Implement Task 5: people on bridges" is waiting on its own background work</summary>
+<note>This agent stopped with background work of its own still running. It may resume on its own when that work completes or reports, and the same task-id notifies again if it does; the result below may be interim.</note>
+<result>This agent has not reported yet: it is waiting on its own background work and will deliver its report through SubagentHandback when that finishes.
+</result>
+<usage><subagent_tokens>175079</subagent_tokens><tool_uses>53</tool_uses><duration_ms>633721</duration_ms></usage>
+</task-notification>
+
+---
+
+<agent-message from="a8f1655b2f1666f62">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Status:** DONE
+  
+  **Commit:** `d8b79ca feat(people): người có tay chân đi, chạy, đứng lan can; thêm người Cầu Rồng; rời cầu khi bão`
+  
+  **Tests:**
+  - `test:people`: all checks pass, including screenshots. The test failed as expected on the old code first (no `__app.people`, old people meshes of 109 vertices).
+  - `test:people:unit`: 19/19 pass.
+  - `typecheck`: passes.
+  - `test:trees -- --no-shots`: all 28 checks pass.
+  - I ran no other heavy tests.
+  
+  **What the browser run showed:**
+  - **Shader:** the people material compiled on its first real run with no console or shader errors, so `material.ts` needed no changes.
+  - **Systems:** 80 / 76 / 70 people, one InstancedMesh each, all on the same `peopleWalk` material. Every instance has a colour set, 10 shirt colours per system.
+  - **Movement:** after 60 frames, 64/80, 61/76 and 56/70 people had moved. The ones that stood still matched the number of `stand` people exactly. Everyone is upright and walkers face their direction of travel.
+  - **Placement:** nobody is outside their sidewalk, and every person's feet sit on the deck surface.
+  - **Storm:** halfway through the clear-out (clear 0.45), 43/80, 43/76 and 37/70 were still visible; at the end 0 everywhere; after the storm all 80/76/70 came back.
+  - **Toggle:** the Trần Thị Lý people button hides the group and brings back 80/80.
+  - **Distance:** Cầu Rồng people are hidden at 2,003 m from the bridge and shown at 295 m.
+  - **Seeded `rand()` sequence:** unchanged; the 7 boat speeds match `main`.
+  
+  **Screenshots, as I see them:** people are upright on the sidewalks and face where they are walking. There is an adult walking with a child, a pair with one in a conical hat, a backpack, and a jogger leaning forward with deep knee bend. Standers at the railing face out to the river, and one on Bạch Đằng raises an arm to take a photo. The night shot is fine. None are white, floating or sunk into the deck.
+  
+  **Concerns:**
+  - I added an optional `follow` field to `Walker`, plus small helpers `ppJoinKinds` and `ppFaceZ`. `follow` is what lets `stepPeople` copy the leader's position. A companion disappears in a storm at the same moment as its leader.
+  - `#btnTtlPeople` is not visible unless the Trần Thị Lý panel is open, so `tap` timed out. The test clicks it with `element.click()`, the same way `traffic-check.mjs` clicks `#btnTtlLife`.
+  - Walking speeds on the two existing bridges stay as they were (1.0–1.6 and 0.9–1.4 m/s) so the bridges' seeded random sequences don't change; the spec says 1.05–1.35 m/s. Feet still don't slide because the step rate follows the real speed. Cầu Rồng uses the config range.
+  - A companion on the Nguyễn Văn Trỗi footbridge can sit up to 0.6 m outside the ±3 m walking strip. It is still on the 9 m deck, which is what the test checks.
+  - Two empty files, `p.ground` and `p.y`, appeared at the repo root when I created the test. A hook probably read the test's text `p.y < p.ground … p.y > p.ground` as a shell redirect. I deleted those two and did not touch `0` or `150`; they may have the same cause.
+  
+  **Needs human decision:** the brief says two-thirds of standers on Cầu Rồng should be near the dragon head (x > 150), but `CONFIG.people.dragon.headBias` is 0.6. I used the config value, which puts exactly 8 of 14 standers there. Change it to 0.67 if two-thirds is wanted.
+  
+  Full report: `D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-cay-va-nguoi-thuc-te\task-5-report.md`
+</agent-message>
+
+---
+
+<agent-message from="a2f724650ae9aa4a5">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  
+  - ✅ Khớp spec. Đã đối chiếu từng file trong danh sách của brief, file nào cũng có hunk tương ứng: `people.ts`, hai `life.ts`, hai `materials.ts` (đã bỏ `person`, grep `mats.person` không còn kết quả nào), `pedestrians.ts`, `main.ts`, `package.json`, `tests/people-check.mjs`.
+    - Chữ ký hàm khớp brief: `createPeople(bridge, list, name, rnd)` và `stepPeople(P, dt, elapsed, closable = true)` (src/common/people.ts:78). `ppApplyKinds` chạy sau khi dựng `list` và trước `createPeople`: tran-thi-ly/life.ts:202–206, song-han/life.ts:132–135.
+    - Thứ tự dựng: `buildDragonPeople()` nằm ở src/main.ts:87, sau `new SunWheel()` (85) và trước `buildWeather()` (88). Không lệnh `build*()` nào đổi chỗ. `updateDragonPeople` gọi cạnh `updateTraffic` (main.ts:506).
+    - Seed: Cầu Rồng dùng `rng(4107)`, kiểu người dùng các seed 1966, 1967 (`run:false`), 2904, 2905, 4108.
+    - Vị trí người đứng: lề cầu `±(hw−0,55)`; Nguyễn Văn Trỗi `nvtZ ± 2,6` theo mép gần nhất; Bạch Đằng `x = −264,5`, `face = 0`; Cầu Rồng `±(width/2 − 0,5)`.
+  - ⚠️ Không kiểm được từ diff:
+    - Tầm ẩn 1 500 m và +1 lệnh vẽ của Cầu Rồng. Spec §6 dựa vào việc đếm lưới trong test mới; số lệnh vẽ thật chưa đo (`test:drawcalls` chưa chạy).
+    - Hình ảnh (người đứng quay ra sông, có nón, ba lô, trẻ em) chỉ có lời tả ảnh trong báo cáo; tôi không xem ảnh.
+  
+  ### Strengths
+  
+  - **Chuỗi seed giữ đúng.** Hai `life.ts` không thêm, bớt hay đổi thứ tự lời gọi nào trên `rng(1965)` và `rng(2903)`: số lời gọi khi dựng `list` giữ nguyên, màu áo vẫn đúng một `rnd()` mỗi người (people.ts:65). `ppApplyKinds` và `ppJoinKinds` không gọi `rnd`. `pedestrians.ts`, `people.ts` và `src/common/people/*` không import `rand` (đã grep).
+  - **`follow` xử lý đúng mọi nhánh.**
+    - `ppAssignKinds` bảo đảm người đi cùng `i` luôn theo `i−1`. Người dẫn chỉ là người đi bộ một mình: không chạy, không đứng, không đi cùng ai (kinds.ts:24–38). Vì vậy không có chuỗi theo-người-theo, không tự theo chính mình, và người dẫn không bao giờ bị đổi thành người đứng hay người chạy.
+    - `ppJoinKinds` dời chỉ số đúng. Phần tử đầu của đoạn sau không thể là người đi cùng, nên không theo chéo sang đoạn khác.
+    - Người dẫn có chỉ số nhỏ hơn, nên trong `stepPeople` người đi cùng chép tọa độ đã cập nhật của chính khung đó, kể cả lúc quay vòng về đầu dải (people.ts:83).
+    - Khi bão, người dẫn và người đi cùng ẩn cùng một khung vì cùng dùng `vanished(lead)` (people.ts:82).
+    - Cầu sông Hàn: người chỉ ở phần cố định (lo/hi bỏ nhịp quay), cách cập nhật vẫn như cũ (SongHanBridge.ts:90–91).
+  - **Không cấp phát mỗi khung.** `stepPeople` và `updateDragonPeople` dùng biến tạm cấp sẵn (`_pm`, `_pq`, `_pv`, `_ps`, `_zero`). Mỗi khung chỉ đẩy `instanceMatrix`; `aVar`, `aPants` và `instanceColor` chỉ ghi lúc dựng.
+  - **Màu đúng cách.** `setColorAt` gọi cho mọi instance. `aPants` đi qua `THREE.Color.setHex`, tức đã chuyển sRGB sang tuyến tính.
+  - **Giải phóng an toàn.** Mỗi hệ có hình học riêng (shapes.ts:32, không cache). `ppMaterial()` không nằm trong `mats`, nên `BridgeBase.dispose()` (BridgeBase.ts:72–80) không xóa vật liệu dùng chung.
+  - **Đã đo, người đi cùng không chạm lan can cầu Nguyễn Văn Trỗi.** Dàn thép ở `Z ± (hw + 0,1)`, mặt trong tại z = −60,625 (nvt.ts:26, thanh dày 0,45). Người đi cùng xa nhất ở z = −61,4, cộng nửa thân ≈ 0,35 m là −61,05, còn cách ~0,4 m.
+  - **Người đứng Cầu Rồng không xuyên lan can.** Tay vịn mặt trong ở |z| ≈ 18,58 (dragon/deck.ts:23). Người đứng ở 18,25. Chỉ tay giơ chụp ảnh vươn qua, nhưng ở độ cao vai, cao hơn đỉnh lan can 1,24 m.
+  - **Hướng mặt đúng.** `ppFaceZ`: s > 0 cho −π/2, tức +X quay thành +Z, khớp công thức đi dọc trục z của code cũ. Bạch Đằng `face = 0` nhìn về +X, ra sông.
+  
+  ### Issues
+  
+  #### Critical (Must Fix)
+  Không có.
+  
+  #### Important (Should Fix)
+  Không có.
+  
+  #### Minor (Nice to Have)
+  
+  1. **Mục `randKept` không thể bắt lỗi của task này (plan bắt buộc mục này).**
+     - Vị trí: tests/people-check.mjs:627–629, so với src/main.ts:75 và :87.
+     - Vì sao: tốc độ 7 tàu lấy `rand()` trong `buildBoats()` (environment/traffic.ts:90), chạy ở main.ts:75, trước Trần Thị Lý, Cầu sông Hàn và `buildDragonPeople()` (87).
+     - Kịch bản lỗi: thêm một `rand()` vào `buildDragonPeople`, mục này vẫn ĐẠT. Thiệt hại thực tế nhỏ, vì sau dòng 87 chỉ còn hiệu ứng lửa và nước lúc chạy dùng `rand()`.
+     - Cách sửa: kiểm tĩnh (unit test grep không có `rand` trong `src/environment/pedestrians.ts` và `src/common/people*`), hoặc đổi mô tả để không hứa điều mục này không làm được.
+  2. **`insideSidewalk` so cao độ với chính `profile` của app.**
+     - Vị trí: tests/people-check.mjs:622 và src/environment/pedestrians.ts:419.
+     - `ground` lấy từ `w.profile`, nên `y ≈ ground` đúng theo cách dựng.
+     - Kịch bản lỗi: `onDeck` sai (ví dụ quên `+0,25`, hoặc dùng `ttlRoadY` cho Cầu Rồng), người chìm hoặc lơ lửng mà test vẫn ĐẠT.
+     - Brief yêu cầu `y ≥ deckY(x)`: nên tính cao độ độc lập trong `page.evaluate`, ví dụ phơi `deckY` hoặc chép hằng số.
+  3. **Không có kiểm tra tự động hướng mặt người đứng.**
+     - Vị trí: tests/people-check.mjs:612.
+     - `badHead` chỉ xét người đã di chuyển. Đảo dấu `ppFaceZ`, hoặc đặt Bạch Đằng `face = π`, người đứng sẽ quay vào lòng đường mà test vẫn ĐẠT; chỉ ảnh mới thấy.
+     - Cách sửa: với `kind === 'stand'`, kiểm `sign(fwd.z) === sign(z)` (lề cầu) và `fwd.x > 0.99` (Bạch Đằng, i ≥ 36).
+  4. **Comment sai với cầu Nguyễn Văn Trỗi.**
+     - Vị trí: src/common/people.ts:48.
+     - Lệch ngang `−sign(w[lat])·gap` đẩy về z → 0, không phải về tim dải `nvtZ`. Ở Nguyễn Văn Trỗi, người đi cùng luôn lệch về phía Nam và có thể ra ngoài dải ±3 m tới 0,6 m.
+     - Đã đo ở trên: vẫn trên mặt cầu, không chạm dàn thép. Chỉ comment "về phía trong" là sai cho trường hợp này.
+  5. **Sai lệch nhỏ so với brief, có lý do.**
+     - Vị trí: tests/people-check.mjs:647.
+     - `toggleBack` bấm bằng `element.click()` thay cho `tap` (brief ghi `tap`), vì nút nằm trong bảng ẩn. Cách này giống `traffic-check.mjs`. Chấp nhận được, nên ghi vào plan.
+  6. **Thời gian người Cầu Rồng gộp vào mục `traffic` khi đo hiệu năng.**
+     - Vị trí: src/main.ts:506.
+     - Số `perf` của traffic sẽ gồm cả người Cầu Rồng, lúc so với `main` dễ hiểu nhầm. Có thể tách thành mục riêng.
+  7. **Tham số `_elapsed` không còn dùng.**
+     - Vị trí: src/common/people.ts:78.
+     - Giữ lại cho đúng chữ ký trong brief, vô hại.
+  
+  **Trạng thái git (`git status --short`):**
+  - Không có gì được stage. `p.ground` và `p.y` không còn.
+  - Ngoài `0` và `150`, còn 3 file sửa chưa commit, không thuộc commit d8b79ca: `docs/superpowers/plans/2026-11-11-cay-va-nguoi-thuc-te.md`, `src/environment/riverfront/promenade.ts` (đèn bám thân dừa cong, trường `bx`/`bz`) và `tests/trees-check.mjs`. Có vẻ là việc của agent khác về cây. Cần lưu ý để không commit nhầm cùng Task 5.
+  
+  ### Assessment
+  
+  **Task quality:** Approved
+  
+  **Reasoning:** Chuỗi seed, logic `follow`, chi phí mỗi khung, màu instance, cách bão dọn người và cách giải phóng đều đúng khi đọc code. Các vấn đề còn lại nằm ở độ chặt của test: `randKept` không thể bắt lỗi của task này, cao độ chân so với chính `profile`, và chưa kiểm hướng mặt người đứng. Không có lỗi hành vi.
+  
+  **Đã chạy:**
+  - `npm run typecheck`: ĐẠT.
+  - `npm run test:people:unit`: 19/19 ĐẠT.
+  - `git status --short`, `git diff --stat`.
+  
+  **Chỉ đọc, không chạy:**
+  - Diff gói review.
+  - Phần code ngoài diff, mỗi phần để trả lời một rủi ro cụ thể:
+    - `src/common/people/kinds.ts`: chuỗi theo-người-theo hoặc người dẫn bị đổi kiểu.
+    - `src/common/people/material.ts` và `shapes.ts:32`: vật liệu và hình học dùng chung khi giải phóng.
+    - `BridgeBase.ts:60–82`: layer 1 và `dispose`.
+    - `SongHanBridge.ts:80–99`: nhịp quay và nút bật/tắt người.
+    - `core/shared.ts:20` (`vanished`).
+    - `config.ts:749–758`.
+    - `tran-thi-ly/nvt.ts:11–30` và `dragon/deck.ts:23`: khoảng cách tới lan can.
+    - Thứ tự dựng trong `main.ts`.
+    - `environment/traffic.ts:90`: nơi lấy `rand()` cho tốc độ tàu.
+  - Không chạy build hay test trình duyệt (theo ràng buộc).
+</agent-message>
+
+---
+
+<agent-message from="a71055dd38ca052f1">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Status:** DONE (có vài ghi chú nhỏ bên dưới)
+  **Commits:**
+  - `39f5eee` fix(trees): dây đèn bám thân dừa cong; siết kiểm tra cây
+  - `09dffe0` docs(trees-people): kết quả, README, memory bank (D-028)
+  
+  **Tests (kết quả thật):**
+  - `typecheck` và `build` đạt, chạy sau cả hai commit.
+  - `test:trees` 28/28 ĐẠT (tunnel 56016 = 56016, `clearedStayZero` kiểm hai chiều).
+  - `test:weather` đạt (exit 0), chạy một lần.
+  - `test:riverfront` đạt (exit 0), chạy một lần sau weather, không song song.
+  - Không có test nào lỗi. Trước mỗi test không có tiến trình node mồ côi.
+  - Chưa chạy: `test:drawcalls`, so thời gian khung với `main`, `test:citynight -- --baseline`, `test:tour`, `test:voice`, `test:tunnel`, `test:sunwheel`, `test:mobile`, `test:explore`, `test:boats`, `test:traffic`, `test:multi*`, FPS GPU thật.
+  
+  **Phần sửa:**
+  - Dây đèn quanh thân dừa trong `promenade.ts` giờ bám thân cong theo độ cao. Số đèn và các lời gọi `rand()` không đổi.
+  - Ba chỗ siết trong `tests/trees-check.mjs`:
+    - `clearedStayZero` so hai tập chỉ số thân và tán theo cả hai chiều.
+    - Số tam giác hầm kiểm đúng 56016, đã bỏ nhánh `if (!MAIN_TUNNEL)`.
+    - Ngưỡng `0.35 * 0.8` giữ nguyên số và thêm chú thích tên khóa config, vì `__app` không lộ CONFIG.
+  - Plan Task 2 bước 8 đã tick.
+  
+  **Tài liệu:**
+  - Đã viết: `tests/KET-QUA.md`, `README.md`, mục §5 của `copilot-instructions.md` (4 lệnh test mới), `decisions.md` (D-028), `progress.md`, `activeContext.md`, `systemPatterns.md` và plan.
+  - `activeContext.md` ghi "trên nhánh `feature/cay-va-nguoi-thuc-te`, chờ merge", kèm danh sách "Cần người dùng quyết" đầy đủ và các minor hoãn.
+  - `systemPatterns.md` có thêm quy ước ma trận cặp thân/tán, quy tắc một lưới mỗi hệ người với `setColorAt` và `aPants` tuyến tính, và cạm bẫy `p.y > p.ground` trong lệnh shell.
+  
+  **Ghi chú:**
+  - Lệnh sed tôi dùng để tick plan đã tick thêm Task 1 và Task 4 bước 2–4 (đều đã làm thật theo báo cáo hai task đó).
+  - Output của weather và riverfront ngắn nên chỉ ghi kết luận tổng, không có số chi tiết.
+  - Plan bước 5 của Task 6 (push, PR, merge) vẫn `[ ]` để bạn làm.
+  - Số PR trong tài liệu chưa điền, bạn cập nhật sau khi merge.
+  - Không push. File rỗng `0` và thư mục `150` ở gốc repo còn nguyên, không commit.
+  
+  Báo cáo đầy đủ: `D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-cay-va-nguoi-thuc-te\task-6-report.md`
+</agent-message>
+
+---
+
+<agent-message from="a407c2ccaa6748733">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ## Review toàn nhánh `feature/cay-va-nguoi-thuc-te` (56e4985..09dffe0)
+  
+  **Đã chạy:** `npm run typecheck` đạt; `npm run test:trees:unit` đạt 8/8; `npm run test:people:unit` đạt 19/19; các lệnh git chỉ đọc (`git diff`/`show`/`ls-files`/`check-ignore`).
+  **Chỉ đọc, không chạy:** toàn bộ diff `src/`, file docs của commit 09dffe0, các file dùng cây/người: `wind.ts`, `fallen.ts`, `promenade.ts`, `clearance.ts`, `corridor.ts`, `SongHanBridge.hideBankTrees`, `cutaway.ts`, `BridgeBase`, `summer.ts`, `math.rng`, `dragon/deck.ts`, `buildStreetLamps`, cùng phần kiểm tra cặp thân–tán bị dọn trong `trees-check.mjs`. Không build, không chạy test Chromium.
+  
+  ### Điểm mạnh
+  - Chuỗi seed giữ đúng. Trong diff, mọi dòng có `rand()` đều chỉ là thay dòng cũ: số lời gọi giữ nguyên ở `trees.ts`, cây dừa vẫn 1 lời gọi `rand()` mỗi cây. `rng(7001)` của hầm vẫn 1 `rnd()` mỗi cây. Màu áo vẫn đúng 1 `rnd()` mỗi người. `ppAssignKinds`, `trYaw` (mulberry32, phân bố tốt) và người Cầu Rồng đều dùng `rng` riêng. Ở `main.ts` chỉ thêm `buildDragonPeople()`, không đổi thứ tự các lệnh cũ.
+  - Toán dây đèn quấn thân dừa ở 39f5eee đúng. Với `yaw = 2·atan2(q.y, q.w)`, trục +X cục bộ quay thành `(cos, 0, −sin)`, khớp chỗ đặt tán trong `trees.ts:31`. Độ lệch `bend·trunkWidth·(dy/h)²` khớp dạng thân `x = bend·y²` của `trPalmTrunkGeo`.
+  - `fallen.ts` vẫn tìm đúng cặp thân–tán (thân đứng ngay trước tán trong cùng cha) và nghiêng cả hai quanh gốc thân, nên tán dừa lệch 0,28 m vẫn dính thân. Vá gió cho `MAT.trunk` dùng cùng công thức, khóa chương trình ổn định, và mọi lưới dùng `MAT.trunk` đều là InstancedMesh.
+  - Dừa cửa hầm nằm trong `hr-concrete` (layer 1, 0 lưới riêng). Người TTL/SH ở `noReflect`, người Cầu Rồng ở layer 1, không đổ bóng. Tàu lá có `alphaTest`, nên three tự dùng depth variant có map trong lượt bóng.
+  - Không ảnh ngoài; chỉ có comment nhắc tới `tham-chieu`. Thư mục `tham-chieu/` vẫn bị gitignore. `0`, `150`, `dist/`, `tests/screens` không được commit. Không có đèn mới. Thông số nằm ở `CONFIG.trees` / `CONFIG.people`, có chú thích tiếng Việt, đơn vị và "(ước lượng)".
+  
+  ### Critical
+  Không có.
+  
+  ### Important
+  1. **Người Cầu Rồng đi xuyên cột đèn trên lề**
+     - Chỗ: `src/environment/pedestrians.ts:21` (`zWalk = hw − sidewalk/2 − 0,15 = 17,35`), `src/common/people.ts` trong `ppApplyKinds` (người đi cùng dời 0,6 m vào phía tim cầu, thành z = 16,75), `src/environment/trees.ts:67` (cột đèn ở z = ±17,0, cách nhau 32 m trên đoạn x = −320…320, bán kính 0,10–0,14).
+     - Cụ thể: thân người đi cùng chiếm z ≈ 16,57–16,93 và tay ngoài ở ≈ 16,93–17,03. Cột chiếm 16,86–17,14, nên cứ 32 m người đi cùng lại xuyên qua cột cả vai lẫn tay. Người đi thường cũng có tay trong (z ≈ 17,07–17,18 ở tỉ lệ 1,08) cạ vào cột khoảng 4–6 cm.
+     - Vì sao quan trọng: §8.1 yêu cầu ảnh lề Cầu Rồng chụp gần khoảng 10 m, và §4 coi "đi xuyên lan can" là hỏng. `people-check` chỉ kiểm dải lề nên không bắt được lỗi này.
+     - Cách sửa: lề chỉ còn 17,14–18,6 m bên ngoài hàng cột. Hướng gợi ý: cho từng cầu chọn chiều dời người đi cùng (thêm tham số cho `ppApplyKinds`). Ở Cầu Rồng đặt người dẫn khoảng 17,5, người đi cùng dời ra ngoài khoảng 18,05, rồi đưa người đứng sát lan can hơn hoặc đặt họ ở dải x không trùng. Phương án khác: dời cột đèn trên mặt cầu vào mép trong lề (≈ 16,4). Cách này đổi cảnh cũ một chút; mốc `citynight` vốn đã phải chụp lại.
+  2. **Hệ người Cầu Rồng tốn +1 lệnh vẽ ở cả những góc không thấy cầu**
+     - Chỗ: `src/common/people.ts:66` (`frustumCulled = false`), `src/environment/pedestrians.ts:37` (chỉ ẩn khi camera xa hơn 1 500 m).
+     - Cụ thể: góc nhìn Cầu sông Hàn (z ≈ −1080) hướng về phía Bắc và các góc quanh TTL (≈ 1 300 m) vẫn vẽ hệ `dragon-people`. §6 chỉ cho phép +1 "ở những góc thấy cầu này". `test:drawcalls` chưa chạy nên chưa ai phát hiện.
+     - Cách sửa (một dòng): sau `createPeople` ở Cầu Rồng, đặt `dragon.mesh.frustumCulled = true` và `dragon.mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, deckY(0), 0), 345)`. Three r165 dùng `InstancedMesh.boundingSphere` để cắt theo khung nhìn.
+  
+  ### Minor
+  1. Người đứng Cầu Rồng có thể đứng trên phần cầu nằm trên đất (`pedestrians.ts:29`). Đoạn ưu tiên đầu rồng là x = 150…325 và đoạn còn lại tới −325, trong khi mép kè ở |x| = 262. Khoảng 3 trong 8 người đứng gần đầu rồng sẽ quay mặt nhìn ra công viên chứ không ra sông (§7: "dọc phần cầu trên sông", "quay mặt ra sông"). Sửa: kẹp x của người đứng trong |x| < 255.
+  2. Tài liệu ghi thiếu một test đã chạy. `tests/KET-QUA.md`, `activeContext.md` và `progress.md` xếp `test:tunnel` vào "chưa chạy", nhưng ledger Task 3 ghi `test:tunnel pass` tại `f059090`. Sau đó không commit nào đụng tới hầm. Nên chuyển sang "ĐẠT (bản `f059090`)". Ngoài ra không thấy con số bịa: các số trong docs khớp ledger (28/28, 8/8, 19/19, 56 016, ≤ 77 ms, 853 đỉnh).
+  3. `activeContext.md` và `progress.md` ghi "chờ merge" và "Nhánh đang làm: feature/…". Sau khi merge cần sửa lại dòng đầu và trạng thái.
+  
+  ### Các mục đã hoãn: hoãn tiếp hay sửa ngay
+  | Mục | Quyết định |
+  |---|---|
+  | T1: đầu tàu lá dừa chưa thon về 0 | hoãn |
+  | T1: bộ lọc tam giác lá trong unit test dựa vào màu | hoãn |
+  | T1: yaw cành giữa khó đọc | hoãn |
+  | T4: pháp tuyến chân không nghiêng khi chạy | hoãn. Vị trí chân cũng không nghiêng (`ppLean = 0` với aPart 1–2), nên pháp tuyến vẫn khớp hình; đây không phải lỗi |
+  | T4: chia kiểu người đổi nếu sửa `mix` | hoãn |
+  | T5: `randKept` không bắt được `rand()` thêm vào `buildDragonPeople` | hoãn. Đã đọc: `pedestrians.ts` chỉ import `rng`, `lerp` |
+  | T5: `insideSidewalk` so với profile của chính app | hoãn |
+  | T5: không kiểm hướng mặt người đứng | hoãn. Đã kiểm bằng toán: `ppFaceZ(+1) = −π/2` cho mặt hướng +Z (ra ngoài), Bạch Đằng `face = 0` hướng +X (ra sông) |
+  | T5: comment `people.ts:48` sai với cầu Nguyễn Văn Trỗi | hoãn |
+  | T5: thời gian người Cầu Rồng tính vào nhãn perf `traffic` | hoãn |
+  | T5: tham số `_elapsed` thừa | hoãn |
+  | Hiệu năng (0,93 triệu tam giác cây, +31 nghìn ở `hr-concrete`) | hoãn. Không thấy chi phí kiểu lỗi: không có gì tính lại hay tải lại mỗi khung, vật liệu không biên dịch lại, khóa chương trình ổn định, không có vật nhỏ và nhiều đổ bóng (người không đổ bóng). Ngoại lệ duy nhất là Important #2 |
+  
+  ### Đã cân nhắc nhưng không tính là lỗi
+  - Đèn quấn thân cây bóng mát (+0,3 m) có thể lấp một phần trong thân giờ to hơn (0,09·r) ở cây lớn. Không thấy hỏng cụ thể, và `test:riverfront` đạt.
+  - Người ven Bạch Đằng đi xuyên thân cây ven kè: đã có từ trước, và §4 nói người không tránh vật cản.
+  - Tách cặp thân–tán dừa ở biên vùng dọn (tán lệch 0,28 m): `trees-check` so hai tập chỉ số scale 0 theo cả hai chiều và đạt 28/28, nên chưa xảy ra.
+  - Độ trung thực hình dáng so với bản dựng thử, và đánh đổi hiệu năng: thuộc quyền người dùng, theo đúng dặn.
+  - `ppMaterial` không có trong tập bóc mặt cắt hầm: đã có Ruling, và người không ở vùng bóc.
+  
+  ### Kết luận
+  **Merge được sau khi sửa** hai mục Important: #2 chỉ một dòng; #1 là lỗi hình thấy rõ ở góc chụp mà spec dùng để nghiệm thu. Nếu không sửa #1 trước merge thì ghi nó vào "Cần người dùng quyết" kèm các phương án ở trên. Các mục Minor sửa trong commit tài liệu cuối. Bất biến chuỗi seed, các file dùng cây và người, và vệ sinh shader đều ổn.
+  
+</agent-message>
+
+---
+
+<task-notification>
+<task-id>adaccf71c361f3445</task-id>
+<tool-use-id>toolu_019a75dXqV1WmrvUNBpsugmb</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\f1564775-243a-4c2d-bea4-7e11bac72a4f\tasks\adaccf71c361f3445.output</output-file>
+<status>completed</status>
+<summary>Agent "Final fix wave: Cầu Rồng people" is waiting on its own background work</summary>
+<note>This agent stopped with background work of its own still running. It may resume on its own when that work completes or reports, and the same task-id notifies again if it does; the result below may be interim.</note>
+<result>This agent has not reported yet: it is waiting on its own background work and will deliver its report through SubagentHandback when that finishes.
+</result>
+<usage><subagent_tokens>115633</subagent_tokens><tool_uses>39</tool_uses><duration_ms>272720</duration_ms></usage>
+</task-notification>
