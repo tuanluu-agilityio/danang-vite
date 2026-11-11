@@ -1,0 +1,1 @@
+cập nhật model phù hợp cho từng phần. Không sử dụng Fable 5.2. Test không cần chạy toàn bộ dự án, tôi có thể test demo sau khi hoàn thành
