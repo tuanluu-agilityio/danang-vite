@@ -1,0 +1,248 @@
+<agent-message from="a638604ab9e620ffe">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Status: DONE
+  Commit: 316d00b feat(stroll): máy chủ có nhóm 5 slot đi dạo, giao thức tương thích khách cũ
+  Tests: typecheck sạch; test:multi:unit 58/58 (RED trước khi sửa: 48 pass / 10 fail); test:multi:worker TẤT CẢ ĐẠT (gồm 3 kiểm mới cho nhóm đi dạo).
+  Concerns: không có. Hai điểm cần biết:
+  - Test cũ "connect nhận lobby" sửa kỳ vọng thêm `walkers: []`, theo brief (lobby luôn có walkers).
+  - Một file rác `o.msg.t` ở gốc repo (tôi lỡ tạo do một lệnh shell lỗi) đã xóa. Git status sạch; các file `0` / `150` không đụng.
+  Review Focus 4 (tab dù lượn cũ, máy chủ mới có người đi dạo) đã có test: khách cũ nhận slot bay khi 5 chỗ đi dạo đầy, lobby.flyers chỉ gồm người bay, pos có bank ra f 7 phần tử.
+  Không deploy Cloudflare.
+  Report: D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-di-dao\task-1-report.md
+</agent-message>
+
+---
+
+<agent-message from="a89c3c893c391eccd">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  - ✅ Spec compliant. All brief items are present: params, protocol types, the `room.ts` API (`walkSlotOf`, `kindOf`, `slotOf` unchanged, `hasFlyers` over both groups, `restore` with `kind`), the `Att.kind` round-trip in `worker.ts`, all nine Step 1 tests and the Step 5 integration test.
+  - ⚠️ Cannot verify from the diff:
+    - Hibernation wake-up for a walker. The `SkyObject` constructor hunk is cut off. `list: Att[]` is passed to `room.restore`, which now reads `kind`, so it works only if the constructor forwards `kind` as the report claims. No test exercises this; the `restore` unit test covers only the room side.
+    - The `typecheck` and `test:multi:worker` results are the implementer's claim and were not re-run.
+  
+  ### Strengths
+  - Old-client compatibility is sound.
+    - `join` without `kind` takes the fly path (`room.ts` `onJoin`, `walk` is only `m.kind === 'walk'`).
+    - Fly `pos` still requires `bank`, still gives a 7-element `f`, and still clamps to floor 7 / ceiling 800.
+    - `w` is only added when non-empty (`flush`), and `f` is always present. A walker-only broadcast gives an old client an empty `f` and an unknown field it ignores.
+    - The `rejected` / `joined` replies for flyers are byte-identical to before.
+  - `flush` merges both groups into one broadcast, so `posMaxPerSec`, `broadcastMs` and `maxMsgBytes` apply to both. The `dirty` handling is preserved.
+  - `dispatch` in `worker.ts` handles a change of kind, which also covers a slot release. `(a.kind === 'walk') !== walk` forces a rewrite, and a released slot drops `kind` from the attachment.
+  - Tests assert concrete values (clamp results, exact `joined`/`rejected` payloads, slot reuse, the `w`/`f` shape). The integration test is added against the real Worker.
+  
+  ### Issues
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  - `src/explore/multi/params.ts` (the `poseMax` line in `stroll`): the global constraint says every param line has a Vietnamese comment, a unit and `(ước lượng)`. `poseMax` has no unit or `(ước lượng)`, and `slots` says "theo thiết kế" without `(ước lượng)`. Add "(không đơn vị)" and the qualifier, or note that it is an enum fixed by design.
+  - `src/explore/multi/params.ts`: `stroll` was inserted before `clockSlewMs`, which separates it from its `clock*` siblings. The `clockSlewMs` line's comment alignment was also changed, so the diff touches an unrelated line. Move `stroll` to the end of the object and restore the original spacing.
+  - `tests/multi-unit/room.test.ts`: the test titled "khách cũ ... parse được theo ServerMsg cũ" only checks `JSON.parse(...).t === 'pos'` and the shape of `f`. It does not assert that the old fields are unchanged when `w` is present. Adding a `deepEqual` on the `{t, f}` projection would make the compatibility claim an actual check.
+  - `server/multi/src/room.ts` (`message`): a client that holds a fly slot and sends `join kind:'walk'` is silently ignored (`holding` returns `[]`). That matches the old behaviour for a repeat `join`, but it leaves the Task 2/3 client with no reply. Consider documenting this in the protocol comment.
+  - `server/multi/src/room.ts` (`sweep`): sweeping fly slots first and then walk slots is fine. `released` is sent per slot, so a connection that holds only one slot gets exactly one.
+  
+  ### Assessment
+  **Task quality:** Approved
+  **Reasoning:** The server and protocol changes meet the brief and keep old-client behaviour unchanged. The tests check real values, including the clamps, group separation, release paths and restore. Only minor param-comment and test-strength polish remains.
+</agent-message>
+
+---
+
+<agent-message from="abab5392bd13d3695">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Trạng thái: DONE_WITH_CONCERNS
+  Commit: 868939d feat(stroll): lõi bản đồ va chạm 2D thuần + fuzz
+  Test: `npm run typecheck` không lỗi; `npm run test:stroll:unit` đạt 14/14, khoảng 2,4 s. Bộ test gồm fuzz 200 000 bước 0–3 m, fuzz 20 000 bước 0–60 m và một fuzz thêm cho tường mỏng.
+  Chỉ mục: lưới đều ô 16 m. Vật cản phủ hơn 64 ô vào danh sách riêng và tra tuyến tính.
+  Trượt: chia bước con ≤ radius/2; mỗi bước con thử cả hai trục, rồi chỉ x, rồi chỉ z, không được thì dừng. Không cấp phát.
+  Lo ngại:
+  1. Oracle chỉ kiểm điểm cuối như brief không bắt được lỗi xuyên tường: kiểm đột biến bỏ chia bước con mà fuzz của brief vẫn đạt. Vì vậy tôi thêm fuzz tường mỏng: 3 tường 5 cm chia kín 4 ngăn, nhân vật không được đổi ngăn. Test này bắt được đột biến đó.
+  2. Thêm ngoài brief: nếu điểm xuất phát nằm trong tường thấp (đáp xuống giữa tường) thì bước đó bỏ qua mọi tường thấp để thoát ra. Trong lúc đó nhân vật đi dọc bên trong tường được.
+  3. Nhân vật dừng cách tường tối đa một bước con, không chia đôi để sát hơn.
+  4. Tâm nhân vật nhảy qua được khe giữa hai vùng hẹp hơn 0,175 m. Task 3 không nên để khe hẹp như vậy giữa các vùng.
+  5. `stNearestValid` tốn kém trong trường hợp xấu nhất (khoảng 2,5 triệu lần thử khi không có điểm hợp lệ trong 80 m), nên không gọi mỗi khung.
+  6. Lúc ghi `map.ts`, một tiến trình nào đó (nghi là hook) chạy nội dung file như lệnh shell. Nó tạo các file rỗng `tmin)`, `zn.x1`, `zn.z1` ở gốc repo và ghi lại `0` (cùng lúc 13:05:22). Đây có thể là nguồn của file `0` lạ trước đây. Tôi đã xóa ba file mới, để nguyên `0`; không thấy file `150`.
+  Báo cáo đầy đủ: D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-di-dao\task-2-report.md
+</agent-message>
+
+---
+
+<agent-message from="ac4ddd0bad81a5b01">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  - ✅ Spec compliant. All names in the brief's Interfaces block are present with the stated signatures (`map.ts:55-58`, `82`, `89`, `94`, `98`, `109`, `138`, `145`, `166`, `202`). The module imports nothing (`map.ts:47-53`), so it does not touch three, CONFIG or the DOM. `stMove` splits the move into `n = ceil(len/(R/2))` substeps (`map.ts:150`) and tries both axes, then x only, then z only, else stops (`map.ts:153-156`). `stNearestValid` searches expanding rings out to 80 m (`map.ts:164-177`). `stSegClear` counts only infinitely tall solids and stops at the edge of the open zones (`map.ts:202-239`). `package.json:30` adds the script. Every test case in the brief is present (`map.test.ts:293-461`), including the 200 000-step fuzz with seed 20261111, steps of 0–3 m and feet 0 or 1.2, checked by a linear oracle that does not use the grid (`map.test.ts:272-289`).
+  - Two additions go beyond the brief, and both are justified:
+    - **Low-wall escape** (`map.ts:149`). Without it, a character that lands inside a low wall can never move again: every substep ends inside the wall's inflated area and is rejected.
+    - **Thin-wall fuzz** (`map.test.ts:465-484`). The brief's endpoint oracle cannot catch tunnelling, and the report's mutation check (`n = 1` still passes the brief's own oracle) shows this test is what closes that gap.
+  - ⚠️ Cannot verify from the diff: the RED/GREEN runs and the mutation results in the report. I did not re-run the suite.
+  
+  ### Strengths
+  - **The tunnelling bound holds.** Each solid inflated by the radius is at least 2R = 0.7 m wide (a circle of `r → 0` still gives 0.7 m). That is well above the substep length R/2 = 0.175 m, so no substep can jump across it. The 5 cm walls in the thin-wall fuzz test exactly this edge case.
+  - **Corner squeeze is safe.** Two rectangles touching at a corner (or a rectangle and a circle) have inflated areas that overlap with radius R, so a diagonal step cannot slip through. The endpoint is checked after every substep, so even clipping the rounded corner of the inflated area never leaves the character in an invalid spot.
+  - **The grid is correct.** A solid is indexed by its bounding box (`map.ts:70-80`). `stHit` looks up the cells covering the box [x±R, z±R] (`map.ts:128`). Any solid closer than R therefore shares at least one cell with the query, so none is missed. Solids added via `stAddSolids` are indexed immediately (`map.ts:91`). Solids spanning more than 64 cells go to the `big` list, which is scanned linearly (`map.ts:74`, `127`). The numeric key `stKey` means `Map.get` does not allocate (`map.ts:67`).
+  - **No allocation in the hot paths.** `stMove`, `stValid`, `stHit`, `stHitOne` and `stSegClear` use only scalars and indexed for loops. No closures, temporary arrays or iterators.
+  - **`stSegClear` is accurate.** Rectangles use the slab method and circles a quadratic, both with a start-inside case returning 0 (`map.ts:180-198`). The zone chain uses a 1e-7 tolerance at shared edges (`map.ts:211`). When it hits the 64-iteration cap it returns a shorter value, which is the safe direction for a camera.
+  - **The oracle is genuinely independent.** It scans linearly with `Math.hypot`/`Math.max` (`map.test.ts:276-289`), shares no code with `map.ts`, and also checks that `stValid` is never stricter than the oracle (`map.test.ts:447`).
+  - **Shared zone edge.** Zones are closed on their boundary (`map.ts:102`), so walking across A|B is not blocked. `map.test.ts:317-323` and `396` confirm this.
+  
+  ### Issues
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  1. **The low-wall escape is too broad** (`map.ts:149`). When the start is inside a low wall, the whole step ignores every low wall, not just the one being left. In a long frame (large `dx`), the character can pass through a second low wall. A character can also keep walking along inside a wall (a railing) as long as each frame starts inside it. The practical leak is small (about 6 cm per frame), and zones still keep the character off the water. Narrower option: ignore only the low walls that overlap the start point, or require each substep not to go deeper into them. At minimum, Task 4 must know about this behaviour.
+  2. **No escape when the start is inside a tall solid or outside every zone.** `stValid(…, Infinity)` is then false, so `f = feet` and every substep fails: the character freezes completely (`map.ts:149-156`). This follows the brief (the caller uses `stNearestValid`), but it is easy to forget in Task 6, which adds buildings at runtime with `stAddSolids`, and when closing a gate. A comment at `stMove` saying "start invalid → caller must call stNearestValid" would make this explicit.
+  3. **A malformed solid is silently ignored** (`map.ts:71-74`). A `kind: 'rect'` missing `x0/x1/z0/z1` (or a `circle` missing `r`) produces NaN cell indices, the loops never run, and the solid is never indexed. Meanwhile `stSegClear` in full-scan mode (`map.ts:227-229`) still sees it, so the two paths disagree. Task 6 will be converting about 8 000 boxes from the scene, so a dev assert or a skip with a warning would help.
+  4. **`stNearestValid` uses straight-line distance** (`map.ts:166-177`). The result can land on the other side of a tall wall (for example in a sealed courtyard), or on the opposite bank if it is within 80 m. This is correct per the brief, but Task 3/4 should be aware of it when evacuating people from a closed bridge span.
+  5. **Zones are checked at the centre point only.** Task 3 needs to inset land zones by about R from the embankment edge, or the character's body will overhang the water (spec failure criterion "đứng trên mặt nước"). Gaps narrower than R/2 between two zones can be crossed, as the report already notes (concern 3).
+  6. **The cell-range code is duplicated three times** (`map.ts:73-79`, `128-133`, `226-237`), along with the "skip low wall + `stSegEnter`" body repeated three times in `stSegClear` (`map.ts:228`, `232`, `236`). It is DRY-able, but acceptable while it keeps things allocation-free.
+  7. **Environment issue in the report (concern 5).** A hook executes file contents as shell commands, which created stray files at the repo root. The untracked `0` file is still there. This is outside the diff, but the user should check the hook. Otherwise every file containing `>` risks creating junk files or overwriting a file.
+  
+  ### Assessment
+  **Task quality:** Approved
+  **Reasoning:** The collision core meets the brief. The no-tunnelling bound (inflated width ≥ 2R > substep R/2), the grid lookup and `stSegClear` are all correct by construction, and the independent tests, including the thin-wall fuzz, really do catch tunnelling. The remaining items are behaviour notes for Tasks 3/4/6 and small DRY/robustness points.
+</agent-message>
+
+---
+
+<agent-message from="a33383d3e3d1028e2">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Status: DONE_WITH_CONCERNS
+  Commit: 4ec3238 feat(stroll): vùng đi được hai cầu, hai bờ, Cầu Tình Yêu + test vòng khép kín. Files: src/config.ts, src/explore/stroll/mapData.ts (new), tests/stroll-unit/mapData.test.ts (new). The bounds in params.ts did not need to change.
+  Tests: `npm run typecheck` is clean, and `npm run test:stroll:unit` passes 26/26 (12 of them new) in about 2 s. RED was ERR_MODULE_NOT_FOUND because mapData.ts did not exist yet.
+  Concerns:
+  1. The swing-gate test says there is no path from (−100,−1080) to (100,−1080), but the brief also says the banks stay joined via Cầu Rồng, so a path always exists around through Cầu Rồng. I tested it as: no path inside a box of |z+1080| ≤ 200, and banks connected over the whole region.
+  2. Cầu Tình Yêu's deck is 3.0 m and the riverside is 2.5 m, a 0.5 m step, which is more than stepMax. I added a 2 m ramp down to 2.8 m at the bank end, so feet sink up to about 0.17 m into the deck there.
+  3. At the arch feet the dragon body runs entirely under the deck for up to 6.75 m (at x = ±255). To make the brief's arch-foot test meaningful, body segments up to 8 m apart are merged into one solid (DR_ARCH_GAP).
+  4. The bank zone starts at 262.35 as the brief says, so walkers can stand between the river edge and the promenade railing at x = ±263, and walk through that railing, which is not a solid.
+  5. The Cầu Rồng hanger cables, lamp posts and signal poles do not block.
+  Two empty stray files (`hi` and a mojibake `ng…ng`) appeared at the repo root after my writes. I deleted both and did not commit them; root file `0` is not mine and is untouched.
+  Report: D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-di-dao\task-3-report.md
+</agent-message>
+
+---
+
+<agent-message from="a05dea6ec889a8834">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  - ✅ The implementation matches the spec and brief. One Important issue below comes from the brief's own instructions (plan-mandated), not from an implementer mistake.
+  - I accept the implementer's reading of the contradictory swing-gate test. The brief asks for "no path from (−100, −1080) to (100, −1080)" and also "bank-to-bank via Cầu Rồng". Those cannot both hold over the whole map. Limiting the BFS to |z+1080| ≤ 200 and running a separate full-map BFS (`mapData.test.ts:463-474`) tests what the brief meant.
+  - ⚠️ Cannot verify from the diff:
+    - Head, jaw and beard clearance above the 2.8 m reach. I estimated it from `head.ts:16,42-44` (head at about (333, 16.5), jaw sphere about 10 m up). It looks clear, but I did not compute the mane or beard.
+    - The x half-width of the paired tower column (±0.4 vs a possible ±0.45). It depends on the axis order of `beamBetween` (`swingSpan.ts:45`). The effect is at most 5 cm.
+    - The 26/26 test result. I did not re-run the suite, per instructions.
+  
+  ### Strengths
+  - I checked every geometry number against the source and found no errors:
+    - Dragon rail inner face 18.58, outer edge curb to 19.0, vehicle curb 15.9–16.25 with height 0.9 (`dragon/deck.ts:19-26`).
+    - Song Han rail 6.24, wheel curb 4.445–4.695 with top 0.545, edge 6.45 (`common/deck.ts:13-16`), abutment 6.95 (`fixedSpans.ts:18`), deck and rails to |x| 290 (`fixedSpans.ts:58`).
+    - Shoreline streets (`streets.ts:15-29`) and the love pier, lock row, railing and statue base (`landmarks.ts:61-66`).
+    - Spec line 104 worried that the east end of Cầu sông Hàn stops at x ≈ 227. That is handled: `songHanE` runs to 290 over the fill embankment, which has rails (`fixedSpans.ts:17-20,58`).
+  - Copying the dragon spine without importing three, plus a 501-point comparison test against `CatmullRomCurve3` (`mapData.test.ts:549-557`), is a sound way to stay pure and still be exact. Arc-length u matches `body.ts:15-20,41`.
+  - The wheel curb is filled across the 1 m swing-span gap (`mapData.ts:352`). This closes a real road→sidewalk slip-through.
+  - My independent probe (scratch tsx, read-only) found nothing wrong at finer resolution than the tests:
+    - **Water:** sampled every 0.1 m in x and 0.25 m in z over |x| ≤ 262.3, the full z range. No valid point lies outside the dragon, songHan, shSwing or love zones. No bridge point lies past its railing inset (dragon |z| ≤ 18.23, Song Han |dz| ≤ 5.89).
+    - **Height steps:** sampled every 0.05 m at all six junctions (both dragon abutments, both Song Han abutments, love↔bank, swing↔fixed). The largest step is 0.350, at dragon↔dragonE (332.95, ±16.7), which equals `stepMax`.
+    - **Swing gate:** with the gate closed, there are zero valid points at |x| < 62.35.
+    - **Spawn:** all slots are valid and sit on the sidewalk at deckY + 0.25.
+    - **Dragon blocking:** the tail and first arch foot form one solid (−333.25…−242.25). The other arch feet are ±(173.75…197.75) and ±(84.5…111.25), and the neck runs 242.25…307.5. All mid-arch points stay valid.
+    - **Tower:** the tower centre, the A-frame feet and (0, −1078.8) are all blocked.
+  - The tests check real behaviour. The height test requires the worst step to exceed 0.2 (proof that the steps are actually added in), and the no-water and bounds tests use `feet = Infinity`.
+  
+  ### Issues
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  1. **Walkers pass through the riverside railing on both banks, including at the only entrance to Cầu Tình Yêu (plan-mandated, needs a user decision).**
+     - The bank zones start at |x| = 262.35 (`mapData.ts:244`), as the brief says: "mép kè trừ radius".
+     - The visible promenade railing stands at |x| = 263: stone posts 262.86–263.14, 1.1 m tall, every 4 m, with steel rails at 1.05 and 1.5 m (`promenade.ts:56-59`).
+     - That railing is only skipped near the bridges, Trần Thị Lý and the tunnel (`promenade.ts:24`). It is **not** skipped at the love pier. With posts at z = −2298 + 4k, one post stands at exactly z = −78, the centreline of the pier entrance.
+     - So walkers step through a 1.5 m railing anywhere along both banks, and every trip onto the pier passes through a post. Spec §3 item 3 says the character "không vượt được lan can". Neither of the user's two named failure criteria is hit, but this is plainly visible.
+     - Fix options:
+       - (a) Inset the bank zone to 263.14 + 0.35 = 263.49. Extend `love` to that line. Skip the railing segment at |z + 78| < 3.5 in `promenade.ts`. That loop does not call `rnd()`, and the change stays inside the same merged mesh, so the draw-call count is unchanged. This is a scene edit, so the user must approve it.
+       - (b) Keep the current behaviour and record it as accepted.
+     - The implementer flagged this correctly (report "Điều cần lưu ý").
+  
+  #### Minor (Nice to Have)
+  1. Several tunable estimates live in `mapData.ts`, not `CONFIG.stroll`: `REACH` 2.5 (`:145`), `DR_ARCH_GAP` 8 (`:156`), `SH_LAND_HALF` 7.5 (`:173`), `LV_END`/`LV_RAMP` (`:180-181`), plus padding values 0.9/0.1/0.3/0.15 (`:340,345-346`). Each is marked `(ước lượng)` or sourced. Still, project invariant 3 and the global constraints put "mọi thông số" in `CONFIG.stroll`. At minimum, `REACH`, which is a spec number, belongs there.
+  2. **Love-pier ramp:** standing height drops 3.0 → 2.8 over x 260.35–262.35 (`mapData.ts:213-216`).
+     - Feet sink up to about 0.165 m into the deck at x = 262.
+     - For x 262–262.35, the character floats 0.3 m above the kè ground.
+     - This is a reasonable compromise for the real 0.5 m step. It is cosmetic.
+  3. Merging dragon segments up to 8 m apart (`mapData.ts:323`) blocks the whole median from −333 to −242 and from 242 to 307.5.
+     - This is conservative: where the body dips under the deck, the median above it is blocked.
+     - It is needed so the brief's "arch-foot centreline invalid" test passes. Body height alone already justifies most of the blocked length.
+  4. The neck solid's half-width of 2.77, plus the 0.35 radius, reaches 3.12. That cuts 0.12 m into the inner lane: (300, 2.5) is invalid (report concern; probe confirmed). This is harmless.
+  5. The step from dragon sidewalk 2.85 to the land strip 2.5 at |z| 16.25–16.7, x = ±333, is exactly 0.350 = `stepMax`. Floating-point noise (0.3500083 measured) may matter if Task 4 compares with a strict `≤ stepMax` and no epsilon. Worth a note to Task 4.
+  6. `stDragonY` switches from road height to sidewalk height at the curb centre (`mapData.ts:187`). The vehicle curb's `top` of 0.9 is measured from the deck, so seen from the sidewalk the wall is effectively 0.65 high. It is still a low wall, and the 1.2 m jump clears it either way.
+  7. `stBankY` applies the riverside road at every z, ignoring the east road's real start at z = −2300 (`streets.ts:25`). This is harmless inside the current bounds.
+  
+  ### Assessment
+  **Task quality:** Approved
+  **Reasoning:** I checked the zones and solids against the real bridge, pier and street geometry and found no errors. No water point is standable, every junction step is at or below `stepMax`, the gate really cuts the swing span, and the tests check real behaviour. The one Important item (walking through the riverside railing, including a post on the love-pier entrance) follows from the brief's "mép kè − radius" rule. The user needs to decide on it before Task 6, not the implementer.
+  
+</agent-message>
+
+---
+
+<agent-message from="af60a09d543653281">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Trạng thái: DONE
+  Commit: 597b26e fix(stroll): người đi dạo không xuyên lan can lối dạo ven sông, chừa lối vào Cầu Tình Yêu
+  Test: `npm run typecheck` không lỗi. `npm run test:stroll:unit` đạt 27/27. Có 1 test mới cho lan can kè, test Cầu Tình Yêu được mở rộng, các test vòng khép kín, mặt nước và liên tục cao độ vẫn đạt.
+  Đã sửa:
+  - Vùng bờ giờ bắt đầu ở |x| = 263,14 + radius = 263,49. Số này suy từ cột lan can trong promenade.ts, không viết cứng.
+  - Vùng `love` kéo vào bờ tới cùng mép đó. Đoạn dốc 3,0 → 2,8 m dời theo, nên bậc xuống mặt kè còn 0,3 m.
+  - Lan can bờ Đông có khe ở z (−82, −74,14), phủ vùng `love` cộng radius. Vòng lặp lan can không gọi rnd() và lan can vẫn nằm trong cùng mesh gộp.
+  - REACH đã chuyển thành `CONFIG.stroll.reach`.
+  Cần biết:
+  - Tôi thêm một dòng CONFIG mới `riverfront.love.railGap: 0.5` (khoảng chừa thêm mỗi bên lối vào, ước lượng). Phán quyết chỉ nói "một khoảng nhỏ", không có tên cụ thể.
+  - Vùng bờ lùi vào ở mọi chỗ, kể cả đoạn chân cầu không có lan can. Ở đó vùng bờ vốn đã cắt quanh thân cầu, nên chỗ nối cầu với bờ không đổi.
+  - Test chép lại bố cục lan can của promenade.ts, vì file đó không nạp được khi chạy test ngoài trình duyệt. Nếu sửa promenade.ts thì phải sửa cả bản chép này.
+  - Không chạy `npm run build`.
+  Báo cáo: D:\2026 - Tuan\danang-vite\.superpowers\sdd\2026-11-11-di-dao\task-3-report.md (mục "## Fix round 1")
+</agent-message>
+
+---
+
+<agent-message from="ae7cb103ae82214cf">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Finding Verdicts
+  
+  - **R5.1: inset both bank zones to |x| ≥ 263.14 + radius, derived from geometry and not hard-coded** — ADDRESSED.
+    - `mapData.ts:147-148` derives `RF_RAIL = BK + 1 + 0.28/2` and `BANK_IN = RF_RAIL + R`, and the bank zones now start at `BANK_IN` (the `x0`/`x1` lines in `stBuildZones`).
+    - The inset also applies where `promenade.ts` skips the railing. There the bank zone was already cut around the bridge bodies, and bridge↔bank connection is unchanged (`dragonW/E`, `shLandW/E`). The closed-loop and height-continuity tests pass, per the report.
+  - **R5.2: extend `love` to meet the new bank line, no gap and no step over stepMax** — ADDRESSED.
+    - `love` now ends at `BANK_IN` (`mapData.ts:192`), sharing its edge with `bankE`, so the gap is 0.
+    - `stLoveY` ramp base is `BANK_IN − LV_RAMP` (`mapData.ts:171`). The report gives a step down to the 2.5 deck of 0.3, which is within the 0.35 limit.
+  - **R5.3: railing gap on the east bank at the pier entrance, no `rand()`/`rnd()`, no draw-call or build-order change** — ADDRESSED.
+    - `promenade.ts:82` skips posts and rails on the east side only, using new `CONFIG.riverfront.love.railGap: 0.5`. It still pushes into the same `furn` merged geometry, so draw calls are unchanged.
+    - The railing loop (`promenade.ts:57-60`) calls no `rnd()`. `rnd()` is used only in the bench/planter loop, so the sequence is untouched. There is no `build*()` reorder.
+    - I checked the numbers by hand. Posts are at z = −82, −78 and −74, with `g0 = −81.5` and `g1 = −74.5`. The posts at −82 and −78 are skipped and the gap is (−82, −74.14). The love zone plus radius spans −80.77 to −75.23, which sits inside the gap.
+    - The Vietnamese comment is present.
+  - **R5.4: pier side railings stay walls** — ADDRESSED. `landmarks.ts` is not touched, and the existing "outside the railing by 0.5 m is invalid" assertions are kept.
+  - **R5.5: tests (a), (b), (c)** — ADDRESSED.
+    - (a) is the new "lan can kè" test. It runs 2,000 random z on both banks with the railing present, at x = RF_RAIL + R − 0.05, with `feet = Infinity`, and requires more than 3,500 points.
+    - (b) is the extended Cầu Tình Yêu test. A BFS from the east bank reaches (263, z), which sits in the `love` zone. Everything reachable at x = 263 belongs to `love`, `dragon` or `songHanE`, so the pier is entered only through the gap.
+    - (c) The existing tests are kept. The report shows `npm run test:stroll:unit` with 27 pass and 0 fail, and a clean `typecheck`.
+    - The test's copy of the railing layout (`railSegs`, `rfBlocked`) matches `promenade.ts:24,55-60`, including the `blocked(z, 4)` skip and the `[z − 0.14, z + railStep]` segment.
+  - **R6: move `REACH` into `CONFIG.stroll`** — ADDRESSED. `config.ts` adds `reach: 2.5` with a Vietnamese comment, a unit and `(ước lượng)`, and `mapData.ts:146` reads it from there.
+  
+  ### New Breakage in the Fix Diff
+  None at Critical or Important level.
+  - Minor: the east railing gap is 8 m by post spacing, wider than the 6 m pier plus margin. This is inherent to the 4 m post step and is acceptable.
+  
+  ### Out-of-Scope Observations
+  - The dragon sidewalk↔land step of 0.3500083 against stepMax 0.35 is already noted for later tasks.
+  
+  ### Verdict
+  All findings addressed and no new Critical/Important breakage: yes
+</agent-message>
