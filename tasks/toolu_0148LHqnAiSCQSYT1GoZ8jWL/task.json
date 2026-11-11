@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_0148LHqnAiSCQSYT1GoZ8jWL",
+  "agent_id": "a4ab489b15bf89664",
+  "subagent_type": "general-purpose",
+  "task_description": "Builder check spec người đi dạo",
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 80750,
+    "cache_read_tokens": 167802,
+    "output_tokens": 7983,
+    "api_call_count": 4
+  },
+  "started_at": "2026-11-12T00:56:51.1375735+07:00",
+  "completed_at": "2026-11-12T00:58:33.7423789+07:00"
+}
