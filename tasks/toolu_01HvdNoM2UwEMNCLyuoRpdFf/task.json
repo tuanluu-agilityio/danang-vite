@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01HvdNoM2UwEMNCLyuoRpdFf",
+  "agent_id": "a1f963a3034300ebb",
+  "subagent_type": "general-purpose",
+  "task_description": "Task 4: nhân vật có xương",
+  "token_usage": {
+    "input_tokens": 106,
+    "cache_creation_tokens": 163510,
+    "cache_read_tokens": 6658520,
+    "output_tokens": 50432,
+    "api_call_count": 52
+  },
+  "started_at": "2026-11-12T01:26:45.6054211+07:00",
+  "completed_at": "2026-11-12T01:40:33.4706804+07:00"
+}
