@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M767BG2N5RFC0NXWYZQRMTT7",
+  "session_id": "cfbf6fb1-5faf-4660-9f00-508deb60dc5d",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-11T21:13:55.2047664Z",
+  "branch": "feature/toi-uu-hieu-nang",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/memory-bank/activeContext.md",
+    ".github/memory-bank/progress.md",
+    "docs/superpowers/specs/2026-11-12-toi-uu-gpu-design.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5-2",
+  "turn_id": "1dabbd9b63b5",
+  "checkpoint_transcript_start": 818,
+  "transcript_lines_at_start": 818,
+  "compact_transcript_start": 58,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 2674,
+    "cache_read_tokens": 276318,
+    "output_tokens": 1739,
+    "api_call_count": 2
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 6
+  }
+}
