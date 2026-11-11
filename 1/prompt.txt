@@ -1,0 +1,13 @@
+Hiện tại FPS của project là 26, quá thấp gây ra giật lag. Chúng ta có thể convert typescript sang assemblyscript để improve performance được không?
+
+---
+
+chúng ta có thể cập nhật 1 phần tính toán sang Go hoặc Rust được không?
+
+---
+
+bạn có thể turning lại project theo mô hình 3D siêu thực của thành phố đà nẵng
+
+---
+
+hiện tại dự án là các mô hình 3D không giống thành phố đà nẵng hiện tại, tôi muốn cập nhật các phần đã làm theo kiểu siêu thực như bản đồ
