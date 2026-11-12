@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_019EVsmuaoG9NXoxFzLQvyuV",
+  "agent_id": "a4091aec548376198",
+  "task_description": "Task 1: dữ liệu đám đông",
+  "token_usage": {
+    "input_tokens": 170,
+    "cache_creation_tokens": 259571,
+    "cache_read_tokens": 14767788,
+    "output_tokens": 97442,
+    "api_call_count": 85
+  },
+  "started_at": "2026-11-12T11:30:02.0175475+07:00",
+  "completed_at": "2026-11-12T11:59:58.7086441+07:00"
+}
