@@ -12,10 +12,11 @@ Spec: docs/superpowers/specs/2026-11-12-nguoi-du-luon-that-design.md §3.
 
 Chỉnh sửa so với nguồn:
     - bỏ lưới dao găm (vật liệu sm002_combat_knife), bỏ empty "Bip01 Footsteps";
-    - texture màu: thân (đồng phục + áo giáp vải) -> ô liu sẫm, trang bị + mũ -> than, giày + găng -> than đen (giảm bão hòa
-      về 0, nhân màu, gamma GAMMA); đầu (da, kính) giữ nguyên;
+    - texture màu: thân (đồng phục + áo giáp vải) -> ô liu sẫm xỉn, trang bị + mũ -> than gần đen, giày + găng -> đen (giảm
+      bão hòa về 0, làm phẳng đốm rằn ri giữ nếp gấp, nhân màu); đầu (da, kính) giữ nguyên;
+    - normal map giữ nguyên kênh G: nguồn theo quy ước OpenGL (+Y lên) như glTF (kiểm bằng độ xoắn của trường pháp tuyến);
     - tô phủ phù hiệu cờ / cấp hiệu / bảng tên (PATCH_CLONE chép vải lân cận, PATCH_FLAT đổ màu trung vị), cả normal map;
-    - gộp 4 vật liệu thành 1 bằng atlas (ATLAS): màu ATLAS_PX JPEG, normal ATLAS_PX JPEG, ORM ORM_PX (G = độ nhám suy từ
+    - gộp 4 vật liệu thành 1 bằng atlas (ATLAS): màu COL_PX JPEG, normal ATLAS_PX JPEG, ORM ORM_PX (G = độ nhám suy từ
       specular map, B = kim loại 0, R = 1);
     - đoạn sit: m_sit_chair_breathe_01, vòng lặp SIT_LEN s khớp đầu cuối, FPS khung/giây, không kênh ngón tay / mặt,
       hông đứng yên tại gốc tọa độ.
@@ -45,13 +46,15 @@ FPS = 30                        # khung/giây nướng đoạn sit
 SIT_LEN = (4.0, 6.0)            # s, khoảng tìm độ dài vòng lặp sit
 SIT_START = 4.0                 # s, điểm đầu được dời tối đa chừng này để vòng lặp khớp hơn
 CLOSE_S = 0.3                   # s, khép vòng: đoạn cuối kéo dần về tư thế khung đầu
-GAMMA = 1.15                    # độ tương phản khi đổi màu (lũy thừa độ sáng đã chuẩn hóa)
-LREF = 0.5                      # độ sáng nguồn (sRGB) ứng đúng màu đích; vải ACU: trung vị 0,41, phân vị 75 là 0,53
-KMAX = 1.6                      # trần hệ số sáng (điểm sáng nhất của rằn ri không thành xanh nõn chuối)
-OLIVE = (0.36, 0.40, 0.26)      # màu thân (sRGB 0..1): ô liu sẫm
-CHAR = (0.20, 0.21, 0.20)       # màu trang bị + mũ: than
-BLACK = (0.085, 0.085, 0.09)    # màu giày + găng: than đen (ước lượng)
-ATLAS_PX, ORM_PX = 1024, 512    # px, cạnh atlas màu / normal và ORM
+GAMMA = 1.0                     # độ tương phản khi đổi màu (lũy thừa độ sáng đã chuẩn hóa)
+KMAX = 1.35                     # trần hệ số sáng (so với trung vị vùng) để chỗ sáng nhất không bật lên
+BLUR_R = 80                     # px ảnh nguồn 2048, bán kính lọc thấp (≈ sigma): giữ nếp gấp / mảng sáng tối lớn
+DETAIL = 0.3                    # phần độ sáng tần số cao (đốm rằn ri, đường may) giữ lại; 0 = vải trơn hẳn
+OLIVE = (0.240, 0.259, 0.188)   # màu thân (sRGB 0..1, trung bình vùng): ô liu sẫm xỉn ≈ (61, 66, 48)
+CHAR = (0.115, 0.12, 0.115)     # màu trang bị + mũ (trung bình vùng): than gần đen ≈ (29, 31, 29)
+BLACK = (0.055, 0.055, 0.06)    # màu giày + găng (trung bình vùng): đen (ước lượng)
+ATLAS_PX, ORM_PX = 1024, 512    # px, cạnh atlas normal (cũng là đơn vị của bảng ATLAS) và ORM
+COL_PX = 1024                    # px, cạnh atlas màu (bội của ATLAS_PX, cùng bố cục UV); đã so 2048: cận mặt không rõ hơn, tay áo lộ lại đốm rằn ri
 JPEG_Q = 85                     # chất lượng JPEG (bộ xuất glTF áp cho mọi ảnh)
 ROUGH = (0.95, 0.55)            # độ nhám ứng specular 0 và 1 (suy tuyến tính, ước lượng)
 CAP = int(2.5 * 1024 * 1024)    # byte, trần pilot.glb (spec §3)
@@ -147,12 +150,32 @@ def dominant_polys(ob, me, keys, mat_index):
     return out
 
 
-# ===== Đổi màu: giảm bão hòa về 0, độ sáng chia LREF, lũy thừa GAMMA, nhân màu (vải rằn ri sáng vừa -> đúng màu đích) =====
-def recolor(a, tint, mask=None):
+def box_blur(a, r):
+    """Lọc hộp bán kính r theo hai trục, ba lượt (≈ Gauss sigma r); mép kẹp."""
+    for ax in (0, 1):
+        for _ in range(3):
+            p = np.pad(a, [(r + 1, r) if i == ax else (0, 0) for i in range(a.ndim)], mode='edge')
+            c = np.cumsum(p, axis=ax, dtype=np.float64)
+            hi = np.take(c, np.arange(2 * r + 1, c.shape[ax]), axis=ax); lo = np.take(c, np.arange(0, c.shape[ax] - 2 * r - 1), axis=ax)
+            a = ((hi - lo) / (2 * r + 1)).astype(np.float32)
+    return a
+
+
+# ===== Đổi màu: giảm bão hòa về 0, làm phẳng rằn ri, chuẩn hóa theo trung vị vùng, nhân màu đích =====
+# Độ sáng L tách làm hai dải: dải thấp (lọc BLUR_R chỉ trong vùng chọn) giữ nếp gấp / mảng sáng tối lớn; phần còn lại (đốm rằn ri,
+# đường may nhỏ) chỉ giữ DETAIL. Rồi chia trung vị vùng, kẹp KMAX, lũy thừa GAMMA, nhân màu đích => trung bình vùng ≈ màu đích.
+def recolor(a, tint, mask=None, log=None, tag=''):
     L = 0.2126 * a[..., 0] + 0.7152 * a[..., 1] + 0.0722 * a[..., 2]
     sel = (L > 0.02) if mask is None else mask
-    k = np.clip(L / LREF, 0, KMAX) ** GAMMA
+    if not sel.any(): return
+    r = max(1, int(round(BLUR_R * a.shape[1] / 2048))); s = sel.astype(np.float32)
+    lo = box_blur(L * s, r) / np.maximum(box_blur(s, r), 1e-4)
+    L2 = lo + DETAIL * (L - lo)
+    k = np.clip(L2 / max(float(np.median(L2[sel])), 1e-3), 0, KMAX) ** GAMMA
     for c in range(3): a[..., c] = np.where(sel, np.clip(k * tint[c], 0, 1), a[..., c])
+    if log is not None:
+        m = a[..., :3][sel].mean(0) * 255
+        log.append(f'{tag}: trung bình sau đổi màu ({m[0]:.0f}, {m[1]:.0f}, {m[2]:.0f}) sRGB, {int(sel.sum())} px')
 
 
 def in_rects(me, p, W, H, rects):
@@ -223,7 +246,7 @@ def build_mesh(d, log):
     U = np.array([l.uv[:] for l in uv]); log.append(f'UV nguồn {U.min(0).round(3)} .. {U.max(0).round(3)}')
     mi = {m: i for i, m in enumerate(mats)}
     # ảnh nguồn đổi màu + tô phù hiệu, rồi thu vào atlas
-    col_at = np.zeros((ATLAS_PX, ATLAS_PX, 4), np.float32); col_at[..., 3] = 1
+    col_at = np.zeros((COL_PX, COL_PX, 4), np.float32); col_at[..., 3] = 1
     nrm_at = np.tile(np.array([0.5, 0.5, 1.0, 1.0], np.float32), (ATLAS_PX, ATLAS_PX, 1))
     orm_at = np.zeros((ATLAS_PX, ATLAS_PX, 4), np.float32); orm_at[..., 0] = 1; orm_at[..., 1] = ROUGH[0]; orm_at[..., 3] = 1
     boots = gloves = None
@@ -239,13 +262,14 @@ def build_mesh(d, log):
                 boots = uv_mask(me, dominant_polys(ob, me, BOOT_BONES, mi[m]) | tops, W, H) | tan_mask(col, BOOT_TOPS)
                 gloves = uv_mask(me, {p for p in dominant_polys(ob, me, GLOVE_BONES, mi[m]) if in_rects(me, p, W, H, GLOVES)}, W, H)
                 rest = ~(boots | gloves) & (col[..., :3].max(-1) > 0.02)
-                recolor(col, BLACK, (boots | gloves) & (col[..., :3].max(-1) > 0.02)); recolor(col, TINT[m], rest)
+                recolor(col, BLACK, (boots | gloves) & (col[..., :3].max(-1) > 0.02), log, 'giày + găng')
+                recolor(col, TINT[m], rest, log, m)
                 log.append(f'giày {int(boots.sum())} px, găng {int(gloves.sum())} px (ảnh {W}×{H})')
             else:
-                recolor(col, TINT[m])
+                recolor(col, TINT[m], None, log, m)
             log.append(f'{m}: tô {patch_out(m, col, nrm)} phù hiệu')
-        r0 = ATLAS_PX - y - h
-        col_at[r0:r0 + h, x:x + w] = resize(col, w, h); nrm_at[r0:r0 + h, x:x + w] = resize(nrm, w, h)
+        r0 = ATLAS_PX - y - h; f = COL_PX // ATLAS_PX
+        col_at[r0 * f:(r0 + h) * f, x * f:(x + w) * f] = resize(col, w * f, h * f); nrm_at[r0:r0 + h, x:x + w] = resize(nrm, w, h)
         s = resize(spc, w, h); S = s[..., :3].mean(-1)
         orm_at[r0:r0 + h, x:x + w, 1] = ROUGH[0] + (ROUGH[1] - ROUGH[0]) * np.clip(S, 0, 1)
         # UV của vật liệu này vào ô atlas

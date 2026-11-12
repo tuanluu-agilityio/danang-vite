@@ -58,6 +58,42 @@ test('pilot.glb: đoạn sit dài 3–7 s', () => {
   assert.ok(dur >= 3 && dur <= 7, `sit dài ${dur} s`);
 });
 
+/* Đọc accessor float (không stride) từ chunk BIN của GLB */
+function floats(file: string, j: any, i: number): { n: number; count: number; d: Float32Array } {
+  const b = readFileSync(file), len = b.readUInt32LE(12), bin = 20 + len + 8;
+  const a = j.accessors[i], v = j.bufferViews[a.bufferView];
+  assert.equal(a.componentType, 5126, `accessor ${i} không phải float`);
+  assert.ok(!v.byteStride, `accessor ${i} có byteStride`);
+  const n = ({ SCALAR: 1, VEC3: 3, VEC4: 4 } as Record<string, number>)[a.type];
+  const off = bin + (v.byteOffset ?? 0) + (a.byteOffset ?? 0);
+  return { n, count: a.count, d: new Float32Array(b.buffer.slice(b.byteOffset + off, b.byteOffset + off + a.count * n * 4)) };
+}
+
+// Khép vòng sit: khung đầu và khung cuối mỗi kênh xoay lệch ≤ 0,1° (bản sinh ngày 2026-11-13 lệch tối đa ≈ 0,035°)
+const LOOP_DEG = 0.1;
+
+test('pilot.glb: sit không diễn ngón tay, hông đứng yên, khép vòng', () => {
+  const j = glbJson(FILE);
+  const a = j.animations.find((x: any) => x.name === 'sit');
+  let rot = 0;
+  for (const ch of a.channels) {
+    const name: string = j.nodes[ch.target.node].name ?? '';
+    assert.ok(!name.includes('Finger'), `kênh ${ch.target.path} của ngón ${name}`);
+    const o = floats(FILE, j, a.samplers[ch.sampler].output);
+    if (/Pelvis$/.test(name) && ch.target.path === 'translation')
+      for (let k = 0; k < o.count; k++) for (let q = 0; q < 3; q++)
+        assert.ok(Math.abs(o.d[k * 3 + q] - o.d[q]) <= 1e-4, `hông dời ở khung ${k}: ${o.d[k * 3 + q]} so với ${o.d[q]}`);
+    if (ch.target.path === 'rotation') {
+      rot++;
+      const z = (o.count - 1) * 4;
+      const dot = Math.abs(o.d[0] * o.d[z] + o.d[1] * o.d[z + 1] + o.d[2] * o.d[z + 2] + o.d[3] * o.d[z + 3]);
+      const deg = 2 * Math.acos(Math.min(1, dot)) * 180 / Math.PI;
+      assert.ok(deg <= LOOP_DEG, `${name}: khung đầu / cuối lệch ${deg.toFixed(3)}° > ${LOOP_DEG}°`);
+    }
+  }
+  assert.ok(rot >= 20, `chỉ ${rot} kênh xoay`);
+});
+
 test('pilot.glb: không có vũ khí (dao, súng)', () => {
   const j = glbJson(FILE);
   const bad = /knife|pistol|weapon|gun/i;
