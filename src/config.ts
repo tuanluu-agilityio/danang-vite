@@ -611,6 +611,28 @@ const exploreBase = {
     cells: 36,             // số ô khí vẽ trên cánh theo sải (ước lượng)
     tilt: 0.35,            // rad nghiêng cánh cho mép sau hạ xuống, để camera bám đuôi thấy được hình in (ước lượng)
     roughness: 0.6         // độ nhám vải dù, thấp hơn để có ánh bóng (ước lượng)
+  },
+  /* Người treo dù dạng nhân vật có xương (D-035, docs/superpowers/specs/2026-11-12-nguoi-du-luon-that-design.md §5, §8). Mọi số đều (ước lượng) */
+  pilot: {
+    model: 'people/pilot.glb',  // đường dẫn mô hình nhân vật, tính từ thư mục public/ (ước lượng)
+    loadMs: 15000,       // ms chờ tải mô hình tối đa, quá thì dùng người hình khối (ước lượng)
+    warmMs: 4000,        // ms chờ làm nóng shader nhân vật sau khi tải xong (ước lượng)
+    remote: true,        // dù người khác cũng dùng nhân vật có xương; false thì chỉ dù của mình (ước lượng)
+    dtMax: 0.1,          // s — bước thời gian lớn nhất cho lò xo; khung dài hơn bị kẹp, chia bước nhỏ hơn dtMax/4 (ước lượng)
+    hang: { fore: 0.10, up: 0.42, half: 0.21 },   // m — điểm móc dây so với hông trong hệ nhân vật: ra trước, lên trên, nửa khoảng cách hai móc (ước lượng)
+    riser: 0.55,         // m từ điểm móc lên điểm tụ dây (ước lượng)
+    base: { recline: 0.30, hip: -0.25, knee: 0.35, legSplit: 0.06 },   // rad — tư thế nền cộng lên tư thế ngồi: ngả lưng, gập hông, gập gối, hai chân dạng (ước lượng)
+    toggle: { fore: 0.16, up: 0.30, half: 0.30, travel: 0.32 },   // m — quai phanh khi thả so với điểm treo: ra trước, lên trên, nửa khoảng cách hai quai; quãng kéo xuống tối đa (ước lượng)
+    brake: { base: 0.12, turn: 0.75, slow: 0.6, fast: 0.1 },   // 0..1 — mức kéo phanh: nền, thêm khi rẽ (bên rẽ), thêm khi giảm tốc, bớt khi tăng tốc (ước lượng)
+    amp: { swingRoll: 0.20, swingPitch: 0.14, swingYaw: 0.05, leanRoll: 0.16, leanPitch: 0.12, twist: 0.14, headYaw: 0.35, headLevel: 0.6, legSide: 0.20, legFore: 0.22, knee: 0.30, pack: 0.05, strap: 0.5 },   // rad (headLevel: tỉ lệ 0..1 bù góc nghiêng cho đầu) — biên độ phản ứng khi tín hiệu = ±1 (ước lượng)
+    spring: { swing: [0.55, 0.35], spine: [1.6, 0.8], head: [2.2, 0.9], legs: [0.9, 0.45], brake: [3.0, 1.0], pack: [1.1, 0.3] },   // [Hz, hệ số tắt] lò xo bậc hai từng nhóm kênh; tắt < 1 thì vọt lố (ước lượng)
+    gust: { amp: 0.035, freq: [0.23, 0.37, 0.61], windGain: 2.5 },   // amp rad biên độ nhiễu gió; freq Hz ba tần số không ước chung; windGain hệ số nhân thêm theo mức gió thời tiết 0..1 (ước lượng)
+    limits: { swing: 0.45, spine: 0.35, head: 0.7, leg: 0.5, knee: [0, 1.2] },   // rad — kẹp góc cộng thêm: lắc cả người, thân, đầu, chân; gối [nhỏ nhất, lớn nhất] chỉ gập một chiều (ước lượng)
+    gear: {
+      strapW: 0.045,     // m bề rộng đai (ước lượng)
+      lineR: 0.012,      // m bán kính dây treo (ước lượng)
+      colors: { suit: '#2b3a55', harness: '#1c1c1c', helmet: '#e8e8e8', pack: '#c8372d', strap: '#222222' }   // màu trang bị (ước lượng)
+    }
   }
 };
 
