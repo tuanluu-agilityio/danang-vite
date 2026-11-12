@@ -631,7 +631,13 @@ const exploreBase = {
     gear: {
       strapW: 0.045,     // m bề rộng đai (ước lượng)
       lineR: 0.012,      // m bán kính dây treo (ước lượng)
-      colors: { suit: '#2b3a55', harness: '#1c1c1c', helmet: '#e8e8e8', pack: '#c8372d', strap: '#222222' }   // màu trang bị (ước lượng)
+      strapT: 0.008,     // m bề dày đai (ước lượng)
+      gap: 0.015,        // m đai và tấm đệm nổi cách thân để không xuyên vào da / áo (ước lượng)
+      body: { shoulderUp: 0.45, shoulderHalf: 0.20, chestDepth: 0.24, hipWidth: 0.36, thighR: 0.085 },   // m — kích thước người dùng để đặt đai: vai cao hơn hông, nửa khoảng cách hai vai, bề dày ngực, bề ngang hông, bán kính đùi (ước lượng)
+      pack: { depth: 0.18, height: 0.50, width: 0.32, reserveH: 0.10 },   // m — ba lô sau lưng: dày, cao, rộng; hộp dù dự phòng dưới ghế: cao (ước lượng)
+      brakeJoin: 0.9,    // m từ quai phanh lên chỗ ba nhánh dây phanh tụ lại (ước lượng)
+      carab: { w: 0.05, h: 0.08, bar: 0.012 },   // m — móc carabiner: rộng, cao, bề dày thanh (ước lượng)
+      colors: { suit: '#2b3a55', helmet: '#e8e8e8', harness: '#1c1c1c', strap: '#26282b', pack: '#32362a', toggle: '#3a3f2f', line: '#2a2a2a', metal: '#a4a7ad', reserve: '#c8372d' }   // màu trang bị: đen, than, ô liu; khóa và carabiner xám kim loại sáng; đỏ chỉ ở quai dù dự phòng (ước lượng)
     }
   }
 };
