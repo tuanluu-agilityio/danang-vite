@@ -3,11 +3,16 @@
 //   Mục 3: điều phối chế độ bay, phím, ?explore=glider qua window.__app.explore.
 //   Mục 4: màn chọn phương tiện, giao diện khi bay (body.explore), i18n 9 ngôn ngữ.
 //   Mục 5: đo draw call và ms/khung ở 4 tư thế bay, ngày/đêm (chỉ đo; fail nếu phần dù ngày ≠ đêm).
+//   Mục 6: hiệu ứng ban đêm khi bay dù (cầu sông Hàn tự xoay, Cầu Rồng tự phun), 6h lịch 23:00 không chạy khi bay.
+//   Mục 7 (D-035): người treo có xương: 7a nhân vật thật gắn, cánh đổi sang hình 'canopy'; 7b tay nắm quai ≤ 3 cm ở 5 trạng thái, rẽ đúng dấu;
+//     7c lệnh vẽ của dù ≤ 4; 7d ?pilot=off ra hình khối, 1 lệnh vẽ, không tải pilot.glb; 7e chặn pilot.glb: hình khối, đúng một console.warn, không pageerror;
+//     7f đêm + bão 30 khung không lỗi console, nhân vật vẫn thật.
 //
 //   npm run build && npm run test:explore
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { serveDir, launch, openApp, frames, tap } from './lib.mjs';
+import { setWx } from './weather-lib.mjs';
 
 const problems = [];
 const check = (name, ok) => { if (!ok) problems.push(name); console.log(`${ok ? 'đạt ' : 'LỖI '} ${name}`); return ok; };
@@ -16,7 +21,9 @@ const srv = await serveDir(fileURLToPath(new URL('../dist/', import.meta.url)));
 const browser = await launch();
 try {
   // Mục 1 — mô hình bay thuần
-  const P = await openApp(browser, srv.url);
+  //   ?pilot=off (D-035): mục 2 kiểm dù hình khối (1 Mesh, đếm đỉnh người khối); exPlaceGlider nay bắt đầu nạp người treo có xương và gắn khi về,
+  //   gắn giữa lần đo ngày và đêm thì 2c đêm lệch 1 → 3 lệnh vẽ. Người treo có xương được kiểm ở mục 7.
+  const P = await openApp(browser, srv.url + '?pilot=off');
   await frames(P.page, 2);
   const has = await P.page.evaluate(() => !!(window.__app && window.__app.exFlight));
   check('có __app.exFlight', has);
@@ -334,7 +341,9 @@ try {
   //   Tư thế gán trực tiếp state.pos/yaw; gốc nhóm dù nằm giữa cánh và người lái (originAt) nên pos là điểm giữa dù, không phải mũi người.
   {
     const POSES = { exTakeoff: null, exDragon: [0, 120, 400], exTp: [300, 150, -2400], exHigh: [0, 800, 1500] };
-    const R = await openApp(browser, srv.url + '?explore=glider');
+    // ?pilot=off (D-035): người treo có xương về giữa lúc đo (hoặc quá loadMs trên SwiftShader) thì phần dù ngày (1) ≠ đêm (3) theo giờ tải, không theo mã;
+    // giữ số đo hình khối so được với các lần trước. Lệnh vẽ của dù có người treo thật đo ở 7c.
+    const R = await openApp(browser, srv.url + '?explore=glider&pilot=off');
     await frames(R.page, 3);
     const setNight5 = async (v) => {
       await R.page.evaluate((v) => { window.__app.dayNight.target = v; window.__app.dayNight.night = v; }, v);
@@ -470,14 +479,121 @@ try {
     await J.page.close();
   }
 
-  // Mục 7 — lịch 23:00 không chạy khi bay dù (bộ tự chạy tắt do ?test)
+  // 6h — lịch 23:00 không chạy khi bay dù (bộ tự chạy tắt do ?test). Trước D-035 đánh số "7"; đổi thành 6h để mục 7 dành cho người treo có xương.
   {
     const S = await openApp(browser, srv.url + '?explore=glider');
     await frames(S.page, 3);
     await S.page.evaluate(() => { const t = Date.UTC(2026, 10, 7, 16, 2, 0); Date.now = () => t; });   // 23:02 thứ Bảy giờ Việt Nam
     await new Promise((r) => setTimeout(r, 21000));
-    check('7 lịch 23:00 không quay cầu khi bay dù', await S.page.evaluate(() => window.__app.songHan.ctrl.state === 'CLOSED'));
+    check('6h lịch 23:00 không quay cầu khi bay dù', await S.page.evaluate(() => window.__app.songHan.ctrl.state === 'CLOSED'));
     await S.page.close();
+  }
+
+  // Mục 7 — người treo có xương (D-035, Rocketbox Military_Male_01): gắn dưới dù, IK tay nắm quai phanh, lệnh vẽ, đường lùi hình khối.
+  //   SwiftShader: khung đầu chặn luồng chính lâu hơn CONFIG.explore.pilot.loadMs (15 s) nên ?explore=glider lúc khởi động hay quá giờ → hình khối.
+  //   7a/7b/7c/7f mở trang thường, nới loadMs 180 s như tests/pilot-shots.mjs rồi mới explore.start() (đúng hàm ?explore=glider gọi lúc khởi động);
+  //   7d / 7e kiểm đường lùi nên giữ loadMs thật.
+  {
+    const isPilotWarn = (t) => /người treo/.test(t);
+    const pilotWarns = (into) => (p) => p.on('console', (m) => { if (m.type() === 'warning' && isPilotWarn(m.text())) into.push(m.text().split(/\r?\n/)[0]); });   // chỉ dòng đầu (bỏ stack)
+    // Lệnh vẽ của dù: hiệu render trực tiếp có / không dù (dựng hai lần, đo lần hai), như mục 5. Cánh của mình ở lớp 0 nên còn vẽ thêm một lần trong
+    // phản chiếu mặt nước (vì vậy dù hình khối là +2 ở mục 2c / 5); nhân vật + trang bị ở lớp 1, không vào phản chiếu. meshes = số lưới đang hiện của dù.
+    const gliderCalls = (page) => page.evaluate(() => {
+      const { explore, exFlight, renderer, scene, camera, controls } = window.__app;
+      const s = explore.state, g = explore.glider;
+      exFlight.exPlaceGlider(g, s); exFlight.exChase(camera, controls.target, s, 0, true);
+      const calls = () => { renderer.render(scene, camera); renderer.info.reset(); renderer.render(scene, camera); return renderer.info.render.calls; };
+      const withG = calls(); g.visible = false; const noG = calls(); g.visible = true;
+      const d = explore.pilotDebug();
+      let meshes = 0; g.traverseVisible((o) => { if (o.isMesh) meshes++; });
+      return { d: withG - noG, meshes, real: !!(d && d.real), dbgCalls: d ? d.calls : null, pilot: !!g.getObjectByName('ex-pilot') };
+    });
+
+    // 7a nhân vật thật gắn; mesh cánh đổi sang hình 'canopy' (không còn đỉnh nào dưới điểm treo; hình 'full' có người khối dưới điểm treo)
+    const warnsQ = [];
+    const Q = await openApp(browser, srv.url, { before: pilotWarns(warnsQ) });
+    const t7 = Date.now();
+    await Q.page.evaluate(() => { const a = window.__app; a.exFlight.CONFIG_explore.pilot.loadMs = 180000; a.explore.start(); });
+    let real7 = true;
+    await Q.page.waitForFunction(() => { const d = window.__app.explore.pilotDebug(); return d && d.real; }, null, { timeout: 240000, polling: 1000 }).catch(() => { real7 = false; });
+    const sec7 = ((Date.now() - t7) / 1000).toFixed(0);
+    const a7 = await Q.page.evaluate(() => {
+      const { explore, exFlight } = window.__app, G = exFlight.CONFIG_explore.glider;
+      const hangY = -G.lines * (1 - G.originAt);   // = exHangY (glider.ts)
+      const minY = (geo) => { const p = geo.attributes.position; let m = Infinity; for (let i = 0; i < p.count; i++) m = Math.min(m, p.getY(i)); return m; };
+      const g = explore.glider, wing = g.children[0], full = exFlight.exBuildGlider().children[0].geometry;
+      return { hangY, wingMin: minY(wing.geometry), fullMin: minY(full), same: wing.geometry === full, pilot: !!g.getObjectByName('ex-pilot') };
+    });
+    // ≤ 30 s tính từ explore.start() (đã nới loadMs nên đo thời gian nạp + làm nóng thật trên SwiftShader; lượt đầu đo 11 s)
+    check(`7a nhân vật thật gắn sau ${sec7} s (≤ 30, real ${real7}), có ex-pilot ${a7.pilot}; cánh 'canopy' thấp nhất y ${a7.wingMin.toFixed(2)} > điểm treo ${a7.hangY.toFixed(2)} (hình 'full' xuống ${a7.fullMin.toFixed(2)})`,
+      real7 && Number(sec7) <= 30 && a7.pilot && !a7.same && a7.wingMin > a7.hangY && a7.fullMin < a7.hangY);
+
+    // 7b 5 trạng thái: đóng băng vòng bay (explore.update rỗng), tự bước mô phỏng bằng explore.step như tests/pilot-shots.mjs
+    await Q.page.evaluate(() => { const ex = window.__app.explore; window.__exUpd = ex.update; ex.update = () => {}; });
+    const run = (inp, sec) => Q.page.evaluate(([inp, sec]) => { for (let i = 0; i < Math.round(sec * 60); i++) window.__app.explore.step(1 / 60, inp); }, [inp, sec]);
+    const dbg = () => Q.page.evaluate(() => { const d = window.__app.explore.pilotDebug(); return { real: d.real, handErr: d.handErr, pose: { ...d.pose }, calls: d.calls }; });
+    const ST = [['thẳng', { turn: 0, climb: 0, throttle: 0 }, 2.5], ['rẽ trái', { turn: 1, climb: 0, throttle: 0 }, 3], ['rẽ phải', { turn: -1, climb: 0, throttle: 0 }, 3],
+      ['tăng tốc', { turn: 0, climb: 0, throttle: 1 }, 0.8], ['hãm', { turn: 0, climb: 0, throttle: -1 }, 0.8]];   // E / Q 0,8 s: tốc độ chạm trần / sàn sau ~1,2 s, đo lúc còn gia tốc
+    const b7 = {};
+    for (const [name, inp, sec] of ST) {
+      await Q.page.evaluate(() => window.__app.explore.start());   // cất cánh lại: lò xo về nghỉ
+      await run({ turn: 0, climb: 0, throttle: 0 }, 2); await run(inp, sec);
+      b7[name] = await dbg();
+    }
+    for (const [name] of ST) {
+      const r = b7[name], e = r.handErr;
+      check(`7b ${name}: tay cách quai ${e.map((v) => (v * 100).toFixed(1)).join(' / ')} cm (≤ 3), real ${r.real}`, r.real && e.every((v) => v >= 0 && v <= 0.03));
+    }
+    const L = b7['rẽ trái'].pose, Rr = b7['rẽ phải'].pose;
+    check(`7b rẽ trái: swingRoll ${L.swingRoll.toFixed(3)} và spineRoll ${L.spineRoll.toFixed(3)} trái dấu, brakeL ${L.brakeL.toFixed(2)} > brakeR ${L.brakeR.toFixed(2)}`, L.swingRoll * L.spineRoll < 0 && L.brakeL > L.brakeR);
+    check(`7b rẽ phải (đối xứng): swingRoll ${Rr.swingRoll.toFixed(3)} và spineRoll ${Rr.spineRoll.toFixed(3)} trái dấu, brakeR ${Rr.brakeR.toFixed(2)} > brakeL ${Rr.brakeL.toFixed(2)}`, Rr.swingRoll * Rr.spineRoll < 0 && Rr.brakeR > Rr.brakeL);
+    await Q.page.evaluate(() => { window.__app.explore.update = window.__exUpd; });   // trả vòng bay thật
+
+    // 7c lệnh vẽ của dù có người treo: 3 lưới (cánh + nhân vật + trang bị) + phản chiếu của cánh, trần 4
+    const c7 = await gliderCalls(Q.page);
+    check(`7c ngày: dù có người treo +${c7.d} lệnh vẽ (≤ 4), ${c7.meshes} lưới (pilotDebug.calls ${c7.dbgCalls}), real ${c7.real}`,
+      c7.real && c7.meshes === c7.dbgCalls && c7.meshes >= 2 && c7.d >= c7.meshes && c7.d <= c7.meshes + 1 && c7.d <= 4);
+
+    // 7f đêm + bão: 30 khung của vòng thật, không lỗi console, nhân vật vẫn thật
+    await Q.page.evaluate(() => { window.__app.dayNight.target = 1; window.__app.dayNight.night = 1; });
+    await setWx(Q.page, 'storm');
+    await frames(Q.page, 30);
+    const f7 = await Q.page.evaluate(() => { const d = window.__app.explore.pilotDebug(); return { real: !!(d && d.real), err: d ? d.handErr : null, night: window.__app.dayNight.night }; });
+    const c7n = await gliderCalls(Q.page);
+    // vòng bay thật chạy tiếp 30 khung nên dù có thể ra ngoài khung phản chiếu: so số lưới với ban ngày, lệnh vẽ trong [lưới, lưới + 1]
+    check(`7f đêm (${f7.night}) + bão 30 khung: real ${f7.real}, tay cách quai ${f7.err && f7.err.map((v) => (v * 100).toFixed(1)).join(' / ')} cm, ${c7n.meshes} lưới (= ngày ${c7.meshes}), lệnh vẽ dù +${c7n.d}`,
+      f7.real && f7.err.every((v) => v >= 0 && v <= 0.03) && c7n.meshes === c7.meshes && c7n.d >= c7n.meshes && c7n.d <= c7n.meshes + 1);
+    check(`console sạch (7a/7b/7c/7f), không cảnh báo người treo (${warnsQ.length})`, Q.errors.length === 0 && warnsQ.length === 0);
+    if (Q.errors.length || warnsQ.length) console.log([...Q.errors, ...warnsQ].join('\n'));
+    await Q.page.close();
+
+    // 7d ?pilot=off: ép hình khối, 1 lệnh vẽ, trang không tải pilot.glb
+    const glbReq = [];
+    const O = await openApp(browser, srv.url + '?explore=glider&pilot=off', { before: (p) => p.on('request', (r) => { if (/pilot\.glb/.test(r.url())) glbReq.push(r.url()); }) });
+    await frames(O.page, 3);
+    const d7 = await gliderCalls(O.page);
+    // "1 lệnh vẽ" của brief = một lưới (hình 'full'); hiệu render còn cộng phản chiếu của cánh nên là 1..2
+    check(`7d ?pilot=off: hình khối (real ${d7.real}, ex-pilot ${d7.pilot}), ${d7.meshes} lưới (= 1), dù +${d7.d} lệnh vẽ (1..2), yêu cầu pilot.glb ${glbReq.length} (= 0)`,
+      !d7.real && !d7.pilot && d7.meshes === 1 && d7.d >= 1 && d7.d <= 2 && glbReq.length === 0);
+    check('console sạch (7d)', O.errors.length === 0);
+    if (O.errors.length) console.log(O.errors.join('\n'));
+    await O.page.close();
+
+    // 7e chặn pilot.glb (route abort): hình khối, đúng một console.warn về người treo, không pageerror
+    const warnsE = [], pageErrE = [];
+    const E = await openApp(browser, srv.url + '?explore=glider', { before: async (p) => {
+      await p.route('**/pilot.glb', (r) => r.abort());
+      pilotWarns(warnsE)(p); p.on('pageerror', (e) => pageErrE.push(String(e)));
+    } });
+    const tE = Date.now();
+    while (!warnsE.length && Date.now() - tE < 240000) await E.page.waitForTimeout(1000);
+    await frames(E.page, 3);   // thêm vài khung: không có cảnh báo thứ hai, không thử nạp lại
+    const e7 = await gliderCalls(E.page);
+    check(`7e chặn pilot.glb: hình khối (real ${e7.real}, ex-pilot ${e7.pilot}), ${e7.meshes} lưới (= 1), dù +${e7.d} lệnh vẽ (1..2), console.warn người treo ${warnsE.length} (= 1: ${warnsE.join(' | ')}), pageerror ${pageErrE.length} (= 0)`,
+      !e7.real && !e7.pilot && e7.meshes === 1 && e7.d >= 1 && e7.d <= 2 && warnsE.length === 1 && pageErrE.length === 0);
+    check('console sạch (7e)', E.errors.length === 0);
+    if (E.errors.length) console.log(E.errors.join('\n'));
+    await E.page.close();
   }
 } catch (e) {
   problems.push('ngoại lệ: ' + e); console.log(e);
