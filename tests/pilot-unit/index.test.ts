@@ -103,7 +103,7 @@ test('dt NaN / 30 / âm và trạng thái cực đoan: mọi quaternion xương 
   __plSetLoader(() => Promise.resolve(fakeSource()));
   const g = exBuildGlider(), s = exCreate();
   exPlaceGlider(g, s, 1 / 60); await tick();
-  for (const dt of [NaN, 30, -1, 1 / 60, Infinity, 0.5]) { s.bank = dt === 30 ? 9 : -9; s.pos.x += 500; s.pos.y += dt === 0.5 ? NaN : 3; exPlaceGlider(g, s, dt, { turn: 1, climb: 0 }); }
+  for (const dt of [NaN, 30, -1, 1 / 60, Infinity, 0.5]) { s.bank = dt === 30 ? 9 : -9; s.pos.x += 500; s.pos.y += dt === 0.5 ? NaN : 3; exPlaceGlider(g, s, dt, { turn: 1, climb: 0, throttle: 0 }); }
   s.pos.y = 300;
   const p = pilotOf(g)!;
   const bad: string[] = [];
@@ -143,4 +143,21 @@ test('userData.plOff (dù người khác trên điện thoại): không gắn', 
   const g = exBuildGlider(), s = exCreate(); g.userData.plOff = true;
   exPlaceGlider(g, s, 1 / 60); await tick(); exPlaceGlider(g, s, 1 / 60);
   assert.equal(pilotOf(g), undefined); assert.equal(plDebug(g), null);
+});
+
+test('dựng rig ném lỗi: một warn, giữ hình full, không thử lại ở khung sau lẫn dù khác, plUpdate không ném', async () => {
+  const src = plSource(fakeScene(), [new THREE.AnimationClip('sit', 1, [])], () => { throw new Error('clone hỏng'); });
+  let n = 0;
+  __plSetLoader(() => { n++; return Promise.resolve(src); });
+  const gs = [exBuildGlider(), exBuildGlider()], s = exCreate();
+  const oldWarn = console.warn, warns: unknown[][] = [];
+  console.warn = (...a: unknown[]) => { warns.push(a); };
+  try {
+    for (const g of gs) exPlaceGlider(g, s, 1 / 60);
+    await tick();
+    for (let i = 0; i < 4; i++) for (const g of gs) assert.doesNotThrow(() => exPlaceGlider(g, s, 1 / 60));
+  } finally { console.warn = oldWarn; }
+  assert.equal(warns.length, 1, 'đúng một warn');
+  assert.equal(n, 1, 'bộ nạp một lần');
+  for (const g of gs) { assert.equal(wingGeo(g), exGliderGeometry('full')); assert.equal(pilotOf(g), undefined); assert.equal(plDebug(g)!.real, false); plDetach(g); }
 });

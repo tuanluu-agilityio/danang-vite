@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
 import { plBonesMissing } from './bones';
+import { plGearWarmObject } from './gear';
 
 export interface PlSource {
   scene: THREE.Object3D;                          // cảnh gốc (không thêm vào scene; chỉ để sao chép)
@@ -44,16 +45,24 @@ async function plWarm(o: THREE.Object3D): Promise<void> {
 }
 
 let cache: Promise<PlSource | null> | null = null;
+/* Chỉ dùng trong unit test: thay bước tải thô (null = tải thật) và quên kết quả nhớ đệm */
+let raw: (() => Promise<{ scene: THREE.Object3D; animations: THREE.AnimationClip[]; clone: PlSource['clone'] }>) | null = null;
+export function __plSetRawLoad(fn: typeof raw): void { raw = fn; cache = null; }
 
 /* Nạp một lần (nhớ đệm). Không bao giờ ném / từ chối: lỗi hoặc quá giờ → warn một lần, null */
 export function plLoad(): Promise<PlSource | null> {
   if (cache) return cache;
   const P = CONFIG.explore.pilot;
   const work = (async (): Promise<PlSource | null> => {
-    const [{ GLTFLoader }, SU] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/utils/SkeletonUtils.js')]);
-    const gltf = await new GLTFLoader().loadAsync(import.meta.env.BASE_URL + P.model);
-    const src = plSource(gltf.scene, gltf.animations, SU.clone);
-    await plWarm(src.scene);   // nguồn chỉ "sẵn sàng" sau khi shader skinning đã biên dịch: lần hiện đầu không khựng
+    let gltf: { scene: THREE.Object3D; animations: THREE.AnimationClip[] }, clone: PlSource['clone'];
+    if (raw) { const r = await raw(); gltf = r; clone = r.clone; }
+    else {
+      const [{ GLTFLoader }, SU] = await Promise.all([import('three/addons/loaders/GLTFLoader.js'), import('three/addons/utils/SkeletonUtils.js')]);
+      gltf = await new GLTFLoader().loadAsync(import.meta.env.BASE_URL + P.model); clone = SU.clone;
+    }
+    const src = plSource(gltf.scene, gltf.animations, clone);
+    const gw = plGearWarmObject();
+    try { await Promise.all([plWarm(src.scene), plWarm(gw.object)]); } finally { gw.dispose(); }   // cả shader trang bị (lần gắn đầu không biên dịch thêm); nguồn chỉ "sẵn sàng" sau khi shader skinning đã biên dịch: lần hiện đầu không khựng
     return src;
   })();
   let timer = 0;

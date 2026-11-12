@@ -15,8 +15,8 @@ export const PL_GEAR_BONES = ['wing', 'hang', 'pelvis', 'spine', 'handL', 'handR
 /* Đoạn đỉnh của một dây trong geometry: kind 'line' (dây treo) hoặc 'brake' (dây phanh chính quai → điểm tụ); ba / bb = xương hai đầu; geometry.userData.spans */
 export interface PlGearSpan { kind: 'line' | 'brake'; ba: number; bb: number; start: number; count: number }
 export interface PlGearRest {
-  hang: number[]; pelvis: number[]; spine: number[]; handL: number[]; handR: number[]; thighL: number[]; thighR: number[];   // vị trí nghỉ trong hệ group dù, m (hang: giữa hai carabiner; spine: Spine2)
-  kneeL?: number[]; kneeR?: number[];   // m — gối (đầu xương cẳng chân); thiếu thì đùi + 0,4 m về trước
+  hang: number[]; pelvis: number[]; spine: number[]; handL: number[]; handR: number[]; thighL: number[]; thighR: number[];   // vị trí nghỉ trong hệ group dù, m (hang: giữa hai carabiner ở exHangY, KHÁC xương `hang` của trang bị là đỉnh riser; spine: Spine2)
+  kneeL?: number[]; kneeR?: number[];   // m — gối (đầu xương cẳng chân); thiếu thì đùi + CONFIG.explore.pilot.gear.thigh.kneeFb về trước
   gripL?: number[]; gripR?: number[];   // m — điểm nắm quai phanh (giữa nắm tay); thiếu thì lấy vị trí xương bàn tay
   barL?: number[]; barR?: number[];     // hướng đơn vị của thanh quai phanh (ngang lòng bàn tay); thiếu thì +Z
   fingL?: number[]; fingR?: number[];   // hướng đơn vị từ cổ tay ra ngón; thiếu thì +Y
@@ -27,6 +27,8 @@ const BI = (n: typeof PL_GEAR_BONES[number]): number => PL_GEAR_BONES.indexOf(n)
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 const VA = (a: number[]) => new THREE.Vector3(a[0], a[1], a[2]);
 const COL = (hex: string): number[] => { const c = new THREE.Color(hex); return [c.r, c.g, c.b]; };
+/* Số đoạn chia hình học (độ mịn, không phải số đo thật): (vĩ, kinh) từng khối đệm, đoạn của carabiner và vòng đai đùi */
+const SEG = { seat: [6, 12], side: [5, 10], reserve: [5, 10], handle: [3, 6], lumbar: [5, 10], back: [8, 14], buckle: [3, 6], carab: 12, thigh: 14 };
 const spow = (v: number, e: number): number => Math.sign(v) * Math.pow(Math.abs(v), e);
 
 /* Bộ gom đỉnh không chỉ số: mỗi tam giác có màu và xương theo đỉnh; pháp tuyến phẳng hoặc truyền vào */
@@ -146,54 +148,54 @@ export function plGearGeometry(rest: PlGearRest): THREE.BufferGeometry {
 
   /* Ghế ngồi (nghiêng theo đùi), hai má ghế, hộp dù dự phòng dưới ghế: gắn hông */
   const st = GC.seat, sd = GC.side, rv = GC.reserve;
-  b.blob(G(st.c), rot(st.tilt), st.h, E, 6, 12, bone.pel, harness);
-  for (const s of [-1, 1]) b.blob(G([sd.c[0], sd.c[1], s * sd.c[2]]), rot(st.tilt), sd.h, E, 5, 10, bone.pel, harness);
+  b.blob(G(st.c), rot(st.tilt), st.h, E, SEG.seat[0], SEG.seat[1], bone.pel, harness);
+  for (const s of [-1, 1]) b.blob(G([sd.c[0], sd.c[1], s * sd.c[2]]), rot(st.tilt), sd.h, E, SEG.side[0], SEG.side[1], bone.pel, harness);
   const rc = G(rv.c);
-  b.blob(rc, rot(st.tilt), rv.h, E, 5, 10, bone.pel, pack);
+  b.blob(rc, rot(st.tilt), rv.h, E, SEG.reserve[0], SEG.reserve[1], bone.pel, pack);
   /* quai kéo dù dự phòng: tay nắm đỏ ở mép phải hộp, dải đỏ nối vào hộp */
-  const hp = V(rc.x + rv.handle[0], rc.y, rv.handle[1]);
-  b.band([V(rc.x - rv.h[0] * 0.3, rc.y + rv.h[1] * 0.5, rv.h[2] + 0.004), V(hp.x - 0.02, hp.y, rv.h[2] + 0.006), hp], [Z, Z, Z], [bone.pel, bone.pel, bone.pel], 0.025, 0.008, red);
-  b.blob(hp, [X, Y, Z], rv.handleH, 0.6, 3, 6, bone.pel, red);
+  const hp = V(rc.x + rv.handle[0], rc.y, rv.handle[1]), hd = GC.handle;
+  b.band([V(rc.x - rv.h[0] * hd.back, rc.y + rv.h[1] * hd.up, rv.h[2] + hd.z0), V(hp.x - hd.inX, hp.y, rv.h[2] + hd.z1), hp], [Z, Z, Z], [bone.pel, bone.pel, bone.pel], hd.w, hd.t, red);
+  b.blob(hp, [X, Y, Z], rv.handleH, hd.round, SEG.handle[0], SEG.handle[1], bone.pel, red);
 
   /* Đệm thắt lưng (hông) và ba lô / tấm bảo vệ lưng (xương pack, lắc trễ nhẹ) theo hệ thân */
   const ax = [ua, fb, Z];
-  b.blob(T(GC.lumbar.a, GC.lumbar.b, 0), ax, GC.lumbar.h, E, 5, 10, bone.pel, harness);
-  b.blob(T(GC.back.a, GC.back.b, 0), ax, GC.back.h, E, 8, 14, bone.pack, pack);
+  b.blob(T(GC.lumbar.a, GC.lumbar.b, 0), ax, GC.lumbar.h, E, SEG.lumbar[0], SEG.lumbar[1], bone.pel, harness);
+  b.blob(T(GC.back.a, GC.back.b, 0), ax, GC.back.h, E, SEG.back[0], SEG.back[1], bone.pack, pack);
 
   /* Đai vai: sau lưng → đỉnh vai → ngực → bụng (Spine2) → carabiner (hông); carabiner, riser, dây treo */
-  const W = GC.strapW, Tk = GC.strapT, sp = GC.shoulder;
+  const W = GC.strapW, Tk = GC.strapT, sp = GC.shoulder, ca = GC.carabAttach;
   for (const s of [-1, 1]) {
     const c = V(H.x, H.y, s * PG.hang.half);
     const pts = sp.map((q) => T(q[0], q[1], s * q[2]));
     const outs = sp.map((q, i) => (i === 1 ? ua.clone() : fb.clone().multiplyScalar(Math.sign(q[1]) || 1)));
-    pts.push(c.clone().add(V(-0.01, GC.carab.h * 0.9, 0))); outs.push(X.clone());
+    pts.push(c.clone().add(V(ca.x, GC.carab.h * ca.shoulder, 0))); outs.push(X.clone());
     b.band(pts, outs, pts.map((_, i) => (i < sp.length - 1 ? bone.spine : bone.pel)), W, Tk, strap);
     /* đai hông: từ đáy carabiner vòng ra má ghế */
-    b.band([c.clone().add(V(-0.01, -GC.carab.h * 0.9, 0)), G([sd.c[0] + 0.04, sd.c[1] + sd.h[1] * 0.6, s * (sd.c[2] + sd.h[2])])], [X, V(0, 0, s)], [bone.pel, bone.pel], W, Tk, strap);
+    b.band([c.clone().add(V(ca.x, -GC.carab.h * ca.shoulder, 0)), G([sd.c[0] + GC.sideAnchor.belt[0], sd.c[1] + sd.h[1] * GC.sideAnchor.belt[1], s * (sd.c[2] + sd.h[2])])], [X, V(0, 0, s)], [bone.pel, bone.pel], W, Tk, strap);
     /* carabiner: vòng bầu dục đứng trong mặt phẳng X-Y */
-    b.ring(c, Z, Y, GC.carab.h, GC.carab.w, GC.carab.bar, 12, bone.pel, metal);
+    b.ring(c, Z, Y, GC.carab.h, GC.carab.w, GC.carab.bar, SEG.carab, bone.pel, metal);
     /* riser: hai nhánh đai dẹt (trước / sau) từ đỉnh carabiner lên đỉnh riser (xương hang, tâm lắc) */
     const top = V(c.x, c.y + PG.riser, c.z);
-    for (const dx of [-1, 1]) b.band([c.clone().add(V(dx * 0.008, GC.carab.h * 0.85, 0)), top.clone().add(V(dx * GC.riserSplit, -0.02, 0))], [Z, Z], [bone.pel, bone.hang], 0.022, 0.004, strap);
+    for (const dx of [-1, 1]) b.band([c.clone().add(V(dx * ca.riserDx, GC.carab.h * ca.riser, 0)), top.clone().add(V(dx * GC.riserSplit, -ca.riserDrop, 0))], [Z, Z], [bone.pel, bone.hang], GC.riserStrap[0], GC.riserStrap[1], strap);
     /* dây treo: lineCount dây từ đỉnh riser lên cánh */
     for (const t of exLineTops()) if (t.side === s) b.span('line', bone.hang, bone.wing, () => b.prism(top, V(t.x, t.y, t.z), bone.hang, bone.wing, line, GC.lineR * 2, GC.lineR * 2));
   }
   /* đai ngực nối hai đai vai + khóa giữa */
-  const cy = GC.chestY, sc = sp[3][2], chestB = (sp[2][1] + sp[3][1]) / 2 + Tk;
-  for (const s of [-1, 1]) b.band([T(cy, chestB, s * sc), T(cy, chestB + 0.008, s * 0.03)], [fb, fb], [bone.spine, bone.spine], W * 0.8, Tk, strap);
-  b.blob(T(cy, chestB + 0.012, 0), [fb, ua, Z], GC.buckle, 0.5, 3, 6, bone.spine, metal);
+  const cy = GC.chestY, cs = GC.chest, sc = sp[3][2], chestB = (sp[2][1] + sp[3][1]) / 2 + Tk;
+  for (const s of [-1, 1]) b.band([T(cy, chestB, s * sc), T(cy, chestB + cs.inset, s * cs.midZ)], [fb, fb], [bone.spine, bone.spine], W * cs.wMul, Tk, strap);
+  b.blob(T(cy, chestB + cs.buckleUp, 0), [fb, ua, Z], GC.buckle, GC.buckleRound, SEG.buckle[0], SEG.buckle[1], bone.spine, metal);
 
   /* Vòng đai đùi quanh từng đùi (vuông góc trục đùi) + khóa phía trên + đai nối lên má ghế */
   for (const s of [-1, 1]) {
-    const Tg = VA(s < 0 ? rest.thighL : rest.thighR), kr = s < 0 ? rest.kneeL : rest.kneeR, Kn = kr ? VA(kr) : Tg.clone().add(V(0.4, 0, 0));
+    const Tg = VA(s < 0 ? rest.thighL : rest.thighR), kr = s < 0 ? rest.kneeL : rest.kneeR, Kn = kr ? VA(kr) : Tg.clone().add(V(GC.thigh.kneeFb, 0, 0));
     const bt = BI(s < 0 ? 'thighL' : 'thighR');
     const d = Kn.clone().sub(Tg).normalize(), cc = Tg.clone().lerp(Kn, GC.thigh.at);
     const e1 = Z.clone().cross(d).normalize(), e2 = d.clone().cross(e1).normalize();   // e1 ≈ lên, e2 ≈ ngang
     const pts: THREE.Vector3[] = [], outs: THREE.Vector3[] = [];
-    for (let i = 0; i < 14; i++) { const a = 2 * Math.PI * i / 14, o = e1.clone().multiplyScalar(Math.cos(a)).addScaledVector(e2, Math.sin(a)); pts.push(cc.clone().addScaledVector(o, GC.thigh.r)); outs.push(o); }
+    for (let i = 0; i < SEG.thigh; i++) { const a = 2 * Math.PI * i / SEG.thigh, o = e1.clone().multiplyScalar(Math.cos(a)).addScaledVector(e2, Math.sin(a)); pts.push(cc.clone().addScaledVector(o, GC.thigh.r)); outs.push(o); }
     b.band(pts, outs, pts.map(() => bt), W, Tk, strap, true);
-    b.blob(cc.clone().addScaledVector(e1, GC.thigh.r + GC.buckle[0]), [e1, d, e2], GC.buckle, 0.5, 3, 6, bt, metal);
-    b.band([cc.clone().addScaledVector(e2, s * GC.thigh.r).addScaledVector(d, -0.02), G([sd.c[0] + sd.h[0] * 0.6, sd.c[1] + sd.h[1] * 0.3, s * (sd.c[2] + sd.h[2])])], [e2.clone().multiplyScalar(s), V(0, 0, s)], [bt, bone.pel], W, Tk, strap);
+    b.blob(cc.clone().addScaledVector(e1, GC.thigh.r + GC.buckle[0]), [e1, d, e2], GC.buckle, GC.buckleRound, SEG.buckle[0], SEG.buckle[1], bt, metal);
+    b.band([cc.clone().addScaledVector(e2, s * GC.thigh.r).addScaledVector(d, -GC.thigh.link), G([sd.c[0] + sd.h[0] * GC.sideAnchor.thigh[0], sd.c[1] + sd.h[1] * GC.sideAnchor.thigh[1], s * (sd.c[2] + sd.h[2])])], [e2.clone().multiplyScalar(s), V(0, 0, s)], [bt, bone.pel], W, Tk, strap);
   }
 
   /* Quai phanh ×2 gắn xương bàn tay (thanh ngang lòng bàn tay, trong nắm tay); dây phanh chính từ quai lên điểm tụ (gắn cánh) rồi chia ba nhánh lên mép sau cánh */
@@ -205,8 +207,8 @@ export function plGearGeometry(rest: PlGearRest): THREE.BufferGeometry {
     const tops = exBrakeTops().filter((t) => t.side === s);
     const tx = tops.reduce((a, t) => a + t.x, 0) / tops.length, ty = tops.reduce((a, t) => a + t.y, 0) / tops.length, tz = tops.reduce((a, t) => a + t.z, 0) / tops.length;
     const join = V(c.x + (tx - c.x) * GC.brakeJoin, c.y + (ty - c.y) * GC.brakeJoin, c.z + (tz - c.z) * GC.brakeJoin);
-    b.span('brake', bh, bone.wing, () => b.prism(c, join, bh, bone.wing, line, GC.lineR * 1.5, GC.lineR * 1.5));
-    for (const t of tops) b.prism(join, V(t.x, t.y, t.z), bone.wing, bone.wing, line, GC.lineR * 1.5, GC.lineR * 1.5);
+    b.span('brake', bh, bone.wing, () => b.prism(c, join, bh, bone.wing, line, GC.lineR * GC.brakeMul, GC.lineR * GC.brakeMul));
+    for (const t of tops) b.prism(join, V(t.x, t.y, t.z), bone.wing, bone.wing, line, GC.lineR * GC.brakeMul, GC.lineR * GC.brakeMul);
   }
   return b.geometry();
 }
@@ -215,4 +217,22 @@ export function plGearGeometry(rest: PlGearRest): THREE.BufferGeometry {
 let plGearMat: THREE.MeshStandardMaterial | null = null;
 export function plGearMaterial(): THREE.MeshStandardMaterial {
   return plGearMat ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0.1, side: THREE.DoubleSide });
+}
+
+/* Vật mẫu để làm nóng shader trang bị (load.ts): SkinnedMesh một tam giác, vertexColors + khung xương cùng số xương, dùng đúng plGearMaterial() nên chương trình biên dịch trùng chương trình thật.
+   Gọi xong thì dispose geometry và skeleton (vật liệu dùng chung, không dispose). Lớp 1 như trang bị thật */
+export function plGearWarmObject(): { object: THREE.Object3D; dispose: () => void } {
+  const g = new THREE.BufferGeometry(), n = PL_GEAR_BONES.length;
+  g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1, 0, 0, 1], 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 1, 1, 1, 1, 1, 1, 1], 3));
+  g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(new Uint16Array(12), 4));
+  g.setAttribute('skinWeight', new THREE.Float32BufferAttribute([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 4));
+  const m = new THREE.SkinnedMesh(g, plGearMaterial());
+  const bones = Array.from({ length: n }, () => new THREE.Bone());
+  for (const b of bones) m.add(b);
+  const sk = new THREE.Skeleton(bones);
+  m.bind(sk, new THREE.Matrix4());
+  m.frustumCulled = false; m.castShadow = false; m.receiveShadow = false; m.layers.set(1);
+  return { object: m, dispose: () => { g.dispose(); sk.dispose(); } };
 }

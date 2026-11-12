@@ -40,10 +40,24 @@ function plWind(): number {
   return v > 0 ? (v < 1 ? v : 1) : 0;
 }
 
+/* Dựng rig lỗi (mô hình hỏng kiểu gì đó): warn một lần, coi nguồn không dùng được (mọi dù, mọi khung sau giữ hình khối, không thử lại), không ném */
+function fail(e: unknown): void {
+  if (src) { console.warn('Dù lượn: dựng người treo lỗi, dùng hình khối', e); src = null; }
+}
+
 function attach(glider: THREE.Group, e: PlEntry, s: PlSource): void {
-  e.rig = new PlRig(s, e.seed);
-  glider.add(e.rig.group);
-  (glider.children[0] as THREE.Mesh).geometry = exGliderGeometry('canopy');
+  let rig: PlRig | null = null;
+  try {
+    rig = new PlRig(s, e.seed);
+    glider.add(rig.group);
+    (glider.children[0] as THREE.Mesh).geometry = exGliderGeometry('canopy');
+  } catch (err) {
+    if (rig) { glider.remove(rig.group); try { rig.dispose(); } catch { /* đã lỗi rồi */ } }
+    (glider.children[0] as THREE.Mesh).geometry = exGliderGeometry('full');
+    fail(err);
+    return;
+  }
+  e.rig = rig;
   e.track.has = false;
 }
 
@@ -61,9 +75,16 @@ export function plUpdate(glider: THREE.Group, s: GliderState, dt: number, turnIn
     const so = need();
     if (!so || !glider.visible) return;
     attach(glider, e, so);
+    if (!e.rig) return;
   }
-  plSignals(e.sig, e.track, s.pos.x, s.pos.y, s.pos.z, s.bank, dt, plWind(), turnInput);
-  e.rig!.update(e.sig, dt);
+  try {
+    plSignals(e.sig, e.track, s.pos.x, s.pos.y, s.pos.z, s.bank, dt, plWind(), turnInput);
+    e.rig!.update(e.sig, dt);
+  } catch (err) {
+    /* lỗi lúc diễn: trả hình khối cho dù này, không ném về vòng vẽ */
+    fail(err);
+    plDetach(glider);
+  }
 }
 
 /* Dù nhảy vị trí / đổi chủ: lò xo về nghỉ, quên mẫu vị trí (không sinh gia tốc giả) */
