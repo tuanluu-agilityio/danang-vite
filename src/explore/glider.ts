@@ -150,15 +150,17 @@ function exWingParts(): THREE.BufferGeometry[] {
   return parts;
 }
 
-/* Điểm bám dây treo trên cánh (hệ group dù, đã cộng originAt): G.lineCount điểm mỗi bên, so le trước / sau như dây của hình 'full' */
+/* Điểm bám dây thứ i trên cánh ở bên side, trước khi cộng originAt (công thức duy nhất cho dây của hình 'full' lẫn exLineTops): so le trước / sau */
+function exLineTop(i: number, side: -1 | 1): THREE.Vector3 {
+  const half = G.span / 2, t = 0.12 + 0.75 * i / Math.max(1, G.lineCount - 1), x = (i % 2 ? 0.5 : -0.5) * G.chord * 0.6;
+  return new THREE.Vector3(x, -G.arch * half * t * t + x * TILT, side * t * half);
+}
+
+/* Điểm bám dây treo trên cánh (hệ group dù, đã cộng originAt): G.lineCount điểm mỗi bên */
 export function exLineTops(): { x: number; y: number; z: number; side: -1 | 1 }[] {
-  const out: { x: number; y: number; z: number; side: -1 | 1 }[] = [], half = G.span / 2;
+  const out: { x: number; y: number; z: number; side: -1 | 1 }[] = [];
   for (const side of [-1, 1] as const) {
-    for (let i = 0; i < G.lineCount; i++) {
-      const t = 0.12 + 0.75 * i / Math.max(1, G.lineCount - 1);
-      const x = (i % 2 ? 0.5 : -0.5) * G.chord * 0.6;
-      out.push({ x, y: -G.arch * half * t * t + x * TILT + G.lines * G.originAt, z: side * t * half, side });
-    }
+    for (let i = 0; i < G.lineCount; i++) { const p = exLineTop(i, side); out.push({ x: p.x, y: p.y + G.lines * G.originAt, z: p.z, side }); }
   }
   return out;
 }
@@ -187,13 +189,8 @@ export function exGliderGeometry(kind: 'full' | 'canopy'): THREE.BufferGeometry 
     /* Người treo, cách cánh G.lines mét */
     exHuman(parts);
     /* Dây: G.lineCount dây mỗi bên, từ cánh xuống vai */
-    const half = G.span / 2;
-    for (const side of [-1, 1]) {
-      for (let i = 0; i < G.lineCount; i++) {
-        const t = 0.12 + 0.75 * i / Math.max(1, G.lineCount - 1);
-        const x = (i % 2 ? 0.5 : -0.5) * G.chord * 0.6;
-        parts.push(exLine(new THREE.Vector3(x, -G.arch * half * t * t + x * TILT, side * t * half), new THREE.Vector3(0, -G.lines, side * 0.2)));
-      }
+    for (const side of [-1, 1] as const) {
+      for (let i = 0; i < G.lineCount; i++) parts.push(exLine(exLineTop(i, side), new THREE.Vector3(0, -G.lines, side * 0.2)));
     }
   }
   const geo = mergeGeometries(parts)!;

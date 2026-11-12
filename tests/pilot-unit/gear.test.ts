@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG } from '../../src/config.ts';
 import { exGliderGeometry, exLineTops, exBrakeTops, exHangY } from '../../src/explore/glider.ts';
-import { PL_GEAR_BONES, plGearGeometry, plGearMaterial, type PlGearRest } from '../../src/explore/pilot/gear.ts';
+import { PL_GEAR_BONES, plGearGeometry, plGearMaterial, type PlGearRest, type PlGearSpan } from '../../src/explore/pilot/gear.ts';
 
 const P = CONFIG.explore.pilot, GL = CONFIG.explore.glider;
 const BONE = (n: typeof PL_GEAR_BONES[number]) => PL_GEAR_BONES.indexOf(n);
@@ -42,6 +42,19 @@ test('gắn xương: wing, hang, handL, handR, pack đều có đỉnh; dây hai
   const cnt = new Array(PL_GEAR_BONES.length).fill(0);
   for (let i = 0; i < n; i++) cnt[si.getX(i)]++;
   for (const b of ['wing', 'hang', 'handL', 'handR', 'pelvis', 'spine', 'pack', 'thighL', 'thighR'] as const) assert.ok(cnt[BONE(b)] > 0, `không có đỉnh ${b}`);
+  /* từng dây treo: có đỉnh cả ở hang lẫn wing; từng nhánh dây phanh: có đỉnh ở một xương tay lẫn wing */
+  const spans = g.userData.spans as PlGearSpan[];
+  assert.equal(spans.filter(s => s.kind === 'line').length, 2 * GL.lineCount, 'đủ dây treo');
+  assert.equal(spans.filter(s => s.kind === 'brake').length, exBrakeTops().length, 'đủ nhánh dây phanh');
+  for (const s of spans) {
+    const bones = new Set<number>();
+    for (let i = s.start; i < s.start + s.count; i++) bones.add(si.getX(i));
+    assert.ok(s.count > 0, `${s.kind} rỗng`);
+    assert.ok(bones.has(BONE('wing')), `${s.kind} thiếu đỉnh wing`);
+    if (s.kind === 'line') assert.ok(bones.has(BONE('hang')), 'dây treo thiếu hang');
+    else assert.ok(bones.has(BONE('handL')) || bones.has(BONE('handR')), 'dây phanh thiếu xương tay');
+    assert.deepEqual([...bones].sort(), [s.ba, s.bb].sort(), `${s.kind} chỉ đúng hai xương`);
+  }
 });
 
 test('đầu dây trên cánh trùng điểm bám của exLineTops ∪ exBrakeTops', () => {
@@ -98,6 +111,7 @@ test('exGliderGeometry: canopy không có gì thấp hơn exHangY + 1; full th�
   assert.ok(bbox(f).min.y < exHangY, `full thấp nhất ${bbox(f).min.y}`);
   assert.equal(exGliderGeometry('full'), f, 'dựng một lần');
   assert.equal(exGliderGeometry('canopy'), c);
+  assert.equal(f.getAttribute('position').count, 12192, 'full: số đỉnh không đổi');
   /* cánh của canopy giống hệt phần cánh đầu của full (cùng đỉnh, cùng thứ tự) */
   const cp = c.getAttribute('position'), fp = f.getAttribute('position');
   for (let i = 0; i < cp.count; i++) assert.ok(cp.getX(i) === fp.getX(i) && cp.getY(i) === fp.getY(i) && cp.getZ(i) === fp.getZ(i), `đỉnh ${i}`);
