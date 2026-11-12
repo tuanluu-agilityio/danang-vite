@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01J6WKVaMiAdD4kFCQ6h2Yny",
+  "agent_id": "a191dfe545299f5af",
+  "task_description": "Review nhánh đám đông",
+  "token_usage": {
+    "input_tokens": 100,
+    "cache_creation_tokens": 206615,
+    "cache_read_tokens": 7379037,
+    "output_tokens": 49464,
+    "api_call_count": 50
+  },
+  "started_at": "2026-11-12T12:20:42.4026203+07:00",
+  "completed_at": "2026-11-12T12:34:20.7516843+07:00"
+}
