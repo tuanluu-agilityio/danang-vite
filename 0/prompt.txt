@@ -1,0 +1,330 @@
+<pasted_content id="7503">
+# TASK: UPGRADE PARAGLIDING HUMAN CHARACTER TO PUBG-INSPIRED REALISTIC 3D QUALITY
+
+## 1. PROJECT CONTEXT
+
+Existing project:
+https://danangbridges.netlify.app/
+
+This is an existing Three.js-based 3D interactive experience showcasing Da Nang bridges and the Han River.
+
+The project already has a functional paragliding mode. However, the current human character attached to the paraglider looks stiff, artificial, mannequin-like, and lacks realistic human anatomy and movement.
+
+Your mission is to upgrade the existing paragliding character into a highly realistic, PUBG-inspired human character.
+
+**IMPORTANT: This is an enhancement of an existing feature, NOT a new project.**
+
+Use the Superpowers workflow to:
+1. Inspect the existing codebase and architecture.
+2. Identify the current paragliding implementation.
+3. Analyze the existing character model, rigging, animation, paraglider, camera and physics.
+4. Create a detailed implementation plan.
+5. Implement the upgrade.
+6. Test and optimize the result.
+
+Do not stop after producing a specification. Continue through implementation and validation wherever possible without unnecessary human approval requests.
+
+---
+
+## 2. VISUAL DIRECTION — PUBG-INSPIRED REALISM
+
+Use PUBG's realistic military-survival character aesthetic as the primary visual reference.
+
+The result should resemble a high-quality human character from a modern realistic 3D survival game.
+
+Do NOT create:
+- Cartoon characters.
+- Low-poly characters.
+- Roblox-style characters.
+- Mannequin-like bodies.
+- Oversized heads or unrealistic proportions.
+- Simplified cylindrical arms and legs.
+
+### Human anatomy
+
+The character must have:
+- Realistic adult human body proportions.
+- Anatomically believable shoulders, chest, waist and hips.
+- Natural elbow and knee joints.
+- Realistic hands with individual fingers.
+- Properly modeled feet and footwear.
+- Natural neck and head proportions.
+- Realistic clothing folds and fabric thickness.
+
+The character must look like a real human wearing professional paragliding equipment.
+
+### Character appearance
+
+Preferred appearance:
+- Adult male character.
+- Realistic tactical outdoor clothing.
+- Dark olive, charcoal, black and muted military colors.
+- Detailed tactical gloves.
+- Realistic boots.
+- Outdoor jacket and functional trousers.
+- Helmet with realistic surface materials.
+- Professional paragliding harness.
+- Detailed straps, buckles and attachment points.
+- Realistic backpack and equipment.
+
+Avoid excessive military weapons or aggressive combat accessories. This is a scenic paragliding experience, not a combat game.
+
+The character should look like a PUBG-quality outdoor survival character adapted for recreational paragliding.
+
+Do not copy PUBG's proprietary characters, logos, textures or assets. Create an original character inspired by its visual quality.
+
+---
+
+## 3. CHARACTER RIGGING AND ANIMATION
+
+This is the most important part of the upgrade.
+
+A realistic static model is insufficient.
+
+The character must behave like a real person suspended underneath a paraglider.
+
+### Required animation behavior
+
+**A. Default flying pose**
+- Natural seated/suspended posture.
+- Slightly bent knees.
+- Relaxed but believable arms.
+- Hands naturally holding the paraglider brake toggles.
+- Feet positioned naturally.
+- Subtle body movement caused by wind and flight.
+
+**B. Wind reaction**
+- Torso reacts subtly to wind.
+- Legs move naturally with air resistance.
+- Clothing and backpack exhibit secondary movement.
+- Harness straps remain attached to the character.
+- Small movements should be continuous and organic.
+
+**C. Turning**
+When the paraglider turns left or right:
+- The character's torso leans naturally.
+- Shoulders rotate with the body.
+- Legs follow the turning momentum.
+- Arms react naturally.
+- The entire body should not rotate like a rigid object.
+
+**D. Acceleration and deceleration**
+- Body leans slightly according to acceleration.
+- Legs react to changes in speed.
+- Harness and clothing respond to movement.
+- Avoid exaggerated animation.
+
+**E. Camera interaction**
+The character must remain visually convincing from different camera angles.
+
+Avoid visible animation glitches, clipping, disconnected limbs or unnatural joint rotations.
+
+---
+
+## 4. PARAGLIDER AND EQUIPMENT INTEGRATION
+
+The character must be physically integrated with the existing paraglider.
+
+Requirements:
+- Correct attachment between harness and paraglider suspension lines.
+- Suspension lines must connect to believable attachment points.
+- Harness must fit naturally around the character's body.
+- Backpack must remain attached to the character.
+- Brake handles must align with the character's hands.
+- Equipment must follow the character's movement.
+
+The entire system should look like one coherent physical setup.
+
+Do not simply position a human model beneath the canopy without realistic attachment points.
+
+---
+
+## 5. TECHNICAL IMPLEMENTATION
+
+The existing project uses Three.js.
+
+Preserve the existing technology stack and architecture.
+
+Preferred implementation:
+
+- Three.js.
+- GLTF/GLB animated character models.
+- SkinnedMesh and Skeleton.
+- AnimationMixer and AnimationAction.
+- Physically Based Rendering (PBR).
+- Realistic material maps.
+- Proper shadow and lighting integration.
+
+If a suitable rigged character model is needed, evaluate legitimate sources of production-quality assets.
+
+Possible sources:
+- Sketchfab (check commercial and redistribution licenses).
+- Mixamo (for compatible rigging and animations).
+- Ready Player Me (only if visual quality meets the target).
+- Original custom GLB assets.
+
+Do not assume external assets are already available.
+
+If external assets cannot be downloaded or integrated automatically, create a clear asset acquisition specification and implement the best available solution without pretending that placeholder geometry is production-ready.
+
+### Animation architecture
+
+Create a modular character animation controller.
+
+Suggested responsibilities:
+
+- CharacterLoader: Load and initialize the GLB character.
+- CharacterAnimator: Manage animation states.
+- CharacterRigController: Control bones and body posture.
+- FlightPoseController: Handle the default suspended flying pose.
+- FlightReactionController: Handle wind, turning and acceleration reactions.
+- EquipmentController: Synchronize harness, straps and equipment.
+
+Adapt these names to the existing architecture rather than unnecessarily creating duplicate systems.
+
+Use delta time for frame-rate-independent animation.
+
+Avoid excessive per-frame object allocation.
+
+---
+
+## 6. REALISM AND VISUAL QUALITY
+
+Target visual quality: modern realistic 3D survival game.
+
+Pay attention to:
+
+- PBR material quality.
+- Realistic roughness and metallic properties.
+- Natural skin and clothing appearance.
+- Fabric folds.
+- Equipment details.
+- Contact shadows.
+- Ambient occlusion where appropriate.
+- Correct lighting response.
+- Natural body silhouette.
+
+The character must look convincing when viewed:
+- From behind.
+- From the side.
+- From the front.
+- From a distant third-person camera.
+- From a closer inspection camera.
+
+Do not sacrifice the performance of the existing Da Nang 3D environment to achieve character quality.
+
+---
+
+## 7. PERFORMANCE REQUIREMENTS
+
+The project is a browser-based Three.js experience.
+
+Maintain smooth performance on modern desktop browsers.
+
+Requirements:
+- Optimize GLB model size.
+- Use compressed textures where appropriate.
+- Avoid unnecessary skeleton complexity.
+- Reuse materials.
+- Dispose of resources correctly.
+- Avoid memory leaks when switching camera modes.
+- Ensure character animation does not negatively affect the existing scene.
+- Provide sensible quality fallback options.
+
+Target smooth rendering at 60 FPS on reasonably capable desktop hardware, without treating this as a guarantee across all devices.
+
+---
+
+## 8. PRESERVE EXISTING FUNCTIONALITY
+
+This requirement is critical.
+
+Do not break or redesign:
+- Existing Da Nang bridge models.
+- Existing river and environmental rendering.
+- Existing paragliding flight controls.
+- Existing camera controls.
+- Existing weather system.
+- Existing rain and storm modes.
+- Existing sound effects.
+- Existing navigation and UI.
+- Existing day/night transitions.
+- Existing performance monitoring.
+
+The new character must integrate into the current paragliding mode.
+
+Do not replace the entire application architecture.
+
+Do not introduce unnecessary dependencies.
+
+---
+
+## 9. ACCEPTANCE CRITERIA
+
+The implementation is complete only when:
+
+1. The existing paragliding mode still works.
+2. The new character has believable human proportions.
+3. The character no longer looks like a mannequin.
+4. The flying pose looks natural.
+5. Arms and legs move organically.
+6. Turning produces believable body reactions.
+7. Harness and suspension lines are correctly integrated.
+8. Character materials look realistic.
+9. No obvious body clipping or broken joints.
+10. The character works with the existing camera system.
+11. The character works with existing weather conditions, including rain.
+12. Performance remains acceptable.
+
+---
+
+## 10. SUPERPOWERS EXECUTION INSTRUCTIONS
+
+Use Superpowers skills and workflows as appropriate.
+
+Recommended sequence:
+
+1. Explore the existing codebase.
+2. Identify the paragliding entry points and dependencies.
+3. Analyze the current character implementation.
+4. Write a detailed specification.
+5. Create a technical implementation plan.
+6. Identify required 3D assets and their licenses.
+7. Implement the character upgrade in modular stages.
+8. Integrate animation with existing flight controls.
+9. Test all relevant camera and flight states.
+10. Fix visual and technical issues.
+11. Run the existing test suite and build.
+12. Document the implementation and any remaining limitations.
+
+### Autonomous execution rules
+
+- Make reasonable technical decisions independently.
+- Prefer minimal changes to existing working code.
+- Do not ask the human to choose between equivalent implementation approaches.
+- Do not invent completed assets or animations.
+- If a dependency or external asset is unavailable, use a practical fallback and document it.
+- Ask for human intervention only when credentials, paid assets, legal permissions or genuinely unavailable resources are required.
+
+### FINAL DELIVERABLE
+
+Provide:
+- A realistic PUBG-inspired paragliding character.
+- Integrated rigging and animation.
+- Realistic equipment and harness.
+- Integration with existing flight physics.
+- Optimized Three.js implementation.
+- A summary of modified files.
+- A list of external assets and their licenses.
+- Known limitations and future improvement opportunities.
+
+**FINAL CREATIVE DIRECTION:**
+
+Imagine a character from PUBG jumping into a realistic paragliding experience above Da Nang, Vietnam.
+
+The character should feel like a real human suspended in the air, with believable anatomy, weight, inertia, clothing, equipment and movement.
+
+The objective is not merely to make the character look more detailed.
+
+The objective is to make the character look and behave like a real human being flying over the Han River.
+</pasted_content id="7503">
