@@ -3,9 +3,10 @@
   "checkpoint_id": "01M78C9RA8W5HHEZMZZ0HYWYDF",
   "strategy": "manual-commit",
   "branch": "feature/nguoi-du-luon-that",
-  "checkpoints_count": 3,
+  "checkpoints_count": 5,
   "files_touched": [
-    "src/config.ts"
+    "src/config.ts",
+    "src/explore/glider.ts"
   ],
   "sessions": [
     {
@@ -21,14 +22,28 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 0
+    "input_tokens": 14,
+    "cache_creation_tokens": 11145,
+    "cache_read_tokens": 1077819,
+    "output_tokens": 3972,
+    "api_call_count": 5,
+    "subagent_tokens": {
+      "input_tokens": 40,
+      "cache_creation_tokens": 207834,
+      "cache_read_tokens": 1779238,
+      "output_tokens": 24686,
+      "api_call_count": 20
+    }
   },
   "redaction": {
     "replacements": 13,
