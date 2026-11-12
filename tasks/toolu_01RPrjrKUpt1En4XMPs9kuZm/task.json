@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01RPrjrKUpt1En4XMPs9kuZm",
+  "agent_id": "a931a9e96efcd5365",
+  "task_description": "Bản dựng thử đám đông",
+  "token_usage": {
+    "input_tokens": 104,
+    "cache_creation_tokens": 182405,
+    "cache_read_tokens": 6502907,
+    "output_tokens": 63959,
+    "api_call_count": 50
+  },
+  "started_at": "2026-11-12T11:08:32.1186562+07:00",
+  "completed_at": "2026-11-12T11:25:59.6095461+07:00"
+}

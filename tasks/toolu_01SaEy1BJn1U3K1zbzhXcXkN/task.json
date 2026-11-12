@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01SaEy1BJn1U3K1zbzhXcXkN",
+  "agent_id": "ada3a30a435a1d363",
+  "subagent_type": "Explore",
+  "task_description": "Khảo sát hệ người đi bộ",
+  "token_usage": {
+    "input_tokens": 76,
+    "cache_creation_tokens": 205938,
+    "cache_read_tokens": 4317191,
+    "output_tokens": 41026,
+    "api_call_count": 38
+  },
+  "started_at": "2026-11-12T11:00:37.2255039+07:00",
+  "completed_at": "2026-11-12T11:06:52.8945023+07:00"
+}
