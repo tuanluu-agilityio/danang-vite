@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01GuGdGdvW3CLyenSDr78L6R",
+  "agent_id": "aa255d0b371c76835",
+  "subagent_type": "Explore",
+  "task_description": "Recon đường, hầm, xe cộ",
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 127682,
+    "cache_read_tokens": 1418430,
+    "output_tokens": 16178,
+    "api_call_count": 20
+  },
+  "started_at": "2026-11-12T14:44:38.0116445+07:00",
+  "completed_at": "2026-11-12T14:47:31.3743599+07:00"
+}

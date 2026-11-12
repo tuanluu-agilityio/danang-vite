@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_011TdEQJHRGJPoRY5bR53DgU",
+  "agent_id": "af56c13cdede65f34",
+  "subagent_type": "Explore",
+  "task_description": "Recon đi dạo và slot",
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 104137,
+    "cache_read_tokens": 593751,
+    "output_tokens": 8665,
+    "api_call_count": 11
+  },
+  "started_at": "2026-11-12T14:44:37.9982576+07:00",
+  "completed_at": "2026-11-12T14:46:01.7873058+07:00"
+}
