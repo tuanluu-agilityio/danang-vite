@@ -3,9 +3,11 @@
   "checkpoint_id": "01M77X05QWQ2ZGRR361EDDXQ7Y",
   "strategy": "manual-commit",
   "branch": "feature/lai-xe-oto",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
-    "src/config.ts"
+    "src/common/traffic.ts",
+    "src/config.ts",
+    "src/environment/traffic.ts"
   ],
   "sessions": [
     {
@@ -21,6 +23,13 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
@@ -38,9 +47,9 @@
     }
   },
   "redaction": {
-    "replacements": 13,
+    "replacements": 22,
     "layers": {
-      "betterleaks": 3,
+      "betterleaks": 12,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
