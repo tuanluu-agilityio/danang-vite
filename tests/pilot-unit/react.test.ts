@@ -66,6 +66,8 @@ test('đầu vào xấu: mọi trường hữu hạn, trong giới hạn, phanh 
   for (const k of ['legSide', 'legFore', 'legSplit'] as const) assert.ok(Math.abs(p[k]) <= L.leg + 1e-9, k);
   for (const k of ['kneeL', 'kneeR'] as const) assert.ok(p[k] >= L.knee[0] && p[k] <= L.knee[1], k);
   for (const k of ['brakeL', 'brakeR'] as const) assert.ok(p[k] >= 0 && p[k] <= 1, k);
+  for (const k of ['packRoll', 'packPitch'] as const) assert.ok(Math.abs(p[k]) <= L.pack + 1e-9, k);
+  assert.ok(Math.abs(p.strap) <= L.strap + 1e-9, 'strap');
 });
 
 test('plSignals: khung đầu bằng 0; tăng tốc 30 m/s² cho acc ≈ 1; nhảy 500 m vẫn trong [−1, 1]; turnInput trộn về phía nó', () => {

@@ -79,7 +79,7 @@ export class PlReact {
     this.write();
   }
 
-  /* Tiến một khung. dt không hợp lệ (≤ 0, NaN) thì bỏ qua; dt > dtMax bị kẹp. Chia bước ≤ min(dtMax/4, 1/60) cho lò xo bán ẩn ổn định */
+  /* Tiến một khung. dt không hợp lệ (≤ 0, NaN) thì bỏ qua; dt > dtMax bị kẹp (cố ý: khung dài thì chuyển động chậm lại chứ không nhảy vọt, tránh lò xo nổ). Chia bước ≤ min(dtMax/4, 1/60) cho lò xo bán ẩn ổn định */
   step(sig: PlSignals, dt: number): void {
     if (!(dt > 0)) return;
     const P = CONFIG.explore.pilot;
@@ -104,29 +104,29 @@ export class PlReact {
     const P = CONFIG.explore.pilot, A = P.amp, B = P.brake, G = P.gust, tg = this.tg, x = this.x, ph = this.ph, t = this.t;
     const ga = this.gustAmp * (1 + G.windGain * wind);
     /* ba kênh nhiễu mượt: mỗi kênh là trung bình hai sin tần số khác nhau, pha theo seed; g[k] ∈ [−1, 1] */
-    const f = G.freq;
-    const g0 = 0.5 * (Math.sin(TAU * f[0] * t + ph[0]) + Math.sin(TAU * f[1] * 1.7 * t + ph[1]));
-    const g1 = 0.5 * (Math.sin(TAU * f[1] * t + ph[2]) + Math.sin(TAU * f[2] * 1.3 * t + ph[3]));
-    const g2 = 0.5 * (Math.sin(TAU * f[2] * t + ph[4]) + Math.sin(TAU * f[0] * 2.3 * t + ph[5]));
-    const g3 = Math.sin(TAU * f[1] * 1.9 * t + ph[6]), g4 = Math.sin(TAU * f[2] * 1.4 * t + ph[7]);   // phụ: hai chân lệch pha
+    const f = G.freq, m = G.freqMul;
+    const g0 = 0.5 * (Math.sin(TAU * f[0] * t + ph[0]) + Math.sin(TAU * f[1] * m[0] * t + ph[1]));
+    const g1 = 0.5 * (Math.sin(TAU * f[1] * t + ph[2]) + Math.sin(TAU * f[2] * m[1] * t + ph[3]));
+    const g2 = 0.5 * (Math.sin(TAU * f[2] * t + ph[4]) + Math.sin(TAU * f[0] * m[2] * t + ph[5]));
+    const g3 = Math.sin(TAU * f[1] * m[3] * t + ph[6]), g4 = Math.sin(TAU * f[2] * m[4] * t + ph[7]);   // phụ: hai chân lệch pha
     tg[C_SWR] = -turn * A.swingRoll + ga * g0;
     tg[C_SWP] = -acc * A.swingPitch + ga * g1;
-    tg[C_SWY] = ga * g2 * 0.6;
+    tg[C_SWY] = ga * g2 * G.yawMul;
     tg[C_SPR] = turn * A.leanRoll;
-    tg[C_SPP] = acc * A.leanPitch - vy * A.leanPitch * 0.5;
+    tg[C_SPP] = acc * A.leanPitch - vy * A.leanPitch * A.climbLean;
     tg[C_SPT] = turn * A.twist;
     tg[C_HDY] = turn * A.headYaw;
     /* đầu giữ thẳng: bù phần nghiêng thực của đầu (thân nghiêng trái dương, quay quanh điểm treo làm đầu nghiêng phải khi swingRoll > 0) */
     tg[C_HDR] = -A.headLevel * (x[C_SPR] - x[C_SWR]);
-    tg[C_LGS] = -turn * A.legSide + ga * g3 * 0.5;
-    tg[C_LGF] = -acc * A.legFore + ga * g4 * 0.5;
-    tg[C_KNL] = Math.max(0, -acc) * A.knee + ga * 2 * Math.max(0, g3);
-    tg[C_KNR] = Math.max(0, -acc) * A.knee + ga * 2 * Math.max(0, g4);
-    tg[C_LSP] = Math.abs(turn) * A.legSide * 0.3 + ga * Math.abs(g3);
+    tg[C_LGS] = -turn * A.legSide + ga * g3 * G.legMul;
+    tg[C_LGF] = -acc * A.legFore + ga * g4 * G.legMul;
+    tg[C_KNL] = Math.max(0, -acc) * A.knee + ga * G.kneeMul * Math.max(0, g3);
+    tg[C_KNR] = Math.max(0, -acc) * A.knee + ga * G.kneeMul * Math.max(0, g4);
+    tg[C_LSP] = Math.abs(turn) * A.legSide * A.legSplitTurn + ga * Math.abs(g3);
     tg[C_BRL] = B.base + Math.max(turn, 0) * B.turn + Math.max(-acc, 0) * B.slow - Math.max(acc, 0) * B.fast;
     tg[C_BRR] = B.base + Math.max(-turn, 0) * B.turn + Math.max(-acc, 0) * B.slow - Math.max(acc, 0) * B.fast;
-    tg[C_PKR] = -turn * A.pack * 2 + ga * g0;
-    tg[C_PKP] = -acc * A.pack * 2 + ga * g1;
+    tg[C_PKR] = -turn * A.pack * A.packMul + ga * g0;
+    tg[C_PKP] = -acc * A.pack * A.packMul + ga * g1;
     tg[C_STR] = A.strap * wind * g4;
   }
 
@@ -139,7 +139,7 @@ export class PlReact {
     p.legSide = clamp(x[C_LGS], -L.leg, L.leg); p.legFore = clamp(x[C_LGF], -L.leg, L.leg); p.legSplit = clamp(x[C_LSP], -L.leg, L.leg);
     p.kneeL = clamp(x[C_KNL], L.knee[0], L.knee[1]); p.kneeR = clamp(x[C_KNR], L.knee[0], L.knee[1]);
     p.brakeL = clamp(x[C_BRL], 0, 1); p.brakeR = clamp(x[C_BRR], 0, 1);
-    p.packRoll = x[C_PKR]; p.packPitch = x[C_PKP]; p.strap = x[C_STR];
+    p.packRoll = clamp(x[C_PKR], -L.pack, L.pack); p.packPitch = clamp(x[C_PKP], -L.pack, L.pack); p.strap = clamp(x[C_STR], -L.strap, L.strap);
   }
 }
 
@@ -147,27 +147,24 @@ export class PlReact {
 /* Trạng thái lấy mẫu của một dù. Ba trường cuối tùy chọn (thiếu thì coi là 0 / false): bộ lọc acc, vy và cờ đã có tốc độ hợp lệ */
 export interface PlTrack { x: number; y: number; z: number; speed: number; has: boolean; acc?: number; vy?: number; hasSpeed?: boolean }
 
-const SMOOTH_S = 0.15;     // s hằng số thời gian lọc một cực cho acc / vy (ước lượng)
-const TELEPORT_MS = 300;   // m/s — nhanh hơn mức này coi là nhảy vị trí (vào phòng, sửa lỗi mạng), bỏ qua mẫu (ước lượng)
-
 /* Tính tín hiệu cho mọi dù (của mình lẫn người khác, đều từ vị trí + bank). Không cấp phát; prev được cập nhật tại chỗ.
    turnInput (tùy chọn, dù của mình): −1/0/1 như GliderInput.turn (+1 = trái); trộn nửa đường để tay đi trước thân */
 export function plSignals(out: PlSignals, prev: PlTrack, x: number, y: number, z: number, bank: number, dt: number, wind: number, turnInput?: number): void {
-  const E = CONFIG.explore;
+  const E = CONFIG.explore, SG = E.pilot.signal;   // SG.smooth: hằng số thời gian lọc acc / vy (s); SG.teleport: m/s, nhanh hơn coi là nhảy vị trí (vào phòng, sửa lỗi mạng), bỏ mẫu
   out.wind = clamp(fin(wind), 0, 1);
   let turn = clampSym(bank / E.bankMax);
-  if (turnInput !== undefined && Number.isFinite(turnInput)) turn += (clampSym(turnInput) - turn) * 0.5;
+  if (turnInput !== undefined && Number.isFinite(turnInput)) turn += (clampSym(turnInput) - turn) * SG.turnMix;
   out.turn = turn;
   if (!Number.isFinite(x + y + z) || !(dt > 0) || !Number.isFinite(dt)) { out.acc = clampSym(prev.acc || 0); out.vy = clampSym(prev.vy || 0); return; }   // mẫu xấu: giữ giá trị lọc cũ
   if (!prev.has) { prev.x = x; prev.y = y; prev.z = z; prev.speed = 0; prev.has = true; prev.hasSpeed = false; prev.acc = 0; prev.vy = 0; out.acc = 0; out.vy = 0; return; }
   const dx = x - prev.x, dz = z - prev.z, sp = Math.sqrt(dx * dx + dz * dz) / dt, vyRaw = (y - prev.y) / dt;
   let accRaw = 0, vyN = 0;
-  if (Math.abs(sp) > TELEPORT_MS || Math.abs(vyRaw) > TELEPORT_MS) { prev.hasSpeed = false; }   // nhảy vị trí: bỏ mẫu, bộ lọc giữ nguyên
+  if (Math.abs(sp) > SG.teleport || Math.abs(vyRaw) > SG.teleport) { prev.hasSpeed = false; }   // nhảy vị trí: bỏ mẫu, bộ lọc giữ nguyên
   else {
     if (prev.hasSpeed) accRaw = clampSym((sp - prev.speed) / dt / E.speedAccel);
     vyN = clampSym(vyRaw / E.climbRate);
     prev.speed = sp; prev.hasSpeed = true;
-    const a = 1 - Math.exp(-dt / SMOOTH_S);
+    const a = 1 - Math.exp(-dt / SG.smooth);
     prev.acc = (prev.acc || 0) + (accRaw - (prev.acc || 0)) * a;
     prev.vy = (prev.vy || 0) + (vyN - (prev.vy || 0)) * a;
   }
