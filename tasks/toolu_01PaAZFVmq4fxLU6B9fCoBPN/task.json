@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01PaAZFVmq4fxLU6B9fCoBPN",
+  "agent_id": "a825a1e6c500d30e5",
+  "task_description": "Task 3: test trình duyệt người",
+  "token_usage": {
+    "input_tokens": 196,
+    "cache_creation_tokens": 439893,
+    "cache_read_tokens": 15103154,
+    "output_tokens": 68483,
+    "api_call_count": 95
+  },
+  "started_at": "2026-11-12T12:20:41.8745661+07:00",
+  "completed_at": "2026-11-12T13:29:50.8593283+07:00"
+}
