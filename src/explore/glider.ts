@@ -7,6 +7,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { CONFIG } from '../config';
 import { shared } from '../core/shared';
 import type { GliderState, GliderInput } from './flight';
+import { plUpdate } from './pilot';
 
 const G = CONFIG.explore.glider;
 const UV_DARK = 0.25, UV_LIT = 0.75;         // u trong dải màu trơn: nửa tối / nửa sáng
@@ -212,10 +213,12 @@ export function exBuildGlider(wingColor?: string): THREE.Group {
   return g;
 }
 
-/* Đặt dù theo trạng thái bay: quay yaw trước, rồi cuộn quanh trục bay (bank > 0: nghiêng trái, cánh trái hạ) */
-export function exPlaceGlider(g: THREE.Group, s: GliderState, dt = 0, inp?: GliderInput): void {   // dt, inp: Task 4 nối plUpdate, hiện chưa dùng
+/* Đặt dù theo trạng thái bay: quay yaw trước, rồi cuộn quanh trục bay (bank > 0: nghiêng trái, cánh trái hạ).
+   dt (s): bước khung cho người treo có xương (pilot/index.ts plUpdate: gắn khi mô hình đã về, phản ứng lò xo); inp: phím của dù của mình (tay đi trước thân) */
+export function exPlaceGlider(g: THREE.Group, s: GliderState, dt = 0, inp?: GliderInput): void {
   g.position.copy(s.pos);
   g.rotation.set(-s.bank, s.yaw, 0, 'YXZ');
   const m = (g.children[0] as THREE.Mesh).material as THREE.MeshStandardMaterial;
   m.emissiveIntensity = shared.uNight.value;
+  plUpdate(g, s, dt, inp ? inp.turn : undefined);
 }

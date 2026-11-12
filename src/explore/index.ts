@@ -2,10 +2,12 @@
    Nối flight (mô hình), glider (dù), chase (camera) với vòng animate, phím và URL.
    `?explore=glider` bay thẳng; không tham số (hoặc `?test&chooser`) hiện màn chọn; Esc tải lại trang không còn tham số explore. Camera do explore.update đặt sau updateCamera. */
 import * as THREE from 'three';
-import { scene, camera, controls } from '../core/renderer';
+import { scene, camera, controls, renderer } from '../core/renderer';
+import { composer } from '../core/postprocessing';
 import { cam, keys } from '../views/state';
 import { exCreate, exStep, exInputFromKeys, type GliderState, type GliderInput } from './flight';
 import { exBuildGlider, exPlaceGlider } from './glider';
+import { plPreload, plReset, plSetWarm, plDebug } from './pilot';
 import { exChase } from './chase';
 import { exShowChooser } from './chooser';
 import { exNight, exNightBind, exNightStep } from './nightShows';
@@ -18,6 +20,20 @@ import { CONFIG } from '../config';
 import type { SwingController } from '../bridges/song-han/SwingController';
 
 const _inp: GliderInput = { turn: 0, climb: 0, throttle: 0 };   // đầu vào tái dùng mỗi khung
+
+/* Làm nóng shader người treo có xương (D-018), như stroll/index.ts stRigSetWarm: hai biến thể (vẽ thẳng ra canvas ban ngày, vào render target của composer ban đêm),
+   đèn / sương / bóng lấy từ cảnh chính, camera chính (đèn lọc theo lớp của nó). Cảnh nguồn không thêm vào scene */
+plSetWarm(async (o: THREE.Object3D) => {
+  const rt = renderer.getRenderTarget();
+  renderer.setRenderTarget(null);
+  const a = renderer.compileAsync(o, camera, scene);
+  renderer.setRenderTarget(rt);
+  await a;
+  renderer.setRenderTarget(composer.readBuffer);
+  const b = renderer.compileAsync(o, camera, scene);
+  renderer.setRenderTarget(rt);
+  await b;
+});
 
 let glider: THREE.Group | null = null;
 let state: GliderState | null = null;
@@ -60,7 +76,7 @@ function exShowSpeed(): void {
 /* Một bước: mô phỏng, đặt dù, đặt camera bám */
 function advance(dt: number, inp: GliderInput): void {
   exStep(state!, inp, dt);
-  exPlaceGlider(glider!, state!);
+  exPlaceGlider(glider!, state!, dt, inp);
   exChase(camera, controls.target, state!, dt);
   exShowSpeed();
   exNightStep(dt);
@@ -73,7 +89,10 @@ export const explore = {
   get state() { return state; },
   get glider() { return glider; },
   get watching() { return watching; },
+  /* Cho test: số đo người treo của dù mình (pilot/index.ts plDebug); null khi chưa bay */
+  pilotDebug() { return glider ? plDebug(glider) : null; },
   start(): void {
+    plPreload();
     if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
     exMulti.onChange = onMultiChange;
     state = exCreate();
@@ -83,6 +102,7 @@ export const explore = {
     if (!glider.parent) scene.add(glider);
     glider.visible = true;
     cam.flight.then = null; cam.mode = 'glider'; controls.enabled = false;
+    plReset(glider);   // cất cánh mới: người treo không mang lò xo của lần bay trước
     exPlaceGlider(glider, state);
     exChase(camera, controls.target, state, 0, true);
     exShowSpeed();
@@ -91,6 +111,7 @@ export const explore = {
   /* Chế độ xem: cam.mode = 'glider' nhưng không có state/dù của mình; carry = true khi vừa nhường chỗ (camera đang ở sau dù cũ) */
   startWatching(carry = false): void {
     const s = exMulti.session; if (!s) return;
+    plPreload();   // dù người khác dùng người treo có xương
     watching = true; chased = carry;
     keys.clear();
     cam.flight.then = null; cam.mode = 'glider'; controls.enabled = false;
@@ -148,6 +169,7 @@ export function setupExplore(ctrl: SwingController): void {
   if (q.get('explore') === 'drive') { drive.start(); return; }   // lái xe một mình
   if (!q.has('test') || q.has('chooser')) {
     document.querySelector('button[data-pick="walk"]')?.addEventListener('click', () => stAvatars.preload(0));   // chọn thẻ Đi dạo: nạp nhân vật của mình ngay, trong lúc ở sảnh
+    document.querySelector('button[data-pick="glider"]')?.addEventListener('click', () => plPreload());   // chọn thẻ Dù lượn: nạp người treo ngay, trong lúc ở sảnh
     document.querySelector('button[data-pick="car"]')?.addEventListener('click', () => drive.preload());   // chọn thẻ Ô tô: nạp mô hình xe ngay
     exShowChooser((choice) => { if (choice === 'glider') explore.start(); else if (choice === 'walk') stroll.start(); else if (choice === 'car') drive.start(); },
       (choice) => { if (choice === 'walk') stroll.startWatching(); else if (choice === 'car') drive.startWatching(); else explore.startWatching(); });   // 'guided': màn chọn tự ẩn, giao diện cũ

@@ -42,10 +42,10 @@ test('gắn xương: wing, hang, handL, handR, pack đều có đỉnh; dây hai
   const cnt = new Array(PL_GEAR_BONES.length).fill(0);
   for (let i = 0; i < n; i++) cnt[si.getX(i)]++;
   for (const b of ['wing', 'hang', 'handL', 'handR', 'pelvis', 'spine', 'pack', 'thighL', 'thighR'] as const) assert.ok(cnt[BONE(b)] > 0, `không có đỉnh ${b}`);
-  /* từng dây treo: có đỉnh cả ở hang lẫn wing; từng nhánh dây phanh: có đỉnh ở một xương tay lẫn wing */
+  /* từng dây treo: có đỉnh cả ở hang lẫn wing; từng dây phanh chính: có đỉnh ở một xương tay lẫn wing */
   const spans = g.userData.spans as PlGearSpan[];
   assert.equal(spans.filter(s => s.kind === 'line').length, 2 * GL.lineCount, 'đủ dây treo');
-  assert.equal(spans.filter(s => s.kind === 'brake').length, exBrakeTops().length, 'đủ nhánh dây phanh');
+  assert.equal(spans.filter(s => s.kind === 'brake').length, 2, 'mỗi bên một dây phanh chính (quai → điểm tụ trên cánh; ba nhánh tụ → mép sau đều gắn cánh)');
   for (const s of spans) {
     const bones = new Set<number>();
     for (let i = s.start; i < s.start + s.count; i++) bones.add(si.getX(i));

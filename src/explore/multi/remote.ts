@@ -6,6 +6,8 @@ import * as THREE from 'three';
 import { scene } from '../../core/renderer';
 import { CONFIG } from '../../config';
 import { exBuildGlider, exPlaceGlider } from '../glider';
+import { plReset } from '../pilot';
+import { device } from '../../core/device';
 import type { GliderState } from '../flight';
 import { ExTrack, type ExPose } from './interp';
 import type { Flyer } from './protocol';
@@ -19,17 +21,18 @@ interface RemoteSlot {
   pose: ExPose;               // đệm lấy mẫu
   state: GliderState;         // trạng thái trả cho exPlaceGlider và slotState
   live: boolean;              // đã có mẫu và đang hiện
+  lastMs: number;             // ms giờ của lần đặt dù trước (dt cho người treo), −1 = chưa có
 }
 
 const slots: RemoteSlot[] = Array.from({ length: M.slots }, () => ({
   name: null, group: null, track: new ExTrack(), pose: { x: 0, y: 0, z: 0, yaw: 0, bank: 0 },
-  state: { pos: new THREE.Vector3(), yaw: 0, bank: 0, ret: 0, speed: 0 }, live: false
+  state: { pos: new THREE.Vector3(), yaw: 0, bank: 0, ret: 0, speed: 0 }, live: false, lastMs: -1
 }));
 let me = -1;
 
 function hide(s: RemoteSlot): void {
-  s.track.reset(); s.live = false;
-  if (s.group) s.group.visible = false;
+  s.track.reset(); s.live = false; s.lastMs = -1;
+  if (s.group) { s.group.visible = false; plReset(s.group); }   // đổi chủ / trống: người treo không mang lò xo của người cũ
 }
 
 export const exRemotes = {
@@ -43,7 +46,10 @@ export const exRemotes = {
       if (name === null) { s.name = null; hide(s); continue; }
       if (name !== s.name) {
         s.name = name; hide(s);
-        if (!s.group) { s.group = exBuildGlider(M.colors[i % M.colors.length]); s.group.visible = false; s.group.traverse(o => o.layers.set(1)); scene.add(s.group); }   // lớp 1: không vẽ vào phản chiếu nước, giữ draw call ≈ 1 mỗi dù
+        if (!s.group) {
+          s.group = exBuildGlider(M.colors[i % M.colors.length]); s.group.visible = false; s.group.traverse(o => o.layers.set(1)); scene.add(s.group);   // lớp 1: không vẽ vào phản chiếu nước, giữ draw call ≈ 1 mỗi dù
+          s.group.userData.plOff = !CONFIG.explore.pilot.remote || device.phone;   // người treo có xương cho dù người khác (spec §7): tắt bằng cấu hình, điện thoại dùng hình khối
+        }
       }
     }
   },
@@ -64,8 +70,10 @@ export const exRemotes = {
       if (!s.track.sample(t, s.pose)) { s.live = false; s.group.visible = false; continue; }
       const p = s.pose;
       s.state.pos.set(p.x, p.y, p.z); s.state.yaw = p.yaw; s.state.bank = p.bank;
-      exPlaceGlider(s.group, s.state);
-      s.group.visible = s.live = true;
+      const dt = s.lastMs < 0 ? 0 : (nowMs - s.lastMs) / 1000;   // người treo kẹp dt ≤ pilot.dtMax
+      s.lastMs = nowMs;
+      s.group.visible = s.live = true;   // hiện trước khi đặt: người treo chỉ gắn vào dù đang hiện
+      exPlaceGlider(s.group, s.state, dt);
     }
   },
 
