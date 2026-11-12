@@ -3,7 +3,7 @@
   "checkpoint_id": "01M77NZNY9M7H6DFSKPJPNY279",
   "strategy": "manual-commit",
   "branch": "feature/lai-xe-oto",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     "src/bridges/han-tunnel/HanTunnel.ts",
     "src/bridges/han-tunnel/outdoor.ts",
@@ -31,14 +31,21 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 20,
-    "cache_creation_tokens": 14866,
-    "cache_read_tokens": 2047111,
-    "output_tokens": 5426,
-    "api_call_count": 7,
+    "input_tokens": 24,
+    "cache_creation_tokens": 17162,
+    "cache_read_tokens": 2339160,
+    "output_tokens": 6167,
+    "api_call_count": 9,
     "subagent_tokens": {
       "input_tokens": 196,
       "cache_creation_tokens": 531627,
@@ -48,9 +55,9 @@
     }
   },
   "redaction": {
-    "replacements": 13,
+    "replacements": 22,
     "layers": {
-      "betterleaks": 3,
+      "betterleaks": 12,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
