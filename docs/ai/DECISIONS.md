@@ -16,6 +16,13 @@ Sổ quyết định riêng của việc này. Dòng tóm tắt của mỗi quy�
 - **Phải kiểm ở M2 trước khi chốt**: số tam giác mỗi họ sau khi nhân ~1 500 nhà ven sông ở cả ba lượt (chính, bóng, gương); lệnh vẽ +0 ở 5 góc chuẩn; va chạm và biển quảng cáo không lệch.
 - **Trần đề xuất cho spec**: mỗi họ ≤ 600 tam giác (gần), ≤ 60 (vừa); tổng GLB ≤ 1,5 MB; lệnh vẽ góc cũ +0.
 
+## D-038: Hạ chiều cao một phần nhà trong dải sát sông, kit cho cả hai bờ bằng xoay 180° — 2026-11-13 — Người dùng đồng ý hạ chiều cao ("Đồng ý hạ chiều cao, làm tiếp M3"); cách làm là của agent; đang làm ở M3
+- **Bối cảnh**: sau M2 vùng mẫu vẫn là rừng tháp, chỉ 6 / 122 nhà đủ thấp để thành nhà ống; chiều cao lấy từ `rand()` trong `buildCity()`.
+- **Chọn**: KHÔNG sửa `buildCity()` và chuỗi `rand()`. Thêm một bước `bkReshape()` chạy ngay sau `buildCity()` (trước mọi nơi đọc nhà: hành lang hầm, riverfront, dọn đường lái xe, Vòng quay): với nhà trong dải cách kè ≤ `CONFIG.buildings.band`, đặt lại scale Y của instance (cả level near và far của LOD) theo băm vị trí: phần lớn thành nhà ống / khách sạn nhỏ 4–12 tầng, một ít tháp giữ nguyên, càng sát sông càng thấp. Vị trí, w, d, màu không đổi.
+- **Bờ Đông**: không lật gương (đổi chiều mặt, phải vật liệu `BackSide`) mà xoay 180° quanh trục đứng trong shader (thuộc tính instance `aFlip` = ±1 nhân vào x, z của neo, `bkOff`, pháp tuyến): vẫn 5 lưới cho cả hai bờ, +5 lệnh vẽ.
+- **LOD kit**: shader thu đỉnh về một điểm khi nhà xa camera hơn `CONFIG.buildings.kitFar` (không thêm lưới, không thêm lệnh vẽ).
+- **Hệ quả phải kiểm**: biển quảng cáo trên mái và băng rôn (`riverfront/billboards.ts`, `promenade.ts` chọn nhà theo chiều cao), va chạm Đi dạo / Lái xe (2D, không phụ thuộc h), các test so ma trận nhà với `main` (`test:riverfront`, `test:citynight -- --baseline`, `test:drawcalls`) sẽ lệch có chủ ý, cập nhật mốc ở M4.
+
 ### D-037 bản 2 — 2026-11-13 (thay phần "Đề xuất" ở trên; đang làm ở M2)
 - **Đổi**: không thay geometry của nhà. Khối hộp của `buildCity()` ở lại làm thân; chi tiết kiến trúc là bộ phụ kiện (kit) dựng bằng Blender, mỗi họ một `InstancedMesh` đặt chồng lên; mặt đứng theo họ vẽ trong shader qua thuộc tính instance `aFam`.
 - **Vì sao**: bản 1 (gộp 5 họ bằng `aPart`) bắt mỗi nhà xử lý đỉnh của cả 5 họ ở ba lượt vẽ (ước lượng 4,5 triệu tam giác thêm cho 1 500 nhà); thay geometry còn làm `collectBuildings()` và va chạm phải viết lại. Bản 2 không đổi ma trận instance nào.

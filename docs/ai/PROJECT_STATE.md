@@ -6,8 +6,8 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
-| **Mốc hiện tại** | M2 — nguyên mẫu nhà: Task 2.1–2.6 xong, đang ở 2.7 (người dùng duyệt + chốt hướng M3) |
-| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 xong phần mã, **chờ người dùng xem nhà mẫu** |
+| **Mốc hiện tại** | M3 — mở rộng: đang làm Task 3.1–3.2 (hạ chiều cao dải sát sông, kit hai bờ, LOD kit) |
+| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 đang làm |
 | **Cập nhật** | 2026-11-13 14:05 +07 (điểm lưu trước khi tắt máy, phiên 1; 14:10 ghi thêm việc người dùng duyệt nước) |
 
 ## Việc vừa xong (đã kiểm)
@@ -47,7 +47,7 @@ Không có.
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-Task 2.7: người dùng xem nhà mẫu (`npm run dev`, bờ Tây cạnh Cầu Rồng; hoặc ảnh `tests/screens/ven-song/nha1/nha-mau-*.png`) và trả lời câu hỏi mở: **có cho hạ chiều cao một phần nhà ven sông không** (để có dãy nhà ống / khách sạn 4–12 tầng như Bạch Đằng thật; việc này đổi ma trận instance nên phải làm trước `buildRiverfront()` và kiểm biển quảng cáo, trái tim LED, va chạm, các test so ma trận nhà). Sau đó M3 Task 3.1. Việc kỹ thuật còn nợ của M2: A/B GPU chuẩn so với `main`; thử đường lật X bờ Đông; hình cầu bao theo cụm thay vì cả họ; kit chưa có LOD.
+(Đã trả lời 2026-11-13: đồng ý hạ chiều cao → D-038 trong `DECISIONS.md`; việc kế tiếp là M3 Task 3.1–3.2 theo D-038: `bkReshape()` sau `buildCity()`, kit cả hai bờ bằng `aFlip`, LOD kit theo khoảng cách, rồi ảnh + A/B chuẩn so với `main`.) Câu cũ để tham chiếu — Task 2.7: người dùng xem nhà mẫu (`npm run dev`, bờ Tây cạnh Cầu Rồng; hoặc ảnh `tests/screens/ven-song/nha1/nha-mau-*.png`) và trả lời câu hỏi mở: **có cho hạ chiều cao một phần nhà ven sông không** (để có dãy nhà ống / khách sạn 4–12 tầng như Bạch Đằng thật; việc này đổi ma trận instance nên phải làm trước `buildRiverfront()` và kiểm biển quảng cáo, trái tim LED, va chạm, các test so ma trận nhà). Sau đó M3 Task 3.1. Việc kỹ thuật còn nợ của M2: A/B GPU chuẩn so với `main`; thử đường lật X bờ Đông; hình cầu bao theo cụm thay vì cả họ; kit chưa có LOD.
 
 ## File quan trọng
 | File | Vai trò |

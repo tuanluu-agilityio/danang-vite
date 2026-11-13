@@ -25,10 +25,11 @@ Nghiệm thu: spec §7 dòng M1.
 - [x] 2.4 `src/environment/buildings/`: nạp GLB, mỗi họ một `InstancedMesh` kit chồng lên thân hộp (spec §6.3), shader áp `_OFF` / `_RULE` / `_GLOW`, `aFam` cho thân; `CONFIG.buildings`; đường lùi về hộp.
 - [x] 2.5 Thay một cụm bờ Tây quanh Cầu Rồng (không đổi `items`, không thêm `rand()`); chọn họ bằng băm chỉ số.
 - [x] 2.6 (A/B GPU chuẩn so với `main` còn nợ, mới có A/B với `?buildings=off`) Ảnh trước / sau (`nha-tay`, `nha-dong`, `mat-pho`, `tren-cao`; ngày + đêm), A/B GPU, lệnh vẽ; `test:stroll:unit`, `test:drive:unit`.
-- [ ] 2.7 Chốt hoặc sửa D-037; **người dùng duyệt bằng mắt.**
+- [x] 2.7 Người dùng cho đi tiếp và đồng ý hạ chiều cao (2026-11-13) → D-038.
 
 ## M3 — Mở rộng
-- [ ] 3.1 Cả hai bờ; phân bố họ theo khoảng cách tới sông.
+- [ ] 3.0 `bkReshape()`: hạ chiều cao nhà dải sát sông (D-038).
+- [ ] 3.1 Cả hai bờ (xoay 180° bằng `aFlip`); phân bố họ theo khoảng cách tới sông.
 - [ ] 3.2 LOD ba mức; bản thưa cho lượt bóng / gương (`core/passLod.ts`).
 - [ ] 3.3 Cửa sổ đêm theo họ (dựa trên `patchWindows`).
 - [ ] 3.4 Chi tiết kè và dải ven sông còn thiếu.
