@@ -3,9 +3,23 @@
   "checkpoint_id": "01M79V387Y61E2W0AB1W69VY03",
   "strategy": "manual-commit",
   "branch": "feature/ven-song-chan-thuc",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
-    "src/config.ts"
+    ".github/memory-bank/activeContext.md",
+    ".github/memory-bank/decisions.md",
+    "CLAUDE.md",
+    "docs/ai/ASSET_MANIFEST.md",
+    "docs/ai/AUDIT.md",
+    "docs/ai/DECISIONS.md",
+    "docs/ai/PROJECT_STATE.md",
+    "docs/ai/QA_LOG.md",
+    "docs/superpowers/plans/2026-11-13-ven-song-chan-thuc.md",
+    "docs/superpowers/specs/2026-11-13-ven-song-chan-thuc-design.md",
+    "src/config.ts",
+    "src/core/water.ts",
+    "src/core/waterShader.ts",
+    "src/environment/weather/atmosphere.ts",
+    "tests/ven-song-shots.mjs"
   ],
   "sessions": [
     {
@@ -28,14 +42,21 @@
       "compact_transcript": "/2/transcript.jsonl",
       "content_hash": "/2/content_hash.txt",
       "prompt": "/2/prompt.txt"
+    },
+    {
+      "metadata": "/3/metadata.json",
+      "transcript": "/3/full.jsonl",
+      "compact_transcript": "/3/transcript.jsonl",
+      "content_hash": "/3/content_hash.txt",
+      "prompt": "/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 6,
-    "cache_creation_tokens": 2856,
-    "cache_read_tokens": 484575,
-    "output_tokens": 1063,
-    "api_call_count": 3,
+    "input_tokens": 80,
+    "cache_creation_tokens": 230569,
+    "cache_read_tokens": 6458156,
+    "output_tokens": 54553,
+    "api_call_count": 39,
     "subagent_tokens": {
       "input_tokens": 0,
       "cache_creation_tokens": 0,

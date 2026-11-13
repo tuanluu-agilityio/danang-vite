@@ -1,0 +1,1167 @@
+<pasted_content id="a9d3">
+# PROJECT: DA NANG RIVERSIDE REALISM UPGRADE
+## Blender + Three.js | Focused Visual Enhancement
+
+### 1. YOUR MISSION
+
+You are a senior 3D Environment Artist, Blender Technical Director, Architectural Visualization Specialist, and Three.js Graphics Engineer.
+
+Your task is to significantly improve the visual realism of an existing interactive 3D representation of Da Nang.
+
+Existing website:
+
+https://danangbridges.netlify.app/
+
+The project already has an operational Three.js environment with existing bridges, camera systems, animations, weather, and interactive experiences.
+
+For this iteration, you have ONLY TWO PRIMARY OBJECTIVES:
+
+1. Rebuild and improve the Han River water environment.
+2. Rebuild and improve the buildings and urban environment along both riverbanks.
+
+The objective is to make the environment look substantially closer to real-world Da Nang.
+
+Use Blender for professional 3D asset production and Three.js for real-time rendering.
+
+IMPORTANT:
+
+This is a focused visual upgrade, NOT a complete project rebuild.
+
+Do not expand the project scope.
+
+Do not modify existing bridge models or rewrite their animation systems.
+
+Do not rebuild existing gameplay or camera controls.
+
+Do not replace the existing Three.js architecture.
+
+Preserve all working functionality.
+
+---
+
+# 2. PHASE ONE: AUDIT THE EXISTING ENVIRONMENT
+
+Before implementation:
+
+Inspect the complete source code and understand:
+
+- Existing river geometry.
+- Existing water materials and shaders.
+- Existing river dimensions and shoreline.
+- Existing building geometry.
+- Existing building placement and distribution.
+- Current world coordinates and scaling.
+- Existing environment lighting.
+- Existing day/night system.
+- Existing weather system.
+- Existing boat and traffic systems.
+- Existing camera positions.
+- Existing asset loading architecture.
+- Existing Three.js renderer and post-processing.
+- Current performance and memory consumption.
+
+Identify whether buildings and river geometry are:
+
+- Primitive meshes.
+- Procedural geometry.
+- Imported assets.
+- Shader-based representations.
+
+Take screenshots of the current environment before implementation.
+
+Capture identical camera positions for before-and-after comparisons.
+
+Record baseline FPS, frame time, draw calls, and loading time.
+
+Create a concise audit report identifying the biggest visual deficiencies.
+
+Do not start rebuilding assets before understanding the existing scene.
+
+---
+
+# 3. OBJECTIVE A: PHOTOREALISTIC HAN RIVER
+
+The Han River must become a visually convincing natural urban river.
+
+This is the first major priority.
+
+## 3.1 River Geometry
+
+Inspect the current river mesh and determine whether it can be improved or should be replaced.
+
+Requirements:
+
+- Preserve the existing river location.
+- Preserve its geographical direction.
+- Preserve its approximate width.
+- Follow the existing riverbanks.
+- Maintain correct alignment with all existing bridges.
+- Ensure correct alignment with existing piers and surrounding terrain.
+- Avoid visible gaps between water and riverbanks.
+- Avoid floating water surfaces.
+- Avoid obvious intersections with bridge structures.
+
+Do not arbitrarily change the geography of the environment.
+
+Use Blender when necessary to create more detailed riverbank and terrain geometry.
+
+However, keep the primary water surface compatible with the existing Three.js water rendering architecture.
+
+## 3.2 Water Shader
+
+Develop a realistic real-time water shader.
+
+The desired water appearance should include:
+
+- Multiple layers of subtle waves.
+- Different wave frequencies.
+- Natural wind-driven movement.
+- Animated normal maps.
+- Subtle surface displacement where appropriate.
+- Realistic Fresnel effect.
+- Depth-dependent water coloration.
+- Natural sunlight reflections.
+- Environmental reflections.
+- Subtle variations in surface roughness.
+
+The water must not look like:
+
+- A flat blue plane.
+- A swimming pool.
+- A perfectly smooth mirror.
+- An excessively transparent glass surface.
+- An exaggerated ocean with huge waves.
+
+The Han River should look like a relatively calm urban river with naturally moving water.
+
+## 3.3 Reflections
+
+Reflections are essential.
+
+Implement a suitable reflection solution supported by the existing rendering architecture.
+
+Evaluate:
+
+- Environment-map reflections.
+- Screen-space reflections.
+- Planar reflections.
+- Hybrid reflection techniques.
+
+Select a suitable implementation based on visual quality and GPU cost.
+
+At minimum, the water should visibly reflect:
+
+- The sky.
+- Nearby buildings.
+- Bridge structures.
+- Nighttime city lights.
+
+Avoid reflection systems that significantly reduce FPS.
+
+If full real-time reflections are too expensive, use a carefully designed approximation.
+
+## 3.4 Water Behavior
+
+The water must respond to environmental conditions.
+
+DAYTIME:
+
+- Natural blue-green coloration.
+- Soft wave movement.
+- Sunlight highlights.
+- Environmental reflections.
+
+SUNSET:
+
+- Warm highlights.
+- Sunset sky reflections.
+- Natural color gradients.
+
+NIGHT:
+
+- Darker water.
+- Reflections from buildings and street lights.
+- Subtle moving highlights.
+
+RAIN:
+
+- Small rain-impact ripples.
+- Increased surface roughness.
+- Changes in reflection appearance.
+
+STORM:
+
+- Stronger wind-driven waves.
+- More dynamic surface movement.
+- Darker water appearance.
+
+Preserve the existing weather controls.
+
+Connect the new water system to the existing environment state instead of creating a separate weather controller.
+
+## 3.5 Interaction With Existing Boats
+
+Preserve existing boats and their movement systems.
+
+Where appropriate, improve the visual interaction between boats and water.
+
+Potential enhancements:
+
+- Subtle boat wakes.
+- Small water disturbances around moving boats.
+- Improved visual contact with the water surface.
+
+Do not rebuild the boat system as part of this iteration.
+
+---
+
+# 4. OBJECTIVE B: REALISTIC DA NANG RIVERSIDE BUILDINGS
+
+The second major priority is upgrading buildings along both sides of the Han River.
+
+The current environment should no longer look like a collection of primitive blocks.
+
+It should look like a believable Vietnamese coastal city.
+
+## 4.1 Research Real Da Nang Architecture
+
+Before creating buildings, study real Da Nang.
+
+Use available visual references of:
+
+- Han River waterfront.
+- Bach Dang Street.
+- Tran Hung Dao Street.
+- Riverside hotel buildings.
+- Modern apartment buildings.
+- Commercial buildings.
+- Office buildings.
+- Residential buildings.
+- Riverside urban developments.
+
+Study:
+
+- Typical building heights.
+- Building density.
+- Architectural styles.
+- Facade composition.
+- Window distribution.
+- Balcony patterns.
+- Rooftop structures.
+- Building colors.
+- Street-level commercial architecture.
+
+Do not create a generic international skyline.
+
+Preserve the characteristic visual identity of Da Nang.
+
+Use the existing project geography as the source of truth for building placement.
+
+Do not invent a completely different city layout.
+
+## 4.2 Blender Architectural Modeling
+
+Use Blender to create a modular library of realistic buildings.
+
+Do not model every building independently if a modular procedural workflow is more efficient.
+
+Build several architectural families:
+
+TYPE A — Modern Hotels
+
+- Glass facades.
+- Recessed balconies.
+- Large windows.
+- Rooftop details.
+- Contemporary exterior materials.
+
+TYPE B — Residential Buildings
+
+- Multiple floors.
+- Balconies.
+- Window frames.
+- Air-conditioning units.
+- Exterior railings.
+- Realistic rooftop structures.
+
+TYPE C — Commercial Buildings
+
+- Street-level storefronts.
+- Glass entrances.
+- Signage areas.
+- Upper-floor facades.
+- Varied window designs.
+
+TYPE D — Office Buildings
+
+- More uniform facade structures.
+- Glass and concrete combinations.
+- Modern architectural profiles.
+
+TYPE E — Low-rise Vietnamese Buildings
+
+- Narrow building footprints.
+- Multiple floor configurations.
+- Rooftop terraces.
+- Balconies.
+- Commercial ground floors.
+- More traditional urban proportions.
+
+Use these families to create visual diversity.
+
+Avoid obvious repetition.
+
+## 4.3 Building Geometry
+
+Improve:
+
+- Building silhouettes.
+- Facades.
+- Window frames.
+- Balconies.
+- Rooftop structures.
+- Ground floors.
+- Roof edges.
+- Exterior architectural details.
+
+Add geometry only when it has meaningful visual impact.
+
+Use:
+
+- Modular modeling.
+- Beveled edges.
+- Weighted normals.
+- Clean topology.
+- UV mapping.
+- Procedural variations.
+
+Avoid creating hundreds of unnecessary individual window meshes.
+
+Use texture baking, instancing, and modular elements where appropriate.
+
+## 4.4 PBR Materials
+
+Create realistic materials for:
+
+- Painted concrete.
+- Exposed concrete.
+- Glass.
+- Aluminum.
+- Steel.
+- Stone.
+- Ceramic tiles.
+- Exterior paint.
+- Rooftop surfaces.
+
+Materials must have believable:
+
+- Base color.
+- Roughness.
+- Metallic values.
+- Normal detail.
+- Ambient occlusion.
+
+Avoid plastic-looking buildings.
+
+Avoid excessively clean, identical facades.
+
+Subtle imperfections and material variation are desirable.
+
+## 4.5 Windows and Interior Lighting
+
+Windows are extremely important for the nighttime scene.
+
+Create convincing window materials.
+
+During daytime:
+
+- Appropriate glass reflections.
+- Subtle interior visibility where useful.
+- Natural variations between facades.
+
+During nighttime:
+
+- Some windows should be illuminated.
+- Other windows should remain dark.
+- Brightness should vary between buildings.
+- Avoid making every window glow identically.
+
+Use efficient emissive materials or shader-based techniques.
+
+Do not add a separate expensive light source for every window.
+
+## 4.6 Urban Environment Details
+
+Improve the immediate surroundings of the buildings:
+
+- Sidewalks.
+- Riverside promenades.
+- Trees.
+- Decorative vegetation.
+- Street furniture.
+- Street lights.
+- Small architectural elements.
+- Building entrances.
+- Roadside landscaping.
+
+Keep this work focused on the existing riverside environment.
+
+Do not expand into a complete road or traffic reconstruction project.
+
+Preserve existing roads and traffic systems.
+
+---
+
+# 5. ASSET PRODUCTION PIPELINE
+
+Use Blender as the main source of new building and environmental assets.
+
+Verify that Blender is installed and can be executed through CLI.
+
+Use Blender Python automation whenever practical.
+
+Create reusable and reproducible scripts.
+
+Suggested project structure:
+
+blender/
+    scenes/
+        river_environment.blend
+        riverside_buildings.blend
+
+    scripts/
+        build_riverbank.py
+        build_building_library.py
+        generate_building_variants.py
+        build_materials.py
+        bake_textures.py
+        export_assets.py
+
+    materials/
+    textures/
+    references/
+    exports/
+
+public/
+    assets/
+        environment/
+            river/
+            riverbank/
+            vegetation/
+
+        buildings/
+            hotels/
+            residential/
+            commercial/
+            offices/
+            lowrise/
+
+Export runtime assets as GLB/glTF 2.0.
+
+Preserve editable Blender source files.
+
+Use consistent naming conventions.
+
+Document all exported assets.
+
+Do not overwrite original assets destructively.
+
+---
+
+# 6. THREE.JS INTEGRATION
+
+Integrate the new assets into the existing application.
+
+The integration must preserve:
+
+- Existing bridge models.
+- Existing bridge positions.
+- Existing cameras.
+- Existing paragliding experience.
+- Existing driving and walking modes.
+- Existing weather controller.
+- Existing day/night transitions.
+- Existing boat movement.
+- Existing UI controls.
+
+Use the existing asset loading system where possible.
+
+Avoid introducing unnecessary dependencies.
+
+Use appropriate techniques:
+
+- GLB loading.
+- Texture compression.
+- Meshopt.
+- KTX2/Basis Universal.
+- Instanced meshes.
+- LOD.
+- Frustum culling.
+- Asset caching.
+- Lazy loading.
+
+Use the most compatible compression strategy for the existing Three.js version.
+
+## Building LOD strategy
+
+NEAR DISTANCE:
+
+Detailed geometry and materials.
+
+MEDIUM DISTANCE:
+
+Simplified geometry and baked facade details.
+
+FAR DISTANCE:
+
+Optimized low-poly representation or impostor where appropriate.
+
+Do not render every building at maximum detail regardless of camera distance.
+
+Prioritize buildings visible from the main sightseeing cameras.
+
+---
+
+# 7. PERFORMANCE REQUIREMENTS
+
+The project must remain responsive.
+
+First measure the existing performance baseline.
+
+Targets:
+
+- Approximately 60 FPS on capable desktop hardware.
+- Approximately 30 FPS or better on supported mid-range mobile hardware with appropriate quality settings.
+- No significant memory leaks.
+- No excessive texture loading.
+- No unnecessary draw calls.
+- No expensive reflection rendering on every frame when unnecessary.
+
+Optimize water reflections carefully.
+
+Avoid excessive real-time shadows.
+
+Use texture atlases and instancing where appropriate.
+
+Avoid generating excessive draw calls through procedural building variation.
+
+Create optimized quality levels compatible with existing settings.
+
+Do not sacrifice all visual quality simply to reach a numerical FPS target.
+
+Instead, profile and optimize the actual bottlenecks.
+
+Aim to keep the frame-time regression within approximately 10% of the original baseline on the same hardware and scene conditions.
+
+---
+
+# 8. IMPLEMENTATION STRATEGY
+
+Use the Superpowers workflow.
+
+Follow these milestones:
+
+## MILESTONE 1 — RIVER PROTOTYPE
+
+- Audit existing water.
+- Develop the new water shader.
+- Improve river geometry only when necessary.
+- Integrate environmental reflections.
+- Test daytime and nighttime.
+- Test rain compatibility.
+
+Acceptance criteria:
+
+The water must look substantially more realistic than the original implementation.
+
+Existing bridge alignment and boat movement must remain intact.
+
+Capture before-and-after screenshots.
+
+Do not proceed until the prototype is visually validated.
+
+## MILESTONE 2 — BUILDING PROTOTYPE
+
+Create a small representative group of riverside buildings.
+
+Include several different architectural families.
+
+Use Blender for geometry and materials.
+
+Export GLB and integrate into Three.js.
+
+Validate:
+
+- Realism.
+- Building placement.
+- Correct proportions.
+- Materials.
+- Lighting.
+- Performance.
+
+Capture before-and-after screenshots.
+
+## MILESTONE 3 — EXPAND THE RIVERSIDE ENVIRONMENT
+
+After the prototypes are validated:
+
+- Extend the new water system across the existing river.
+- Replace or improve existing buildings along both banks.
+- Introduce architectural variation.
+- Add optimized riverside details.
+- Implement LOD.
+
+Preserve existing building placement wherever practical.
+
+## MILESTONE 4 — OPTIMIZATION AND QA
+
+Test:
+
+- Daytime.
+- Sunset.
+- Nighttime.
+- Rain.
+- Storm.
+- Aerial camera.
+- Bridge-level camera.
+- Paragliding camera.
+- Road-level camera.
+
+Check for:
+
+- Texture errors.
+- Missing GLB assets.
+- Incorrect scale.
+- Floating buildings.
+- Waterbank gaps.
+- Visible seams.
+- Building intersections.
+- Reflection artifacts.
+- Shader compilation errors.
+- Frame-rate regression.
+- Memory leaks.
+
+Verify that all original website features continue to work.
+
+---
+
+# 9. STRICT SCOPE CONTROL
+
+For this iteration, DO NOT:
+
+- Rebuild Dragon Bridge.
+- Rebuild Thuan Phuoc Bridge.
+- Rebuild Tran Thi Ly Bridge.
+- Rebuild Han River Swing Bridge.
+- Rebuild Han River Tunnel.
+- Rewrite the camera system.
+- Rebuild the paragliding experience.
+- Rebuild the traffic system.
+- Rebuild the boat system.
+- Create new gameplay.
+- Replace the existing rendering engine.
+- Redesign the website UI.
+- Introduce unnecessary architectural changes.
+
+The bridges and other existing systems should remain untouched unless a small integration adjustment is essential for the river or building assets.
+
+If an integration change is unavoidable, document it and keep it minimal.
+
+Do not expand the project scope without a compelling technical reason.
+
+---
+
+# 10. AUTONOMOUS EXECUTION
+
+Do not stop after creating a specification.
+
+Complete the following:
+
+1. Inspect.
+2. Research.
+3. Plan.
+4. Create Blender assets.
+5. Export GLB files.
+6. Integrate with Three.js.
+7. Run the application.
+8. Capture screenshots.
+9. Measure performance.
+10. Fix issues.
+11. Validate all existing functionality.
+
+Use professional defaults.
+
+Do not repeatedly ask for minor human decisions.
+
+Make sensible architectural and artistic decisions independently.
+
+If Blender or another required tool is unavailable, investigate available alternatives and document the limitation.
+
+Never claim a model has been created or tested unless it actually has been.
+
+Keep existing files safe and preserve rollback capability.
+
+---
+
+# 11. FINAL DELIVERABLES
+
+Provide:
+
+1. Audit report.
+2. New river shader and associated files.
+3. New or improved river geometry where needed.
+4. Blender source files.
+5. Blender automation scripts.
+6. Building asset library.
+7. Exported GLB models.
+8. Optimized textures.
+9. Three.js integration changes.
+10. Before-and-after screenshots.
+11. Performance comparison.
+12. QA report.
+
+At completion, clearly identify:
+
+- Which parts of the river were upgraded.
+- Which buildings were replaced.
+- Which original assets remain.
+- Which optimizations were applied.
+- Any known limitations.
+
+# FINAL VISUAL GOAL
+
+The Han River must look like a real river flowing through Da Nang.
+
+The buildings along both banks must look like real Vietnamese urban architecture rather than primitive 3D blocks.
+
+When users fly above the river, they should see a convincing urban landscape.
+
+When users approach the water, they should notice natural movement and reflections.
+
+When users look toward the city, they should see varied building silhouettes, realistic facades, and a coherent skyline.
+
+When nighttime arrives, the buildings should illuminate naturally and their lights should interact with the river surface.
+
+Make these TWO areas significantly more realistic while preserving the entire existing experience.
+
+FOCUS: HAN RIVER + RIVERSIDE BUILDINGS.
+
+DO NOT EXPAND THE SCOPE.
+
+# 12. PERSISTENT PROJECT MEMORY & CHECKPOINT RECOVERY
+
+## 12.1 Core Requirement
+
+This project will be developed across multiple working sessions, potentially spanning several days or weeks.
+
+The human may:
+
+- Close Claude Code.
+- Shut down the computer.
+- Restart the computer.
+- Interrupt an implementation.
+- Start a new Claude session.
+- Switch between different working sessions.
+
+You MUST design the project workflow so that development can resume reliably without depending on the previous conversation history.
+
+The repository itself must contain sufficient information for another Claude Fable 5.2 session to understand:
+
+1. What the project is.
+2. What has already been implemented.
+3. What files have been modified.
+4. Which Blender assets have been created.
+5. Which architectural and technical decisions have been made.
+6. Which milestone is currently active.
+7. What remains unfinished.
+8. What the next exact implementation step should be.
+9. Which bugs or limitations are unresolved.
+10. What has already been tested and verified.
+
+Treat persistent project documentation as the source of truth.
+
+Conversation history is supplementary context, not the sole source of project memory.
+
+---
+
+## 12.2 Create the Project Memory System
+
+Create the following files immediately after auditing the project:
+
+### A. ROOT/CLAUDE.md
+
+This is the permanent project instruction file.
+
+Keep it concise and include:
+
+- Project objectives.
+- Existing architecture.
+- Technology stack.
+- Important project constraints.
+- Coding conventions.
+- Blender production pipeline.
+- Asset export conventions.
+- Development and testing commands.
+- Scope restrictions.
+- References to the AI project memory files.
+
+Do not put the entire project history in this file.
+
+Keep it focused on information every new session needs.
+
+### B. docs/ai/PROJECT_STATE.md
+
+This is the most important file.
+
+Maintain a structured project state document.
+
+It must contain:
+
+PROJECT:
+Da Nang Riverside Realism Upgrade
+
+CURRENT MILESTONE:
+M1 / M2 / M3 / M4
+
+CURRENT STATUS:
+Not started / In progress / Blocked / Completed
+
+LAST UPDATED:
+Timestamp
+
+LAST COMPLETED TASK:
+The most recently completed and verified task.
+
+CURRENT TASK:
+The precise task currently being implemented.
+
+COMPLETED WORK:
+List of completed and verified deliverables.
+
+IN PROGRESS:
+Work that has started but has not been completed.
+
+REMAINING TASKS:
+Prioritized implementation backlog.
+
+BLOCKERS:
+Known issues preventing progress.
+
+LATEST VALIDATION:
+Most recent build, visual inspection, performance and QA results.
+
+NEXT ACTION:
+The single most important concrete action the next session should perform.
+
+IMPORTANT FILES:
+Paths to relevant source code, Blender scenes, scripts, GLB assets and configuration.
+
+RECOMMENDED RESUME PROCEDURE:
+Exact instructions for continuing the project.
+
+Do not mark incomplete work as completed.
+
+### C. docs/ai/DECISIONS.md
+
+Record important technical decisions.
+
+For each decision, document:
+
+- Decision ID.
+- Date.
+- Context.
+- Problem.
+- Selected solution.
+- Alternatives considered.
+- Reason for selection.
+- Impact on existing architecture.
+
+Examples:
+
+- Water shader implementation strategy.
+- Reflection rendering approach.
+- Building modularization strategy.
+- GLB export conventions.
+- Texture compression.
+- LOD thresholds.
+- Asset naming conventions.
+
+Do not repeatedly reconsider decisions that have already been validated unless new technical evidence justifies changing them.
+
+### D. docs/ai/ASSET_MANIFEST.md
+
+Maintain a complete list of generated and modified assets.
+
+For every asset, record:
+
+- Asset name.
+- Asset category.
+- Blender source file.
+- Exported GLB path.
+- Texture dependencies.
+- Approximate polygon count.
+- Texture resolution.
+- Material information.
+- LOD information.
+- Current integration status.
+- Related scene or camera.
+- Last modification date.
+
+Do not recreate assets that already exist and have passed validation.
+
+### E. docs/ai/QA_LOG.md
+
+Record all significant validation activities.
+
+Include:
+
+- Test date.
+- Tested milestone.
+- Browser and device.
+- Camera perspective.
+- Weather and lighting conditions.
+- FPS and frame-time results.
+- Draw calls where available.
+- Visual defects.
+- Console errors.
+- Fixes applied.
+- Pass/fail status.
+
+Always distinguish actual measurements from estimates.
+
+---
+
+## 12.3 Mandatory Checkpoint Protocol
+
+You MUST update persistent project memory at these points:
+
+1. After completing the initial project audit.
+2. After finishing each significant implementation task.
+3. After generating a new Blender asset.
+4. After exporting and integrating a GLB.
+5. After completing a milestone.
+6. After discovering a significant technical problem.
+7. Before stopping work for any reason.
+
+Do not wait until the entire milestone is finished before saving progress.
+
+When a task is interrupted, record exactly what has and has not been completed.
+
+Update PROJECT_STATE.md with the latest known state.
+
+Update ASSET_MANIFEST.md whenever assets change.
+
+Update DECISIONS.md whenever an important technical decision is made.
+
+Update QA_LOG.md whenever a meaningful test is performed.
+
+Keep all documentation synchronized with the actual repository.
+
+---
+
+## 12.4 Safe Shutdown Protocol
+
+When the human requests:
+
+- Stop.
+- Pause.
+- Exit.
+- End this session.
+- I will continue tomorrow.
+- I need to shut down the computer.
+
+You MUST:
+
+1. Stop starting new implementation tasks.
+2. Finish or safely interrupt the current file operation.
+3. Save all modified files.
+4. Verify that created assets are present on disk.
+5. Update PROJECT_STATE.md.
+6. Update relevant asset and QA documentation.
+7. Record unfinished work and known issues.
+8. Identify the exact next action.
+9. Run git status.
+10. Provide a concise session handoff report.
+
+Never claim that a task has been completed if its files were not successfully saved.
+
+Do not delete or discard uncommitted work.
+
+If an operation was interrupted halfway, explicitly document it.
+
+---
+
+## 12.5 Session Recovery Protocol
+
+EVERY TIME a new session starts, you MUST perform this procedure before implementing anything.
+
+STEP 1 — IDENTIFY PROJECT
+
+Verify the current working directory.
+
+Ensure you are in the correct repository.
+
+STEP 2 — READ PROJECT MEMORY
+
+Read:
+
+- CLAUDE.md
+- docs/ai/PROJECT_STATE.md
+- docs/ai/DECISIONS.md
+- docs/ai/ASSET_MANIFEST.md
+- docs/ai/QA_LOG.md
+
+STEP 3 — INSPECT REAL PROJECT STATE
+
+Do not blindly trust documentation.
+
+Inspect:
+
+- Git status.
+- Latest commits.
+- Existing source files.
+- Blender project files.
+- Exported GLB assets.
+- Texture files.
+- Build output.
+- Relevant implementation code.
+
+Compare the actual repository with the previous checkpoint.
+
+STEP 4 — RECONCILE
+
+Determine whether:
+
+- The previous task finished successfully.
+- Some files were only partially created.
+- An asset was exported but not integrated.
+- A milestone was marked complete without sufficient testing.
+- New changes were made outside the previous session.
+
+Resolve discrepancies using the actual repository as the source of truth.
+
+STEP 5 — RESUME
+
+Identify the next incomplete task.
+
+Continue from that exact point.
+
+Do not repeat completed work unnecessarily.
+
+Do not redesign validated components without a reason.
+
+Do not ask the human to explain previous progress when the information already exists in project files.
+
+STEP 6 — VALIDATE
+
+Before declaring the recovered state valid, perform the smallest relevant build or smoke test.
+
+Then continue the implementation.
+
+---
+
+## 12.6 Git and Rollback Strategy
+
+Use Git to protect the project.
+
+Rules:
+
+- Inspect the current Git status before editing.
+- Never overwrite original assets without a backup or reversible change.
+- Keep Blender source files and runtime assets separate.
+- Create meaningful checkpoints after successfully validated milestones.
+- Use descriptive commit messages when stable milestone commits are appropriate.
+- Never force-push.
+- Never run destructive Git commands that discard user changes.
+- Never assume uncommitted changes are disposable.
+
+Keep generated large files managed carefully.
+
+Avoid committing temporary renders, caches, build output, or unnecessary intermediate files.
+
+Preserve the ability to roll back individual milestone changes.
+
+---
+
+## 12.7 Strict Resume Rules
+
+The following rules are mandatory:
+
+RULE 1:
+A new session must be able to reconstruct project progress using repository files alone.
+
+RULE 2:
+Never assume that conversation history is available.
+
+RULE 3:
+Never claim to remember work from a previous session without checking the repository.
+
+RULE 4:
+Always verify the last checkpoint before continuing.
+
+RULE 5:
+Never restart a completed milestone without identifying a specific reason.
+
+RULE 6:
+Prioritize unfinished tasks rather than creating new unrelated work.
+
+RULE 7:
+Every milestone must have explicit acceptance criteria and test evidence.
+
+RULE 8:
+When the project is paused, leave it in a recoverable state.
+
+RULE 9:
+If previous documentation is missing, reconstruct it from Git history and existing source files before continuing.
+
+RULE 10:
+The project must remain understandable and maintainable even if a completely different AI model takes over.
+
+---
+
+# 13. FINAL REQUIREMENT
+
+This project must support interrupted development and reliable session recovery.
+
+I want to be able to:
+
+1. Start development today.
+2. Let Claude implement part of the river.
+3. Shut down my computer.
+4. Return tomorrow.
+5. Open the same repository.
+6. Start or resume Claude Code.
+7. Have Claude inspect the persistent project memory.
+8. Continue precisely from the last verified checkpoint.
+
+I should not need to re-explain the project, repeat the original master prompt, or manually reconstruct the previous implementation context.
+
+Make persistent project memory a permanent part of the development architecture.
+
+The repository must remember the project, even when the conversation ends.
+</pasted_content id="a9d3">
+
+---
+
+<task-notification>
+<task-id>bzskjlf8h</task-id>
+<tool-use-id>toolu_01VVjZtRpn9GX8PKf8Z22gSy</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\497e5bfe-5083-4f8f-ba1c-01083c94c501\tasks\bzskjlf8h.output</output-file>
+<status>completed</status>
+<summary>Background command "Run weather regression test" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b0hxzk948</task-id>
+<tool-use-id>toolu_01RHrTcyednBEM56N4pb7NMB</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\497e5bfe-5083-4f8f-ba1c-01083c94c501\tasks\b0hxzk948.output</output-file>
+<status>completed</status>
+<summary>Monitor "weather-check.mjs finishing (pass or fail output)" stream ended</summary>
+<event>weather-check ended
+&gt; danang-bridges-3d@1.0.0 test:weather
+&gt; node tests/weather-check.mjs
+weather-check: đạt
+[exited with code 0]</event>
+</task-notification>
