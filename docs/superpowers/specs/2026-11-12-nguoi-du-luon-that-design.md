@@ -1,6 +1,6 @@
 # Người treo dù lượn dạng người thật (D-035) — thiết kế
 
-_Ngày: 2026-11-12 · Nhánh: `feature/nguoi-du-luon-that` (từ `main` `6dd201a`) · Trạng thái: đã triển khai Task 1–4, Task 5 đang làm (2026-11-13: mục 7 `explore-check`, tài liệu; bộ test cuối `test:perf`, `test:drawcalls`, `test:multi` chưa chạy), chưa merge_
+_Ngày: 2026-11-12 · Nhánh: `feature/nguoi-du-luon-that` (từ `main` `6dd201a`) · Trạng thái: đã triển khai Task 1–5 và sửa sau review toàn nhánh (`227527d`, 2026-11-13); `test:perf`, `test:drawcalls` chưa chạy, `test:multi` chạy tới 7a; chờ người dùng duyệt demo, chưa merge_
 
 Người dùng giao bằng một bản yêu cầu tiếng Anh ("upgrade paragliding human character to PUBG-inspired realistic 3D quality") và dặn làm thẳng tới khi xong, không dừng chờ duyệt spec. Mọi lựa chọn kỹ thuật dưới đây là **quyết định của agent**, trừ các ý ghi "người dùng yêu cầu".
 
@@ -127,7 +127,8 @@ Trần: ≤ 6 000 tam giác. Màu: đen / than / ô liu, điểm nhấn đỏ �
 
 ## 7. Tải, đường lùi, chất lượng
 
-- `plPreload()` gọi khi bấm thẻ Dù lượn ở màn chọn và khi `explore.start()` / `startWatching()`; trang thường không tải `pilot.glb` (import động, chunk `GLTFLoader` đã có sẵn từ Đi dạo).
+- `plPreload()` gọi khi bấm thẻ Dù lượn ở màn chọn và khi `explore.start()` / `startWatching()`; trang thường không tải `pilot.glb` (import động, chunk `GLTFLoader` đã có sẵn từ Đi dạo). `plUpdate` không tự nạp: Đi dạo / Lái xe nhìn thấy dù người khác giữ người khối, không tải tệp (sửa sau review toàn nhánh; bản đầu `plUpdate` tự nạp nên hai chế độ đó cũng tải).
+- Dù người khác (`pilot.remote`, không phải điện thoại) có người treo là 3 lưới ở lớp 1, tức tối đa +3 lệnh vẽ mỗi dù so với +1 của hình khối (4 dù: ≤ +12; chế độ xem 5 dù: ≤ +15; ngưỡng của `tests/multi-check.mjs` đã đổi theo). Phản chiếu mặt nước của dù mình chỉ còn cánh, không người, không dây (rig ở lớp 1).
 - Trước khi rig sẵn sàng: hình `full` cũ (người khối). Sẵn sàng → đổi trong vòng khung, không khựng (shader đã làm nóng bằng `compileAsync`, chờ tối đa `warmMs`).
 - Lỗi mạng / tệp hỏng / thiếu đoạn `sit` / thiếu xương bắt buộc / quá `loadMs`: `console.warn` một lần, giữ hình khối suốt phiên.
 - `?pilot=off`: ép hình khối (cho test và so sánh).

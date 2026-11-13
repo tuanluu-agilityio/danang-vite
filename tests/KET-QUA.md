@@ -6,7 +6,7 @@ Khung test mặc định 480×270 khớp `(max-height: 500px)` nên cả bộ te
 
 ## Người treo dù lượn có xương (2026-11-13, nhánh `feature/nguoi-du-luon-that`, D-035)
 
-Người treo Rocketbox `Military_Male_01` (`public/people/pilot.glb`, `src/explore/pilot/`). Chromium + SwiftShader, khung 480×270, `?test`. Số dưới đây là lần chạy thật tại `e059626` (Task 5); `test:perf -- --strict`, `test:drawcalls` (góc cũ phải +0), `test:multi` **chưa chạy ở commit này**.
+Người treo Rocketbox `Military_Male_01` (`public/people/pilot.glb`, `src/explore/pilot/`). Chromium + SwiftShader, khung 480×270, `?test`. Số dưới đây là lần chạy thật tại `e059626` (Task 5) trừ các dòng ghi `227527d` (sau review toàn nhánh); `test:perf -- --strict`, `test:drawcalls` (góc cũ phải +0) **chưa chạy**, `test:multi` chạy tới 7a.
 
 | Phép đo | Kết quả |
 |---|---|
@@ -21,7 +21,11 @@ Người treo Rocketbox `Military_Male_01` (`public/people/pilot.glb`, `src/expl
 | `test:pilot:unit` | 39/39 |
 | `test:multi:unit` / `test:people:unit` / `test:drive:unit` / `test:boats:unit` / `test:traffic:unit` / `test:trees:unit` | 82/82, 35/35, 124/124, 17/17, 11/11, 9/9 |
 | `test:stroll:unit` | 86/87: trượt "hướng theo camYaw" do dòng `strollBase.walk` 1,6 chưa commit của người dùng trong `src/config.ts` (không thuộc nhánh) |
-| `npm run test:explore` | lượt 1: LỖI 3/89 (7c, 7d, 7e: test kỳ vọng hiệu render = số lưới, quên phản chiếu của cánh; sửa test, không sửa mã); lượt 2: **"explore-check: đạt"**, 89 kiểm đạt, 0 lỗi |
+| Sau review toàn nhánh (`227527d`, 2026-11-13): `typecheck`, `build`, `test:pilot:unit`, `test:multi:unit` | đạt; 40/40 (thêm kiểm "chưa gọi plPreload thì không nạp"); 82/82 |
+| `npm run test:explore` tại `227527d` | **"explore-check: đạt"**, 89 kiểm; 7a gắn sau 14 s; 7c dù +4 lệnh vẽ, 3 lưới; 7f đêm + bão 3 lưới, +4 |
+| `npm run test:multi` tại `227527d` | Mục 1–6 và 7a: 93 kiểm đạt, 0 lỗi. Dù người khác có người treo: 0 bot 130 → 4 bot 142 (+12, trần mới 12); chế độ xem 128 → 143 với 5 bot (+15, trần mới 15); trần cũ +4 / +5 tính 1 lưới mỗi dù. Mục 5 (rời máy khi bay dù) đạt. **Không chạy xong:** đứng ở 7b (hai trình duyệt cùng lái xe, phần D-034) 60 phút không ra dòng nào, dừng tay; 7b, 7c, 7d chưa có kết quả, chưa rõ treo thật hay quá chậm |
+| `test:perf -- --strict`, `test:drawcalls` | **chưa chạy**: `test:perf` bị dừng sau 8 phút chưa in kết quả, theo lời người dùng ("gửi demo review trước, nếu ổn thì không cần chạy test, sẽ chạy test 1 lần sau này") |
+| `npm run test:explore` tại `e059626` | lượt 1: LỖI 3/89 (7c, 7d, 7e: test kỳ vọng hiệu render = số lưới, quên phản chiếu của cánh; sửa test, không sửa mã); lượt 2: **"explore-check: đạt"**, 89 kiểm đạt, 0 lỗi |
 
 ## Chế độ lái xe VF 3 (2026-11-12, nhánh `feature/lai-xe-oto`, D-034)
 
