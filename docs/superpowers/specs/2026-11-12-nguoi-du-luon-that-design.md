@@ -1,6 +1,6 @@
 # Người treo dù lượn dạng người thật (D-035) — thiết kế
 
-_Ngày: 2026-11-12 · Nhánh: `feature/nguoi-du-luon-that` (từ `main` `6dd201a`) · Trạng thái: đang triển khai_
+_Ngày: 2026-11-12 · Nhánh: `feature/nguoi-du-luon-that` (từ `main` `6dd201a`) · Trạng thái: đã triển khai Task 1–4, Task 5 đang làm (2026-11-13: mục 7 `explore-check`, tài liệu; bộ test cuối `test:perf`, `test:drawcalls`, `test:multi` chưa chạy), chưa merge_
 
 Người dùng giao bằng một bản yêu cầu tiếng Anh ("upgrade paragliding human character to PUBG-inspired realistic 3D quality") và dặn làm thẳng tới khi xong, không dừng chờ duyệt spec. Mọi lựa chọn kỹ thuật dưới đây là **quyết định của agent**, trừ các ý ghi "người dùng yêu cầu".
 
@@ -74,11 +74,13 @@ ex-glider (Group, đặt theo pos / yaw / bank như cũ)
 ├─ Mesh cánh (hình canopy)                         1 lệnh vẽ
 └─ ex-pilot (Group)
    ├─ wing (Object3D tĩnh)
-   ├─ swing (Group, tâm quay = điểm treo giữa hai móc; lắc con lắc)
+   ├─ swing (Group, tâm quay = đỉnh riser (điểm tụ dây); lắc con lắc)
    │  └─ nhân vật (bản sao glb, 1–2 SkinnedMesh)   1–2 lệnh vẽ
    └─ gear (SkinnedMesh, hệ dù)                    1 lệnh vẽ
 ```
-Tổng ≤ 4 lệnh vẽ mỗi dù có rig (hôm nay 1). Chỉ tồn tại khi bay dù, nên **5 góc kiểm cũ +0**.
+**Tâm lắc (đã đổi khi làm Task 4):** ở đỉnh riser, nơi dây treo tụ lại, không ở giữa hai carabiner như bản đầu của spec: riser + carabiner + người lắc cùng nhau, dây treo phía trên đứng yên trong hệ dù (đúng vật lý hơn, riser không bị kéo lệch). Nhóm `swing` (`pl-swing`) vừa là tâm lắc vừa là xương `hang` của trang bị.
+
+Tổng ≤ 4 lệnh vẽ mỗi dù có rig (hôm nay 1; khi làm: 3 lưới = cánh + nhân vật + trang bị; `explore-check` 7c đo hiệu render +4 vì cánh của mình ở lớp 0 còn vẽ trong phản chiếu mặt nước, hình khối +2 cùng lý do). Chỉ tồn tại khi bay dù, nên **5 góc kiểm cũ +0**.
 
 **Lớp (layer):** nhân vật + trang bị ở lớp 1 (không vào phản chiếu nước, như nhân vật Đi dạo và dù người khác). Cánh của mình giữ lớp 0 như cũ.
 
@@ -129,6 +131,7 @@ Trần: ≤ 6 000 tam giác. Màu: đen / than / ô liu, điểm nhấn đỏ �
 - Trước khi rig sẵn sàng: hình `full` cũ (người khối). Sẵn sàng → đổi trong vòng khung, không khựng (shader đã làm nóng bằng `compileAsync`, chờ tối đa `warmMs`).
 - Lỗi mạng / tệp hỏng / thiếu đoạn `sit` / thiếu xương bắt buộc / quá `loadMs`: `console.warn` một lần, giữ hình khối suốt phiên.
 - `?pilot=off`: ép hình khối (cho test và so sánh).
+- Test trình duyệt (SwiftShader): khung đầu chặn luồng chính lâu hơn `loadMs` (15 s) nên test cần người thật nới `CONFIG.explore.pilot.loadMs` (180 s) qua `__app.exFlight.CONFIG_explore` rồi mới `explore.start()` (`tests/pilot-shots.mjs`, `explore-check` mục 7); ca kiểm đường lùi giữ giá trị thật. Giá trị chạy thật giữ 15 000 ms.
 - `CONFIG.explore.pilot.remote`: dù người khác có dùng rig không (mặc định có; tối đa 4 bản sao). Điện thoại (bậc khởi đầu `phone`) → dù người khác dùng hình khối, dù của mình vẫn rig.
 - `dispose`: `PlRig.dispose()` bỏ mixer + skeleton bản sao + skeleton / hình học riêng của gear; nguồn dùng chung giữ lại. Thoát chế độ là tải lại trang (như cũ) nên không có vòng đời dài hơn.
 

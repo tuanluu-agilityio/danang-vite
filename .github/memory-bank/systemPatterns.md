@@ -132,6 +132,15 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Khe thu nước đen ở x = 0 trong hầm (`bore.ts`, trạm bơm, `0x1b1d20`) có từ trước D-034, không phải lỗi; ảnh kiểm hầm đặt xe ở x = 30 để khỏi nhầm.
 - Giao diện: `body.explore.drive`; `#drLook` phủ màn hình ở z-index 4 nên danh sách / lời mời phải nằm trên nó; `#drHud` đặt `dir="ltr"` nên bàn đạp và cần gạt không lật khi `ar` (RTL); nút 🔊 `#drSoundBtn` ≥ 44 px, ẩn khi xem.
 
+## Mẫu người treo dù lượn có xương (`src/explore/pilot/`, D-035)
+- `pilot.glb` do `npm run gen:pilot` sinh (`scripts/people/pilot.py`), không sửa tay; `tests/pilot-unit/glb.test.ts` kiểm trần (≤ 2,5 MB, ≤ 25 000 tam giác, ≤ 80 khớp: hiện đúng 80, bằng trần), đoạn `sit`, không lưới vũ khí, dòng giấy phép.
+- **Cạm bẫy three `AnimationMixer`:** `PropertyMixer` chỉ ghi xương khi giá trị của đoạn đổi, nên kênh hằng (vd. gối phải trong `sit` chỉ có 2 khóa) không được ghi lại mỗi khung. Mã cộng góc lên tư thế đoạn phải theo vòng `restore()` (trả các xương mình điều khiển về giá trị `sit` của khung trước) → `mixer.update(dt)` → `capture()` → cộng góc (`bones.ts`). Trả về tư thế bind thay vì giá trị đã chụp thì gối duỗi thẳng.
+- Trang bị là **một `SkinnedMesh`**: hình học dựng một lần mỗi nguồn (WeakMap) và dùng chung mọi dù, mỗi dù một `Skeleton` riêng ([wing, swing, Pelvis, Spine2, L/R Hand, L/R Thigh, pl-pack]); `boneInverses` tính theo hệ `ex-pilot` sau khi đặt tư thế nghỉ, `bind(sk, I)` nên đúng ở mọi vị trí trong thế giới. `dispose` của rig bỏ skeleton riêng, không bỏ hình học / vật liệu dùng chung.
+- Rig chỉ gắn trong `plUpdate` (vòng khung) cho dù đang hiện; mesh cánh đổi `geometry` sang `canopy` khi gắn, về `full` khi gỡ. `exPlaceGlider` gọi `plUpdate` nên **gọi `exPlaceGlider` ở bất cứ đâu (kể cả test) là bắt đầu nạp `pilot.glb`**: test muốn dù hình khối ổn định thì mở trang với `?pilot=off` (`explore-check` mục 2 và 5).
+- `pilot/index.ts` không import `core/device.ts` (chạm `screen` / `location` lúc nạp, làm hỏng test node); cờ điện thoại đặt ở `remote.ts` qua `group.userData.plOff`.
+- SwiftShader chặn luồng chính ở khung đầu lâu hơn `CONFIG.explore.pilot.loadMs` (15 s) nên `?explore=glider` trong test trình duyệt hay ra người khối (một `console.warn` "quá giờ"). Test cần người thật: mở trang thường, đặt `__app.exFlight.CONFIG_explore.pilot.loadMs = 180000`, rồi `explore.start()` (mẫu `tests/pilot-shots.mjs`, `explore-check` mục 7). Ca kiểm đường lùi (`?pilot=off`, chặn `pilot.glb`) giữ giá trị thật.
+- Đọc số đo qua `__app.explore.pilotDebug()` → `{ real, handErr, pose, calls }`; `calls` là số lưới đang hiện của dù (= lệnh vẽ); null khi `?pilot=off` (dù không vào danh sách). Muốn đo tư thế ổn định: đóng băng `explore.update` rồi tự bước bằng `explore.step(1/60, inp)`.
+
 ## Mẫu kiểm thử
 - `?test` → `window.__app` (renderer, scene, camera, cam, songHan, hr, tours, narration…). Thêm đối tượng mới vào `__app` khi cần kiểm.
 - `tests/lib.mjs`: `serveDir`, `launch` (SwiftShader), `openApp`, `frames`, `waitFlight`. Test đọc `dist/` → build trước.
