@@ -284,7 +284,16 @@ const riverfrontBase = {
     intensity: 1.7, duetOffset: 12                                // cường độ LED, lệch pha chế độ Đối đáp (s)
   },
   ads: { panos: 8, roofs: 5, screens: 3, banners: 16, switchEvery: 8, fade: 0.6 },   // số lượng bảng; màn LED đổi quảng cáo mỗi 8 s, chuyển mờ 0,6 s
-  promenade: { chunk: 600, lod: 400, benchStep: 20, railStep: 4, lights: 8 }         // dải đi bộ: độ dài chunk LOD, ẩn khi camera xa hơn (m)
+  promenade: { chunk: 600, lod: 400, benchStep: 20, railStep: 4, lights: 8 },        // dải đi bộ: độ dài chunk LOD, ẩn khi camera xa hơn (m)
+  /* Chi tiết kè hai bờ (D-036 / D-038, M3 Task 3.4): gộp vào lưới kè đá của river.ts, +0 lệnh vẽ. Mọi số là (ước lượng): chưa có bản vẽ kè Bạch Đằng / Trần Hưng Đạo công khai */
+  embankment: {
+    z0: -2600, z1: 2600, pad: 8,                        // m — đoạn sông có chi tiết kè (bờ Đông bắt đầu từ −2300 theo river.ts); lề chừa thêm quanh chân cầu, hành lang hầm, bến du thuyền, Cầu Tình Yêu (ước lượng)
+    cope: [0.18, 0.16],                                 // m — mũ kè: phần nhô ra phía sông, bề dày (ước lượng)
+    toe: [[1.0, 0.9], [2.2, 0.3]] as number[][],        // m — chân kè hai bậc: [khoảng nhô từ mặt kè, cao độ mặt bậc so với mực nước thường y = 0]; bậc dưới ngập khi mưa, cả hai ngập khi bão (ước lượng)
+    pierStep: 12, pier: [1.2, 0.3],                     // m — bước trụ kè (gờ đứng trên mặt kè); bề rộng dọc sông, độ nhô (ước lượng)
+    stairStep: 260, stairLen: 10, stair: [0.45, 0.3, 7],// m — bước đặt bậc thềm xuống nước, bề rộng dọc sông; mỗi bậc: mặt bậc, chiều cao, số bậc (ước lượng)
+    bollardStep: 24, bollard: [0.16, 0.42]              // m — bước cọc neo trên mũ kè; bán kính, chiều cao (ước lượng)
+  }
 };
 
 /* ---------------------------- Thời tiết ----------------------------

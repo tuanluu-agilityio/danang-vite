@@ -21,7 +21,8 @@ const col = (g: THREE.BufferGeometry, c: C3) => prepColored(g, () => c);
 const bx = (sx: number, sy: number, sz: number, x: number, y0: number, z: number, c: C3) => col(boxAt(sx, sy, sz, x, y0 + sy / 2, z), c);
 
 /* Vùng không đặt đồ vật: chân cầu, hành lang hầm */
-const blocked = (z: number, pad = 0) => Math.abs(z) < 34 + pad || Math.abs(z - CONFIG.songHan.z) < 18 + pad || Math.abs(z - CONFIG.ttl.z) < 40 + pad || Math.abs(z - (CONFIG.ttl.z - 65)) < 14 + pad || Math.abs(z - CONFIG.hanTunnel.z) < 28 + pad;
+export const RF_MARINA_Z = 104;   // m — tim bến du thuyền bờ Tây (phao dài 46 m)
+export const rfBlocked = (z: number, pad = 0) => Math.abs(z) < 34 + pad || Math.abs(z - CONFIG.songHan.z) < 18 + pad || Math.abs(z - CONFIG.ttl.z) < 40 + pad || Math.abs(z - (CONFIG.ttl.z - 65)) < 14 + pad || Math.abs(z - CONFIG.hanTunnel.z) < 28 + pad;
 
 export interface Promenade {
   group: THREE.Group; lights: THREE.InstancedMesh; chunks: THREE.LOD[]; lightCount: number;
@@ -55,14 +56,14 @@ export function buildPromenade(atlas: Atlas, adMat: THREE.Material, buildings: B
   const LG = R.love, lgz0 = LG.z - LG.width / 2 - LG.railGap, lgz1 = LG.z + LG.width / 2 + LG.railGap;
   for (const sd of [-1, 1]) {
     for (let z = (sd < 0 ? -2600 : -2300) + 2; z < z1; z += P.railStep) {
-      if (blocked(z, 4)) continue;
+      if (rfBlocked(z, 4)) continue;
       if (sd > 0 && z + P.railStep > lgz0 && z - 0.14 < lgz1) continue;   // bờ Đông: chừa lối vào Cầu Tình Yêu, bỏ cột + đoạn tay vịn [z, z + railStep] chạm bề rộng cầu tàu + railGap (người đi dạo qua đây)
       const f = furn[cid(sd, z)], x = sd * (B + 1);
       f.push(bx(0.28, 1.1, 0.28, x, Y + 0.5, z, STONE), bx(0.1, 0.07, P.railStep, x, Y + 1.5, z + P.railStep / 2, STEEL), bx(0.06, 0.05, P.railStep, x, Y + 1.05, z + P.railStep / 2, STEEL));
     }
     for (let z = (sd < 0 ? -2500 : -2200); z < z1; z += P.benchStep) {
       const zz = z + (rnd() - 0.5) * 6;
-      if (blocked(zz, 6)) continue;
+      if (rfBlocked(zz, 6)) continue;
       const f = furn[cid(sd, zz)], x = sd * (B + 4.5), tow = -sd;      // ghế quay mặt ra sông
       f.push(bx(0.5, 0.1, 1.8, x, Y + 0.45, zz, WOOD), bx(0.08, 0.5, 1.8, x - tow * 0.25, Y + 0.55, zz, WOOD), bx(0.45, 0.45, 0.12, x, Y, zz - 0.8, STONE), bx(0.45, 0.45, 0.12, x, Y, zz + 0.8, STONE));
       if (rnd() < 0.5) f.push(bx(1.4, 0.55, 1.4, sd * (B + 7), Y, zz + 5, STONE), bx(1.15, 0.25, 1.15, sd * (B + 7), Y + 0.55, zz + 5, [0.25 + rnd() * 0.6, 0.45 + rnd() * 0.3, 0.2 + rnd() * 0.3]));   // bồn hoa
@@ -70,7 +71,7 @@ export function buildPromenade(atlas: Atlas, adMat: THREE.Material, buildings: B
     }
   }
   // bến du thuyền sông Hàn (bờ Tây, phía Nam Cầu Rồng): phao nổi, cầu dẫn, mái che, thuyền neo
-  const mz = 104, mx = -(B - 8), mf = furn[cid(-1, mz)];
+  const mz = RF_MARINA_Z, mx = -(B - 8), mf = furn[cid(-1, mz)];
   mf.push(bx(3, 0.5, 46, mx, 0.05, mz, [0.82, 0.82, 0.8]));
   for (let k = 0; k < 5; k++) { const z = mz - 18 + k * 9; mf.push(bx(9, 0.4, 1.6, mx + 6, 0.05, z, [0.8, 0.8, 0.78])); mf.push(bx(2.6, 1.0, 7, mx + 11, 0.05, z + 0.5 * (k % 2), [0.95, 0.95, 0.93]), bx(1.4, 0.6, 3, mx + 11, 1.05, z + 0.5 * (k % 2), [0.25, 0.55, 0.7])); }
   const ramp = boxAt(9, 0.25, 2.2, 0, 0, 0); ramp.rotateZ(Math.atan2(2.45, 9)); ramp.translate(-B + 4.2, 1.7, mz);
@@ -80,7 +81,7 @@ export function buildPromenade(atlas: Atlas, adMat: THREE.Material, buildings: B
   const shopSlots = atlas.byKind('shop'); let si = 0;
   for (const b of buildings) {
     const sd = Math.sign(b.x), ax = Math.abs(b.x);
-    if (ax < 322 || ax > 362 || Math.abs(b.z) > 1500 || blocked(b.z, 8)) continue;
+    if (ax < 322 || ax > 362 || Math.abs(b.z) > 1500 || rfBlocked(b.z, 8)) continue;
     const face = -sd, xf = b.x + face * (b.w / 2), f = furn[cid(sd, b.z)], w = Math.min(b.d, 14);
     f.push(col(boxAt(1.9, 0.25, w, xf + face * 0.95, Y + 3.2, b.z), AWN[Math.floor(rnd() * AWN.length)]));
     const s = shopSlots[si++ % shopSlots.length], g = new THREE.PlaneGeometry(4.6, 1.15), [u0, v0, u1, v1] = atlas.rect(s), uv = g.attributes.uv;

@@ -5,6 +5,7 @@ import { scene } from '../core/renderer';
 import { MAT } from '../core/materials';
 import { shadowed } from '../common/geometry';
 import { HR_HOLES } from '../bridges/han-tunnel/profile';
+import { rfEmbankmentGeos } from './riverfront/embankment';
 
 /* ============================ Bờ sông Hàn & mặt đất ============================ */
 export function buildRiverBanks() {
@@ -26,9 +27,9 @@ export function buildRiverBanks() {
   // Bãi biển Mỹ Khê
   const sand = new THREE.Mesh(box(1480, 1600, -2300, 14000, -6, 1.2), MAT.sand); sand.receiveShadow = true; scene.add(sand);
   // Kè đá hai bờ (tường đứng) + lan can thấp
-  const walls = [box(-B - 2, -B, -2600, 14000, -3, Y + 0.5), box(B, B + 2, -2300, 14000, -3, Y + 0.5)];
+  const walls: THREE.BufferGeometry[] = [box(-B - 2, -B, -2600, 14000, -3, Y + 0.5), box(B, B + 2, -2300, 14000, -3, Y + 0.5)];
+  walls.push(...rfEmbankmentGeos());   // mũ kè, chân kè hai bậc, trụ kè, bậc thềm, cọc neo: gộp chung lưới kè (+0 lệnh vẽ, không dùng rand)
   const wallGeo = mergeGeometries(walls);
-  // UV lặp theo chiều dài kè
   scene.add(shadowed(new THREE.Mesh(wallGeo, MAT.stone), false, true));
   // Dải đi bộ ven sông
   const prom = [box(-B - 26, -B - 2, -2600, 14000, Y, Y + 0.05), box(B + 2, B + 26, -2300, 14000, Y, Y + 0.05)];

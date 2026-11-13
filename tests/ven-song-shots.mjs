@@ -2,12 +2,12 @@
 // GPU THẬT (không SwiftShader): cùng góc camera, cùng điều kiện (ngày, hoàng hôn, đêm, mưa, bão) để so trước / sau. Không chấm đạt / lỗi theo ms.
 // Ghi tests/screens/ven-song/<nhãn>/<góc>-<điều kiện>.png và metrics.json (lệnh vẽ, tam giác, ms GPU mỗi khung, thời gian mở trang, số program).
 //
-//   npm run build && node tests/ven-song-shots.mjs --label=truoc [--w=1600] [--h=900] [--only=ngay,dem] [--cams=nha-mau,tx-tay] [--query=ground=off] [--noshots]
+//   npm run build && node tests/ven-song-shots.mjs --label=truoc [--w=1600] [--h=900] [--only=ngay,dem] [--cams=nha-mau,tx-tay] [--query=ground=off] [--noshots] [--soft]
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright';
-import { serveDir, openApp, frames } from './lib.mjs';
+import { serveDir, openApp, frames, launch } from './lib.mjs';
 import { setWx } from './weather-lib.mjs';
 
 const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3) ?? d;
@@ -26,7 +26,9 @@ const CAMS = {
   'nha-mau': { pos: [-200, 40, 20], target: [-400, 25, -150] },
   'tx-tay': { pos: [-520, 620, -299], target: [-520, 0, -300] },         // từ trên xuống dải nhà bờ Tây phía Bắc Cầu Rồng (bãi trống, chuyển tiếp sang phố trong)
   'tx-dong': { pos: [560, 620, 301], target: [560, 0, 300] },            // từ trên xuống dải nhà bờ Đông phía Nam Cầu Rồng
-  'pho-trong': { pos: [-300, 90, -250], target: [-1100, 30, -420] }     // từ mép sông nhìn sâu vào phố trong bờ Tây: chỗ dải ven sông gặp rừng tháp
+  'pho-trong': { pos: [-300, 90, -250], target: [-1100, 30, -420] },   // từ mép sông nhìn sâu vào phố trong bờ Tây: chỗ dải ven sông gặp rừng tháp
+  'ke-tay': { pos: [-236, 5, -292], target: [-263, 1.2, -258] },         // sát kè bờ Tây: mũ kè, chân kè hai bậc, trụ kè, bậc thềm tại z = −260 (M3 Task 3.4)
+  'ke-dong': { pos: [225, 14, 100], target: [263, 1, 135] }               // nhìn chéo xuống kè bờ Đông phía Nam Cầu Rồng, bậc thềm tại z = 130
 
 };
 /* Điều kiện: night 0..1 của dayNight, preset thời tiết */
@@ -41,7 +43,7 @@ await fs.mkdir(out, { recursive: true });
 const srv = await serveDir(arg('dist', '') ? path.resolve(arg('dist', '')) : fileURLToPath(new URL('../dist/', import.meta.url)));   // --dist=<thư mục>: đo một bản build khác (vd. worktree của main) để so A/B
 const args = ['--ignore-gpu-blocklist', '--enable-gpu', '--disable-gpu-vsync', '--disable-frame-rate-limit'];
 if (process.platform === 'win32') args.unshift('--use-angle=d3d11');
-const browser = await chromium.launch({ headless: true, args });
+const browser = process.argv.includes('--soft') ? await launch() : await chromium.launch({ headless: true, args, executablePath: process.env.CHROMIUM_PATH || undefined });   // --soft: máy không có GPU (SwiftShader như các test khác): chỉ lấy ảnh + lệnh vẽ, không đo ms
 const t0 = Date.now();
 const { page, errors } = await openApp(browser, srv.url + '?perf' + (arg('query', '') ? '&' + arg('query', '') : ''), { width: W, height: H });
 const openMs = Date.now() - t0;

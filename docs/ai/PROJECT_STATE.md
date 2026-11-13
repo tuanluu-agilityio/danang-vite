@@ -6,9 +6,9 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; đã push lên `origin/feature/ven-song-chan-thuc` (2026-11-13) |
-| **Mốc hiện tại** | M3 Task 3.0–3.3 và M4 Task 4.0 (tối ưu GPU) và M3 3.6 xong; còn M3 3.4, 3.5, rồi M4 4.1–4.4 |
+| **Mốc hiện tại** | M3 xong trừ 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn: hoãn); đang M4 4.1 đợt 2; còn M4 4.2–4.4 |
 | **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem** (`tests/screens/ven-song/nha2/`, `toi-uu/`); GPU +3 đến +10 % so với `main` ở bốn góc, du-luon mưa +10 đến +12 % |
-| **Cập nhật** | 2026-11-13 19:30 +07 (đang chạy M4 task 4.1, đợt 1) |
+| **Cập nhật** | 2026-11-13, phiên đám mây (container Linux không GPU): xong M3 3.4, đang chạy M4 4.1 đợt 2 bằng SwiftShader |
 
 ## Việc vừa xong (đã kiểm)
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
@@ -25,6 +25,7 @@ M4 task 4.1 (bộ test nặng một lượt): đợt 1 gần xong, kết quả t
 - [x] M3 Task 3.0–3.3 (2026-11-13): `bkReshape()` hạ chiều cao 628 nhà dải sát sông hai bờ, kit hai bờ bằng `aFlip` (596 nhà), LOD kit 600 / 1 400 m, bảng màu tường / kính / mái theo họ, cửa hàng sáng đêm; ảnh `tests/screens/ven-song/nha2/`; A/B chuẩn so với `main` ở `QA_LOG.md` (**+10 đến +26 % GPU, không đạt**).
 - [x] M4 Task 4.0 (2026-11-13, người dùng: "Đồng ý, làm tối ưu GPU trước"): `bkCull()` cắt kit theo khung nhìn + tầm `kitFar` mỗi khung, rút mẫu texture shader nước, `?mirror=WxH` để đo; A/B ở `QA_LOG.md`; quyết định ở `DECISIONS.md` mục "Tối ưu GPU sau M3".
 - [x] M3 Task 3.7 (2026-11-13, người dùng: "làm tiếp"): mặt đất khu phố có sân / lối lát / cỏ / bãi xe vẽ trong shader `MAT.land` (`src/environment/buildings/ground.ts`, `CONFIG.buildings.ground`, `?ground=off`); vùng chuyển tiếp phía trong dải (`CONFIG.buildings.inner`); ảnh `tests/screens/ven-song/khao2/`; không chậm thêm đo được.
+- [x] M3 Task 3.4 (2026-11-13, phiên đám mây): chi tiết kè hai bờ (`src/environment/riverfront/embankment.ts`, `CONFIG.riverfront.embankment`): mũ kè, chân kè hai bậc, trụ kè, bậc thềm, cọc neo, gộp vào lưới kè (+0 lệnh vẽ); ảnh `tests/screens/ven-song/ke1/`; **chưa đo GPU thật, người dùng chưa xem**.
 - [x] Spec + plan (`docs/superpowers/specs|plans/2026-11-13-ven-song-chan-thuc*`).
 
 ## Còn lại (theo thứ tự ưu tiên)
@@ -62,7 +63,7 @@ Không có.
 | `src/core/dayNight.ts` | `waterColor`, `sunColor` theo ngày / đêm |
 | `src/bridges/han-tunnel/cutaway.ts` | chèn `discard` vào shader nước (cần chuỗi `void main() {` và varying `worldPosition`) |
 | `src/environment/city.ts` | ~7 900 nhà hộp `InstancedMesh`, vị trí từ `rand()` (KHÔNG đổi chuỗi) |
-| `src/environment/riverfront/` | địa danh, biển quảng cáo, dọn nhà; đọc instance nhà của `city.ts` |
+| `src/environment/riverfront/` | địa danh, biển quảng cáo, dọn nhà; đọc instance nhà của `city.ts`; `embankment.ts` = chi tiết kè (river.ts gộp vào lưới kè) |
 | `src/environment/buildings/` | `reshape.ts` (hạ chiều cao, họ, màu, vùng chuyển tiếp), `ground.ts` (mặt đất khu phố), `kit.ts` (phụ kiện + `bkCull`) |
 | `tests/ven-song-shots.mjs` | ảnh + số đo trước / sau (`--cams=`, `--query=`) |
 | `docs/ai/*.md` | bộ nhớ của việc này |

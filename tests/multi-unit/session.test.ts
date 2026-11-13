@@ -269,12 +269,13 @@ test("kind 'drive': join trước khi nhận lobby đầu không gửi gì (chư
 const repo = pjoin(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const MAIN_FILES = ['src/explore/multi/session.ts', 'src/explore/multi/protocol.ts', 'src/explore/multi/params.ts', 'src/explore/multi/client.ts',
   'server/multi/src/room.ts', 'server/multi/src/badwords.ts'];
+const MAIN_REF = '854db54';   // `main` ngay TRƯỚC khi gộp chế độ lái xe (D-034, PR #30): bản máy chủ / khách "cũ" mà hai kiểm dưới cần. Không dùng tên nhánh `main`: sau PR #30 `main` đã hiểu kind 'drive' nên kiểm "máy chủ cũ" trượt.
 let mainDir = '';
 function mainCode(): string {
   if (mainDir) return mainDir;
   mainDir = mkdtempSync(pjoin(tmpdir(), 'danang-main-'));
   for (const f of MAIN_FILES) {
-    const src = execFileSync('git', ['show', 'main:' + f], { cwd: repo, encoding: 'utf8' });
+    const src = execFileSync('git', ['show', MAIN_REF + ':' + f], { cwd: repo, encoding: 'utf8' });
     mkdirSync(dirname(pjoin(mainDir, f)), { recursive: true });
     writeFileSync(pjoin(mainDir, f), src);
   }

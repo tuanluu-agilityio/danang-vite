@@ -32,7 +32,7 @@ Nghiệm thu: spec §7 dòng M1.
 - [x] 3.1 Cả hai bờ (xoay 180° bằng `aFlip`); phân bố họ theo khoảng cách tới sông.
 - [x] 3.2 LOD kit trong shader đỉnh (600 m bỏ chi tiết tầng, 1 400 m bỏ cả kit); kit không vào bóng / gương nên không cần `passLod`.
 - [x] 3.3 Cửa sổ đêm theo họ (dựa trên `patchWindows`).
-- [ ] 3.4 Chi tiết kè và dải ven sông còn thiếu.
+- [x] 3.4 (xong 2026-11-13, phiên đám mây, chưa đo GPU thật) Chi tiết kè: mũ kè, chân kè hai bậc, trụ kè, bậc thềm, cọc neo (`riverfront/embankment.ts`, gộp vào lưới kè, +0 lệnh vẽ); bọt mép kè lùi theo chân kè.
 - [ ] 3.5 Nước: vệt sóng sau tàu (đọc vị trí đội tàu, không sửa hệ tàu), sóng bạc đầu mịn hơn, sắc hoàng hôn (người dùng: "note lại sẽ làm sau", 2026-11-13; đụng `dayNight.ts`, hệ ngày / đêm chung).
 - [x] 3.6 (xong 2026-11-13) README mục Cấu trúc + ghi nguồn tài nguyên; `copilot-instructions.md` §5 thêm lệnh mới.
 - [x] 3.7 (xong 2026-11-13) Mặt đất khu phố vẽ bằng shader (`ground.ts`: sân, lối lát, cỏ, bãi xe; +0 lệnh vẽ) và vùng chuyển tiếp phía trong dải (`CONFIG.buildings.inner`).

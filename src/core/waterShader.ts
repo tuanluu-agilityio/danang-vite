@@ -10,6 +10,7 @@ import { CONFIG } from '../config';
    - Ảnh phản chiếu kéo dài theo chiều đứng như nước gợn thật; độ lệch có trần nên sát camera không còn vỡ ô vuông.
    cutaway.ts chèn mã vào sau chuỗi 'void main() {' và đọc worldPosition: giữ đúng một chuỗi đó và tên varying. */
 const W = CONFIG.water, S = CONFIG.cityNight.streak;
+const TOE = Math.max(...CONFIG.riverfront.embankment.toe.map((t) => t[0]));   // m — bề rộng chân kè nhô ra sông
 const f = (n: number, d = 4) => n.toFixed(d);
 
 export const WATER_FRAGMENT = /* glsl */`
@@ -123,10 +124,11 @@ void main() {
   // ---- bọt: mép kè và sóng bạc đầu khi bão ----
   // chỉ lấy mẫu bọt ở nơi có bọt (dải sát kè, hoặc khi bão): textureLod vì lấy mẫu trong nhánh không có đạo hàm ổn định
   float foam = 0.0;
-  if ( shore < ${f(W.foamEdge, 2)} || uStorm > 0.3 ) {
+  float shoreF = max( shore - ${f(TOE, 2)}, 0.0 );                                                          // bọt bám mép ngoài chân kè (riverfront/embankment.ts), không nằm dưới bậc đá
+  if ( shoreF < ${f(W.foamEdge, 2)} || uStorm > 0.3 ) {
     float lod = clamp( log2( dist * 0.03 ), 0.0, 6.0 );
     float fn = textureLod( normalSampler, worldPosition.xz / 19.0 + time * vec2( 0.012, 0.02 ), lod ).r;
-    float edge = ( 1.0 - smoothstep( 0.0, ${f(W.foamEdge, 2)}, shore ) ) * smoothstep( 0.35, 0.75, fn + 0.25 * sin( time * 0.9 + worldPosition.z * 0.21 ) );
+    float edge = ( 1.0 - smoothstep( 0.0, ${f(W.foamEdge, 2)}, shoreF ) ) * smoothstep( 0.35, 0.75, fn + 0.25 * sin( time * 0.9 + worldPosition.z * 0.21 ) );
     float cap = 0.0;
     if ( uStorm > 0.3 ) {
       float fc = textureLod( normalSampler, p * vec2( 1.0, 0.4 ) / 83.0 + time * vec2( 0.017, 0.009 ), lod ).r;
