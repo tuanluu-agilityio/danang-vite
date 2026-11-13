@@ -80,6 +80,7 @@ void main() {
   float dk = ${f(W.distort[0])} + ${f(W.distort[1], 3)} / ( dist + ${f(W.distort[2], 1)} );
   vec2 distortion = ( slopeLo + ( slope - slopeLo ) * ${f(W.distortHi, 2)} ) * vec2( 1.0, ${f(W.stretch, 2)} ) * dk;   // gợn nhỏ chỉ góp một phần: tránh ảnh phản chiếu lấm tấm
   vec3 reflectionSample = vec3( texture2D( mirrorSampler, mirrorCoord.xy / mirrorCoord.w + distortion ) );
+  vec3 streakAdd = vec3( 0.0 );
   if ( uNight > 0.85 ) {                                                                                   // vệt đèn dài về đêm (D-023)
     vec3 streak = vec3( 0.0 ); float weight = 0.0;
     for ( int i = 1; i <= ${S.taps}; i ++ ) {
@@ -87,7 +88,8 @@ void main() {
       vec3 c = vec3( texture2D( mirrorSampler, mirrorCoord.xy / mirrorCoord.w + distortion * ( 1.0 + t ) + vec2( 0.0, t * ${f(S.reach)} ) ) );
       streak += max( c - ${f(S.threshold, 3)}, 0.0 ) * w; weight += w;
     }
-    reflectionSample += streak / weight * ${f(S.gain, 3)} * smoothstep( 0.85, 1.0, uNight );
+    streakAdd = streak / weight * ${f(S.gain, 3)} * smoothstep( 0.85, 1.0, uNight );
+    reflectionSample += streakAdd;
   }
 
   // ---- Fresnel ----
@@ -116,6 +118,7 @@ void main() {
   vec3 spec = sunColor * ( pow( sd, ${f(W.glint[0], 1)} ) * ${f(W.glint[1], 2)} + pow( sd, ${f(W.glint[2], 1)} ) * ${f(W.glint[3], 2)} ) * shadow * ( 1.0 - uNight ) * ( 1.0 - 0.8 * uRain );
 
   vec3 col = mix( body, reflectionSample, clamp( fres, 0.0, 1.0 ) ) + spec * reflectionSample;
+  col += streakAdd * max( ${f(S.floor, 2)} - fres, 0.0 );                                                    // vệt đèn có sàn phản xạ riêng: nước gần camera (Fresnel thấp) vẫn thấy vệt như Water.js cũ
 
   // ---- bọt: mép kè và sóng bạc đầu khi bão ----
   // chỉ lấy mẫu bọt ở nơi có bọt (dải sát kè, hoặc khi bão): textureLod vì lấy mẫu trong nhánh không có đạo hàm ổn định

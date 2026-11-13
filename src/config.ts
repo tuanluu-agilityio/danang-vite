@@ -552,7 +552,7 @@ const cityNightBase = {
   ledWidth: 1.4,     // m — bề rộng dải LED ở cạnh đứng (ước lượng)
   ledGain: 1.7,      // cường độ phát sáng LED, hệ số (ước lượng)
   farGlow: 0.16,      // cường độ ánh vàng của khối nhà ở xa, hệ số (ước lượng)
-  streak: { taps: 8, reach: 0.16, threshold: 0.35, gain: 2.8 }   // vệt đèn trên sông: số mẫu, độ dài theo tọa độ ảnh phản chiếu 0..1, ngưỡng độ sáng, hệ số (ước lượng)
+  streak: { taps: 8, reach: 0.16, threshold: 0.35, gain: 3.8, floor: 1.0 }   // vệt đèn trên sông: số mẫu, độ dài theo tọa độ ảnh phản chiếu 0..1, ngưỡng độ sáng, hệ số (2,8 trước D-036), floor = sàn phản xạ riêng của vệt 0..1 (vệt cộng thêm × max(floor − Fresnel, 0); shader nước D-036 có Fresnel thấp ở nước gần) (ước lượng)
 };
 
 /* ------------------------- Nhà ven sông: bộ phụ kiện Blender + mặt đứng theo họ (D-037 bản 2, M2) -------------------------
