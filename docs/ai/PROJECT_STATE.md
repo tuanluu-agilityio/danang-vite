@@ -6,8 +6,8 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
-| **Mốc hiện tại** | M2 — nguyên mẫu nhà (chưa bắt đầu) |
-| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 chưa bắt đầu |
+| **Mốc hiện tại** | M2 — nguyên mẫu nhà: Task 2.1–2.3 xong, đang ở Task 2.4 |
+| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 đang làm |
 | **Cập nhật** | 2026-11-13 14:05 +07 (điểm lưu trước khi tắt máy, phiên 1; 14:10 ghi thêm việc người dùng duyệt nước) |
 
 ## Việc vừa xong (đã kiểm)
@@ -20,6 +20,7 @@ Không có việc dở, không có thao tác file nào bị ngắt giữa chừn
 - [x] Kiểm kê hiện trạng (`AUDIT.md`), số đo gốc và ảnh "trước" (`tests/screens/ven-song/truoc/`, không commit; dựng lại được bằng lệnh ở `QA_LOG.md`).
 - [x] Công cụ chụp / đo dùng lại được: `tests/ven-song-shots.mjs` (GPU thật, 8 góc cố định, 6 điều kiện, `--dist=` để đo A/B).
 - [x] M1: shader nước nhiều lớp sóng, Fresnel, màu theo độ sâu, nắng lấp lánh, gợn mưa, sóng bạc đầu, bọt mép kè; gương 1024 × 512; thông số ở `CONFIG.water`.
+- [x] M2 Task 2.1–2.3 (2026-11-13): kit phụ kiện nhà 5 họ dựng bằng Blender (`blender/scripts/`, `blender/scenes/riverside_buildings.blend`), `public/buildings/kit.glb` 276 644 byte, `npm run gen:buildings`, `npm run test:buildings:unit` 24/24. Thiết kế: spec §6 (D-037 bản 2).
 - [x] Spec + plan (`docs/superpowers/specs|plans/2026-11-13-ven-song-chan-thuc*`).
 
 ## Còn lại (theo thứ tự ưu tiên)
@@ -45,7 +46,7 @@ Không có.
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-Bắt đầu M2 bằng Task 2.1 của plan: viết `blender/scripts/build_building_library.py` (5 họ nhà, mỗi họ đế / thân / mái), chạy qua `scripts/people/blender.mjs`, lưu `blender/scenes/riverside_buildings.blend`, đếm tam giác so với trần ở spec §3. Trước đó đọc D-037 trong `DECISIONS.md` (mới là đề xuất, phải kiểm ở M2).
+M2 Task 2.4–2.5: `src/environment/buildings/` nạp `kit.glb`, dựng mỗi họ một `InstancedMesh` chồng lên nhà hộp trong vùng mẫu bờ Tây (spec §6.3), thêm `aFam` cho thân; rồi Task 2.6 chụp ảnh trước / sau và đo. Kit **chưa từng chạy trong three**: phải kiểm tên thuộc tính sau GLTFLoader, pháp tuyến (xoay theo ma trận instance nhưng không nhân co giãn), z-fighting với thân.
 
 ## File quan trọng
 | File | Vai trò |

@@ -11,3 +11,6 @@ docs/superpowers/specs/tham-chieu/
 scripts/people/.cache/
 # Ảnh xem trước và ảnh trung gian của scripts/car/convert.py
 scripts/car/.cache/
+# Ảnh xem trước và GLB trung gian của blender/scripts/ (gen:buildings)
+blender/.cache/
+*.blend1
