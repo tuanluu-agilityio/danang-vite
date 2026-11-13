@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01JrTgJDsMWVdpJCHrikxtzM",
+  "agent_id": "a2ee6eae5418e197f",
+  "task_description": "Whole-branch review D-035",
+  "token_usage": {
+    "input_tokens": 52,
+    "cache_creation_tokens": 163508,
+    "cache_read_tokens": 3096692,
+    "output_tokens": 16964,
+    "api_call_count": 26
+  },
+  "started_at": "2026-11-13T07:23:19.6722837+07:00",
+  "completed_at": "2026-11-13T07:27:08.7802455+07:00"
+}
