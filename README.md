@@ -28,7 +28,7 @@ npm run test:voice                            # thuyết minh: đủ clip, thờ
 npm run test:weather                          # thời tiết: preset, mưa/gió/bão, đóng cầu, kịch bản 120 s, không rò rỉ bộ nhớ
 npm run test:sunwheel                         # Vòng quay Mặt Trời: kích thước, quay, cabin, LED, ngồi cabin, thời tiết, Tour
 npm run test:perf     -- [--strict]           # độ mượt: khung dài nhất và số shader biên dịch thêm khi đổi đêm/mặt cắt/bóng/mưa
-npm run test:explore                          # tự khám phá (dù lượn): mô hình bay, camera, màn chọn, giao diện khi bay, i18n, đo draw call các tư thế
+npm run test:explore                          # tự khám phá (dù lượn): mô hình bay, camera, màn chọn, giao diện khi bay, i18n, đo draw call các tư thế, người treo có xương (mục 7)
 npm run test:mobile                           # điện thoại: bố cục gọn dọc/ngang, sheet, tràn chữ 9 ngôn ngữ, RTL
 ```
 
@@ -57,6 +57,7 @@ src/
     riverfront/      hai bờ sông: địa danh thật, mặt dựng LED trái tim + "DN", bảng quảng cáo, chi tiết dải đi bộ
     weather/         thời tiết: khí quyển 4 preset, mưa + mặt ướt, gió (cây, dây, thuyền), bão (chớp, đóng cầu, kịch bản 120 s), nắng hè, cây đổ, âm thanh
   explore/           tự khám phá bằng dù lượn: mô hình bay thuần, dù, camera bám, màn chọn phương tiện, điều phối
+    pilot/           người treo dù lượn có xương (D-035): nạp `pilot.glb`, lò xo phản ứng theo lượt rẽ / tăng giảm tốc / gió, IK tay nắm quai phanh, đai + dây dựng bằng code (một SkinnedMesh), đường lùi về người khối
     stroll/          đi dạo (camera sau lưng): bản đồ va chạm 2D thuần, vùng đi được, chuyển động, nhân vật, camera, cần gạt cảm ứng, chụp ảnh
     multi/           dù lượn nhiều người (5 chỗ): giao thức + thông số dùng chung với máy chủ, phiên, sảnh, dù người khác, nhãn, chế độ xem, rời máy
     drive/           lái xe VF 3 (camera sau xe): mạng đường nhiều tầng (`net`, `roadData`), vật cản, va chạm, chuyển động theo số liệu thật, xe + bánh + đèn, xe tự động chặn / sơ tán nhịp quay, HUD, bàn đạp cảm ứng, tiếng xe
@@ -69,14 +70,14 @@ server/
   multi/             máy chủ dù lượn nhiều người (Cloudflare Worker + Durable Object, `npm --prefix server/multi run dev`)
 public/
   car/               `vf3.glb` (xe VinFast VF 3 cho chế độ Lái xe, ≤ 1,5 MB) và LICENSE-VF3.txt
-  people/            5 nhân vật đi dạo p0..p4.glb (có xương + chuyển động), `crowd.bin` + `crowd.jpg` (10 nhân vật giản lược cho đám đông người đi bộ, chuyển động nướng sẵn) và LICENSE-Rocketbox.txt
+  people/            5 nhân vật đi dạo p0..p4.glb (có xương + chuyển động), người treo dù lượn `pilot.glb` (có xương, đoạn `sit`), `crowd.bin` + `crowd.jpg` (10 nhân vật giản lược cho đám đông người đi bộ, chuyển động nướng sẵn) và LICENSE-Rocketbox.txt
   voice/             clip thuyết minh của Tour
 scripts/
   car/               convert.py: xử lý mô hình VF 3 thô `vinfast_vf3.glb` (xoá biển số, tách bánh, đổi hướng / tỉ lệ, thu ảnh) thành `public/car/vf3.glb` (`npm run gen:car`, cần Blender 4.5, chạy qua `scripts/people/blender.mjs`)
-  people/            convert.py: chuyển Microsoft Rocketbox sang .glb (`npm run gen:people`); crowd.py: sinh `crowd.bin` + `crowd.jpg` (`npm run gen:crowd`); cả hai cần Blender 4.5 và chạy qua `blender.mjs` (đặt biến môi trường `BLENDER` nếu Blender không ở chỗ mặc định)
+  people/            convert.py: chuyển Microsoft Rocketbox sang .glb (`npm run gen:people`); crowd.py: sinh `crowd.bin` + `crowd.jpg` (`npm run gen:crowd`); pilot.py: sinh `pilot.glb` cho người treo dù lượn (`npm run gen:pilot`); cả ba cần Blender 4.5 và chạy qua `blender.mjs` (đặt biến môi trường `BLENDER` nếu Blender không ở chỗ mặc định)
 ```
 
-Nhân vật trong chế độ Đi dạo và đám đông người đi bộ trên ba cầu dùng mô hình và chuyển động của [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox) (giấy phép MIT, commit `0943055db6ec570bcef9f2c8b41c9e5467c808f9`); xem `public/people/LICENSE-Rocketbox.txt`.
+Nhân vật trong chế độ Đi dạo, đám đông người đi bộ trên ba cầu và người treo dù lượn dùng mô hình và chuyển động của [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox) (giấy phép MIT, commit `0943055db6ec570bcef9f2c8b41c9e5467c808f9`); người treo dù là `Military_Male_01` đã bỏ dao, đổi màu sang ô liu / than, gộp vật liệu và thêm đoạn `sit` từ `m_sit_chair_breathe_01`. Xem `public/people/LICENSE-Rocketbox.txt`.
 
 Xe trong chế độ Lái xe dùng mô hình [Vinfast Vf3](https://sketchfab.com/3d-models/vinfast-vf3-6a2caea4505347d18c47ef4d47840859) của Hoàng Huy (giấy phép CC-BY-4.0), đã xoá biển số, tách bánh và thu ảnh; xem `public/car/LICENSE-VF3.txt`.
 

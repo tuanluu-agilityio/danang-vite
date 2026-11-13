@@ -233,7 +233,7 @@ try {
   check('nhãn nằm dưới cánh: top của nhãn > điểm chiếu của dù (' + info.below.map((x) => x === null ? '-' : Math.round(x)).join(',') + ' px)', info.below.length === 4 && info.below.every((x) => x !== null && x > 0));
   check('roster: "Đang bay 5/5" và đủ 5 tên', /5\/5/.test(info.roster) && ['Tester', 'Ann', 'Binh', 'Chi', 'Dung'].every((n) => info.roster.includes(n)));
   const c4 = await calls();
-  check(`Draw call chênh giữa 0 bot (${c0}) và 4 bot trong khung nhìn (${c4}) ≤ +4`, c4 - c0 <= 4);
+  check(`Draw call chênh giữa 0 bot (${c0}) và 4 bot trong khung nhìn (${c4}) ≤ +12 (D-035: dù người khác có người treo là 3 lưới lớp 1, hình khối 1)`, c4 - c0 <= 12);
 
   bots.pop().close();
   await page.waitForFunction(() => [0, 1, 2, 3, 4].filter(i => window.__app.multi.remotes.slotState(i)).length === 3, null, { timeout: 30000 }).catch(() => {});
@@ -318,7 +318,7 @@ try {
     const withB = meas(); gs.forEach((g) => { g.visible = false; }); const without = meas(); gs.forEach((g) => { g.visible = true; });
     return { withB, without, n: gs.length };
   }, BASE);
-  check(`Draw call ${dc.without} (0 bot) -> ${dc.withB} (${dc.n} bot) cùng tư thế camera: chênh ${dc.withB - dc.without} ≤ +5`, dc.n === 5 && dc.withB - dc.without <= 5 && dc.withB - dc.without >= 1);
+  check(`Draw call ${dc.without} (0 bot) -> ${dc.withB} (${dc.n} bot) cùng tư thế camera: chênh ${dc.withB - dc.without} ≤ +15 (D-035: 3 lưới mỗi dù có người treo)`, dc.n === 5 && dc.withB - dc.without <= 15 && dc.withB - dc.without >= 1);
 
   // Một bot (không phải người đang xem) rời: hiện lời mời, camera vẫn bám
   const gone = ['W1', 'W2', 'W3', 'W4', 'W5'].find((n) => n !== wn0);

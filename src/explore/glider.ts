@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { CONFIG } from '../config';
 import { shared } from '../core/shared';
-import type { GliderState } from './flight';
+import type { GliderState, GliderInput } from './flight';
+import { plUpdate } from './pilot';
 
 const G = CONFIG.explore.glider;
 const UV_DARK = 0.25, UV_LIT = 0.75;         // u trong dải màu trơn: nửa tối / nửa sáng
@@ -140,38 +141,68 @@ function exGlowMap(wingColor?: string): THREE.CanvasTexture {
   return exAtlasTexture(c);
 }
 
-/* Hình học dùng chung mọi dù (dựng một lần); vật liệu và texture riêng theo màu */
-let exGeo: THREE.BufferGeometry | null = null;
-const exMaps = new Map<string, { map: THREE.CanvasTexture; glow: THREE.CanvasTexture }>();
-
-function exGliderGeometry(): THREE.BufferGeometry {
-  if (exGeo) return exGeo;
+/* Cánh: mặt chính + dải đèn hai mép (nhô nhẹ lên trên mặt cánh). Dùng chung cho hình 'full' và 'canopy' */
+function exWingParts(): THREE.BufferGeometry[] {
   const parts: THREE.BufferGeometry[] = [];
-  /* Cánh: mặt chính + dải đèn hai mép (nhô nhẹ lên trên mặt cánh) */
   const body = exWingUv(exWingStrip(-G.chord / 2, G.chord / 2, [1, 1, 1], UV_DARK, 0));
   parts.push(body);
   parts.push(exWingStrip(G.chord / 2 - 0.12, G.chord / 2, [1, 0.42, 0.38], UV_LIT, 0.02));
   parts.push(exWingStrip(-G.chord / 2, -G.chord / 2 + 0.12, [0.75, 0.1, 0.08], UV_LIT, 0.02));   // mép sau: thấy rõ từ camera bám đuôi
-  /* Người treo, cách cánh G.lines mét */
-  exHuman(parts);
-  /* Dây: G.lineCount dây mỗi bên, từ cánh xuống vai */
-  const half = G.span / 2;
-  for (const side of [-1, 1]) {
-    for (let i = 0; i < G.lineCount; i++) {
-      const t = 0.12 + 0.75 * i / Math.max(1, G.lineCount - 1);
-      const x = (i % 2 ? 0.5 : -0.5) * G.chord * 0.6;
-      parts.push(exLine(new THREE.Vector3(x, -G.arch * half * t * t + x * TILT, side * t * half), new THREE.Vector3(0, -G.lines, side * 0.2)));
+  return parts;
+}
+
+/* Điểm bám dây thứ i trên cánh ở bên side, trước khi cộng originAt (công thức duy nhất cho dây của hình 'full' lẫn exLineTops): so le trước / sau */
+function exLineTop(i: number, side: -1 | 1): THREE.Vector3 {
+  const half = G.span / 2, t = 0.12 + 0.75 * i / Math.max(1, G.lineCount - 1), x = (i % 2 ? 0.5 : -0.5) * G.chord * 0.6;
+  return new THREE.Vector3(x, -G.arch * half * t * t + x * TILT, side * t * half);
+}
+
+/* Điểm bám dây treo trên cánh (hệ group dù, đã cộng originAt): G.lineCount điểm mỗi bên */
+export function exLineTops(): { x: number; y: number; z: number; side: -1 | 1 }[] {
+  const out: { x: number; y: number; z: number; side: -1 | 1 }[] = [];
+  for (const side of [-1, 1] as const) {
+    for (let i = 0; i < G.lineCount; i++) { const p = exLineTop(i, side); out.push({ x: p.x, y: p.y + G.lines * G.originAt, z: p.z, side }); }
+  }
+  return out;
+}
+
+/* Điểm bám dây phanh trên mép sau cánh (hệ group dù): 3 điểm mỗi bên, trải theo sải từ 0,3 tới 0,8 nửa sải */
+export function exBrakeTops(): { x: number; y: number; z: number; side: -1 | 1 }[] {
+  const out: { x: number; y: number; z: number; side: -1 | 1 }[] = [], half = G.span / 2, x = -G.chord / 2;
+  for (const side of [-1, 1] as const) {
+    for (const t of [0.3, 0.55, 0.8]) out.push({ x, y: -G.arch * half * t * t + x * TILT + G.lines * G.originAt, z: side * t * half, side });
+  }
+  return out;
+}
+
+/* y của điểm treo trong hệ group dù (người treo cách cánh G.lines, gốc group ở tỉ lệ originAt) */
+export const exHangY = -G.lines * (1 - G.originAt);
+
+/* Hình học dùng chung mọi dù (dựng một lần mỗi loại). 'full': cánh + người hình khối + dây (hình tạm khi nhân vật có xương chưa tải); 'canopy': chỉ cánh (người, dây do pilot/gear.ts dựng) */
+const exGeos: { full: THREE.BufferGeometry | null; canopy: THREE.BufferGeometry | null } = { full: null, canopy: null };
+const exMaps = new Map<string, { map: THREE.CanvasTexture; glow: THREE.CanvasTexture }>();
+
+export function exGliderGeometry(kind: 'full' | 'canopy'): THREE.BufferGeometry {
+  const cached = exGeos[kind];
+  if (cached) return cached;
+  const parts = exWingParts();
+  if (kind === 'full') {
+    /* Người treo, cách cánh G.lines mét */
+    exHuman(parts);
+    /* Dây: G.lineCount dây mỗi bên, từ cánh xuống vai */
+    for (const side of [-1, 1] as const) {
+      for (let i = 0; i < G.lineCount; i++) parts.push(exLine(exLineTop(i, side), new THREE.Vector3(0, -G.lines, side * 0.2)));
     }
   }
   const geo = mergeGeometries(parts)!;
   /* Gốc group nằm giữa cánh (trên) và người (dưới): cánh ở +lines·k, người ở −lines·(1−k) */
   geo.translate(0, G.lines * G.originAt, 0);
-  return exGeo = geo;
+  return exGeos[kind] = geo;
 }
 
 /* wingColor bỏ trống: dù cờ đỏ sao vàng của mình. Có wingColor: nền màu đó, không sao, giữ đường ô khí (dù người khác) */
 export function exBuildGlider(wingColor?: string): THREE.Group {
-  const geo = exGliderGeometry();
+  const geo = exGliderGeometry('full');
   const key = wingColor ?? '';
   let tex = exMaps.get(key);
   if (!tex) exMaps.set(key, tex = { map: exColorMap(wingColor), glow: exGlowMap(wingColor) });
@@ -182,10 +213,12 @@ export function exBuildGlider(wingColor?: string): THREE.Group {
   return g;
 }
 
-/* Đặt dù theo trạng thái bay: quay yaw trước, rồi cuộn quanh trục bay (bank > 0: nghiêng trái, cánh trái hạ) */
-export function exPlaceGlider(g: THREE.Group, s: GliderState): void {
+/* Đặt dù theo trạng thái bay: quay yaw trước, rồi cuộn quanh trục bay (bank > 0: nghiêng trái, cánh trái hạ).
+   dt (s): bước khung cho người treo có xương (pilot/index.ts plUpdate: gắn khi mô hình đã về, phản ứng lò xo); inp: phím của dù của mình (tay đi trước thân) */
+export function exPlaceGlider(g: THREE.Group, s: GliderState, dt = 0, inp?: GliderInput): void {
   g.position.copy(s.pos);
   g.rotation.set(-s.bank, s.yaw, 0, 'YXZ');
   const m = (g.children[0] as THREE.Mesh).material as THREE.MeshStandardMaterial;
   m.emissiveIntensity = shared.uNight.value;
+  plUpdate(g, s, dt, inp ? inp.turn : undefined);
 }
