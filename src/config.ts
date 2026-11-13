@@ -292,7 +292,7 @@ const riverfrontBase = {
     toe: [[1.0, 0.9], [2.2, 0.3]] as number[][],        // m — chân kè hai bậc: [khoảng nhô từ mặt kè, cao độ mặt bậc so với mực nước thường y = 0]; bậc dưới ngập khi mưa, cả hai ngập khi bão (ước lượng)
     pierStep: 12, pier: [1.2, 0.3],                     // m — bước trụ kè (gờ đứng trên mặt kè); bề rộng dọc sông, độ nhô (ước lượng)
     stairStep: 260, stairLen: 10, stair: [0.45, 0.3, 7],// m — bước đặt bậc thềm xuống nước, bề rộng dọc sông; mỗi bậc: mặt bậc, chiều cao, số bậc (ước lượng)
-    bollardStep: 24, bollard: [0.16, 0.42]              // m — bước cọc neo trên mũ kè; bán kính, chiều cao (ước lượng)
+    bollardStep: 24, bollard: [0.24, 0.5, 0.36, 0.16]   // m — bước cọc neo trên mũ kè; bán kính chân thân, chiều cao thân, bán kính mũ, bề dày mũ (cọc bích dạng nấm; bản đầu 0,16 × 0,42 gần như không thấy) (ước lượng)
   }
 };
 

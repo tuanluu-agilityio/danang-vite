@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+import * as THREE from 'three';
+import { rfStairGaps } from './embankment';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CONFIG } from '../../config';
 import { MAT } from '../../core/materials';
@@ -54,12 +55,19 @@ export function buildPromenade(atlas: Atlas, adMat: THREE.Material, buildings: B
   const cid = (sd: number, z: number) => (sd < 0 ? 0 : n) + Math.min(n - 1, Math.max(0, Math.floor((z - z0) / P.chunk)));
   // lan can kè + ghế đá + bồn hoa + thùng rác
   const LG = R.love, lgz0 = LG.z - LG.width / 2 - LG.railGap, lgz1 = LG.z + LG.width / 2 + LG.railGap;
+  const gaps: Record<number, [number, number][]> = { [-1]: rfStairGaps(-1), 1: rfStairGaps(1) };
   for (const sd of [-1, 1]) {
     for (let z = (sd < 0 ? -2600 : -2300) + 2; z < z1; z += P.railStep) {
       if (rfBlocked(z, 4)) continue;
       if (sd > 0 && z + P.railStep > lgz0 && z - 0.14 < lgz1) continue;   // bờ Đông: chừa lối vào Cầu Tình Yêu, bỏ cột + đoạn tay vịn [z, z + railStep] chạm bề rộng cầu tàu + railGap (người đi dạo qua đây)
       const f = furn[cid(sd, z)], x = sd * (B + 1);
-      f.push(bx(0.28, 1.1, 0.28, x, Y + 0.5, z, STONE), bx(0.1, 0.07, P.railStep, x, Y + 1.5, z + P.railStep / 2, STEEL), bx(0.06, 0.05, P.railStep, x, Y + 1.05, z + P.railStep / 2, STEEL));
+      // bậc thềm xuống nước (embankment.ts): bỏ tay vịn trong khoảng mở, thêm cột ở hai mép; cột nằm trong khoảng mở thì bỏ
+      const post = (pz: number) => f.push(bx(0.28, 1.1, 0.28, x, Y + 0.5, pz, STONE));
+      const rail = (a: number, b: number) => { if (b - a > 0.3) f.push(bx(0.1, 0.07, b - a, x, Y + 1.5, (a + b) / 2, STEEL), bx(0.06, 0.05, b - a, x, Y + 1.05, (a + b) / 2, STEEL)); };
+      const gap = gaps[sd].find(([g0, g1]) => z + P.railStep > g0 && z < g1);
+      if (!gap) { post(z); rail(z, z + P.railStep); continue; }
+      if (z <= gap[0]) { post(z); rail(z, gap[0]); if (gap[0] - z > 0.3) post(gap[0]); }
+      if (z + P.railStep > gap[1]) { post(gap[1]); rail(gap[1], z + P.railStep); }
     }
     for (let z = (sd < 0 ? -2500 : -2200); z < z1; z += P.benchStep) {
       const zz = z + (rnd() - 0.5) * 6;

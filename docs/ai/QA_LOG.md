@@ -2,6 +2,13 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-14 01:36 → 01:38 — Phần D: chi tiết kè trên GPU thật, chỉnh cọc neo + lan can trước bậc thềm (người dùng: "không cần hỏi lại")
+- **Lệnh**: `node tests/ven-song-shots.mjs --label=ke2 --only=ngay,dem,bao --cams=ke-tay,ke-dong,bo-ke,sat-nuoc` (trước chỉnh), `--label=ke3` (sau chỉnh). GPU thật Intel Arc 1600 × 900, 0 lỗi console, program 184 cả hai lượt. Ảnh ở `tests/screens/ven-song/ke2/`, `ke3/` (không commit).
+- **Xem `ke2` (agent xem `ke-tay-ngay`, `ke-dong-ngay`, `ke-tay-dem`)**: chân kè hai bậc, trụ kè, bậc thềm có tường má, mũ kè: rõ, soi bóng xuống nước; ban đêm kè tối nhưng còn đọc được hình, vệt đèn nhà trên nước sát kè, không còn đốm trắng. Xác nhận hai lỗi đã biết: cọc neo không thấy; lan can chạy liền qua bậc thềm.
+- **Đã chỉnh**: (1) cọc neo dạng nấm (thân 0,24 × 0,5 m + mũ 0,36 × 0,16 m, `CONFIG.riverfront.embankment.bollard`), bỏ cọc trước bậc thềm; (2) `rfStairGaps()` (`embankment.ts`) → `promenade.ts` bỏ tay vịn trong khoảng 10 m trước mỗi cụm bậc thềm, thêm cột ở hai mép. Vẫn gộp vào lưới cũ (+0 lệnh vẽ, không `rand()` / `rng()` mới; vòng lan can không gọi `rnd()` nên chuỗi `rng(5150)` của ghế / bồn hoa không đổi).
+- **Xem `ke3`**: cọc neo thấy rõ dọc mũ kè (`ke-dong-ngay`); lan can mở ở bậc thềm (`ke-tay-ngay`). `npm run build` đạt.
+- **Còn / chưa kiểm**: người đi dạo vẫn không xuống được bậc thềm (vùng đi được dừng ở mép lan can `BANK_IN`, chưa thêm vùng bậc thềm: phải thêm cao độ theo bậc + va chạm tường má); cọc neo cùng vật liệu đá với kè (không có màu gang đen vì gộp một lưới một vật liệu); vân đá lấm tấm trên mặt kè đứng như trước; tam giác thêm chưa đếm bằng máy (ước lượng cọc neo từ khoảng 10 nghìn lên khoảng 15 nghìn); người dùng chưa xem.
+
 ## 2026-11-14 01:30 → 01:34 — Phần B: `test:stroll` LỖI, phân tích và sửa
 - **Cách chẩn đoán**: thêm hai biến môi trường vào `tests/lib.mjs`: `TEST_REAL_GPU=1` (chạy test bằng GPU thật, vài phút thay vì hàng chục phút; chỉ để chẩn đoán) và `TEST_DIST=<thư mục>` (chạy nguyên test trên bản build khác). Chạy `stroll-check` trên bản nhánh và trên bản `main` `752ea22`.
 - **Kết quả**: cả 4 kiểm trượt đều **trượt y hệt trên `main`**: không lỗi nào do kit nhà hay chi tiết kè của nhánh này, không do máy đám mây (lỗi thứ 5 ở phiên đám mây, hết giờ bấm thẻ Đi dạo, không tái hiện ở đây: do máy đó chậm). Riêng số "chunk GLTFLoader 1" là của nhánh (kit nạp lúc mở trang); `main` ra 0 nhưng vẫn trượt cùng kiểm vì `people/: 2`.
