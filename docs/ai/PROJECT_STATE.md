@@ -8,13 +8,13 @@
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
 | **Mốc hiện tại** | M3 Task 3.0–3.3 và M4 Task 4.0 (tối ưu GPU) và M3 3.6 xong; còn M3 3.4, 3.5, rồi M4 4.1–4.4 |
 | **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem** (`tests/screens/ven-song/nha2/`, `toi-uu/`); GPU +3 đến +10 % so với `main` ở bốn góc, du-luon mưa +10 đến +12 % |
-| **Cập nhật** | 2026-11-13 16:25 +07 (sau M3 task 3.7) |
+| **Cập nhật** | 2026-11-13 19:30 +07 (đang chạy M4 task 4.1, đợt 1) |
 
 ## Việc vừa xong (đã kiểm)
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
 
 ## Việc đang làm
-Không có việc dở. Người dùng đã trả lời (2026-11-13): (1) nước: "Đồng ý"; (2) sắc hoàng hôn: "Nên note lại sẽ làm sau" → nằm trong việc tồn M3 (task 3.5), không làm ở M2.
+M4 task 4.1 (bộ test nặng một lượt): đợt 1 gần xong, kết quả từng test ở `QA_LOG.md` mục 2026-11-13 16:17–19:30. Việc phải làm tiếp theo thứ tự: (1) sửa lỗi `streak` của `test:citynight` (vệt đèn trên sông quá nhạt với shader nước mới) rồi chạy lại `test:citynight`; (2) so bảng `test:drawcalls` với `tests/KET-QUA.md`; (3) đọc kết quả `test:perf -- --strict`; (4) chạy đợt 2; (5) kiểm `multi:unit` trượt 1 (kiểm lỗi thời so với `main`?). Người dùng đã trả lời (2026-11-13): (1) nước: "Đồng ý"; (2) sắc hoàng hôn: "Nên note lại sẽ làm sau" → nằm trong việc tồn M3 (task 3.5), không làm ở M2.
 
 ## Đã hoàn thành
 - [x] Kiểm kê hiện trạng (`AUDIT.md`), số đo gốc và ảnh "trước" (`tests/screens/ven-song/truoc/`, không commit; dựng lại được bằng lệnh ở `QA_LOG.md`).

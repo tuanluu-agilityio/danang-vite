@@ -2,6 +2,13 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-13 16:17–19:30 — M4 Task 4.1 đợt 1 (SwiftShader, bản build của `12e2852` + `strollBase.walk` 1,6 chưa commit của người dùng) — ĐANG CHẠY DỞ
+- Test đơn vị: buildings 35/35, boats 17/17, traffic 11/11, trees 9/9, people 35/35, pilot 40/40, drive 124/124, stroll 86/87 (lỗi cũ do `walk` 1,6), **multi 81/82**: trượt "máy chủ cũ thì lái một mình: phiên drive mới gặp room.ts của main" (kiểm lấy `room.ts` của `main`, mong `main` chưa hiểu `drive`; `main` nay trả `kind: 'drive'`). Nhánh này không sửa `src/explore/multi/` hay `server/multi/`; chưa sửa kiểm.
+- `test:weather`: "weather-check: đạt" (18 phút). `test:riverfront`: "tất cả kiểm tra đạt" (5 phút; dọn nhà 40 lượt, 204/7934 instance scale 0). `test:tunnel`: "tất cả kiểm tra đạt" (90 phút).
+- `test:citynight -- --baseline` rồi `test:citynight`: 13 mục đạt, **LỖI `streak`**: 1 668 điểm ảnh màu đèn trên sông gần bờ (cần ≥ 2 × 3 367). Nghi: Fresnel mới (F0 0,02) làm ảnh phản chiếu ở nước gần nhạt hơn Water.js cũ, cộng nhà sát sông thấp đi nên ít cửa sổ sáng trong gương. Chưa sửa (định sửa: cho vệt đèn một sàn phản xạ riêng trong `waterShader.ts`).
+- `test:drawcalls`: chạy xong, exit 0 (39 phút), **chưa so với bảng chuẩn** `tests/KET-QUA.md`. Log ở thư mục tạm của phiên (không bền): phải chạy lại nếu mất.
+- `test:perf -- --strict`: đang chạy lúc ghi. Đợt 2 (sunwheel, tour, voice, boats, traffic, trees, people, stroll, explore, mobile, gpu, drive, multi): chưa chạy.
+
 ## 2026-11-13 — M3 Task 3.7: mặt đất khu phố + vùng chuyển tiếp phía trong (bản làm việc trước commit)
 - **Vì sao**: ảnh từ trên xuống (`tests/screens/ven-song/khao/tx-tay-ngay.png`) cho thấy "bãi đất trống" là lưới nhà thưa (ô 36 m, nhà 14–29 m, ô đường để trống) trên nền đất một màu; phía trong dải 300 m là tháp trắng, gãy đột ngột.
 - **Đã làm**: (1) `bkPatchGround()` (`src/environment/buildings/ground.ts`): shader của `MAT.land` vẽ sân quanh từng ô nhà (bê tông / gạch / cỏ / bãi xe theo băm ô), lối lát ở ô đường, vỉa hè giữa kè và hàng nhà đầu; `?ground=off` để đo; (2) `bkReshape()` thêm vùng phía trong (`CONFIG.buildings.inner`): 360 m chuyển tiếp (hạ chiều cao thưa dần, có họ + màu, không kit), tới 1 000 m chỉ nhuộm màu tường thưa dần.
