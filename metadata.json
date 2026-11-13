@@ -3,7 +3,7 @@
   "checkpoint_id": "01M7B2HHV6N46T1HMF4JNSZKZP",
   "strategy": "manual-commit",
   "branch": "feature/ven-song-chan-thuc",
-  "checkpoints_count": 5,
+  "checkpoints_count": 6,
   "files_touched": [
     "src/config.ts"
   ],
@@ -28,14 +28,21 @@
       "compact_transcript": "/2/transcript.jsonl",
       "content_hash": "/2/content_hash.txt",
       "prompt": "/2/prompt.txt"
+    },
+    {
+      "metadata": "/3/metadata.json",
+      "transcript": "/3/full.jsonl",
+      "compact_transcript": "/3/transcript.jsonl",
+      "content_hash": "/3/content_hash.txt",
+      "prompt": "/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 8,
-    "cache_creation_tokens": 1626,
-    "cache_read_tokens": 670818,
-    "output_tokens": 2340,
-    "api_call_count": 3,
+    "input_tokens": 40,
+    "cache_creation_tokens": 29354,
+    "cache_read_tokens": 4250633,
+    "output_tokens": 20520,
+    "api_call_count": 18,
     "subagent_tokens": {
       "input_tokens": 0,
       "cache_creation_tokens": 0,
