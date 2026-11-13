@@ -1,6 +1,6 @@
 /* ===== Người treo dù: điều phối (src/explore/pilot/index.ts) =====
    Gắn / cập nhật / gỡ nhân vật có xương dưới mỗi dù (của mình lẫn người khác), spec §4, §7:
-   - plPreload(): bắt đầu nạp pilot.glb (thẻ Dù lượn, explore.start / startWatching). Trang thường không gọi nên không tải.
+   - plPreload(): bắt đầu nạp pilot.glb (thẻ Dù lượn, explore.start / startWatching). Trang thường, Đi dạo, Lái xe không gọi nên không tải (dù người khác nhìn từ đó là người khối).
    - plUpdate(): gọi từ exPlaceGlider mỗi khung. Nguồn chưa về / lỗi → giữ hình 'full' (người khối). Nguồn đã về và dù đang hiện → gắn trong vòng khung:
      mesh cánh đổi sang hình 'canopy', thêm nhóm con ex-pilot (rig.ts). Dù đang ẩn lúc nguồn về thì chưa gắn (Review Focus 1).
    - Tín hiệu (react.ts plSignals) từ vị trí + bank của chính dù nên dùng chung cho dù của mình, dù người khác, chế độ xem; gió đọc weatherU (cùng nguồn cây / mưa).
@@ -23,15 +23,12 @@ let loader: () => Promise<PlSource | null> = plLoad;
 let src: PlSource | null | undefined;   // undefined = chưa có kết quả, null = lỗi (giữ hình khối suốt phiên)
 let asked = false, gen = 0, seeds = 0;
 
-/* Nguồn nếu đã nạp xong; chưa thì bắt đầu nạp (một lần) và trả null. Không ném */
-function need(): PlSource | null {
-  if (src !== undefined) return src;
-  if (!asked) {
-    asked = true;
-    const g = gen, done = (r: PlSource | null) => { if (g === gen) src = r || null; };
-    try { loader().then(done, () => done(null)); } catch { done(null); }
-  }
-  return null;
+/* Bắt đầu nạp (một lần). Chỉ plPreload gọi: plUpdate không tự nạp, nên Đi dạo / Lái xe thấy dù người khác không tải pilot.glb (giữ người khối). Không ném */
+function ask(): void {
+  if (asked || src !== undefined) return;
+  asked = true;
+  const g = gen, done = (r: PlSource | null) => { if (g === gen) src = r || null; };
+  try { loader().then(done, () => done(null)); } catch { done(null); }
 }
 
 /* Mức gió thời tiết 0..1 cho người treo: gió trung bình + giật (m/s, weather/index.ts ghi vào weatherU) chia windRef */
@@ -61,7 +58,7 @@ function attach(glider: THREE.Group, e: PlEntry, s: PlSource): void {
   e.track.has = false;
 }
 
-export function plPreload(): void { if (!OFF) need(); }
+export function plPreload(): void { if (!OFF) ask(); }
 
 export function plUpdate(glider: THREE.Group, s: GliderState, dt: number, turnInput?: number): void {
   if (OFF) return;
@@ -72,7 +69,7 @@ export function plUpdate(glider: THREE.Group, s: GliderState, dt: number, turnIn
     entries.set(glider, e);
   }
   if (!e.rig) {
-    const so = need();
+    const so = src;
     if (!so || !glider.visible) return;
     attach(glider, e, so);
     if (!e.rig) return;

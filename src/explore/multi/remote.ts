@@ -67,7 +67,7 @@ export const exRemotes = {
     const t = nowMs - M.interpSends * 1000 / M.sendHz;
     for (const s of slots) {
       if (s.name === null || !s.group) continue;
-      if (!s.track.sample(t, s.pose)) { s.live = false; s.group.visible = false; continue; }
+      if (!s.track.sample(t, s.pose)) { s.live = false; s.group.visible = false; s.lastMs = -1; continue; }   // đứt mẫu: lần hiện lại dt = 0, không dồn cả khoảng đứt vào người treo
       const p = s.pose;
       s.state.pos.set(p.x, p.y, p.z); s.state.yaw = p.yaw; s.state.bank = p.bank;
       const dt = s.lastMs < 0 ? 0 : (nowMs - s.lastMs) / 1000;   // người treo kẹp dt ≤ pilot.dtMax

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { exPlaceGlider, exGliderGeometry } from '../../src/explore/glider.ts';
 import { exCreate } from '../../src/explore/flight.ts';
-import { plUpdate, plReset, plDetach, plDebug, __plSetLoader } from '../../src/explore/pilot/index.ts';
+import { plUpdate, plPreload, plReset, plDetach, plDebug, __plSetLoader } from '../../src/explore/pilot/index.ts';
 import { plSource, type PlSource } from '../../src/explore/pilot/load.ts';
 
 /* Cây xương ngồi (m, hệ +X trước mặt, +Y lên, +Z phải): vị trí cục bộ so với cha */
@@ -56,7 +56,7 @@ const pilotOf = (g: THREE.Group) => g.children.find((c) => c.name === 'ex-pilot'
 const wingGeo = (g: THREE.Group) => (g.children[0] as THREE.Mesh).geometry;
 
 test('trước khi nạp xong: hình full, không có ex-pilot; nạp xong: canopy + ex-pilot, real', async () => {
-  const L = deferred(); __plSetLoader(L.fn);
+  const L = deferred(); __plSetLoader(L.fn); plPreload();
   const g = exBuildGlider(), s = exCreate();
   exPlaceGlider(g, s, 1 / 60);
   assert.equal(wingGeo(g), exGliderGeometry('full')); assert.equal(pilotOf(g), undefined);
@@ -79,7 +79,7 @@ test('trước khi nạp xong: hình full, không có ex-pilot; nạp xong: cano
 });
 
 test('bộ nạp trả null: giữ full mãi, chỉ gọi bộ nạp một lần', async () => {
-  const L = deferred(); __plSetLoader(L.fn);
+  const L = deferred(); __plSetLoader(L.fn); plPreload();
   const g = exBuildGlider(), s = exCreate();
   exPlaceGlider(g, s, 1 / 60); L.resolve(null); await tick();
   for (let i = 0; i < 5; i++) exPlaceGlider(g, s, 1 / 60);
@@ -88,7 +88,7 @@ test('bộ nạp trả null: giữ full mãi, chỉ gọi bộ nạp một lần
 });
 
 test('dù ẩn lúc nguồn về: không gắn; hiện lại thì gắn', async () => {
-  const L = deferred(); __plSetLoader(L.fn);
+  const L = deferred(); __plSetLoader(L.fn); plPreload();
   const g = exBuildGlider(), s = exCreate();
   exPlaceGlider(g, s, 1 / 60);
   g.visible = false; L.resolve(fakeSource()); await tick();
@@ -100,7 +100,7 @@ test('dù ẩn lúc nguồn về: không gắn; hiện lại thì gắn', async 
 });
 
 test('dt NaN / 30 / âm và trạng thái cực đoan: mọi quaternion xương hữu hạn; plReset, plDetach', async () => {
-  __plSetLoader(() => Promise.resolve(fakeSource()));
+  __plSetLoader(() => Promise.resolve(fakeSource())); plPreload();
   const g = exBuildGlider(), s = exCreate();
   exPlaceGlider(g, s, 1 / 60); await tick();
   for (const dt of [NaN, 30, -1, 1 / 60, Infinity, 0.5]) { s.bank = dt === 30 ? 9 : -9; s.pos.x += 500; s.pos.y += dt === 0.5 ? NaN : 3; exPlaceGlider(g, s, dt, { turn: 1, climb: 0, throttle: 0 }); }
@@ -118,7 +118,7 @@ test('dt NaN / 30 / âm và trạng thái cực đoan: mọi quaternion xương 
 
 test('5 dù cùng lúc dùng chung nguồn, mỗi dù skeleton riêng, hình học trang bị dùng chung', async () => {
   let n = 0;
-  __plSetLoader(() => { n++; return Promise.resolve(fakeSource()); });
+  __plSetLoader(() => { n++; return Promise.resolve(fakeSource()); }); plPreload();
   const gs = Array.from({ length: 5 }, () => exBuildGlider()), s = exCreate();
   for (const g of gs) exPlaceGlider(g, s, 1 / 60);
   await tick();
@@ -139,7 +139,7 @@ test('5 dù cùng lúc dùng chung nguồn, mỗi dù skeleton riêng, hình h�
 });
 
 test('userData.plOff (dù người khác trên điện thoại): không gắn', async () => {
-  __plSetLoader(() => Promise.resolve(fakeSource()));
+  __plSetLoader(() => Promise.resolve(fakeSource())); plPreload();
   const g = exBuildGlider(), s = exCreate(); g.userData.plOff = true;
   exPlaceGlider(g, s, 1 / 60); await tick(); exPlaceGlider(g, s, 1 / 60);
   assert.equal(pilotOf(g), undefined); assert.equal(plDebug(g), null);
@@ -148,7 +148,7 @@ test('userData.plOff (dù người khác trên điện thoại): không gắn', 
 test('dựng rig ném lỗi: một warn, giữ hình full, không thử lại ở khung sau lẫn dù khác, plUpdate không ném', async () => {
   const src = plSource(fakeScene(), [new THREE.AnimationClip('sit', 1, [])], () => { throw new Error('clone hỏng'); });
   let n = 0;
-  __plSetLoader(() => { n++; return Promise.resolve(src); });
+  __plSetLoader(() => { n++; return Promise.resolve(src); }); plPreload();
   const gs = [exBuildGlider(), exBuildGlider()], s = exCreate();
   const oldWarn = console.warn, warns: unknown[][] = [];
   console.warn = (...a: unknown[]) => { warns.push(a); };
@@ -160,4 +160,18 @@ test('dựng rig ném lỗi: một warn, giữ hình full, không thử lại �
   assert.equal(warns.length, 1, 'đúng một warn');
   assert.equal(n, 1, 'bộ nạp một lần');
   for (const g of gs) { assert.equal(wingGeo(g), exGliderGeometry('full')); assert.equal(pilotOf(g), undefined); assert.equal(plDebug(g)!.real, false); plDetach(g); }
+});
+
+test('chưa gọi plPreload (Đi dạo / Lái xe thấy dù người khác): plUpdate không gọi bộ nạp, giữ hình full; gọi plPreload rồi mới gắn', async () => {
+  let n = 0;
+  __plSetLoader(() => { n++; return Promise.resolve(fakeSource()); });
+  const g = exBuildGlider(), s = exCreate();
+  for (let i = 0; i < 3; i++) { exPlaceGlider(g, s, 1 / 60); await tick(); }
+  assert.equal(n, 0);
+  assert.equal(plDebug(g)!.real, false);
+  plPreload(); await tick();
+  exPlaceGlider(g, s, 1 / 60);
+  assert.equal(n, 1);
+  assert.equal(plDebug(g)!.real, true);
+  plDetach(g);
 });
