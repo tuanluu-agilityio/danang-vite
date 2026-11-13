@@ -34,7 +34,7 @@ Nghiệm thu: spec §7 dòng M1.
 - [x] 3.3 Cửa sổ đêm theo họ (dựa trên `patchWindows`).
 - [ ] 3.4 Chi tiết kè và dải ven sông còn thiếu.
 - [ ] 3.5 Nước: vệt sóng sau tàu (đọc vị trí đội tàu, không sửa hệ tàu), sóng bạc đầu mịn hơn, sắc hoàng hôn (người dùng: "note lại sẽ làm sau", 2026-11-13; đụng `dayNight.ts`, hệ ngày / đêm chung).
-- [ ] 3.6 README mục Cấu trúc + ghi nguồn tài nguyên; `copilot-instructions.md` §5 thêm lệnh mới.
+- [x] 3.6 (xong 2026-11-13) README mục Cấu trúc + ghi nguồn tài nguyên; `copilot-instructions.md` §5 thêm lệnh mới.
 
 ## M4 — Tối ưu và QA
 - [x] 4.0 **Tối ưu GPU** (xong 2026-11-13): từ +10 đến +26 % xuống +3 đến +10 % ở bốn góc, riêng du-luon mưa còn +10 đến +12 % (`QA_LOG.md`). `bkCull()` cắt kit theo khung nhìn + tầm xa, rút mẫu texture shader nước.

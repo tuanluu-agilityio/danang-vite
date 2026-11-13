@@ -6,7 +6,7 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
-| **Mốc hiện tại** | M3 Task 3.0–3.3 và M4 Task 4.0 (tối ưu GPU) xong; còn M3 3.4–3.6, rồi M4 4.1–4.4 |
+| **Mốc hiện tại** | M3 Task 3.0–3.3 và M4 Task 4.0 (tối ưu GPU) và M3 3.6 xong; còn M3 3.4, 3.5, rồi M4 4.1–4.4 |
 | **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem** (`tests/screens/ven-song/nha2/`, `toi-uu/`); GPU +3 đến +10 % so với `main` ở bốn góc, du-luon mưa +10 đến +12 % |
 | **Cập nhật** | 2026-11-13 15:45 +07 (sau M4 task 4.0) |
 
@@ -49,7 +49,7 @@ Không có.
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-**M3 task 3.6** (README mục Cấu trúc + ghi nguồn `public/buildings/kit.glb`; `copilot-instructions.md` §5 thêm `gen:buildings`, `test:buildings:unit`), rồi 3.4 chi tiết kè. Task 3.5 (vệt sóng tàu, sóng bạc đầu mịn hơn, sắc hoàng hôn): người dùng bảo hoàng hôn làm sau; hai việc kia làm nếu còn ngân sách GPU (du-luon mưa đang +10 đến +12 %). Sau đó M4 4.1: đủ bộ test nặng một lượt (lệch có chủ ý: `test:citynight -- --baseline`, `test:drawcalls` +5, ảnh của `test:riverfront` / `test:tunnel` / `test:sunwheel`). Song song chờ người dùng xem nhà M3. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc chất lượng Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ).
+**M3 task 3.4 chi tiết kè và dải ven sông** (3.6 tài liệu đã xong). Task 3.5 (vệt sóng tàu, sóng bạc đầu mịn hơn, sắc hoàng hôn): người dùng bảo hoàng hôn làm sau; hai việc kia làm nếu còn ngân sách GPU (du-luon mưa đang +10 đến +12 %). Sau đó M4 4.1: đủ bộ test nặng một lượt (lệch có chủ ý: `test:citynight -- --baseline`, `test:drawcalls` +5, ảnh của `test:riverfront` / `test:tunnel` / `test:sunwheel`). Song song chờ người dùng xem nhà M3. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc chất lượng Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ).
 
 ## File quan trọng
 | File | Vai trò |

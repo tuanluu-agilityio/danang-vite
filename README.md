@@ -53,6 +53,7 @@ src/
     han-tunnel/      Hầm vượt sông Hàn (vỏ hầm, nội thất, máng hầm hở, cửa hầm, đáy sông, mặt cắt, mô phỏng dìm)
     sun-wheel/       Vòng quay Mặt Trời (bệ + nhà ga, khung tháp, vành và nan, 64 cabin, LED đêm, ngồi cabin, Tour)
   environment/       sông Hàn, núi, đường phố, thành phố, cây, giao thông, người đi bộ trên Cầu Rồng (pedestrians.ts)
+    buildings/       nhà dải sát sông (D-037 / D-038): `reshape.ts` hạ chiều cao + gán họ nhà và màu sau `buildCity()`, `kit.ts` / `kitData.ts` nạp `kit.glb` và đặt phụ kiện kiến trúc chồng lên thân hộp (5 họ, mỗi họ một InstancedMesh, cắt theo khung nhìn), `families.ts` chọn họ; `?buildings=off` bỏ phụ kiện
     boats/           tàu thuyền: 5 kiểu (hình học gộp), đội tàu InstancedMesh, đèn đêm, tàu tụ tập ban đêm
     riverfront/      hai bờ sông: địa danh thật, mặt dựng LED trái tim + "DN", bảng quảng cáo, chi tiết dải đi bộ
     weather/         thời tiết: khí quyển 4 preset, mưa + mặt ướt, gió (cây, dây, thuyền), bão (chớp, đóng cầu, kịch bản 120 s), nắng hè, cây đổ, âm thanh
@@ -68,7 +69,11 @@ src/
   styles/main.css
 server/
   multi/             máy chủ dù lượn nhiều người (Cloudflare Worker + Durable Object, `npm --prefix server/multi run dev`)
+blender/
+  scripts/           build_building_library.py dựng bộ phụ kiện nhà 5 họ, export_assets.py xuất `public/buildings/kit.glb` (`npm run gen:buildings`, cần Blender 4.5, chạy qua `scripts/people/blender.mjs`), render_preview.py ảnh xem trước
+  scenes/            riverside_buildings.blend (sinh từ script, tất định)
 public/
+  buildings/         `kit.glb` (phụ kiện nhà ven sông, ≤ 300 kB; tự dựng bằng script của repo, không có nguồn ngoài)
   car/               `vf3.glb` (xe VinFast VF 3 cho chế độ Lái xe, ≤ 1,5 MB) và LICENSE-VF3.txt
   people/            5 nhân vật đi dạo p0..p4.glb (có xương + chuyển động), người treo dù lượn `pilot.glb` (có xương, đoạn `sit`), `crowd.bin` + `crowd.jpg` (10 nhân vật giản lược cho đám đông người đi bộ, chuyển động nướng sẵn) và LICENSE-Rocketbox.txt
   voice/             clip thuyết minh của Tour

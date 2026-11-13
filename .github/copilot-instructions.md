@@ -60,6 +60,7 @@ npm run test:traffic   # xe cộ: một lệnh vẽ mỗi hệ, chuỗi rand() g
 npm run test:trees:unit # cây: hình học cây bóng mát / dừa, trần tam giác, thân cong (nhanh, không trình duyệt)
 npm run test:trees     # cây: 6 lưới, vị trí + chuỗi rand() giữ nguyên, dọn cây, cây đổ dựng lại, gió bám thân, dừa cửa hầm, ảnh; đọc dist/
 npm run test:pilot:unit # người treo dù lượn (D-035): `pilot.glb` (trần dung lượng / tam giác / khớp, đoạn `sit`, không vũ khí, giấy phép), lò xo phản ứng, IK hai khớp, trang bị dựng bằng code, nạp + đường lùi (bộ nạp giả) (nhanh, không trình duyệt)
+npm run test:buildings:unit # nhà ven sông (D-037 / D-038): `kit.glb` (trần dung lượng / tam giác, đủ 5 họ, thuộc tính), chọn họ, hạ chiều cao dải sát sông (nhanh, không trình duyệt)
 npm run test:people:unit # người đi bộ: dáng đi / chạy, hình học hình khối ≤ 900 đỉnh, chia kiểu người; đám đông người thật: đọc `crowd.bin`, trần dung lượng / tam giác, chọn nhân vật, nhịp phát, vá pháp tuyến (nhanh, không trình duyệt)
 npm run test:people    # người đi bộ: 1 lưới + 1 lệnh vẽ mỗi hệ, kiểu đi / chạy / đứng, lề cầu, rời cầu khi bão, tắt/bật, `dragon-people` cắt theo khung nhìn; chạy người thật, `?crowd=off` (hình khối), chặn `crowd.*`, `crowd.bin` chậm quá giờ, `crowd.jpg` hỏng (đường lùi); đọc dist/
 npm run test:stroll:unit # đi dạo: bản đồ va chạm, chuyển động, trộn chuyển động theo tốc độ, nhân vật (bộ nạp giả), file glb, cần gạt, phím (nhanh, không trình duyệt)
@@ -73,6 +74,7 @@ npm run gen:voice      # sinh lại clip thuyết minh đã đổi (-- --force: 
 npm run gen:car        # sinh lại public/car/vf3.glb từ scripts/car/vinfast_vf3.glb (Blender 4.5, chạy qua `scripts/people/blender.mjs`, biến môi trường `BLENDER`; chỉ khi đổi mô hình hoặc cách xử lý xe)
 npm run gen:people     # sinh lại public/people/p0..p4.glb từ Microsoft Rocketbox (cần Blender 4.5, tải ~160 MB vào scripts/people/.cache/; chạy qua `scripts/people/blender.mjs`, Blender không ở `C:/Program Files/Blender Foundation/Blender 4.5/` thì đặt biến môi trường `BLENDER`; chỉ khi đổi nhân vật)
 npm run gen:crowd      # sinh lại public/people/crowd.bin + crowd.jpg (10 nhân vật đám đông người đi bộ, D-032) từ Microsoft Rocketbox; cùng yêu cầu Blender / `BLENDER` / thư mục `.cache/` như gen:people; ảnh xem trước ở `scripts/people/.cache/preview-crowd/`; chỉ khi đổi nhân vật hoặc chuyển động
+npm run gen:buildings  # sinh lại blender/scenes/riverside_buildings.blend + public/buildings/kit.glb (phụ kiện nhà 5 họ, D-037) từ `blender/scripts/`; cần Blender 4.5 / `BLENDER`, chạy qua `scripts/people/blender.mjs`; tất định; chỉ khi đổi phụ kiện nhà
 npm run gen:pilot      # sinh lại public/people/pilot.glb (người treo dù lượn, D-035) từ Rocketbox `Military_Male_01` (`scripts/people/pilot.py`: bỏ dao, đổi màu ô liu / than, gộp một atlas, đoạn `sit`); cùng yêu cầu Blender / `BLENDER` / `.cache/` như gen:people; chỉ khi đổi nhân vật hoặc màu
 ```
 
