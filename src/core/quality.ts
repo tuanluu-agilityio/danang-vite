@@ -6,6 +6,7 @@ import { clouds } from './sky';
 import { bloomState, setPixelRatio, onResize } from './postprocessing';
 import { lightsWarming } from './prewarm';
 import { rainShowing } from '../environment/weather/rain';
+import { shared } from './shared';
 
 /* =====================================================================
    CHẤT LƯỢNG HÌNH (D-018) — thang bậc ở CONFIG.perf.steps (0 = cảnh gốc). Chế độ:
@@ -50,10 +51,10 @@ export const quality = {
     this.apply(true);
   },
   current(): Step { return P.steps[this.step]; },
-  /* Áp bậc hiện tại (pixelRatio có tính giới hạn khi mưa) */
+  /* Áp bậc hiện tại (pixelRatio có tính giới hạn khi mưa và khi trời tối) */
   apply(force = false) {
-    const s = P.steps[this.step], rainCap = rainShowing() ? P.rainMaxRatio : Infinity;
-    const ratio = Math.min(window.devicePixelRatio || 1, s.ratio, rainCap);
+    const s = P.steps[this.step], rainCap = rainShowing() ? P.rainMaxRatio : Infinity, nightCap = shared.uNight.value >= P.nightRatioAt ? P.nightMaxRatio : Infinity;   // đêm: xem CONFIG.perf.nightMaxRatio
+    const ratio = Math.min(window.devicePixelRatio || 1, s.ratio, rainCap, nightCap);
     if (!force && s === appliedStep && ratio === appliedRatio) return;   // so sánh trực tiếp: hàm chạy mỗi khung, không tạo chuỗi
     appliedStep = s; appliedRatio = ratio; this.changes++;
     setShadowQuality(s.shadow, s.shadowEvery);
@@ -67,7 +68,7 @@ export const quality = {
   /* Mỗi khung, trước khi vẽ. now = performance.now() */
   update(now: number) {
     const dtMs = last ? now - last : 0; last = now;
-    this.apply();   // mưa bật/tắt đổi giới hạn pixelRatio
+    this.apply();   // mưa bật/tắt, ngày ↔ đêm đổi giới hạn pixelRatio
     stepShadows();
     const A = this.adapt, ms = this.simulateMs || dtMs;
     if (this.mode !== 'auto' || (device.test && !this.simulateMs) || !ms || ms > (lightsWarming() ? Math.min(A.ignoreMs, P.lightWarmIgnoreMs) : A.ignoreMs) || document.hidden) return;

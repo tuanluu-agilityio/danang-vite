@@ -650,6 +650,8 @@ const perfBase = {
     cooldown: 3,        // s — tối thiểu giữa hai lần đổi bậc (đổi pixelRatio phải cấp lại framebuffer)
     ignoreMs: 400       // ms — bỏ khung dài hơn (đổi tab, biên dịch một lần) khỏi trung bình: không hạ chất lượng vì một lần giật
   },
+  nightMaxRatio: 1.5,   // pixelRatio tối đa khi trời tối (shared.uNight ≥ nightRatioAt): màn 200 % ở bậc Cao vẽ 2880 × 1800, khung đêm 12–16,5 ms GPU trên Intel Arc, sát trần 16,7 ms; ở 1,5 còn khoảng 70 % (đo 2026-11-14, docs/ai/QA_LOG.md)
+  nightRatioAt: 0.5,    // 0..1 — mức đêm bắt đầu áp nightMaxRatio (bloom đã bật từ 0,05; một ngưỡng duy nhất vì ngày ↔ đêm đi một chiều) (ước lượng)
   rainMaxRatio: 1.5,    // pixelRatio tối đa khi mưa đang hiện (thay cho weather.perf.rainMaxPixelRatio, áp qua bộ quản lý chất lượng)
   start: { phone: 5, weak: 2 }   // bậc khởi đầu ở chế độ Tự động: điện thoại / máy tính yếu (≤ 4 GB RAM hoặc ≤ 4 luồng); còn lại bậc 0
 };

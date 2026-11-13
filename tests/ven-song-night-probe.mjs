@@ -131,6 +131,26 @@ for (const vn of camList) {
   console.log(`  ${vn}: ${fmt(res.views[vn])}`);
 }
 
+/* --ratios: ở từng góc, đổi qua lại pixelRatio 2 ↔ 1,5 (và ẩn / hiện kit nhà) trong cùng một trang, 3 lượt: triệt trôi theo thời gian của máy.
+   Ghi thẳng renderer.setPixelRatio rồi bắn sự kiện resize (onResize của trang cấp lại composer); quality.apply() không ghi đè vì bậc và tỉ lệ đã áp không đổi */
+if (has('ratios')) {
+  const setRatio = async (r) => { await page.evaluate(async (r) => { window.__app.renderer.setPixelRatio(r); window.dispatchEvent(new Event('resize')); await new Promise((ok) => setTimeout(ok, 300)); for (let i = 0; i < 4; i++) window.__drv.step(); }, r); return page.evaluate(() => window.__app.renderer.domElement.width); };
+  const kit = (on) => page.evaluate((on) => { let n = 0; window.__app.scene.traverse((o) => { if (/^bk-fam/.test(o.name)) { o.visible = on; n++; } }); return n; }, on);
+  const med = (a) => [...a].sort((x, y) => x - y)[a.length >> 1];
+  for (const vn of camList) {
+    await setCam(CAMS[vn]);
+    const acc = { r2: [], r15: [], r15nokit: [] };
+    for (let k = 0; k < 3; k++) {
+      await setRatio(2); acc.r2.push((await measure(12)).gpu);
+      await setRatio(1.5); acc.r15.push((await measure(12)).gpu);
+      const n = await kit(false); if (n) acc.r15nokit.push((await measure(12)).gpu); await kit(true);
+    }
+    res.parts['ratios-' + vn] = acc;
+    const f = (a) => a.length ? `${med(a).toFixed(2)} (${a.map((x) => x.toFixed(1)).join(' / ')})` : 'không có kit';
+    console.log(`  [${vn}] pixelRatio 2: ${f(acc.r2)} ms · 1,5: ${f(acc.r15)} ms · 1,5 + ẩn kit nhà: ${f(acc.r15nokit)} ms`);
+  }
+}
+
 /* (1) Tách chi phí ở góc đầu danh sách: sửa bậc 0 của CONFIG.perf.steps rồi quality.apply(true) (đổi pixelRatio / bloom / gương không biên dịch lại shader) */
 if (has('parts')) {
   const vn = camList[0]; await setCam(CAMS[vn]);

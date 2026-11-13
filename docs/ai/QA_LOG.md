@@ -2,6 +2,21 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-14 01:00 → 01:25 — Sửa giật nước đêm: sao ra khỏi gương + trần pixelRatio 1,5 ban đêm (người dùng: "làm như bạn khuyên … không cần hỏi lại")
+- **Đã sửa**: (1) `src/core/sky.ts`: lưới sao sang lớp 1 (không vào gương mặt nước). (2) `src/core/quality.ts` + `CONFIG.perf.nightMaxRatio` 1,5 / `nightRatioAt` 0,5: khi `shared.uNight ≥ 0,5` pixelRatio không vượt 1,5 (cùng cơ chế với trần khi mưa; đổi lúc chuyển ngày ↔ đêm là một lần cấp lại framebuffer). Ngày vẫn theo bậc (Cao = tới 2).
+- **Kiểm chạy đúng**: `npm run build` đạt; đêm bộ đệm 2160 × 1350 trên màn 200 % (ảnh cắt 648 × 297 = 0,3 × 2160); lệnh vẽ đêm −1 ở ba góc (177 → 176, 209 → 208, 225 → 224: lưới sao không còn trong lượt gương); ảnh `tests/screens/ven-song/sua-B1/nhay-sat-nuoc-0.png`: hết đốm trắng, còn vệt đèn nhà. Điểm ảnh sáng > 120 ở vùng nước: doc-song 4–6,6 % → 1,3 %, sat-nuoc 4,6–5,1 % → 1,7 %, tren-cao 3,7–4,0 % → 0,3 %.
+- **Số đo (máy cắm sạc từ 01:09 nhưng chưa hồi: `main` chậm hơn đầu phiên 2–5 ms; vì vậy đo bằng `--ratios`: đổi qua lại trong cùng một trang, 3 lượt, lấy trung vị; đêm, bộ `night`, ms GPU, 2 trang mỗi bản)**:
+
+| Góc (đêm) | nhánh pixelRatio 2 | nhánh 1,5 (sau sửa) | nhánh 1,5 + ẩn kit | `main` 2 (hiện tại của `main`) | `main` 1,5 |
+|---|---|---|---|---|---|
+| tren-cao | 19,02 / 17,31 | **13,69 / 14,56** | 13,50 / 13,25 | 15,19 / 15,54 | 13,14 / 12,63 |
+| doc-song | 13,06 / 13,16 | **11,89 / 11,29** | 10,30 / 10,01 | 14,55 / 12,97 | 10,83 / 9,78 |
+| sat-nuoc | 14,23 / 14,16 | **11,22 / 13,62** | 10,49 / 10,06 | 12,92 / 12,70 | 12,53 / 11,47 |
+
+  Đọc bảng: sau sửa, khung đêm của nhánh ở góc mặc định 13,7–14,6 ms (trước 17,3–19,0), thấp hơn `main` chưa sửa (15,2–15,5); còn cách trần 16,7 ms khoảng 2–3 ms. Cùng pixelRatio 1,5 nhánh vẫn nặng hơn `main` 0,6–1,9 ms; kit nhà chiếm khoảng 0,2–1,6 ms trong đó (chi phí đỉnh, ở lại sau `bkCull`).
+- **Lượt A/B rời (mỗi bản một trang, 2 vòng) cùng lúc đó không dùng được**: `main` tren-cao đêm 18,0 / 15,5, nhánh 21,1 / 16,8; ban ngày pixelRatio 2: `main` 23,0 / 18,1, nhánh 35,7 (lượt chậm bất thường) / 20,0. Máy trôi quá lớn giữa các trang. Ghi lại vì nó gợi ý **ban ngày ở 2880 × 1800 cũng sát hoặc quá 16,7 ms ở góc mặc định, cả trên `main`** (chưa xác nhận ở trạng thái máy ổn định).
+- **Chưa kiểm**: khung giật lúc đổi pixelRatio khi chuyển ngày ↔ đêm trên cửa sổ thật; `test:perf -- --strict`, `test:mobile` (điện thoại giả lập `deviceScaleFactor` 2) với trần mới: chạy ở phần C; người dùng chưa xem bằng mắt.
+
 ## 2026-11-13 23:57 → 2026-11-14 00:54 — Phần A: đo phản hồi "nước sông ban đêm, chất lượng Cao hơi giật" (GPU thật, CHƯA SỬA GÌ)
 - **Máy**: Windows 11, Intel Arc (ANGLE D3D11), màn 2880 × 1800 ở tỉ lệ 200 % (`devicePixelRatio` 2 ⇒ bậc Cao vẽ đủ 2880 × 1800). **Máy chạy pin suốt phiên** (Balanced; pin 80 % → 55 %), xung CPU cuối phiên 1,4 / 3,8 GHz, có ứng dụng khác chạy nền (`Imou_en`, Chrome). Số tuyệt đối trôi mạnh theo thời gian; chỉ các cặp xen kẽ đầu phiên là so được. `main` = `752ea22` build từ `git archive` vào `tests/screens/ven-song/main-src/` (thư mục bị `.gitignore`, dùng `node_modules` của repo qua thư mục cha, không junction, không worktree).
 - **Công cụ mới**: `tests/ven-song-night-probe.mjs`. Lý do: `ven-song-shots.mjs` chỉ đo `renderer.render` ở pixelRatio 1, không bloom, bộ đèn `full` (không phải điều kiện người dùng gặp). Script mới chặn `requestAnimationFrame` để tự gọi `animate()` thật liền nhau (composer + bloom + bóng + gương, bộ đèn theo `?lightsets`) trong truy vấn `TIME_ELAPSED`; `--parts` tách chi phí; `--flicker` chụp 24 khung cách nhau đúng 1/60 s bằng đồng hồ ảo; `--warm=N` / `--natural=N` ghi nhịp rAF tự nhiên; `--headed` mở cửa sổ thật; `--eval=` thử nghiệm trong trang.

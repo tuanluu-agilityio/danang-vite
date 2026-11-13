@@ -27,6 +27,7 @@ export function buildSky() {
   }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(p, 3));
   stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0, fog: false, depthWrite: false }));
+  stars.layers.set(1);   // lớp 1: sao không vào gương mặt nước. Chấm 1,6 px trong gương 1024 × 512 bị phóng to rồi vòng vệt đèn (D-023) nhân thành chuỗi đốm trắng bò trên sông đêm (đo 2026-11-14, docs/ai/QA_LOG.md)
   scene.add(stars);
   // Mây nhẹ: các tấm ngang mềm
   const tex = canvasTex(256, 256, (g, w, h) => {

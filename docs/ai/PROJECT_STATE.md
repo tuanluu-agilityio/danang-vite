@@ -8,7 +8,7 @@
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; đã push lên `origin/feature/ven-song-chan-thuc` (2026-11-13) |
 | **Mốc hiện tại** | M3 xong trừ 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn: hoãn); đang M4 4.1 đợt 2; còn M4 4.2–4.4 |
 | **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem** (`tests/screens/ven-song/nha2/`, `toi-uu/`); GPU +3 đến +10 % so với `main` ở bốn góc, du-luon mưa +10 đến +12 % |
-| **Cập nhật** | 2026-11-14 00:54, máy người dùng (Intel Arc, chạy pin): đã đo phần A (giật nước đêm), **chưa sửa, chờ người dùng chọn cách sửa**; B–E chưa làm |
+| **Cập nhật** | 2026-11-14 00:54, máy người dùng (Intel Arc, chạy pin): đã đo phần A (giật nước đêm) và **đã sửa** theo lời người dùng ("làm như bạn khuyên … không cần hỏi lại", 2026-11-14): sao ra khỏi gương + trần pixelRatio 1,5 ban đêm; đang làm B–E; issue để review ở mục "Issue ghi lại" |
 
 ## Việc vừa xong (đã kiểm)
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
@@ -46,6 +46,15 @@ Không có gì đang chạy. 2026-11-14: phần A (đo giật nước đêm) xon
 - `test:stroll` LỖI (5) trên nhánh, chưa phân tích (`QA_LOG.md`).
 - Bản demo: artifact riêng tư `https://claude.ai/artifact/6zaERkxE2khY35o7VKqihG` (bản build `51baa21`, mô hình đóng gói base64 vì máy chủ artifact không phục vụ `.glb` / `.bin`).
 
+## Issue ghi lại để người dùng review sau (2026-11-14, người dùng: "Note lại issue nếu có để review sau")
+1. **Trần pixelRatio 1,5 ban đêm** (`CONFIG.perf.nightMaxRatio`) là quyết định của agent: đêm mềm nét hơn trên màn 200 % (2160 × 1350 thay vì 2880 × 1800). Muốn bỏ: đặt 2. Chưa xem khung giật lúc đổi tỉ lệ khi chuyển tối trên cửa sổ thật.
+2. **Sao không còn soi xuống sông** (lớp 1). Muốn lại: bỏ `stars.layers.set(1)` ở `sky.ts`, nhưng đốm trắng bò trên sông sẽ quay lại trừ khi hạ `cityNight.streak.gain` / `floor`.
+3. **Ban ngày ở bậc Cao trên màn 200 %** có dấu hiệu cũng sát / quá 16,7 ms ở góc mặc định, cả trên `main` (18–23 ms trong một lượt đo lúc máy chưa ổn định). Chưa xác nhận. Nếu đúng thì nên hạ `perf.steps[0].ratio` 2 → 1,5 (câu hỏi mở cũ của D-031).
+4. **Kit nhà còn tốn khoảng 0,2–1,6 ms GPU** mỗi khung sau `bkCull` (chi phí đỉnh). Hướng: hạ `kitFar` ban đêm, hoặc bỏ chi tiết tầng sớm hơn. Chưa làm.
+5. **Lượt đo đầu của nhánh đôi lúc chậm bất thường** (42–78 ms GPU trong vài chục giây sau khi mở trang, 3 lần trên nhánh, `main` 0 lần rõ ràng). Chưa rõ là máy hay việc nạp nền của nhánh (kit GLB, hâm program).
+6. **Hâm nền bộ đèn `night` mất 55–70 s** ở 2880 × 1800, trong lúc đó đêm chạy bộ `full` kèm khung dài; `main` cũng vậy. Câu hỏi mở cũ của D-031, chưa đo lại ở trạng thái máy ổn định.
+7. Phép đo `--headed` của `ven-song-night-probe.mjs` không tin được khi màn hình tắt / cửa sổ bị che (Windows bóp rAF còn 1 khung / giây).
+
 ## Kiểm chứng gần nhất (2026-11-13)
 - `npm run build` (gồm `tsc --noEmit`): đạt.
 - `tests/ven-song-shots.mjs`: 0 lỗi console ở cả 48 ảnh; program 176 → 176; lệnh vẽ không đổi ở mọi góc.
@@ -54,7 +63,7 @@ Không có gì đang chạy. 2026-11-14: phần A (đo giật nước đêm) xon
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-**Chờ người dùng chọn cách sửa giật nước đêm** (đề xuất: đưa sao ra khỏi gương; trần pixelRatio ban đêm; tách rồi cắt +2 đến +3 ms của nhánh ở pixelRatio 2 khi máy cắm sạc: `node tests/ven-song-night-probe.mjs --label=x "--query=lightsets=sync&buildings=off"`, `…&ground=off`, so với `--dist=tests/screens/ven-song/main-src/dist`). Sau đó theo thứ tự: (1) phân tích `test:stroll` LỖI (5); (2) chạy nốt M4 4.1 đợt 2 (danh sách ở "Việc đang làm"); (3) xem chi tiết kè 3.4 trên GPU thật, ban đêm (cọc neo quá nhỏ, bậc thềm bị lan can chắn); (4) M4 4.2 chép bảng lệnh vẽ vào `tests/KET-QUA.md`, 4.3, 4.4. M3 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn) vẫn hoãn. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ). Lưu ý máy: ở máy không có GPU dùng `CHROMIUM_PATH` + `ven-song-shots.mjs --soft`.
+Giật nước đêm đã sửa (2026-11-14, `QA_LOG.md`); người dùng chưa xem lại bằng mắt. Làm tiếp theo thứ tự: (1) phân tích `test:stroll` LỖI (5); (2) chạy nốt M4 4.1 đợt 2 (danh sách ở "Việc đang làm"); (3) xem chi tiết kè 3.4 trên GPU thật, ban đêm (cọc neo quá nhỏ, bậc thềm bị lan can chắn); (4) M4 4.2 chép bảng lệnh vẽ vào `tests/KET-QUA.md`, 4.3, 4.4. M3 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn) vẫn hoãn. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ). Lưu ý máy: ở máy không có GPU dùng `CHROMIUM_PATH` + `ven-song-shots.mjs --soft`.
 
 ## File quan trọng
 | File | Vai trò |
