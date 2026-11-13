@@ -3,7 +3,7 @@
   "checkpoint_id": "01M7A2RQ7MNKBM7ER1FA9QZEFG",
   "strategy": "manual-commit",
   "branch": "feature/ven-song-chan-thuc",
-  "checkpoints_count": 5,
+  "checkpoints_count": 7,
   "files_touched": [
     "src/config.ts"
   ],
@@ -35,6 +35,13 @@
       "compact_transcript": "/3/transcript.jsonl",
       "content_hash": "/3/content_hash.txt",
       "prompt": "/3/prompt.txt"
+    },
+    {
+      "metadata": "/4/metadata.json",
+      "transcript": "/4/full.jsonl",
+      "compact_transcript": "/4/transcript.jsonl",
+      "content_hash": "/4/content_hash.txt",
+      "prompt": "/4/prompt.txt"
     }
   ],
   "token_usage": {
