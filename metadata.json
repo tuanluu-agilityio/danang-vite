@@ -3,9 +3,14 @@
   "checkpoint_id": "01M79XPF6WZ7W9S5E4178MDRK8",
   "strategy": "manual-commit",
   "branch": "feature/ven-song-chan-thuc",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
-    "src/config.ts"
+    "src/config.ts",
+    "src/environment/buildings/families.ts",
+    "src/environment/buildings/kit.ts",
+    "src/environment/buildings/kitData.ts",
+    "tests/buildings-unit/families.test.ts",
+    "tests/ven-song-shots.mjs"
   ],
   "sessions": [
     {
@@ -28,14 +33,28 @@
       "compact_transcript": "/2/transcript.jsonl",
       "content_hash": "/2/content_hash.txt",
       "prompt": "/2/prompt.txt"
+    },
+    {
+      "metadata": "/3/metadata.json",
+      "transcript": "/3/full.jsonl",
+      "compact_transcript": "/3/transcript.jsonl",
+      "content_hash": "/3/content_hash.txt",
+      "prompt": "/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 0
+    "input_tokens": 14,
+    "cache_creation_tokens": 27239,
+    "cache_read_tokens": 1738559,
+    "output_tokens": 9703,
+    "api_call_count": 6,
+    "subagent_tokens": {
+      "input_tokens": 58,
+      "cache_creation_tokens": 147159,
+      "cache_read_tokens": 3429936,
+      "output_tokens": 62240,
+      "api_call_count": 29
+    }
   },
   "redaction": {
     "replacements": 13,
