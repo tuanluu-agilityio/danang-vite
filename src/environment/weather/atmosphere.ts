@@ -3,7 +3,7 @@ import { CONFIG } from '../../config';
 import { scene, renderer } from '../../core/renderer';
 import { sun, hemi } from '../../core/lights';
 import { sky, clouds } from '../../core/sky';
-import { water } from '../../core/water';
+import { water, waterFx } from '../../core/water';
 import type { WeatherState } from './state';
 
 /* ===== [weather] Khí quyển (mục 4.2): sương, trời, ánh sáng, mây, nước — 0 draw call mới =====
@@ -36,7 +36,7 @@ function restore() {
   (scene.fog as THREE.FogExp2).density = base.fogDensity;
   const u = sky.material.uniforms, wu = water.material.uniforms;
   u.turbidity.value = base.turbidity; u.rayleigh.value = base.rayleigh;
-  wu.distortionScale.value = base.distortion; wu.size.value = base.size; water.position.y = base.waterY;
+  wu.distortionScale.value = base.distortion; wu.size.value = base.size; water.position.y = base.waterY; waterFx.uRain.value = 0; waterFx.uStorm.value = 0;
   clouds.material.color.copy(base.cloudColor); clouds.rotation.y = base.cloudRotY; spin = 0;
 }
 
@@ -81,4 +81,5 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number) {
   wu.distortionScale.value = lerp(lerp(lerp(base.distortion, A.sunWave, sunny), A.grayWave, gray), A.stormWave, stormK) + CONFIG.weather.wind.windWave * Math.min(1, windK) * (1 - stormK);   // gió không mưa (gió mùa) cũng nổi sóng
   wu.size.value = lerp(base.size, A.stormSize, stormK);
   water.position.y = base.waterY + lvl;
+  waterFx.uRain.value = clamp01(c.rain); waterFx.uStorm.value = stormK;   // gợn mưa, sóng bạc đầu (core/waterShader.ts)
 }

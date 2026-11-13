@@ -517,6 +517,28 @@ const tourAllBase = {
 
 /* ------------------------- Hiệu năng (tối ưu, D-018) -------------------------
    Đo thời gian khung (HUD) và ngưỡng giật khựng dùng chung cho test:perf / test:weather */
+/* ------------------------- Mặt nước sông Hàn (D-036) -------------------------
+   Shader ở core/waterShader.ts (docs/superpowers/specs/2026-11-13-ven-song-chan-thuc-design.md). Mọi số là (ước lượng), chỉnh theo ảnh tests/screens/ven-song/ */
+const waterBase = {
+  mirror: [1024, 512] as [number, number],          // px — cỡ ảnh phản chiếu (ngang, dọc); gốc 512 × 512 (ước lượng)
+  normalSize: 512,                                    // px — cạnh texture pháp tuyến sóng, có mipmap (gốc 256, không mipmap) (ước lượng)
+  scale: [173, 61, 23, 7.3] as number[],              // m — bước lặp của 4 lớp sóng, từ sóng dài tới gợn nhỏ (ước lượng)
+  amp: [0.07, 0.09, 0.10, 0.12] as number[],          // độ dốc mỗi lớp sóng (không đơn vị), nhân với distortionScale / 2,4 của thời tiết (ước lượng)
+  midFade: 900, detailFade: 220,                      // m — khoảng cách hai lớp gợn nhỏ giảm còn một nửa (chống nhiễu hạt ở xa) (ước lượng)
+  lane: [0.42, 0.62] as [number, number], laneMix: 0.7,   // "luồng gió": ngưỡng nhiễu tần số thấp chia chỗ lặng / chỗ gợn; mức áp dụng 0–1 (ước lượng)
+  distort: [0.03, 4.5, 14] as number[], stretch: 2.6, distortHi: 0.2,  // lệch ảnh phản chiếu = độ dốc × (a + b / (khoảng cách + c m)); kéo dài theo chiều đứng × stretch; gợn nhỏ chỉ góp distortHi (ước lượng)
+  f0: 0.02, fresnelBump: 0.45,                        // hệ số phản xạ của nước khi nhìn thẳng (vật lý: 0,02); mức sóng ảnh hưởng Fresnel 0–1 (ước lượng)
+  shoreWidth: 70, beachK: 0.3,                        // m — bề rộng dải nước nông sát kè; hệ số co khoảng cách phía bãi biển Mỹ Khê (ước lượng)
+  shallow: [1.4, 1.55, 1.3] as number[], deep: [1.0, 1.12, 1.15] as number[], desat: 0.3, laneTint: 0.1,   // hệ số nhân waterColor ở chỗ nông (xanh rêu sáng) và giữa dòng; desat: mức ngả xám 0–1; laneTint: luồng gió đổi độ sáng màu nước (ước lượng)
+  ambient: 0.95, diffuse: 0.6, scatter: 0.6,          // ánh sáng nền / khuếch tán theo mặt trời / ánh xuyên lưng sóng lên màu nước (ước lượng)
+  glint: [900, 6, 90, 0.35] as number[],              // nắng lấp lánh: [số mũ đốm sắc, cường độ, số mũ quầng rộng, cường độ] (ước lượng)
+  rippleCell: [1.7, 2.9] as [number, number], rippleAmp: 0.9, rippleFade: 70,   // gợn mưa: m — cạnh ô lưới hai lớp vòng tròn; độ dốc; m — khoảng cách giảm một nửa (ước lượng)
+  rainRough: 0.25, rainReflect: 0.75,                 // mưa: độ nhám thêm của mặt nước; hệ số nhân độ phản chiếu khi mưa 1 (ước lượng)
+  stormTint: [0.72, 0.7, 0.66] as number[],           // bão: hệ số nhân màu nước (tối, đục) (ước lượng)
+  cap: [0.76, 0.9] as [number, number], capK: 0.45,   // sóng bạc đầu khi bão: ngưỡng nhiễu, độ đục tối đa (ước lượng)
+  foamEdge: 1.6, foamEdgeK: 0.35                      // bọt mép kè: m — bề rộng dải; độ đục tối đa (ước lượng)
+};
+
 /* Đèn đêm trên tòa nhà khu phố và nhà quanh Thuận Phước (spec 2026-11-09) */
 const cityNightBase = {
   towerH: 60,        // m — từ chiều cao này trở lên coi là tháp cao: đèn dày hơn, có thể có sắc xanh, có viền LED (ước lượng)
@@ -1024,6 +1046,7 @@ export const CONFIG = {
   ...base,
   perf: perfBase,
   cityNight: cityNightBase,
+  water: waterBase,
   boats: boatsBase,
   ui: uiBase,
   mainTotal: sum(base.mainSpans),
