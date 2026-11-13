@@ -2,6 +2,24 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-13 — M4 Task 4.0: tối ưu GPU (bản làm việc trước commit 4.0)
+- **Lệnh**: như A/B của M3 (`main` `752ea22` build ở thư mục tạm, xen kẽ A1, B1, A2, B2 với `--noshots --only=ngay,dem,mua`); ảnh sau tối ưu: `node tests/ven-song-shots.mjs --label=toi-uu --only=ngay,dem,bao`.
+- **Dò chi phí trước khi sửa (Intel Arc, 1600 × 900, đo bằng tham số URL tạm, script dò đã xóa)**: cỡ gương hầu như không ảnh hưởng (1024 × 512, 768 × 384, 512 × 512 lệch nhau trong khoảng 0,3 ms, cỡ nhiễu); kit khoảng 0,6 ms; nhánh `aFam` trong fragment shader thân nhà khoảng 0,3–0,5 ms; phần còn lại là shader nước.
+- **Đã sửa**: (1) `bkCull(camera)` trong `kit.ts`: mỗi khung dồn instance kit còn trong tầm `kitFar` và trong khung nhìn lên đầu mảng, đặt `mesh.count` (không thêm lệnh vẽ, không thêm lưới); (2) `waterShader.ts`: vệt gió lấy 1 mẫu texture thay vì nhiều, bọt / sóng bạc đầu chỉ lấy mẫu khi gần kè hoặc `uStorm > 0,3`, dùng `textureLod`; (3) `water.ts`: `?mirror=WxH` để đo, mặc định vẫn `CONFIG.water.mirror` 1024 × 512 (giữ vì đổi cỡ không lợi gì).
+- **A/B GPU thật so với `main` sau tối ưu**:
+
+| Góc - điều kiện | A = `main` (2 vòng) | B = nhánh (2 vòng) | Lệch | Trước tối ưu | Lệnh vẽ |
+|---|---|---|---|---|---|
+| tren-cao - ngày | 11,20 / 11,01 | 12,08 / 12,08 | +8 đến +10 % | +14 đến +26 % | 268 → 273 |
+| sat-nuoc - ngày | 7,97 / 7,91 | 8,36 / 8,28 | +4 đến +6 % | +10 đến +17 % | 235 → 240 |
+| tren-cao - đêm | 11,20 / 10,92 | 11,81 / 11,82 | +5 đến +8 % | xem mục M3 | 272 → 277 |
+| doc-song - đêm | 8,47 / 8,55 | 9,06 / 8,81 | +3 đến +7 % | xem mục M3 | 230 → 235 |
+| du-luon - mưa | 10,08 / 9,87 | 11,09 / 11,10 | **+10 đến +12 %** | xem mục M3 | 269 → 274 |
+
+- Tam giác tren-cao ngày: 4 146 557 → 4 239 033 (trước tối ưu 4 463 509). Program 180, lỗi console 0 ở 27 ảnh `toi-uu`. `test:buildings:unit` 35/35, `npm run build` đạt.
+- **Xem ảnh (agent tự xem)**: `nha-mau-ngay`, `sat-nuoc-bao` giống trước tối ưu: kit hiện đủ ở nhà trong khung nhìn, bọt mép kè và sóng bạc đầu như cũ (sóng bạc đầu vẫn là mảng cứng, lỗi đã biết).
+- **Kết luận**: bốn trong năm góc đạt mục tiêu ≤ khoảng +10 %; **du-luon mưa còn +10 đến +12 %** (gợn mưa + nước). Chưa thử trong trình duyệt: kit có nháy khi quay camera nhanh không (cắt theo khung nhìn tính mỗi khung trên CPU, lý thuyết không trễ khung), chi phí CPU của `bkCull` (596 nhà, chưa đo riêng).
+
 ## 2026-11-13 — M3 Task 3.0–3.3: hạ chiều cao dải sát sông, kit hai bờ, LOD kit, màu (bản làm việc trước commit M3)
 - **Lệnh**: `npm run build && node tests/ven-song-shots.mjs --label=nha2 --only=ngay,dem`; A/B chuẩn: `main` `752ea22` build từ `git archive` ở thư mục tạm, xen kẽ `--label=ab3-A1 --dist=<tạm>/dist --noshots --only=ngay,dem,mua`, `ab3-B1`, `ab3-A2`, `ab3-B2`.
 - **A/B GPU thật so với `main` (nước M1 + nhà M3 cộng lại; Intel Arc, 1600 × 900)**:

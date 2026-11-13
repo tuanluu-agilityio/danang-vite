@@ -37,7 +37,7 @@ Nghiệm thu: spec §7 dòng M1.
 - [ ] 3.6 README mục Cấu trúc + ghi nguồn tài nguyên; `copilot-instructions.md` §5 thêm lệnh mới.
 
 ## M4 — Tối ưu và QA
-- [ ] 4.0 **Tối ưu GPU**: A/B so với `main` đang +10 đến +26 % (QA_LOG 2026-11-13), mục tiêu ≤ khoảng +10 %. Hướng thử ở `PROJECT_STATE.md`.
+- [x] 4.0 **Tối ưu GPU** (xong 2026-11-13): từ +10 đến +26 % xuống +3 đến +10 % ở bốn góc, riêng du-luon mưa còn +10 đến +12 % (`QA_LOG.md`). `bkCull()` cắt kit theo khung nhìn + tầm xa, rút mẫu texture shader nước.
 - [ ] 4.1 Đủ bộ test của `copilot-instructions.md` §5, một lượt; `test:citynight -- --baseline` trước khi so.
 - [ ] 4.2 `tests/KET-QUA.md`: bảng lệnh vẽ, GPU A/B, dung lượng.
 - [ ] 4.3 Ngày, hoàng hôn, đêm, mưa, bão × trên cao, mặt cầu, dù lượn, mặt phố; điện thoại.

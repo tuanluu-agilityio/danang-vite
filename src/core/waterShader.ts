@@ -59,8 +59,8 @@ void main() {
   vec3 V = toEye / dist;
 
   // ---- sóng nhiều lớp ----
-  float lane = texture2D( normalSampler, p / 911.0 + time * vec2( 0.0011, 0.0007 ) ).g;                     // luồng gió: chỗ lặng, chỗ gợn
-  lane = mix( 1.0, smoothstep( ${f(W.lane[0], 3)}, ${f(W.lane[1], 3)}, texture2D( normalSampler, p / 377.0 - time * vec2( 0.0016, -0.0009 ) ).r * 0.5 + lane * 0.5 ) * 1.5 + 0.25, ${f(W.laneMix, 2)} * ( 1.0 - uStorm ) );
+  vec4 laneT = texture2D( normalSampler, p / 377.0 - time * vec2( 0.0016, -0.0009 ) );                          // luồng gió: chỗ lặng, chỗ gợn (một mẫu, hai kênh)
+  float lane = mix( 1.0, smoothstep( ${f(W.lane[0], 3)}, ${f(W.lane[1], 3)}, laneT.r * 0.5 + laneT.g * 0.5 ) * 1.5 + 0.25, ${f(W.laneMix, 2)} * ( 1.0 - uStorm ) );
   float nearK = 1.0 / ( 1.0 + dist / ${f(W.detailFade, 1)} ), midK = 1.0 / ( 1.0 + dist / ${f(W.midFade, 1)} );
   vec2 slopeLo = wvSample( p / ${f(W.scale[0], 1)} + time * vec2( 0.0052, 0.0034 ) ) * ${f(W.amp[0], 3)}
                + wvSample( p / ${f(W.scale[1], 1)} - time * vec2( 0.0095, -0.0061 ) ) * ${f(W.amp[1], 3)};
@@ -118,11 +118,20 @@ void main() {
   vec3 col = mix( body, reflectionSample, clamp( fres, 0.0, 1.0 ) ) + spec * reflectionSample;
 
   // ---- bọt: mép kè và sóng bạc đầu khi bão ----
-  float fn = texture2D( normalSampler, worldPosition.xz / 19.0 + time * vec2( 0.012, 0.02 ) ).r;
-  float fc = texture2D( normalSampler, p * vec2( 1.0, 0.4 ) / 83.0 + time * vec2( 0.017, 0.009 ) ).r;
-  float edge = ( 1.0 - smoothstep( 0.0, ${f(W.foamEdge, 2)}, shore ) ) * smoothstep( 0.35, 0.75, fn + 0.25 * sin( time * 0.9 + worldPosition.z * 0.21 ) );
-  float cap = smoothstep( 0.3, 1.0, uStorm ) * smoothstep( ${f(W.cap[0], 2)}, ${f(W.cap[1], 2)}, fc * 0.75 + texture2D( normalSampler, p / 211.0 - time * vec2( 0.006, 0.003 ) ).g * 0.5 ) / ( 1.0 + dist / 900.0 );
-  col = mix( col, light * vec3( 0.82, 0.86, 0.86 ), clamp( edge * ${f(W.foamEdgeK, 2)} + cap * ${f(W.capK, 2)}, 0.0, 1.0 ) );
+  // chỉ lấy mẫu bọt ở nơi có bọt (dải sát kè, hoặc khi bão): textureLod vì lấy mẫu trong nhánh không có đạo hàm ổn định
+  float foam = 0.0;
+  if ( shore < ${f(W.foamEdge, 2)} || uStorm > 0.3 ) {
+    float lod = clamp( log2( dist * 0.03 ), 0.0, 6.0 );
+    float fn = textureLod( normalSampler, worldPosition.xz / 19.0 + time * vec2( 0.012, 0.02 ), lod ).r;
+    float edge = ( 1.0 - smoothstep( 0.0, ${f(W.foamEdge, 2)}, shore ) ) * smoothstep( 0.35, 0.75, fn + 0.25 * sin( time * 0.9 + worldPosition.z * 0.21 ) );
+    float cap = 0.0;
+    if ( uStorm > 0.3 ) {
+      float fc = textureLod( normalSampler, p * vec2( 1.0, 0.4 ) / 83.0 + time * vec2( 0.017, 0.009 ), lod ).r;
+      cap = smoothstep( 0.3, 1.0, uStorm ) * smoothstep( ${f(W.cap[0], 2)}, ${f(W.cap[1], 2)}, fc * 0.75 + textureLod( normalSampler, p / 211.0 - time * vec2( 0.006, 0.003 ), lod ).g * 0.5 ) / ( 1.0 + dist / 900.0 );
+    }
+    foam = clamp( edge * ${f(W.foamEdgeK, 2)} + cap * ${f(W.capK, 2)}, 0.0, 1.0 );
+  }
+  col = mix( col, light * vec3( 0.82, 0.86, 0.86 ), foam );
 
   gl_FragColor = vec4( col, alpha );
 

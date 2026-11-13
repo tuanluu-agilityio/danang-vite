@@ -24,6 +24,13 @@ Sổ quyết định riêng của việc này. Dòng tóm tắt của mỗi quy�
 - **Kết quả và chỗ lệch so với dự định (2026-11-13)**: (1) màu instance của thân trong dải **có đổi** (bảng màu theo họ, để kit và thân cùng màu và không phụ thuộc GLB); (2) họ, màu, `aFam` gán ngay trong `bkReshape()`, nên `?buildings=off` / GLB lỗi chỉ mất phụ kiện, nhà vẫn thấp và có mặt đứng theo họ; (3) dải chiều cao họ khác spec §6.1: họ 1 từ 22 m, họ 3 từ 12 m, trọng số nội suy theo khoảng cách tới kè; (4) tính cách theo đoạn phố (nhà ống / vừa / tháp) để nhà cùng loại đứng thành cụm; (5) biển hiệu kit đổi màu theo tòa. Giá: tổng nhánh chậm hơn `main` +10 đến +26 % GPU (xem `QA_LOG.md`), vượt mục tiêu, phải tối ưu ở M4.
 - **Hệ quả phải kiểm**: biển quảng cáo trên mái và băng rôn (`riverfront/billboards.ts`, `promenade.ts` chọn nhà theo chiều cao), va chạm Đi dạo / Lái xe (2D, không phụ thuộc h), các test so ma trận nhà với `main` (`test:riverfront`, `test:citynight -- --baseline`, `test:drawcalls`) sẽ lệch có chủ ý, cập nhật mốc ở M4.
 
+### Tối ưu GPU sau M3 (M4 task 4.0) — 2026-11-13 — Đã làm, đã đo (người dùng: "Đồng ý, làm tối ưu GPU trước")
+- **Kit**: `bkCull(camera)` (`kit.ts`, gọi mỗi khung trong `main.ts` sau `updateRiverfront`) dồn các instance trong tầm `kitFar` và trong khung nhìn lên đầu mảng thuộc tính rồi đặt `mesh.count`; lưới kit để `frustumCulled = false`. Đã loại: chia lưới theo bờ / đoạn z (thêm lệnh vẽ, vượt trần +6 của spec §3).
+- **Nước**: rút số mẫu texture (vệt gió 1 mẫu; bọt và sóng bạc đầu chỉ lấy mẫu gần kè hoặc khi bão, bằng `textureLod` vì nằm trong nhánh).
+- **Gương 1024 × 512 giữ nguyên**: đo ba cỡ lệch nhau cỡ nhiễu (≈ 0,3 ms), thu nhỏ không lợi mà mất nét. `?mirror=WxH` ở lại làm công cụ đo.
+- **Không làm**: bỏ nhánh `aFam` của thân nhà (0,3–0,5 ms) vì đó chính là mặt đứng theo họ.
+- **Kết quả**: +3 đến +10 % so với `main` ở bốn góc đo; du-luon mưa +10 đến +12 % (còn vượt nhẹ, chấp nhận tạm, xét lại nếu người dùng thấy chậm).
+
 ### D-037 bản 2 — 2026-11-13 (thay phần "Đề xuất" ở trên; đang làm ở M2)
 - **Đổi**: không thay geometry của nhà. Khối hộp của `buildCity()` ở lại làm thân; chi tiết kiến trúc là bộ phụ kiện (kit) dựng bằng Blender, mỗi họ một `InstancedMesh` đặt chồng lên; mặt đứng theo họ vẽ trong shader qua thuộc tính instance `aFam`.
 - **Vì sao**: bản 1 (gộp 5 họ bằng `aPart`) bắt mỗi nhà xử lý đỉnh của cả 5 họ ở ba lượt vẽ (ước lượng 4,5 triệu tam giác thêm cho 1 500 nhà); thay geometry còn làm `collectBuildings()` và va chạm phải viết lại. Bản 2 không đổi ma trận instance nào.

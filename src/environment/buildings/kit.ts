@@ -66,6 +66,9 @@ function bkMaterial(): THREE.MeshStandardMaterial {
 }
 
 export interface BkState { meshes: THREE.InstancedMesh[]; counts: Record<number, number>; east: number; decorated: Building[] }
+/* Dữ liệu đầy đủ của mỗi lưới để bkCull() nén lại mỗi khung: ma trận, màu tường, chiều xoay, tâm + bán kính bao của từng nhà */
+interface BkFull { mesh: THREE.InstancedMesh; n: number; mat: Float32Array; wall: Float32Array; flip: Float32Array; ctr: Float32Array; sig: number }
+let full: BkFull[] = [];
 let state: BkState | null = null;
 export const bkState = () => state;
 
@@ -95,8 +98,9 @@ export function buildBuildingKit(opts: { kit?: BkKit | null; east?: (b: Building
     for (const [k, a] of Object.entries(src.attributes)) g.setAttribute(k, a);
     if (src.index) g.setIndex(src.index);
     const wall = new Float32Array(list.length * 3), flip = new Float32Array(list.length);
-    const mesh = new THREE.InstancedMesh(g, mat, list.length);
+    const mesh = new THREE.InstancedMesh(g, mat, list.length), ctr = new Float32Array(list.length * 4);
     list.forEach((b, i) => {
+      ctr[i * 4] = b.x; ctr[i * 4 + 1] = CONFIG.landY + b.h / 2; ctr[i * 4 + 2] = b.z; ctr[i * 4 + 3] = Math.hypot(b.w, b.h, b.d) / 2;
       mesh.setMatrixAt(i, m.compose(p.set(b.x, CONFIG.landY, b.z), q, s.set(b.w, b.h, b.d)));
       if (b.mesh.instanceColor) b.mesh.getColorAt(b.i, c); else c.setRGB(1, 1, 1);
       wall[i * 3] = c.r; wall[i * 3 + 1] = c.g; wall[i * 3 + 2] = c.b;
@@ -112,16 +116,50 @@ export function buildBuildingKit(opts: { kit?: BkKit | null; east?: (b: Building
     mesh.boundingSphere!.radius += r; mesh.boundingBox!.expandByScalar(r);
     mesh.name = `bk-fam${fam}`;
     mesh.layers.set(1); mesh.castShadow = false; mesh.receiveShadow = true;
+    mesh.frustumCulled = false;   // bkCull() tự cắt từng nhà theo khung nhìn và khoảng cách
+    for (let k = 0; k < list.length; k++) ctr[k * 4 + 3] += r;
+    full.push({ mesh, n: list.length, mat: (mesh.instanceMatrix.array as Float32Array).slice(), wall: wall.slice(), flip: flip.slice(), ctr, sig: -1 });
     scene.add(mesh); meshes.push(mesh);
   }
   state = { meshes, counts, east, decorated };
   return state;
 }
 
+/* Mỗi khung, trước khi vẽ: chỉ giữ trong bộ đệm instance những nhà nằm trong khung nhìn VÀ trong tầm kitFar (shader đằng nào cũng thu nhà xa hơn về một điểm,
+   nhưng vẫn phải chạy shader đỉnh cho mọi đỉnh của nó). Đo GPU thật: kit từ khoảng 0,6 ms xuống theo số nhà thật sự thấy. Chỉ tải lại bộ đệm khi tập nhà đổi. */
+const _fr = new THREE.Frustum(), _pm = new THREE.Matrix4(), _sp = new THREE.Sphere();
+export function bkCull(camera: THREE.Camera) {
+  if (!full.length) return;
+  camera.updateMatrixWorld();
+  _fr.setFromProjectionMatrix(_pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+  const cp = camera.position, far = CONFIG.buildings.kitFar;
+  for (const f of full) {
+    const im = f.mesh.instanceMatrix.array as Float32Array, g = f.mesh.geometry;
+    const wall = g.getAttribute('aWall') as THREE.InstancedBufferAttribute, flip = g.getAttribute('aFlip') as THREE.InstancedBufferAttribute;
+    let k = 0, sig = 0;
+    for (let i = 0; i < f.n; i++) {
+      const x = f.ctr[i * 4], y = f.ctr[i * 4 + 1], z = f.ctr[i * 4 + 2], r = f.ctr[i * 4 + 3];
+      const d = Math.hypot(x - cp.x, z - cp.z, cp.y - y) - r;
+      if (d > far) continue;
+      _sp.center.set(x, y, z); _sp.radius = r;
+      if (!_fr.intersectsSphere(_sp)) continue;
+      {   // nén: chép nhà i vào ô k
+        im.set(f.mat.subarray(i * 16, i * 16 + 16), k * 16);
+        (wall.array as Float32Array).set(f.wall.subarray(i * 3, i * 3 + 3), k * 3); (flip.array as Float32Array)[k] = f.flip[i];
+      }
+      sig = (sig * 31 + i + 1) | 0; k++;
+    }
+    sig = (sig * 31 + k) | 0;
+    if (sig !== f.sig) { f.sig = sig; f.mesh.instanceMatrix.needsUpdate = true; wall.needsUpdate = true; flip.needsUpdate = true; }
+    f.mesh.count = k; f.mesh.visible = k > 0;
+  }
+}
+
 /* Gỡ kit khỏi cảnh. Thân nhà giữ chiều cao, họ (aFam) và màu của bkReshape: mặt đứng theo họ không phụ thuộc kit */
 export function disposeBuildingKit() {
   if (!state) return;
   for (const mesh of state.meshes) { scene.remove(mesh); mesh.geometry.dispose(); mesh.dispose(); }
+  full = [];
   (state.meshes[0]?.material as THREE.Material | undefined)?.dispose();
   state = null;
 }

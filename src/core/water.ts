@@ -46,10 +46,12 @@ function patchWaterShader(mat: THREE.ShaderMaterial) {
   mat.fragmentShader = WATER_FRAGMENT;
 }
 
+/* Cỡ ảnh phản chiếu: CONFIG.water.mirror; `?mirror=768x384` trên URL để đo thử cỡ khác (tests/ven-song-shots.mjs) */
+const MIRROR = (/[?&]mirror=(\d+)x(\d+)/.exec(location.search)?.slice(1, 3).map(Number) ?? CONFIG.water.mirror) as [number, number];
 export function buildWater() {
   const g = new THREE.PlaneGeometry(40000, 40000);
   water = new Water(g, {
-    textureWidth: CONFIG.water.mirror[0], textureHeight: CONFIG.water.mirror[1], waterNormals: makeWaterNormals(),
+    textureWidth: MIRROR[0], textureHeight: MIRROR[1], waterNormals: makeWaterNormals(),
     sunDirection: new THREE.Vector3(0, 1, 0), sunColor: 0xffffff, waterColor: 0x2c5a4f,
     distortionScale: 2.4, fog: true
   });

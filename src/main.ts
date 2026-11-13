@@ -35,7 +35,7 @@ import { buildRiverfront, updateRiverfront } from './environment/riverfront';
 import { buildDragonPeople, updateDragonPeople, peopleTest } from './environment/pedestrians';
 import { crowdLoad, crowdGet } from './common/people/crowdData';
 import { bkLoad, bkAttrNames } from './environment/buildings/kitData';
-import { buildBuildingKit, bkState } from './environment/buildings/kit';
+import { buildBuildingKit, bkState, bkCull } from './environment/buildings/kit';
 import { bkReshape, bkShaped } from './environment/buildings/reshape';
 import { crowdUsable } from './common/people/crowd';
 import { stBlocky } from './explore/stroll/blocky';
@@ -168,6 +168,7 @@ function animate() {
   hanTunnel.holdBoats(songHan.boats.list);
   updateHrUI(camera);
   updateRiverfront(dt, time); pt = perf.lap('riverfront', pt);
+  bkCull(camera);   // kit nhà: chỉ giữ nhà trong khung nhìn và trong tầm kitFar (kit.ts)
   audio.setSwingDistance(camera.position.distanceTo(songHan.center));
   audio.update(dayNight.night, show.fireOn, show.waterOn, camera.position.distanceTo(mouthW)); pt = perf.lap('audio', pt);
   stepLights();                                             // bộ đèn ngày / đêm / đủ (D-031): sau mọi chỗ ghi cường độ đèn, trước khi vẽ
