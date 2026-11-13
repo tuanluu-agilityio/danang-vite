@@ -6,7 +6,7 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; đã push lên `origin/feature/ven-song-chan-thuc` (2026-11-13) |
-| **Mốc hiện tại** | M3 xong trừ 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn: hoãn); đang M4 4.1 đợt 2; còn M4 4.2–4.4 |
+| **Mốc hiện tại** | M3 xong trừ 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn: hoãn); M4 4.1 đợt 2 đang chạy nền; còn M4 4.2–4.4 |
 | **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem** (`tests/screens/ven-song/nha2/`, `toi-uu/`); GPU +3 đến +10 % so với `main` ở bốn góc, du-luon mưa +10 đến +12 % |
 | **Cập nhật** | 2026-11-14 00:54, máy người dùng (Intel Arc, chạy pin): đã đo phần A (giật nước đêm) và **đã sửa** theo lời người dùng ("làm như bạn khuyên … không cần hỏi lại", 2026-11-14): sao ra khỏi gương + trần pixelRatio 1,5 ban đêm; đang làm B–E; issue để review ở mục "Issue ghi lại" |
 
@@ -14,7 +14,7 @@
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
 
 ## Việc đang làm
-Không có gì đang chạy. 2026-11-14: phần A (đo giật nước đêm) xong phần đo, kết quả ở `QA_LOG.md` mục trên cùng; dừng chờ người dùng quyết cách sửa. Máy chạy pin nên chưa chạy test nặng nào. M4 4.1 đợt 2 dở: đã có `test:riverfront`, `test:boats`, `test:citynight` đạt; `test:stroll` LỖI (5) chưa phân tích; chưa chạy / chưa có kết quả: weather (chạy lại vì shader nước đổi dòng bọt mép kè), sunwheel, tour, voice, traffic, trees, people, explore, mobile, gpu, drive, multi, và `test:drawcalls` / `test:perf -- --strict` / `test:tunnel` sau task 3.4.
+**Bộ test nặng M4 4.1 đợt 2 đang chạy nền** (bắt đầu 2026-11-14 01:40, bản build của `28fc34e` + `strollBase.walk` 1,6 chưa commit của người dùng): `bash tests/screens/ven-song/m4-run.sh weather drawcalls perf tunnel sunwheel tour voice traffic trees people explore mobile gpu drive multi stroll riverfront citynight`, mỗi lần một test; log từng test ở `tests/screens/ven-song/m4/<tên>.log`, bảng giờ + mã thoát ở `m4/summary.tsv` (không commit). **Trong lúc chạy không được `npm run build`** (các test đọc `dist/`). Phiên bị ngắt thì đọc `summary.tsv` để biết test nào đã xong, kiểm tiến trình mồ côi rồi chạy tiếp các test còn lại bằng chính script đó. Phần A, B, D đã xong và commit (`21299aa`, `4f628d2`, `28fc34e`).
 
 ## Đã hoàn thành
 - [x] Kiểm kê hiện trạng (`AUDIT.md`), số đo gốc và ảnh "trước" (`tests/screens/ven-song/truoc/`, không commit; dựng lại được bằng lệnh ở `QA_LOG.md`).
@@ -63,7 +63,7 @@ Không có gì đang chạy. 2026-11-14: phần A (đo giật nước đêm) xon
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-Giật nước đêm đã sửa (2026-11-14, `QA_LOG.md`); người dùng chưa xem lại bằng mắt. Làm tiếp theo thứ tự: (1) phân tích `test:stroll` LỖI (5); (2) chạy nốt M4 4.1 đợt 2 (danh sách ở "Việc đang làm"); (3) xem chi tiết kè 3.4 trên GPU thật, ban đêm (cọc neo quá nhỏ, bậc thềm bị lan can chắn); (4) M4 4.2 chép bảng lệnh vẽ vào `tests/KET-QUA.md`, 4.3, 4.4. M3 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn) vẫn hoãn. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ). Lưu ý máy: ở máy không có GPU dùng `CHROMIUM_PATH` + `ven-song-shots.mjs --soft`.
+**Chờ bộ test nặng chạy xong, ghi kết quả thật từng test vào `QA_LOG.md`** (kể cả lỗi / hết giờ), phân tích test lỗi (dùng `TEST_REAL_GPU=1`, `TEST_DIST=` để chẩn đoán nhanh và so với `main`). Rồi M4 4.2 (bảng lệnh vẽ từ `m4/drawcalls.log`, GPU A/B, dung lượng vào `tests/KET-QUA.md`), 4.3, 4.4. Giật nước đêm, `test:stroll`, chi tiết kè: đã làm 2026-11-14, người dùng chưa xem lại bằng mắt. M3 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn) vẫn hoãn. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ). Lưu ý máy: ở máy không có GPU dùng `CHROMIUM_PATH` + `ven-song-shots.mjs --soft`.
 
 ## File quan trọng
 | File | Vai trò |
