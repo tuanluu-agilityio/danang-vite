@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M79WM3KE611SSZKF661N6SHW",
+  "strategy": "manual-commit",
+  "branch": "feature/ven-song-chan-thuc",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "blender/scenes/riverside_buildings.blend",
+    "blender/scripts/build_building_library.py",
+    "blender/scripts/export_assets.py",
+    "blender/scripts/render_preview.py",
+    "public/buildings/kit.glb",
+    "tests/buildings-unit/kit.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 23267,
+    "cache_read_tokens": 1607290,
+    "output_tokens": 6819,
+    "api_call_count": 6,
+    "subagent_tokens": {
+      "input_tokens": 8,
+      "cache_creation_tokens": 68402,
+      "cache_read_tokens": 182786,
+      "output_tokens": 632,
+      "api_call_count": 4
+    }
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
