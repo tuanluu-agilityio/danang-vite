@@ -34,6 +34,8 @@ import { SunWheel, swRide } from './bridges/sun-wheel';
 import { buildRiverfront, updateRiverfront } from './environment/riverfront';
 import { buildDragonPeople, updateDragonPeople, peopleTest } from './environment/pedestrians';
 import { crowdLoad, crowdGet } from './common/people/crowdData';
+import { bkLoad, bkAttrNames } from './environment/buildings/kitData';
+import { buildBuildingKit, bkState } from './environment/buildings/kit';
 import { crowdUsable } from './common/people/crowd';
 import { stBlocky } from './explore/stroll/blocky';
 import { buildWeather, updateWeather } from './environment/weather';
@@ -66,8 +68,11 @@ window.addEventListener('resize', scheduleResize); window.addEventListener('orie
 /* ============================ Khởi tạo ============================ */
 // đám đông người thật (D-032): chờ tải xong (tối đa CONFIG.people.crowd.loadTimeoutMs; lỗi → null, hình khối) để mọi lưới / vật liệu có trước prewarm; không đổi thứ tự dựng.
 // Renderer đã tạo lúc import core/renderer: thiếu WEBGL_multi_draw thì không tải, không chờ (r165 sẽ vẽ mỗi người một lệnh ⇒ hình khối)
+// kit nhà ven sông (D-037 bản 2): tải song song với đám đông, chờ trước khi dựng cảnh; lỗi / quá CONFIG.buildings.loadMs / ?buildings=off → null, nhà giữ khối hộp
+const bkLoading = bkLoad();
 if (renderer.extensions.has('WEBGL_multi_draw')) await crowdLoad();
 else console.info('[people] trình duyệt không có WEBGL_multi_draw: không tải đám đông người thật, dùng hình khối');
+await bkLoading;
 buildLights();
 buildSky();
 buildWater();
@@ -98,6 +103,7 @@ const riverfront = buildRiverfront();    // sau HanTunnel: dọn nhà bị đè 
 drClearRoads(thuanPhuoc.houses);         // sau buildRiverfront: dọn nhà / cây / đèn trên đường mới của chế độ lái (D-034) bằng scale 0, không đụng chuỗi rand()
 const sunWheel = new SunWheel();         // sau buildRiverfront, trước buildWeather: dọn nền bằng scale 0, không đụng chuỗi rand()
 scene.add(sunWheel.group);
+buildBuildingKit();                      // sau MỌI lệnh dọn nhà (riverfront, drClearRoads, SunWheel), trước buildWeather / prewarm: kit nhà ven sông (D-037 bản 2), không rand(), không đổi ma trận nhà
 buildDragonPeople();                     // sau mọi lệnh dùng rand(), trước buildWeather: người Cầu Rồng dùng rng riêng
 const weather = buildWeather();          // sau buildRiverfront (sau mọi rand()): chụp giá trị gốc khí quyển/đường, dựng mưa (ẩn), điều biến sau applyNight
 weather.attachSwing(songHan.ctrl);       // bão: Cầu sông Hàn không quay (SwingController.canStart)
@@ -130,7 +136,7 @@ const multiTest = {
 };
 if (query.has('test')) {
   perf.on = query.has('perf');
-  (window as unknown as { __app: unknown }).__app = { reflectState, renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, lights: lightState, tours: TOURS, tour, narration, audio, perf, quality, ui: { ...ui, ui: compactState, openSheet, closeSheets, reveal }, explore, keys, multi: multiTest, exFlight: { exCreate, exStep, exInputFromKeys, exBuildGlider, exPlaceGlider, exChase, CONFIG_explore: CONFIG.explore }, boats: boatsTest, traffic: trafficTest, trees: treesTest, people: peopleTest,
+  (window as unknown as { __app: unknown }).__app = { reflectState, renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, lights: lightState, tours: TOURS, tour, narration, audio, perf, quality, ui: { ...ui, ui: compactState, openSheet, closeSheets, reveal }, explore, keys, multi: multiTest, exFlight: { exCreate, exStep, exInputFromKeys, exBuildGlider, exPlaceGlider, exChase, CONFIG_explore: CONFIG.explore }, boats: boatsTest, traffic: trafficTest, trees: treesTest, people: peopleTest, buildings: { state: bkState, attrs: () => bkAttrNames },
     stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive };
 }
 

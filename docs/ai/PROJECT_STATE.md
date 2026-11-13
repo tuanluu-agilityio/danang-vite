@@ -6,8 +6,8 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
-| **Mốc hiện tại** | M2 — nguyên mẫu nhà: Task 2.1–2.3 xong, đang ở Task 2.4 |
-| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 đang làm |
+| **Mốc hiện tại** | M2 — nguyên mẫu nhà: Task 2.1–2.6 xong, đang ở 2.7 (người dùng duyệt + chốt hướng M3) |
+| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 xong phần mã, **chờ người dùng xem nhà mẫu** |
 | **Cập nhật** | 2026-11-13 14:05 +07 (điểm lưu trước khi tắt máy, phiên 1; 14:10 ghi thêm việc người dùng duyệt nước) |
 
 ## Việc vừa xong (đã kiểm)
@@ -21,6 +21,7 @@ Không có việc dở, không có thao tác file nào bị ngắt giữa chừn
 - [x] Công cụ chụp / đo dùng lại được: `tests/ven-song-shots.mjs` (GPU thật, 8 góc cố định, 6 điều kiện, `--dist=` để đo A/B).
 - [x] M1: shader nước nhiều lớp sóng, Fresnel, màu theo độ sâu, nắng lấp lánh, gợn mưa, sóng bạc đầu, bọt mép kè; gương 1024 × 512; thông số ở `CONFIG.water`.
 - [x] M2 Task 2.1–2.3 (2026-11-13): kit phụ kiện nhà 5 họ dựng bằng Blender (`blender/scripts/`, `blender/scenes/riverside_buildings.blend`), `public/buildings/kit.glb` 276 644 byte, `npm run gen:buildings`, `npm run test:buildings:unit` 24/24. Thiết kế: spec §6 (D-037 bản 2).
+- [x] M2 Task 2.4–2.6 (2026-11-13): `src/environment/buildings/` (`kitData.ts`, `families.ts`, `kit.ts`), `aFam` + mặt đứng theo họ trong `patchWindows`, `CONFIG.buildings`, vùng mẫu 122 nhà bờ Tây; đường lùi `?buildings=off`; ảnh `tests/screens/ven-song/nha1/`; số đo ở `QA_LOG.md`.
 - [x] Spec + plan (`docs/superpowers/specs|plans/2026-11-13-ven-song-chan-thuc*`).
 
 ## Còn lại (theo thứ tự ưu tiên)
@@ -46,7 +47,7 @@ Không có.
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-M2 Task 2.4–2.5: `src/environment/buildings/` nạp `kit.glb`, dựng mỗi họ một `InstancedMesh` chồng lên nhà hộp trong vùng mẫu bờ Tây (spec §6.3), thêm `aFam` cho thân; rồi Task 2.6 chụp ảnh trước / sau và đo. Kit **chưa từng chạy trong three**: phải kiểm tên thuộc tính sau GLTFLoader, pháp tuyến (xoay theo ma trận instance nhưng không nhân co giãn), z-fighting với thân.
+Task 2.7: người dùng xem nhà mẫu (`npm run dev`, bờ Tây cạnh Cầu Rồng; hoặc ảnh `tests/screens/ven-song/nha1/nha-mau-*.png`) và trả lời câu hỏi mở: **có cho hạ chiều cao một phần nhà ven sông không** (để có dãy nhà ống / khách sạn 4–12 tầng như Bạch Đằng thật; việc này đổi ma trận instance nên phải làm trước `buildRiverfront()` và kiểm biển quảng cáo, trái tim LED, va chạm, các test so ma trận nhà). Sau đó M3 Task 3.1. Việc kỹ thuật còn nợ của M2: A/B GPU chuẩn so với `main`; thử đường lật X bờ Đông; hình cầu bao theo cụm thay vì cả họ; kit chưa có LOD.
 
 ## File quan trọng
 | File | Vai trò |

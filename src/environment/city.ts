@@ -34,7 +34,9 @@ export function buildCity() {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), s = new THREE.Vector3(), col = new THREE.Color();
   for (const list of clusters.values()) {
     const cx = list.reduce((a, b) => a + b.x, 0) / list.length, cz = list.reduce((a, b) => a + b.z, 0) / list.length;
-    const near = new THREE.InstancedMesh(geo, nearMat, list.length), far = new THREE.InstancedMesh(geo, farMat, list.length);
+    // bản gần: hình học riêng mỗi cụm để mang thuộc tính instance aFam (họ nhà, D-037 bản 2; 0 = mặt đứng cũ), environment/buildings/kit.ts ghi vào
+    const ng = geo.clone(); ng.setAttribute('aFam', new THREE.InstancedBufferAttribute(new Float32Array(list.length), 1));
+    const near = new THREE.InstancedMesh(ng, nearMat, list.length), far = new THREE.InstancedMesh(geo, farMat, list.length);
     list.forEach((b, i) => {
       m.compose(v.set(b.x - cx, CONFIG.landY, b.z - cz), q, s.set(b.w, b.h, b.d));
       near.setMatrixAt(i, m); far.setMatrixAt(i, m); col.setHex(b.c); near.setColorAt(i, col); far.setColorAt(i, col.multiplyScalar(0.92));

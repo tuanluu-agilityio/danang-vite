@@ -7,7 +7,7 @@ Blender 4.5.10 LTS có sẵn ở `C:/Program Files/Blender Foundation/Blender 4.
 
 | Tên | Loại | Nguồn `.blend` / script | GLB | Texture | Tam giác | Vật liệu | LOD | Trạng thái | Góc kiểm | Sửa lần cuối |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `fam1` khách sạn kính | kit phụ kiện nhà | `blender/scenes/riverside_buildings.blend` ← `blender/scripts/build_building_library.py` | `public/buildings/kit.glb` (chung, 276 644 byte) | không | 718 | không (màu đỉnh `COLOR_0`, `_GLOW`) | chưa có (M3) | GLB + test đơn vị đạt; **chưa tích hợp three** | `nha-tay`, `mat-pho` | 2026-11-13 |
+| `fam1` khách sạn kính | kit phụ kiện nhà | `blender/scenes/riverside_buildings.blend` ← `blender/scripts/build_building_library.py` | `public/buildings/kit.glb` (chung, 276 644 byte) | không | 718 | không (màu đỉnh `COLOR_0`, `_GLOW`) | chưa có (M3) | đang dùng ở vùng mẫu bờ Tây (M2), chờ duyệt | `nha-tay`, `mat-pho` | 2026-11-13 |
 | `fam2` chung cư | như trên | như trên | như trên | không | 586 | như trên | chưa có | như trên | như trên | 2026-11-13 |
 | `fam3` thương mại | như trên | như trên | như trên | không | 232 | như trên | chưa có | như trên | như trên | 2026-11-13 |
 | `fam4` văn phòng | như trên | như trên | như trên | không | 538 | như trên | chưa có | như trên | như trên | 2026-11-13 |

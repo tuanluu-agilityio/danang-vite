@@ -52,7 +52,9 @@ export function tpBuildSite(bridge: ThuanPhuocBridge) {
   };
   place(-1700, -360, wN + 60, wS - 20, 40);
   place(360, 1380, -400, eS - 20, 28);
-  const bm = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), bridge.mats.building, list.length);
+  const bg = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
+  bg.setAttribute('aFam', new THREE.InstancedBufferAttribute(new Float32Array(list.length), 1));   // shader 'windows-city' đọc họ nhà (D-037 bản 2); 0 = mặt đứng cũ
+  const bm = new THREE.InstancedMesh(bg, bridge.mats.building, list.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
   const palette = [0xf3f0e7, 0xeae2cf, 0xdadcdc, 0xcfe0e7, 0xe6dccb, 0xf6f6f2];
   list.forEach(([x, z, w, d, h], i) => {

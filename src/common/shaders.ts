@@ -27,13 +27,55 @@ function cityNightGlsl() {
           } }`;
 }
 
+/* Mặt đứng thân nhà theo họ (D-037 bản 2, aFam > 0; aFam = 0 đi đúng nhánh cũ). Màu đổi sang tuyến tính như màu instance (setHex) */
+const lin = (hex: number) => { const c = new THREE.Color().setHex(hex); return `vec3(${f1(c.r)}, ${f1(c.g)}, ${f1(c.b)})`; };
+function famGlsl() {
+  const B = CONFIG.buildings, F = (i: number) => B.facade[i], v4 = (a: number[]) => `vec4(${a.map(f1).join(', ')})`;
+  const sel = (fn: (i: number) => string) => `fi == 1 ? ${fn(1)} : fi == 2 ? ${fn(2)} : fi == 3 ? ${fn(3)} : fi == 4 ? ${fn(4)} : ${fn(5)}`;
+  return `
+        const vec3 BK_BAY[${B.bayPalette.length}] = vec3[${B.bayPalette.length}](${B.bayPalette.map(lin).join(', ')});
+        /* Ô cửa theo họ: vẫn lưới 3,4 m theo y thế giới (khớp sàn của kit, đèn đêm); nhà ống chia khoang d/${B.bays} dọc Z ở mặt ±X */
+        float famWin(float side, float along, out vec2 cell){
+          int fi = int(vBFam + 0.5);
+          vec4 b = ${sel((i) => v4(F(i).win))};
+          float glazeH = ${sel((i) => f1(F(i).glazeH))};
+          float a = along, cw = 3.2, off = 0.0;
+          if (fi == 5 && abs(vBNrm.x) > 0.5) {
+            float bw = vBSize.z / ${f1(B.bays)}, lz = vBPos.z - (vBId.y - vBSize.z * 0.5), bay = clamp(floor(lz / bw), 0.0, ${f1(B.bays - 1)});
+            cw = bw / max(1.0, floor(bw / 3.2 + 0.5)); a = lz - bay * bw; off = bay * 17.0;
+          }
+          vec2 g = vec2(a / cw + off, vBPos.y / 3.4); cell = floor(g); vec2 f = fract(g);
+          float up = step(6.8, vBPos.y) * step(b.x, f.x) * step(f.x, b.y) * step(b.z, f.y) * step(f.y, b.w);
+          float lowY = vBPos.y - vBBase;
+          float shop = step(vBBase + 0.35, vBPos.y) * step(vBPos.y, 6.45) * step(0.04, f.x) * step(f.x, 0.96);
+          float glz = step(6.8, vBPos.y) * step(0.03, f.x) * step(f.x, 0.97) * step(0.1, f.y) * step(f.y, 0.94);
+          float m = lowY < glazeH ? max(shop, glz) : up;
+          if (fi == 5 && abs(vBNrm.z) > 0.5) m *= step(lowY, 4.3);   // nhà ống: tường hồi (±Z, giáp nhà bên) đặc, chỉ còn tầng trệt
+          return side * m;
+        }
+        /* Màu thân theo họ: tường (màu instance kéo về tint, nhà ống: màu khoang) trộn kính */
+        vec3 famAlbedo(vec3 wallIn){
+          int fi = int(vBFam + 0.5);
+          vec2 cl; float wm = winMask(cl);
+          vec3 tint = ${sel((i) => lin(F(i).tint[0]))};
+          float tk = ${sel((i) => f1(F(i).tint[1]))};
+          vec3 glass = ${sel((i) => lin(F(i).glass))};
+          vec3 wall = mix(wallIn, tint, tk);
+          if (fi == 5) {
+            float bw = vBSize.z / ${f1(B.bays)}, bay = clamp(floor((vBPos.z - (vBId.y - vBSize.z * 0.5)) / bw), 0.0, ${f1(B.bays - 1)});
+            wall = BK_BAY[int(bHash(vBId + bay * 7.31) * ${f1(B.bayPalette.length - 0.001)})];
+          }
+          return mix(wall, glass, wm * 0.92);
+        }`;
+}
+
 export function patchWindows(mat: Mat, opts: { perBuilding?: boolean } = {}) {
   const per = !!opts.perBuilding;
   mat.customProgramCacheKey = () => (per ? 'windows-city' : 'windows');
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uNight = shared.uNight;
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vBPos; varying vec3 vBNrm;' + (per ? ' flat varying vec2 vBId; flat varying vec3 vBSize; flat varying float vBBase;' : ''))
+      .replace('#include <common>', '#include <common>\nvarying vec3 vBPos; varying vec3 vBNrm;' + (per ? ' flat varying vec2 vBId; flat varying vec3 vBSize; flat varying float vBBase; flat varying float vBFam; attribute float aFam;' : ''))
       .replace('#include <fog_vertex>', `#include <fog_vertex>
         { vec4 bp = vec4(transformed, 1.0); vec3 bn = objectNormal;
         #ifdef USE_INSTANCING
@@ -42,22 +84,28 @@ export function patchWindows(mat: Mat, opts: { perBuilding?: boolean } = {}) {
           vBPos = (modelMatrix * bp).xyz; vBNrm = normalize(mat3(modelMatrix) * bn); }` + (per ? `
         #ifdef USE_INSTANCING
           { vec4 o = modelMatrix * instanceMatrix[3]; vBId = o.xz; vBBase = o.y;
-            vBSize = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz)); }
+            vBSize = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz)); vBFam = aFam; }
+        #else
+          vBFam = 0.0;
         #endif` : ''));
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
-        varying vec3 vBPos; varying vec3 vBNrm; uniform float uNight;${per ? ' flat varying vec2 vBId; flat varying vec3 vBSize; flat varying float vBBase;' : ''}
-        float bHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        varying vec3 vBPos; varying vec3 vBNrm; uniform float uNight;${per ? ' flat varying vec2 vBId; flat varying vec3 vBSize; flat varying float vBBase; flat varying float vBFam;' : ''}
+        float bHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }${per ? `
+        float famWin(float side, float along, out vec2 cell);` : ''}
         float winMask(out vec2 cell){
           float side = 1.0 - step(0.6, abs(vBNrm.y));
-          float along = abs(vBNrm.x) > 0.5 ? vBPos.z : vBPos.x;
+          float along = abs(vBNrm.x) > 0.5 ? vBPos.z : vBPos.x;${per ? `
+          cell = vec2(0.0); if (vBFam > 0.5) return famWin(side, along, cell);` : ''}
           vec2 g = vec2(along / 3.2, vBPos.y / 3.4);
           cell = floor(g); vec2 f = fract(g);
           return side * step(0.16, f.x) * step(f.x, 0.84) * step(0.22, f.y) * step(f.y, 0.82) * step(5.5, vBPos.y);
-        }`)
+        }` + (per ? famGlsl() : ''))
       .replace('#include <map_fragment>', `#include <map_fragment>
-        { vec2 cl; float wm = winMask(cl);
+        ${per ? 'if (vBFam < 0.5) ' : ''}{ vec2 cl; float wm = winMask(cl);
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.20, 0.29, 0.36), wm * 0.82); }`)
+      .replace('#include <color_fragment>', '#include <color_fragment>' + (per ? `
+        if (vBFam > 0.5) diffuseColor.rgb = famAlbedo(diffuseColor.rgb);` : ''))
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         ` + (per ? cityNightGlsl() : `{ vec2 cl; float wm = winMask(cl);
           float h = bHash(cl + floor(vBPos.xz * 0.02) * 7.13);

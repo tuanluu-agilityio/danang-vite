@@ -555,6 +555,36 @@ const cityNightBase = {
   streak: { taps: 8, reach: 0.16, threshold: 0.35, gain: 2.8 }   // vệt đèn trên sông: số mẫu, độ dài theo tọa độ ảnh phản chiếu 0..1, ngưỡng độ sáng, hệ số (ước lượng)
 };
 
+/* ------------------------- Nhà ven sông: bộ phụ kiện Blender + mặt đứng theo họ (D-037 bản 2, M2) -------------------------
+   Mã ở environment/buildings/, mặt đứng thân nhà ở common/shaders.ts (patchWindows perBuilding, thuộc tính aFam). Spec 2026-11-13-ven-song-chan-thuc-design.md §6.
+   Mọi số là (ước lượng), chỉnh theo ảnh tests/screens/ven-song/ */
+const buildingsBase = {
+  url: 'buildings/kit.glb',                             // đường dẫn kit (sau BASE_URL), sinh bằng npm run gen:buildings
+  loadMs: 8000,                                         // ms — quá thời gian này thì bỏ kit, nhà vẫn là hộp như cũ (ước lượng)
+  zone: { x0: -700, x1: -262, z0: -500, z1: 500 },      // m — vùng mẫu M2 (bờ Tây quanh Cầu Rồng): tâm nhà nằm trong thì được gắn kit
+  // Họ theo chiều cao (spec §6.1): nhà có h ∈ [h0, h1) m là ứng viên của họ; chọn giữa các ứng viên theo trọng số w bằng băm vị trí (không rand()) (ước lượng)
+  bands: [
+    { id: 1, h0: 45, h1: 1e9, w: 1 },    // khách sạn kính
+    { id: 2, h0: 20, h1: 45, w: 1.2 },   // chung cư
+    { id: 3, h0: 14, h1: 30, w: 1 },     // thương mại
+    { id: 4, h0: 30, h1: 1e9, w: 0.8 },  // văn phòng
+    { id: 5, h0: 0, h1: 20, w: 1.6 }     // nhà ống thấp tầng
+  ] as { id: number; h0: number; h1: number; w: number }[],
+  roughness: 0.7, metalness: 0.1,                       // vật liệu kit (ước lượng)
+  glowGain: 1.6,                                        // cường độ phát sáng đêm của phần _GLOW (biển hiệu mái, dải biển hiệu), hệ số (ước lượng)
+  // Mặt đứng thân nhà theo họ (shader). win = ô cửa trong lưới 3,2 × 3,4 m: [x0, x1, y0, y1] phần ô 0..1; glass = màu kính (sRGB);
+  // tint = [màu sRGB, mức 0..1] kéo màu tường của nhà về phía màu đó; glazeH = m — phần dưới cao độ này (tính từ chân nhà y = 2,5; bội 3,4 trừ 2,5 để khớp sàn) là mặt tiền kính: tầng trệt một ô cao tới y = 6,8, các tầng trên kính gần kín ô (0 = không)
+  facade: {
+    1: { win: [0.04, 0.96, 0.12, 0.92], glass: 0x56717f, tint: [0x9aa9b4, 0.55], glazeH: 7.7 }, // khách sạn: kính lớn xanh xám, đố mảnh
+    2: { win: [0.30, 0.70, 0.30, 0.78], glass: 0x3b4650, tint: [0xf2dcb4, 0.35], glazeH: 4.3 }, // chung cư: cửa sổ nhỏ, tường ngả pastel ấm
+    3: { win: [0.12, 0.88, 0.24, 0.80], glass: 0x3e5260, tint: [0xe9e4da, 0.2], glazeH: 11.1 }, // thương mại: kính các tầng dưới
+    4: { win: [0.10, 0.90, 0.26, 0.86], glass: 0x40525e, tint: [0xb9b8b2, 0.5], glazeH: 4.3 },  // văn phòng: lưới kính / bê tông đều
+    5: { win: [0.34, 0.66, 0.30, 0.80], glass: 0x3a3f44, tint: [0xffffff, 0], glazeH: 4.3 }    // nhà ống: cửa sổ hẹp, màu tường theo khoang
+  } as Record<number, { win: number[]; glass: number; tint: [number, number]; glazeH: number }>,
+  bays: 5,                                              // số khoang nhà ống dọc Z (= số khoang của fam5 trong kit.glb)
+  bayPalette: [0xf4ecd6, 0xf3e3a2, 0xcfe6cf, 0xf1cfc8, 0xc9dceb, 0xf7f6f1]   // màu khoang nhà ống (sRGB): kem, vàng nhạt, xanh bạc hà, hồng nhạt, xanh nhạt, trắng (ước lượng)
+};
+
 const perfBase = {
   hudSamples: 240,    // số khung giữ trong vòng mẫu để tính trung bình / p95 / max trên HUD (≈ 4 s ở 60 FPS)
   lightWarmMs: 3,     // ms — ngân sách mỗi khung cho phần đồng bộ (trên luồng chính) của biên dịch nền hai bộ đèn ngày / đêm (D-031) (ước lượng)
@@ -1046,6 +1076,7 @@ export const CONFIG = {
   ...base,
   perf: perfBase,
   cityNight: cityNightBase,
+  buildings: buildingsBase,
   water: waterBase,
   boats: boatsBase,
   ui: uiBase,

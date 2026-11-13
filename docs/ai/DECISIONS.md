@@ -21,4 +21,5 @@ Sổ quyết định riêng của việc này. Dòng tóm tắt của mỗi quy�
 - **Vì sao**: bản 1 (gộp 5 họ bằng `aPart`) bắt mỗi nhà xử lý đỉnh của cả 5 họ ở ba lượt vẽ (ước lượng 4,5 triệu tam giác thêm cho 1 500 nhà); thay geometry còn làm `collectBuildings()` và va chạm phải viết lại. Bản 2 không đổi ma trận instance nào.
 - **Định dạng kit** (neo trong hộp đơn vị + `_OFF` mét + `_RULE` theo tầng + `COLOR_0` alpha + `_GLOW`): spec §6.2. Lưu ý: bộ xuất glTF của Blender KHÔNG đổi trục cho thuộc tính tùy biến, nên script phải tự ghi `_OFF` theo trục glTF.
 - **Giá**: tối đa +5 lệnh vẽ ở góc thấy vùng nhà chi tiết (trong trần +6 của spec §3); kit ở lớp 1 nên không vào gương mặt nước, không đổ bóng.
+- **Kết quả M2 (2026-11-13)**: chạy được, +5 lệnh vẽ, +71 nghìn tam giác cho 122 nhà, 0 lỗi; gọi `buildBuildingKit()` sau cả `SunWheel` (cũng dọn nhà trong vùng); `tp-houses` của Thuận Phước phải mang `aFam` toàn 0 vì dùng chung program `windows-city`; GLTFLoader đặt tên thuộc tính `_off`, `_rule`, `_glow` (mã đổi sang `bkOff`, `bkRule`, `bkGlow`).
 - **Chưa giải quyết**: phân bố chiều cao (quá nhiều tháp) giữ nguyên vì đổi `h` là đổi ma trận instance; xét ở M3.

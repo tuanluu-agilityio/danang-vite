@@ -22,7 +22,8 @@ const CAMS = {
   'du-luon': { pos: [40, 140, 520], target: [-60, 0, -500] },             // tầm bay dù lượn dọc sông
   'mat-pho': { pos: [-299, 1.8, 120], target: [-200, 8, 0] },             // ngang tầm xe trên Bạch Đằng
   'nha-tay': { pos: [120, 60, -420], target: [-420, 30, -560] },          // từ giữa sông nhìn thẳng dãy nhà bờ Tây
-  'nha-dong': { pos: [-120, 60, 420], target: [420, 30, 560] }            // từ giữa sông nhìn thẳng dãy nhà bờ Đông
+  'nha-dong': { pos: [-120, 60, 420], target: [420, 30, 560] },           // từ giữa sông nhìn thẳng dãy nhà bờ Đông
+  'nha-mau': { pos: [-200, 40, 20], target: [-400, 25, -150] }            // gần, chéo 3/4 từ phía sông vào vùng nhà mẫu M2 (kit Blender, D-037)
 };
 /* Điều kiện: night 0..1 của dayNight, preset thời tiết */
 const CONDS = {

@@ -2,6 +2,20 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-13 15:20 — M2 nguyên mẫu nhà (kit trong three, vùng mẫu bờ Tây −700 ≤ x ≤ −262, |z| ≤ 500)
+- **Máy / lệnh**: như M1; `npm run build && node tests/ven-song-shots.mjs --label=nha1 --only=ngay,dem` (thêm góc `nha-mau`). Ảnh ở `tests/screens/ven-song/nha1/`.
+- **Kết quả máy đo** (agent con chạy, phiên chính chạy lại `npm run build` và `test:buildings:unit`): build sạch; `test:buildings:unit` 30/30; `test:drive:unit` 124/124; `test:stroll:unit` 86/87 (trượt "hướng theo camYaw" do `strollBase.walk` 1,6 chưa commit của người dùng, có từ trước); 0 lỗi console; program 176 → 180, không tăng thêm sau khi đi hết các góc.
+- **Vùng mẫu**: 122 nhà — họ 1 khách sạn 33, họ 2 chung cư 25, họ 3 thương mại 6, họ 4 văn phòng 52, họ 5 nhà ống 6.
+- **Lệnh vẽ** (trước → sau, ngày / đêm): tren-cao 268 → 273 / 272 → 277; du-luon 268 → 273 / 271 → 276; nha-tay 154 → 159 / 178 → 183; mat-pho 240 → 244 / 243 → 248; sat-nuoc 235 → 239 / 257 → 261; nha-dong 157 → 159 (cả hai, dù không thấy vùng mẫu: hình cầu bao của cả họ quá to); doc-song, bo-ke +0. Trong trần +6 của spec.
+- **Tam giác**: +71 264 ở lượt chính khi thấy cả vùng (tính cả tam giác tầng đã thu về một điểm); lượt bóng và gương +0.
+- **GPU**: A/B xen kẽ một vòng với `?buildings=off` (cùng bản build, không phải so với `main`): góc nha-mau 11,9 / 11,6 → 12,7 / 12,5 ms (khoảng +0,6 đến +1,2 ms); góc tren-cao nhiễu lớn, không kết luận được. **Chưa có phép A/B chuẩn so với `main`.**
+- **Đường lùi**: `?buildings=off` → 0 lưới `bk-fam*`, 176 program, 0 lỗi.
+- **Xem ảnh (phiên chính tự xem `nha-mau-ngay`, `nha-tay-ngay`, `nha-mau-dem`; người dùng chưa duyệt)**:
+  - Đạt: trong vùng mẫu nhà không còn là hộp trơn: tháp kính có dải ban công mặt sông và khung biển hiệu mái sáng về đêm, văn phòng có lam đứng, mái có tường chắn / khối kỹ thuật; cửa sổ đêm và viền LED vẫn chạy; không thấy vật lơ lửng hay mảng shading hỏng.
+  - Chưa đạt: vẫn là "rừng tháp" trắng xám trên nền đất phẳng, chưa ra phố Đà Nẵng: chỉ 6 nhà ống vì nhà ven sông hầu hết cao trên 30 m (chiều cao lấy từ `rand()`, chưa đổi); màu tường ít sắc; nhìn từ xa (nha-tay) khác biệt nhỏ; mặt đất giữa các nhà trống.
+- **Chưa kiểm**: nhấp nháy z-fighting khi chuyển động (mới có ảnh tĩnh); đường lật X cho bờ Đông và `disposeBuildingKit()` chưa chạy lần nào; mặt cắt Hầm cùng kit; thân `aFam = 0` có giống từng điểm ảnh bản cũ không (theo mã thì nhánh cũ giữ nguyên); chưa chạy test trình duyệt SwiftShader nào.
+- **Kết luận**: kỹ thuật của D-037 bản 2 chạy được trong trần lệnh vẽ; về hình ảnh mới là bước đầu. **Chờ người dùng xem và quyết hướng M3.**
+
 ## 2026-11-13 14:05 — Điểm lưu trước khi tắt máy
 - Sau sự cố `node_modules` (xem `PROJECT_STATE.md` mục "Trạng thái lúc lưu") đã cài bù bằng `npm install`: `npm ls --depth=0` đủ gói, `npm run build` đạt (`tsc --noEmit` + `vite build`), `npx tsx --version` chạy. **Chưa chạy lại** test trình duyệt nào sau khi cài bù (`test:weather` đạt là trước sự cố, cùng mã nguồn).
 

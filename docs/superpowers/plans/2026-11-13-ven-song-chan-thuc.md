@@ -22,9 +22,9 @@ Nghiệm thu: spec §7 dòng M1.
 - [x] 2.1 (xong 2026-11-13, theo spec §6 bản 2: kit phụ kiện, không phải đế / thân / mái) `blender/scripts/build_building_library.py`: 5 họ; chạy qua `scripts/people/blender.mjs`; lưu `blender/scenes/riverside_buildings.blend`. Kiểm: mở lại file, đếm tam giác ≤ trần.
 - [x] 2.2 `blender/scripts/export_assets.py` → `public/buildings/kit.glb`; lệnh `npm run gen:buildings`; ghi `ASSET_MANIFEST.md`.
 - [x] 2.3 (24/24) Test đơn vị `tests/buildings-unit/` (trần dung lượng, tam giác, đủ 5 họ, có ba đoạn) + `npm run test:buildings:unit`.
-- [ ] 2.4 `src/environment/buildings/`: nạp GLB, mỗi họ một `InstancedMesh` kit chồng lên thân hộp (spec §6.3), shader áp `_OFF` / `_RULE` / `_GLOW`, `aFam` cho thân; `CONFIG.buildings`; đường lùi về hộp.
-- [ ] 2.5 Thay một cụm bờ Tây quanh Cầu Rồng (không đổi `items`, không thêm `rand()`); chọn họ bằng băm chỉ số.
-- [ ] 2.6 Ảnh trước / sau (`nha-tay`, `nha-dong`, `mat-pho`, `tren-cao`; ngày + đêm), A/B GPU, lệnh vẽ; `test:stroll:unit`, `test:drive:unit`.
+- [x] 2.4 `src/environment/buildings/`: nạp GLB, mỗi họ một `InstancedMesh` kit chồng lên thân hộp (spec §6.3), shader áp `_OFF` / `_RULE` / `_GLOW`, `aFam` cho thân; `CONFIG.buildings`; đường lùi về hộp.
+- [x] 2.5 Thay một cụm bờ Tây quanh Cầu Rồng (không đổi `items`, không thêm `rand()`); chọn họ bằng băm chỉ số.
+- [x] 2.6 (A/B GPU chuẩn so với `main` còn nợ, mới có A/B với `?buildings=off`) Ảnh trước / sau (`nha-tay`, `nha-dong`, `mat-pho`, `tren-cao`; ngày + đêm), A/B GPU, lệnh vẽ; `test:stroll:unit`, `test:drive:unit`.
 - [ ] 2.7 Chốt hoặc sửa D-037; **người dùng duyệt bằng mắt.**
 
 ## M3 — Mở rộng
