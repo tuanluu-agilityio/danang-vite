@@ -6,15 +6,15 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
-| **Mốc hiện tại** | M1 — nguyên mẫu nước |
-| **Trạng thái** | M1 đã làm xong phần mã, **chờ người dùng xem và duyệt bằng mắt** trước khi sang M2 |
-| **Cập nhật** | 2026-11-13 14:05 +07 (điểm lưu trước khi tắt máy, phiên 1) |
+| **Mốc hiện tại** | M2 — nguyên mẫu nhà (chưa bắt đầu) |
+| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 chưa bắt đầu |
+| **Cập nhật** | 2026-11-13 14:05 +07 (điểm lưu trước khi tắt máy, phiên 1; 14:10 ghi thêm việc người dùng duyệt nước) |
 
 ## Việc vừa xong (đã kiểm)
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
 
 ## Việc đang làm
-Không có việc dở, không có thao tác file nào bị ngắt giữa chừng. Điểm dừng: chờ người dùng xem nước (`npm run dev`, hoặc ảnh `tests/screens/ven-song/sau/`). Người dùng **chưa trả lời** hai câu hỏi: (1) nước đã được chưa / chỉnh gì; (2) có làm sắc hoàng hôn không (đụng `dayNight.ts`, hệ ngày / đêm chung).
+Không có việc dở, không có thao tác file nào bị ngắt giữa chừng. Điểm dừng: chờ người dùng xem nước (`npm run dev`, hoặc ảnh `tests/screens/ven-song/sau/`). Người dùng đã trả lời (2026-11-13): (1) nước: "Đồng ý"; (2) sắc hoàng hôn: "Nên note lại sẽ làm sau" → nằm trong việc tồn M3 (task 3.5), không làm ở M2.
 
 ## Đã hoàn thành
 - [x] Kiểm kê hiện trạng (`AUDIT.md`), số đo gốc và ảnh "trước" (`tests/screens/ven-song/truoc/`, không commit; dựng lại được bằng lệnh ở `QA_LOG.md`).
@@ -23,7 +23,7 @@ Không có việc dở, không có thao tác file nào bị ngắt giữa chừn
 - [x] Spec + plan (`docs/superpowers/specs|plans/2026-11-13-ven-song-chan-thuc*`).
 
 ## Còn lại (theo thứ tự ưu tiên)
-1. **M1 — chốt**: người dùng duyệt nước. Việc nhỏ còn mở của M1: sóng bạc đầu khi bão còn mảng cứng ở gần camera; chưa có sắc ấm lúc hoàng hôn (hệ ngày / đêm hiện không có trạng thái hoàng hôn, xem `DECISIONS.md` D-036 mục Hệ quả); vệt sóng sau tàu chưa làm.
+1. **M1 — đã duyệt**. Việc nhỏ còn mở, dời sang M3 task 3.5 / M4 (plan task 1.6): sóng bạc đầu khi bão còn mảng cứng ở gần camera; chưa có sắc ấm lúc hoàng hôn (hệ ngày / đêm hiện không có trạng thái hoàng hôn, xem `DECISIONS.md` D-036 mục Hệ quả); vệt sóng sau tàu chưa làm.
 2. **M2 — nguyên mẫu nhà**: dựng thư viện nhà 5 họ trong Blender (`blender/scripts/`), xuất GLB, thay một cụm nhà ven sông bờ Tây quanh Cầu Rồng; chụp trước / sau. Cách làm đề xuất ở `DECISIONS.md` D-037 (chưa kiểm chứng).
 3. **M3 — mở rộng**: thay nhà cả hai bờ, LOD ba mức, chi tiết bờ kè, vệt sóng tàu, hoàng hôn.
 4. **M4 — tối ưu và QA**: chạy đủ bộ test nặng một lần (`copilot-instructions.md` §5), `test:citynight -- --baseline`, ghi `tests/KET-QUA.md`.
@@ -35,7 +35,7 @@ Không có việc dở, không có thao tác file nào bị ngắt giữa chừn
 - Ảnh và số đo ở `tests/screens/ven-song/` (`truoc`, `sau`, `sau1`–`sau3` là các vòng chỉnh, `ab-*`) còn trên đĩa, không commit; mất thì dựng lại theo `ASSET_MANIFEST.md`.
 
 ## Vướng mắc
-Không có vướng mắc kỹ thuật. Cần người dùng: duyệt nước M1.
+Không có.
 
 ## Kiểm chứng gần nhất (2026-11-13)
 - `npm run build` (gồm `tsc --noEmit`): đạt.
@@ -45,7 +45,7 @@ Không có vướng mắc kỹ thuật. Cần người dùng: duyệt nước M1
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-Người dùng xem nước và trả lời duyệt / chỉnh. Nếu duyệt: bắt đầu M2 bằng Task 2.1 của plan (script Blender `blender/scripts/build_building_library.py`).
+Bắt đầu M2 bằng Task 2.1 của plan: viết `blender/scripts/build_building_library.py` (5 họ nhà, mỗi họ đế / thân / mái), chạy qua `scripts/people/blender.mjs`, lưu `blender/scenes/riverside_buildings.blend`, đếm tam giác so với trần ở spec §3. Trước đó đọc D-037 trong `DECISIONS.md` (mới là đề xuất, phải kiểm ở M2).
 
 ## File quan trọng
 | File | Vai trò |

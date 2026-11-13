@@ -8,13 +8,13 @@ Sau mỗi task: cập nhật `docs/ai/PROJECT_STATE.md` (+ `QA_LOG.md`, `ASSET_M
 - [x] 0.2 `tests/ven-song-shots.mjs`; ảnh và số đo gốc của `main` `752ea22`.
 - [x] 0.3 Bộ nhớ `docs/ai/`, spec, plan.
 
-## M1 — Nguyên mẫu nước (mã xong 2026-11-13, chờ duyệt)
+## M1 — Nguyên mẫu nước (xong, người dùng duyệt 2026-11-13)
 - [x] 1.1 `CONFIG.water`; `src/core/waterShader.ts`; nối vào `water.ts`.
 - [x] 1.2 `waterFx` (mưa, bão) từ `weather/atmosphere.ts`.
 - [x] 1.3 Ảnh sau, chỉnh ba vòng theo ảnh; A/B GPU.
 - [x] 1.4 `npm run build`, `npm run test:weather`.
-- [ ] 1.5 **Người dùng duyệt bằng mắt.** Chỉnh theo phản hồi.
-- [ ] 1.6 (sau duyệt) `test:citynight` (vệt đèn), `test:tunnel` (mặt cắt chèn vào shader nước), xem bậc chất lượng Thấp (`reflectEvery: 0`) và điện thoại.
+- [x] 1.5 Người dùng duyệt bằng mắt: "Đồng ý" (2026-11-13), không yêu cầu chỉnh.
+- [ ] 1.6 (dời sang M4, chạy cùng bộ test nặng) `test:citynight` (vệt đèn), `test:tunnel` (mặt cắt chèn vào shader nước), xem bậc chất lượng Thấp (`reflectEvery: 0`) và điện thoại.
 
 Nghiệm thu: spec §7 dòng M1.
 
@@ -32,7 +32,7 @@ Nghiệm thu: spec §7 dòng M1.
 - [ ] 3.2 LOD ba mức; bản thưa cho lượt bóng / gương (`core/passLod.ts`).
 - [ ] 3.3 Cửa sổ đêm theo họ (dựa trên `patchWindows`).
 - [ ] 3.4 Chi tiết kè và dải ven sông còn thiếu.
-- [ ] 3.5 Nước: vệt sóng sau tàu (đọc vị trí đội tàu, không sửa hệ tàu), sóng bạc đầu mịn hơn, sắc hoàng hôn (cân nhắc phạm vi vì đụng `dayNight.ts`).
+- [ ] 3.5 Nước: vệt sóng sau tàu (đọc vị trí đội tàu, không sửa hệ tàu), sóng bạc đầu mịn hơn, sắc hoàng hôn (người dùng: "note lại sẽ làm sau", 2026-11-13; đụng `dayNight.ts`, hệ ngày / đêm chung).
 - [ ] 3.6 README mục Cấu trúc + ghi nguồn tài nguyên; `copilot-instructions.md` §5 thêm lệnh mới.
 
 ## M4 — Tối ưu và QA

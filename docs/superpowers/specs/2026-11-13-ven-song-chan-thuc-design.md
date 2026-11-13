@@ -1,6 +1,6 @@
 # Nâng cấp độ chân thực sông Hàn và nhà hai bờ — thiết kế
 
-_Trạng thái: M1 (nước) đã làm, chờ người dùng duyệt bằng mắt. M2–M4 chưa làm. Cập nhật 2026-11-13._
+_Trạng thái: M1 (nước) đã làm, người dùng đã duyệt (2026-11-13). M2–M4 chưa làm. Cập nhật 2026-11-13._
 _Bộ nhớ của việc này: [docs/ai/PROJECT_STATE.md](../../ai/PROJECT_STATE.md). Plan: [2026-11-13-ven-song-chan-thuc.md](../plans/2026-11-13-ven-song-chan-thuc.md)._
 
 ## 1. Ý định

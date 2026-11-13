@@ -2,13 +2,13 @@
 
 Sổ quyết định riêng của việc này. Dòng tóm tắt của mỗi quyết định cũng nằm trong `.github/memory-bank/decisions.md` (sổ chung của dự án, đánh số D-xxx liên tục). Quyết định đã kiểm chứng thì không bàn lại nếu không có bằng chứng kỹ thuật mới.
 
-## D-036: Giữ gương phẳng của `Water.js`, viết lại fragment shader mặt nước — 2026-11-13 — Đã làm, chờ người dùng duyệt bằng mắt
+## D-036: Giữ gương phẳng của `Water.js`, viết lại fragment shader mặt nước — 2026-11-13 — Đã làm, người dùng đã duyệt (2026-11-13)
 - **Bối cảnh**: nước là `Water` của three, gương phẳng 512², một cỡ sóng, màu xám sữa (xem `AUDIT.md`).
 - **Vấn đề**: cần sóng nhiều lớp, Fresnel đúng, màu theo độ sâu, phản chiếu trời / nhà / cầu / đèn đêm, mưa, bão; không làm tụt khung hình quá 10 %; không phá các chỗ đang ghi vào uniform của nước.
 - **Chọn**: giữ lượt gương phẳng sẵn có (đã phản chiếu đúng mọi thứ, đã có bậc chất lượng `reflectEvery` và bản thưa `passLod`), thay toàn bộ fragment shader bằng `src/core/waterShader.ts`; giữ mọi uniform cũ; thêm `uRain`, `uStorm` (`waterFx` trong `water.ts`, do `weather/atmosphere.ts` ghi). Màu theo độ sâu tính giải tích từ khoảng cách tới kè (`|x| < bankX`) và bãi biển. Gương tăng lên 1024 × 512. Texture pháp tuyến 512² có mipmap.
 - **Đã loại**: (a) phản chiếu không gian màn hình (SSR): cần lượt độ sâu + hậu kỳ mới, mất vật ngoài khung hình (nhà cao), không hợp `EffectComposer` hiện tại; (b) chỉ dùng environment map: không phản chiếu được nhà, cầu, đèn đêm đang đổi; (c) lưới nước có dịch đỉnh (Gerstner): tấm nước 40 km một ô, chia lưới tốn tam giác mà sông đô thị sóng thấp nên gần như không thấy, và mép kè / thân tàu sẽ hở; (d) lượt vẽ độ sâu để tô màu nông sâu: thêm một lượt vẽ cả cảnh, trong khi lòng sông không có hình học đáy.
 - **Tác động kiến trúc**: không thêm lệnh vẽ, program, thư viện. `cutaway.ts` vẫn chèn `discard` qua chuỗi `void main() {` (shader mới phải giữ đúng một chuỗi đó và varying `worldPosition`). `eye` của Water.js không còn dùng (đổi sang `cameraPosition`, đúng cả khi gương vẽ thưa khung).
-- **Hệ quả / hạn chế**: +0,7 đến +1,0 ms GPU mỗi khung trên Intel Arc 1600 × 900 (+6 đến +9 %). Hoàng hôn chưa có sắc ấm vì `dayNight.ts` chỉ nội suy ngày ↔ đêm (sửa ở đó là đổi hệ ngày / đêm, để M3 và cần cân nhắc phạm vi). Sóng bạc đầu còn thô. Chưa có vệt sóng sau tàu.
+- **Hệ quả / hạn chế**: +0,7 đến +1,0 ms GPU mỗi khung trên Intel Arc 1600 × 900 (+6 đến +9 %). Hoàng hôn chưa có sắc ấm vì `dayNight.ts` chỉ nội suy ngày ↔ đêm (sửa ở đó là đổi hệ ngày / đêm; người dùng bảo "note lại sẽ làm sau", 2026-11-13: để M3 task 3.5). Sóng bạc đầu còn thô. Chưa có vệt sóng sau tàu.
 
 ## D-037: Nhà ven sông: giữ vị trí và chuỗi `rand()`, thay hình khối bằng thư viện nhà Blender theo họ — 2026-11-13 — ĐỀ XUẤT (chưa làm, chưa kiểm chứng; chốt ở M2)
 - **Bối cảnh**: ~7 900 nhà hộp từ `buildCity()`; vị trí, kích thước lấy từ chuỗi `rand()` dùng chung (bất biến #1). `riverfront/clearance.ts`, `billboards.ts`, `heartFacade.ts`, bản đồ va chạm Đi dạo / Lái xe và `drClearRoads` đều đọc ma trận instance của các lưới này.
