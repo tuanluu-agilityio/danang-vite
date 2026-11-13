@@ -28,15 +28,16 @@ Nghiệm thu: spec §7 dòng M1.
 - [x] 2.7 Người dùng cho đi tiếp và đồng ý hạ chiều cao (2026-11-13) → D-038.
 
 ## M3 — Mở rộng
-- [ ] 3.0 `bkReshape()`: hạ chiều cao nhà dải sát sông (D-038).
-- [ ] 3.1 Cả hai bờ (xoay 180° bằng `aFlip`); phân bố họ theo khoảng cách tới sông.
-- [ ] 3.2 LOD ba mức; bản thưa cho lượt bóng / gương (`core/passLod.ts`).
-- [ ] 3.3 Cửa sổ đêm theo họ (dựa trên `patchWindows`).
+- [x] 3.0 `bkReshape()`: hạ chiều cao nhà dải sát sông (D-038).
+- [x] 3.1 Cả hai bờ (xoay 180° bằng `aFlip`); phân bố họ theo khoảng cách tới sông.
+- [x] 3.2 LOD kit trong shader đỉnh (600 m bỏ chi tiết tầng, 1 400 m bỏ cả kit); kit không vào bóng / gương nên không cần `passLod`.
+- [x] 3.3 Cửa sổ đêm theo họ (dựa trên `patchWindows`).
 - [ ] 3.4 Chi tiết kè và dải ven sông còn thiếu.
 - [ ] 3.5 Nước: vệt sóng sau tàu (đọc vị trí đội tàu, không sửa hệ tàu), sóng bạc đầu mịn hơn, sắc hoàng hôn (người dùng: "note lại sẽ làm sau", 2026-11-13; đụng `dayNight.ts`, hệ ngày / đêm chung).
 - [ ] 3.6 README mục Cấu trúc + ghi nguồn tài nguyên; `copilot-instructions.md` §5 thêm lệnh mới.
 
 ## M4 — Tối ưu và QA
+- [ ] 4.0 **Tối ưu GPU**: A/B so với `main` đang +10 đến +26 % (QA_LOG 2026-11-13), mục tiêu ≤ khoảng +10 %. Hướng thử ở `PROJECT_STATE.md`.
 - [ ] 4.1 Đủ bộ test của `copilot-instructions.md` §5, một lượt; `test:citynight -- --baseline` trước khi so.
 - [ ] 4.2 `tests/KET-QUA.md`: bảng lệnh vẽ, GPU A/B, dung lượng.
 - [ ] 4.3 Ngày, hoàng hôn, đêm, mưa, bão × trên cao, mặt cầu, dù lượn, mặt phố; điện thoại.

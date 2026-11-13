@@ -2,6 +2,29 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-13 — M3 Task 3.0–3.3: hạ chiều cao dải sát sông, kit hai bờ, LOD kit, màu (bản làm việc trước commit M3)
+- **Lệnh**: `npm run build && node tests/ven-song-shots.mjs --label=nha2 --only=ngay,dem`; A/B chuẩn: `main` `752ea22` build từ `git archive` ở thư mục tạm, xen kẽ `--label=ab3-A1 --dist=<tạm>/dist --noshots --only=ngay,dem,mua`, `ab3-B1`, `ab3-A2`, `ab3-B2`.
+- **A/B GPU thật so với `main` (nước M1 + nhà M3 cộng lại; Intel Arc, 1600 × 900)**:
+
+| Góc - điều kiện | A = `main` (2 vòng) | B = nhánh (2 vòng) | Lệch | Lệnh vẽ | Tam giác |
+|---|---|---|---|---|---|
+| tren-cao - ngày | 11,02 / 11,06 | 12,60 / 13,90 | +1,6 đến +2,8 (+14 đến +26 %) | 268 → 273 | 4 146 557 → 4 463 509 |
+| sat-nuoc - ngày | 8,13 / 7,89 | 8,93 / 9,27 | +0,8 đến +1,4 (+10 đến +17 %) | 235 → 240 | 4 338 207 → 4 655 159 |
+| tren-cao - đêm | 11,24 / 11,24 | 12,44 / 13,13 | +1,2 đến +1,9 (+11 đến +17 %) | 272 → 277 | 4 177 063 → 4 494 015 |
+| doc-song - đêm | 8,36 / 8,54 | 9,42 / 9,78 | +1,1 đến +1,2 (+12 đến +15 %) | 230 → 235 | 4 058 747 → 4 375 699 |
+| du-luon - mưa | 10,35 / 10,03 | 11,65 / 12,44 | +1,3 đến +2,4 (+13 đến +24 %) | 269 → 274 | 4 121 293 → 4 438 245 |
+
+  **KHÔNG ĐẠT mục tiêu ≤ khoảng +10 % của spec §3.** Riêng nước (M1) đã chiếm +0,7 đến +1,0 ms; phần nhà thêm khoảng +0,5 đến +1,5 ms. Việc tối ưu ghi ở plan M4 task 4.0.
+- Program 176 → 180; 0 lỗi console ở mọi lượt; lệnh vẽ +5 mọi góc (mat-pho đêm +6, chưa rõ nguồn +1); tam giác +316 952 mỗi góc (bộ đếm tính cả tam giác đã thu về một điểm).
+- **Dải sát sông (cách kè ≤ 300 m)**: bờ Tây 305 nhà, bờ Đông 323 nhà; chiều cao trung vị 47,4 → 22,3 m (Tây), 52,5 → 22,3 m (Đông); nhà dưới 20 m: 21 → 139 (Tây), 14 → 121 (Đông); 0 nhà bị nâng, 0 nhà dưới 9 m. Kit: 596 nhà (họ 1: 99, 2: 136, 3: 122, 4: 67, 5: 172).
+- **Test**: build sạch; `test:buildings:unit` 35/35 (phiên chính chạy lại); agent con báo `test:drive:unit` 124/124, `test:boats:unit` 17/17, `test:traffic:unit` 11/11, `test:stroll:unit` 86/87 (ca trượt cũ do `strollBase.walk` chưa commit của người dùng).
+- **Quảng cáo sau khi hạ chiều cao** (agent con đếm): panos 8, mái 5, màn hình 3, băng rôn 102, đủ như trước.
+- **Xem ảnh (phiên chính xem `nha-mau-ngay`, `nha-dong-ngay`, `tren-cao-ngay`, `doc-song-dem`; người dùng chưa duyệt)**:
+  - Đạt: hai bờ sát sông thành dãy nhà thấp nhiều màu (kem, vàng, hồng, xanh nhạt), mái ngói / mái xanh, cửa hàng tầng trệt, khách sạn tầm trung, vài tháp kính; bờ Đông chi tiết quay ra sông; đêm có cửa hàng sáng ấm, LED chỉ còn trên tháp thật.
+  - Chưa đạt: phía sau dải (cách kè > 300 m) vẫn là rừng tháp trắng, chỗ chuyển tiếp đột ngột; "nhà ống" là khối 14–29 m nên ra dãy nhà chứ không phải từng căn hẹp; hàng nhà đầu còn nhiều khoảng trống và sân phẳng; kính cửa hàng ban ngày tối; ban đêm dải sát sông tối hơn trước (ít tháp sáng), vệt đèn trên sông bớt rực.
+- **Ảnh chuyển động** (agent con, script tạm): không thấy nhấp nháy giữa kit và thân, không giật rõ khi qua ngưỡng LOD 600 m / 1 400 m.
+- **Chưa kiểm**: mọi test trình duyệt SwiftShader (dự kiến lệch có chủ ý: `test:citynight` cần `-- --baseline`, `test:drawcalls` +5, ảnh của `test:riverfront` / `test:tunnel` / `test:sunwheel`); mặt cắt Hầm cùng kit; `disposeBuildingKit()`; điện thoại, bậc chất lượng Thấp.
+
 ## 2026-11-13 15:20 — M2 nguyên mẫu nhà (kit trong three, vùng mẫu bờ Tây −700 ≤ x ≤ −262, |z| ≤ 500)
 - **Máy / lệnh**: như M1; `npm run build && node tests/ven-song-shots.mjs --label=nha1 --only=ngay,dem` (thêm góc `nha-mau`). Ảnh ở `tests/screens/ven-song/nha1/`.
 - **Kết quả máy đo** (agent con chạy, phiên chính chạy lại `npm run build` và `test:buildings:unit`): build sạch; `test:buildings:unit` 30/30; `test:drive:unit` 124/124; `test:stroll:unit` 86/87 (trượt "hướng theo camYaw" do `strollBase.walk` 1,6 chưa commit của người dùng, có từ trước); 0 lỗi console; program 176 → 180, không tăng thêm sau khi đi hết các góc.

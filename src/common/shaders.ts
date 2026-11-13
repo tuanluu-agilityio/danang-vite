@@ -8,15 +8,19 @@ type Mat = THREE.Material;
 const f1 = (n: number) => n.toFixed(4);
 /* Đèn đêm theo từng tòa (perBuilding): vBId, vBSize là hằng trong một instance; không chia cho kích thước nên instance scale 0 vẫn an toàn */
 function cityNightGlsl() {
-  const N = CONFIG.cityNight;
+  const N = CONFIG.cityNight, B = CONFIG.buildings;
   return `{ vec2 cl; float wm = winMask(cl);
           float h = bHash(cl + floor(vBPos.xz * 0.02) * 7.13);
           float s1 = bHash(vBId + 3.7), s2 = bHash(vBId + 11.3), s3 = bHash(vBId + 29.1);
           float tower = step(${f1(N.towerH)}, vBSize.y);
           vec3 lit = s1 < 0.25 ? vec3(1.0, 0.55, 0.14) : s1 < 0.5 ? vec3(1.0, 0.46, 0.09) : s1 < 0.75 ? vec3(1.0, 0.38, 0.06) : vec3(1.0, 0.64, 0.22);
           if (tower > 0.5 && s2 < ${f1(N.coolShare)}) lit = s3 < 0.5 ? vec3(0.04, 0.28, 1.0) : vec3(0.02, 0.72, 0.62);
-          float on = step(1.0 - mix(${f1(N.lowLit)}, ${f1(N.towerLit)}, tower), h);
-          totalEmissiveRadiance += wm * on * lit * uNight * mix(${f1(N.lowGain)}, ${f1(N.towerGain)}, tower);
+          float litK = mix(${f1(N.lowLit)}, ${f1(N.towerLit)}, tower), gain = mix(${f1(N.lowGain)}, ${f1(N.towerGain)}, tower);
+          int fn = int(vBFam + 0.5);
+          if (fn == 5) { litK *= ${f1(B.tubeLit)}; lit = mix(lit, vec3(1.0, 0.42, 0.08), 0.5); }   // nhà ống (D-038): ít cửa sổ sáng, ánh vàng hơn
+          if ((fn == 3 || fn == 5) && vBPos.y - vBBase < 4.3) { litK = ${f1(B.shopLit)}; lit = vec3(1.0, 0.6, 0.26); gain = ${f1(B.shopGain)}; }   // tầng trệt cửa hàng sáng ấm
+          float on = step(1.0 - litK, h);
+          totalEmissiveRadiance += wm * on * lit * uNight * gain;
           if (tower > 0.5 && abs(vBNrm.y) < 0.6) {
             float top = vBBase + vBSize.y, fromTop = top - vBPos.y;
             float axis = abs(vBNrm.x) > 0.5 ? abs(vBPos.z - vBId.y) - vBSize.z * 0.5 : abs(vBPos.x - vBId.x) - vBSize.x * 0.5;
@@ -27,14 +31,20 @@ function cityNightGlsl() {
           } }`;
 }
 
-/* Mặt đứng thân nhà theo họ (D-037 bản 2, aFam > 0; aFam = 0 đi đúng nhánh cũ). Màu đổi sang tuyến tính như màu instance (setHex) */
+/* Mặt đứng thân nhà theo họ (D-037 bản 2, D-038; aFam > 0; aFam = 0 đi đúng nhánh cũ). Màu đổi sang tuyến tính như màu instance (setHex).
+   Màu tường do bkReshape ghi vào màu instance (kit nhân theo cùng màu); ở đây thêm: màu khoang nhà ống, màu kính / mái theo băm từng tòa, vết cũ của tường */
 const lin = (hex: number) => { const c = new THREE.Color().setHex(hex); return `vec3(${f1(c.r)}, ${f1(c.g)}, ${f1(c.b)})`; };
+const glArr = (name: string, list: number[]) => `const vec3 ${name}[${list.length}] = vec3[${list.length}](${list.map(lin).join(', ')});`;
 function famGlsl() {
-  const B = CONFIG.buildings, F = (i: number) => B.facade[i], v4 = (a: number[]) => `vec4(${a.map(f1).join(', ')})`;
+  const B = CONFIG.buildings, F = (i: number) => B.facade[i], v4 = (a: number[]) => `vec4(${a.map(f1).join(', ')})`, FAMS = [1, 2, 3, 4, 5];
   const sel = (fn: (i: number) => string) => `fi == 1 ? ${fn(1)} : fi == 2 ? ${fn(2)} : fi == 3 ? ${fn(3)} : fi == 4 ? ${fn(4)} : ${fn(5)}`;
+  const pick = (arr: string, n: (i: number) => number, r: string) => sel((i) => `${arr}${i}[int(${r} * ${f1(n(i) - 0.001)})]`);
   return `
         const vec3 BK_BAY[${B.bayPalette.length}] = vec3[${B.bayPalette.length}](${B.bayPalette.map(lin).join(', ')});
-        /* Ô cửa theo họ: vẫn lưới 3,4 m theo y thế giới (khớp sàn của kit, đèn đêm); nhà ống chia khoang d/${B.bays} dọc Z ở mặt ±X */
+        ${FAMS.map((i) => glArr(`BK_G${i}`, F(i).glass)).join('\n        ')}
+        ${FAMS.map((i) => glArr(`BK_R${i}`, F(i).roofs)).join('\n        ')}
+        /* Ô cửa theo họ: vẫn lưới 3,4 m theo y thế giới (khớp sàn của kit, đèn đêm); nhà ống chia khoang d/${B.bays} dọc Z ở mặt ±X
+           (đối xứng qua tâm: kit bờ Đông xoay 180° vẫn khớp vách ngăn khoang) */
         float famWin(float side, float along, out vec2 cell){
           int fi = int(vBFam + 0.5);
           vec4 b = ${sel((i) => v4(F(i).win))};
@@ -53,18 +63,21 @@ function famGlsl() {
           if (fi == 5 && abs(vBNrm.z) > 0.5) m *= step(lowY, 4.3);   // nhà ống: tường hồi (±Z, giáp nhà bên) đặc, chỉ còn tầng trệt
           return side * m;
         }
-        /* Màu thân theo họ: tường (màu instance kéo về tint, nhà ống: màu khoang) trộn kính */
+        /* Màu thân theo họ: tường (màu instance; nhà ống: màu khoang) có vết cũ, trộn kính (màu kính theo tòa); mặt mái màu riêng (nhà ống: theo khoang) */
         vec3 famAlbedo(vec3 wallIn){
           int fi = int(vBFam + 0.5);
           vec2 cl; float wm = winMask(cl);
-          vec3 tint = ${sel((i) => lin(F(i).tint[0]))};
-          float tk = ${sel((i) => f1(F(i).tint[1]))};
-          vec3 glass = ${sel((i) => lin(F(i).glass))};
-          vec3 wall = mix(wallIn, tint, tk);
+          float gh = bHash(vBId + 5.17), rh = bHash(vBId + 9.31), bay = 0.0;
+          vec3 glass = ${pick('BK_G', (i) => F(i).glass.length, 'gh')};
+          vec3 wall = wallIn;
           if (fi == 5) {
-            float bw = vBSize.z / ${f1(B.bays)}, bay = clamp(floor((vBPos.z - (vBId.y - vBSize.z * 0.5)) / bw), 0.0, ${f1(B.bays - 1)});
+            float bw = vBSize.z / ${f1(B.bays)}; bay = clamp(floor((vBPos.z - (vBId.y - vBSize.z * 0.5)) / bw), 0.0, ${f1(B.bays - 1)});
             wall = BK_BAY[int(bHash(vBId + bay * 7.31) * ${f1(B.bayPalette.length - 0.001)})];
+            rh = bHash(vBId + bay * 3.7 + 1.3);
           }
+          if (vBNrm.y > 0.6) return ${pick('BK_R', (i) => F(i).roofs.length, 'rh')};
+          float lowY = vBPos.y - vBBase;
+          wall *= (1.0 - ${f1(B.wear)} * (1.0 - smoothstep(0.0, 2.5, lowY))) * (1.0 - ${f1(B.wear * 0.5)} + ${f1(B.wear * 0.5)} * bHash(vec2(floor(vBPos.y / 3.4), vBId.x + bay)));
           return mix(wall, glass, wm * 0.92);
         }`;
 }

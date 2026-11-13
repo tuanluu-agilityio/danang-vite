@@ -561,28 +561,49 @@ const cityNightBase = {
 const buildingsBase = {
   url: 'buildings/kit.glb',                             // đường dẫn kit (sau BASE_URL), sinh bằng npm run gen:buildings
   loadMs: 8000,                                         // ms — quá thời gian này thì bỏ kit, nhà vẫn là hộp như cũ (ước lượng)
-  zone: { x0: -700, x1: -262, z0: -500, z1: 500 },      // m — vùng mẫu M2 (bờ Tây quanh Cầu Rồng): tâm nhà nằm trong thì được gắn kit
-  // Họ theo chiều cao (spec §6.1): nhà có h ∈ [h0, h1) m là ứng viên của họ; chọn giữa các ứng viên theo trọng số w bằng băm vị trí (không rand()) (ước lượng)
+  // Dải sát sông (D-038, M3): nhà có 0 ≤ |x| − bankX ≤ band (và x ≤ beachX) được bkReshape() hạ chiều cao, gán họ + màu tường, gắn kit (cả hai bờ)
+  band: 300,                                            // m — bề rộng dải tính từ mép kè (ước lượng)
+  beachX: 1290,                                         // m — từ x này trở ra là dải khách sạn Mỹ Khê (city.ts), không đụng
+  // Hạ chiều cao (bkReshape, D-038): mỗi đoạn phố (một hàng nhà × một khối giữa hai đường, khối = 5 ô 36 m theo Z như city.ts) có một "tính cách"
+  // chọn bằng băm vị trí; t = (|x| − bankX) / band: 0 sát kè … 1 mép trong của dải. Tỉ lệ [nhà ống, khách sạn / chung cư vừa, tháp] nội suy near → far (ước lượng)
+  reshape: {
+    near: [0.6, 0.33, 0.07], far: [0.32, 0.45, 0.23],
+    stay: 0.75,                                         // xác suất một nhà theo tính cách đoạn phố; còn lại lệch một bậc (ước lượng)
+    tube: [3, 5], mid: [6, 11], tower: [13, 21],        // số tầng (tầng trệt cao 4,3 m, các tầng trên 3,4 m): nhà ống 12–19 m, vừa 22–39 m, tháp 45–72 m (ước lượng)
+    cap: 1.0,                                           // m — tường chắn mái trên tầng cuối: h = 3,4·(n + 1) − 2,5 + cap, khớp lưới cửa sổ (ước lượng)
+    keepTower: 0.6,                                     // xác suất tháp có chiều cao gốc ≥ 45 m giữ nguyên chiều cao gốc (còn lại về 45–72 m) (ước lượng)
+    minH: 9                                             // m — không bao giờ thấp hơn
+  },
+  // Họ theo chiều cao (spec §6.1, M3 nới cho dải sát sông): nhà có h ∈ [h0, h1) m là ứng viên của họ; trọng số nội suy w[0] (sát kè) → w[1] (mép trong dải)
+  // theo t như trên; chọn bằng băm vị trí (không rand()) (ước lượng)
   bands: [
-    { id: 1, h0: 45, h1: 1e9, w: 1 },    // khách sạn kính
-    { id: 2, h0: 20, h1: 45, w: 1.2 },   // chung cư
-    { id: 3, h0: 14, h1: 30, w: 1 },     // thương mại
-    { id: 4, h0: 30, h1: 1e9, w: 0.8 },  // văn phòng
-    { id: 5, h0: 0, h1: 20, w: 1.6 }     // nhà ống thấp tầng
-  ] as { id: number; h0: number; h1: number; w: number }[],
+    { id: 1, h0: 22, h1: 1e9, w: [0.9, 0.7] },    // khách sạn kính (khách sạn vừa ven Bạch Đằng / Trần Hưng Đạo từ 22 m)
+    { id: 2, h0: 20, h1: 45, w: [1.2, 1.2] },     // chung cư
+    { id: 3, h0: 12, h1: 30, w: [0.9, 0.6] },     // thương mại
+    { id: 4, h0: 30, h1: 1e9, w: [0.35, 1.0] },   // văn phòng: lùi về phía trong
+    { id: 5, h0: 0, h1: 20, w: [1.6, 1.4] }       // nhà ống thấp tầng
+  ] as { id: number; h0: number; h1: number; w: [number, number] }[],
+  kitNear: 600,                                         // m — xa hơn: chi tiết theo tầng của kit (ban công, sàn) thu về một điểm, khối lớn (mái, biển hiệu, lam) còn (ước lượng)
+  kitFar: 1400,                                         // m — xa hơn: cả kit của tòa thu về một điểm; phải < 2 200 m (LOD xa của buildCity) (ước lượng)
   roughness: 0.7, metalness: 0.1,                       // vật liệu kit (ước lượng)
-  glowGain: 1.6,                                        // cường độ phát sáng đêm của phần _GLOW (biển hiệu mái, dải biển hiệu), hệ số (ước lượng)
-  // Mặt đứng thân nhà theo họ (shader). win = ô cửa trong lưới 3,2 × 3,4 m: [x0, x1, y0, y1] phần ô 0..1; glass = màu kính (sRGB);
-  // tint = [màu sRGB, mức 0..1] kéo màu tường của nhà về phía màu đó; glazeH = m — phần dưới cao độ này (tính từ chân nhà y = 2,5; bội 3,4 trừ 2,5 để khớp sàn) là mặt tiền kính: tầng trệt một ô cao tới y = 6,8, các tầng trên kính gần kín ô (0 = không)
+  glowGain: 1.4,                                        // cường độ phát sáng đêm của phần _GLOW (biển hiệu mái, dải biển hiệu), hệ số (ước lượng)
+  glowColors: [0xfff0d8, 0xff6a50, 0x6ad6ff, 0xffb040, 0xff7ad0, 0xa8ff90],   // màu phát sáng biển hiệu (sRGB), mỗi tòa một màu theo băm vị trí: trắng ấm, đỏ, xanh lơ, cam, hồng, xanh lá (ước lượng)
+  // Mặt đứng thân nhà theo họ (shader). win = ô cửa trong lưới 3,2 × 3,4 m: [x0, x1, y0, y1] phần ô 0..1; glass = các màu kính (sRGB), mỗi tòa một màu theo băm;
+  // glazeH = m — phần dưới cao độ này (tính từ chân nhà y = 2,5; bội 3,4 trừ 2,5 để khớp sàn) là mặt tiền kính: tầng trệt một ô cao tới y = 6,8, các tầng trên kính gần kín ô (0 = không)
+  // walls = màu tường (sRGB) bkReshape ghi vào màu instance của thân (kit nhân theo màu này); roofs = màu mặt mái của thân (ước lượng)
   facade: {
-    1: { win: [0.04, 0.96, 0.12, 0.92], glass: 0x56717f, tint: [0x9aa9b4, 0.55], glazeH: 7.7 }, // khách sạn: kính lớn xanh xám, đố mảnh
-    2: { win: [0.30, 0.70, 0.30, 0.78], glass: 0x3b4650, tint: [0xf2dcb4, 0.35], glazeH: 4.3 }, // chung cư: cửa sổ nhỏ, tường ngả pastel ấm
-    3: { win: [0.12, 0.88, 0.24, 0.80], glass: 0x3e5260, tint: [0xe9e4da, 0.2], glazeH: 11.1 }, // thương mại: kính các tầng dưới
-    4: { win: [0.10, 0.90, 0.26, 0.86], glass: 0x40525e, tint: [0xb9b8b2, 0.5], glazeH: 4.3 },  // văn phòng: lưới kính / bê tông đều
-    5: { win: [0.34, 0.66, 0.30, 0.80], glass: 0x3a3f44, tint: [0xffffff, 0], glazeH: 4.3 }    // nhà ống: cửa sổ hẹp, màu tường theo khoang
-  } as Record<number, { win: number[]; glass: number; tint: [number, number]; glazeH: number }>,
+    1: { win: [0.04, 0.96, 0.12, 0.92], glazeH: 7.7, glass: [0x56717f, 0x5d7a70, 0x6f6150, 0x45607c, 0x7a8890], walls: [0xd6d3cb, 0xc4c8c8, 0xdccfb9, 0xb6babb, 0xcfc3ae], roofs: [0x8c8a85, 0x9a9890] },   // khách sạn: kính lớn xanh xám / xanh rêu / đồng / xanh dương / bạc
+    2: { win: [0.30, 0.70, 0.30, 0.78], glazeH: 4.3, glass: [0x3b4650, 0x44403a], walls: [0xe9dcbc, 0xe8cf8e, 0xcfdcb8, 0xe5c3b6, 0xdcc7a3, 0xece5d6, 0xbfd1c9], roofs: [0xa5a29b, 0x7f9a83, 0x9b9a95] },   // chung cư: kem, vàng, xanh nhạt, hồng, cát, trắng ngà, xám xanh
+    3: { win: [0.12, 0.88, 0.24, 0.80], glazeH: 11.1, glass: [0x3e5260, 0x4b5a50, 0x56504a], walls: [0xe2ddd2, 0xd2c3a8, 0xbcc5ca, 0xb39d82, 0xdcc196, 0xa4b2a3, 0xd9b3a4], roofs: [0x9d9b95, 0x8f9294] },   // thương mại: nhiều sắc
+    4: { win: [0.10, 0.90, 0.26, 0.86], glazeH: 4.3, glass: [0x40525e, 0x4b5c54, 0x5a5144, 0x485a6c], walls: [0xbab7b0, 0xcbc5ba, 0xa6aaad, 0xd3cbbb], roofs: [0x8c8a85, 0x96948e] },   // văn phòng: lưới kính / bê tông đều
+    5: { win: [0.34, 0.66, 0.30, 0.80], glazeH: 4.3, glass: [0x3a3f44], walls: [], roofs: [0xa65a3f, 0x8f9294, 0x7f9a83, 0xb5b0a6, 0x9c4f3a] }   // nhà ống: cửa sổ hẹp, tường theo khoang (bayPalette); mái ngói đỏ / màng chống thấm xám / sơn xanh / bê tông
+  } as Record<number, { win: number[]; glazeH: number; glass: number[]; walls: number[]; roofs: number[] }>,
+  wear: 0.12,                                           // mức cũ của tường: chân tường sẫm hơn và mỗi tầng lệch sáng / tối nhẹ, 0..1 (ước lượng)
   bays: 5,                                              // số khoang nhà ống dọc Z (= số khoang của fam5 trong kit.glb)
-  bayPalette: [0xf4ecd6, 0xf3e3a2, 0xcfe6cf, 0xf1cfc8, 0xc9dceb, 0xf7f6f1]   // màu khoang nhà ống (sRGB): kem, vàng nhạt, xanh bạc hà, hồng nhạt, xanh nhạt, trắng (ước lượng)
+  bayPalette: [0xeadfc2, 0xe9d28c, 0xc5dcc0, 0xe6c2b8, 0xbfd2e0, 0xefece4, 0xd9b98c, 0xc9d7a8],   // màu khoang nhà ống (sRGB): kem, vàng, xanh bạc hà, hồng, xanh nhạt, trắng, vàng đất, xanh cốm (ước lượng)
+  // Đêm (cộng vào đèn cửa sổ D-023, chỉ nhà có họ): tầng trệt nhà ống / thương mại là cửa hàng sáng ấm; nhà ống ít cửa sổ sáng hơn, ánh vàng hơn
+  shopLit: 0.8, shopGain: 0.9,                          // tỉ lệ cửa hàng sáng 0..1, cường độ (ước lượng)
+  tubeLit: 0.55                                         // tỉ lệ cửa sổ sáng của nhà ống so với nhà thấp khác (cityNight.lowLit), 0..1 (ước lượng)
 };
 
 const perfBase = {

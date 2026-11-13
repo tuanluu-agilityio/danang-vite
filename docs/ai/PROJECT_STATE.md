@@ -6,8 +6,8 @@
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
-| **Mốc hiện tại** | M3 — mở rộng: đang làm Task 3.1–3.2 (hạ chiều cao dải sát sông, kit hai bờ, LOD kit) |
-| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 đang làm |
+| **Mốc hiện tại** | M3 — Task 3.0–3.3 xong phần mã; còn 3.4–3.6; rồi M4 (trước hết là tối ưu GPU, task 4.0) |
+| **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem**; hiệu năng chưa đạt mục tiêu |
 | **Cập nhật** | 2026-11-13 14:05 +07 (điểm lưu trước khi tắt máy, phiên 1; 14:10 ghi thêm việc người dùng duyệt nước) |
 
 ## Việc vừa xong (đã kiểm)
@@ -22,6 +22,7 @@ Không có việc dở, không có thao tác file nào bị ngắt giữa chừn
 - [x] M1: shader nước nhiều lớp sóng, Fresnel, màu theo độ sâu, nắng lấp lánh, gợn mưa, sóng bạc đầu, bọt mép kè; gương 1024 × 512; thông số ở `CONFIG.water`.
 - [x] M2 Task 2.1–2.3 (2026-11-13): kit phụ kiện nhà 5 họ dựng bằng Blender (`blender/scripts/`, `blender/scenes/riverside_buildings.blend`), `public/buildings/kit.glb` 276 644 byte, `npm run gen:buildings`, `npm run test:buildings:unit` 24/24. Thiết kế: spec §6 (D-037 bản 2).
 - [x] M2 Task 2.4–2.6 (2026-11-13): `src/environment/buildings/` (`kitData.ts`, `families.ts`, `kit.ts`), `aFam` + mặt đứng theo họ trong `patchWindows`, `CONFIG.buildings`, vùng mẫu 122 nhà bờ Tây; đường lùi `?buildings=off`; ảnh `tests/screens/ven-song/nha1/`; số đo ở `QA_LOG.md`.
+- [x] M3 Task 3.0–3.3 (2026-11-13): `bkReshape()` hạ chiều cao 628 nhà dải sát sông hai bờ, kit hai bờ bằng `aFlip` (596 nhà), LOD kit 600 / 1 400 m, bảng màu tường / kính / mái theo họ, cửa hàng sáng đêm; ảnh `tests/screens/ven-song/nha2/`; A/B chuẩn so với `main` ở `QA_LOG.md` (**+10 đến +26 % GPU, không đạt**).
 - [x] Spec + plan (`docs/superpowers/specs|plans/2026-11-13-ven-song-chan-thuc*`).
 
 ## Còn lại (theo thứ tự ưu tiên)
@@ -47,7 +48,7 @@ Không có.
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-(Đã trả lời 2026-11-13: đồng ý hạ chiều cao → D-038 trong `DECISIONS.md`; việc kế tiếp là M3 Task 3.1–3.2 theo D-038: `bkReshape()` sau `buildCity()`, kit cả hai bờ bằng `aFlip`, LOD kit theo khoảng cách, rồi ảnh + A/B chuẩn so với `main`.) Câu cũ để tham chiếu — Task 2.7: người dùng xem nhà mẫu (`npm run dev`, bờ Tây cạnh Cầu Rồng; hoặc ảnh `tests/screens/ven-song/nha1/nha-mau-*.png`) và trả lời câu hỏi mở: **có cho hạ chiều cao một phần nhà ven sông không** (để có dãy nhà ống / khách sạn 4–12 tầng như Bạch Đằng thật; việc này đổi ma trận instance nên phải làm trước `buildRiverfront()` và kiểm biển quảng cáo, trái tim LED, va chạm, các test so ma trận nhà). Sau đó M3 Task 3.1. Việc kỹ thuật còn nợ của M2: A/B GPU chuẩn so với `main`; thử đường lật X bờ Đông; hình cầu bao theo cụm thay vì cả họ; kit chưa có LOD.
+**M4 task 4.0 — đưa thời gian GPU về trong khoảng +10 % so với `main`** (đo bằng A/B xen kẽ như `QA_LOG.md`). Hướng thử theo thứ tự: (a) kit đang xử lý ~317 nghìn tam giác mọi khung vì 5 lưới trải cả hai bờ không bao giờ bị cắt khung nhìn → chia lưới theo bờ / theo đoạn z hoặc chỉ nạp instance trong tầm `kitFar` (cân với trần lệnh vẽ); (b) đo riêng chi phí nhánh `aFam` trong fragment shader thân nhà; (c) gương nước 1024 × 512 → thử 768 × 384. Song song chờ người dùng xem ảnh `nha2`. Việc M3 còn lại: 3.4 chi tiết kè, 3.5 nước (vệt sóng tàu, sóng bạc đầu, hoàng hôn — người dùng bảo làm sau), 3.6 README + `copilot-instructions.md` §5 (lệnh `gen:buildings`, `test:buildings:unit`). Ghi chú cũ — (Đã trả lời 2026-11-13: đồng ý hạ chiều cao → D-038 trong `DECISIONS.md`; việc kế tiếp là M3 Task 3.1–3.2 theo D-038: `bkReshape()` sau `buildCity()`, kit cả hai bờ bằng `aFlip`, LOD kit theo khoảng cách, rồi ảnh + A/B chuẩn so với `main`.) Câu cũ để tham chiếu — Task 2.7: người dùng xem nhà mẫu (`npm run dev`, bờ Tây cạnh Cầu Rồng; hoặc ảnh `tests/screens/ven-song/nha1/nha-mau-*.png`) và trả lời câu hỏi mở: **có cho hạ chiều cao một phần nhà ven sông không** (để có dãy nhà ống / khách sạn 4–12 tầng như Bạch Đằng thật; việc này đổi ma trận instance nên phải làm trước `buildRiverfront()` và kiểm biển quảng cáo, trái tim LED, va chạm, các test so ma trận nhà). Sau đó M3 Task 3.1. Việc kỹ thuật còn nợ của M2: A/B GPU chuẩn so với `main`; thử đường lật X bờ Đông; hình cầu bao theo cụm thay vì cả họ; kit chưa có LOD.
 
 ## File quan trọng
 | File | Vai trò |

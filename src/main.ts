@@ -36,6 +36,7 @@ import { buildDragonPeople, updateDragonPeople, peopleTest } from './environment
 import { crowdLoad, crowdGet } from './common/people/crowdData';
 import { bkLoad, bkAttrNames } from './environment/buildings/kitData';
 import { buildBuildingKit, bkState } from './environment/buildings/kit';
+import { bkReshape, bkShaped } from './environment/buildings/reshape';
 import { crowdUsable } from './common/people/crowd';
 import { stBlocky } from './explore/stroll/blocky';
 import { buildWeather, updateWeather } from './environment/weather';
@@ -87,6 +88,7 @@ buildDragonHead();
 buildStreets();
 finalizeRoads();
 buildCity();
+bkReshape();                             // ngay sau buildCity, trước mọi nơi đọc nhà (hầm, riverfront, đường lái xe, Vòng quay, kit): hạ chiều cao dải sát sông, gán họ + màu tường (D-038), không rand()
 buildTrees();
 buildStreetLamps();
 buildTraffic();
@@ -136,7 +138,7 @@ const multiTest = {
 };
 if (query.has('test')) {
   perf.on = query.has('perf');
-  (window as unknown as { __app: unknown }).__app = { reflectState, renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, lights: lightState, tours: TOURS, tour, narration, audio, perf, quality, ui: { ...ui, ui: compactState, openSheet, closeSheets, reveal }, explore, keys, multi: multiTest, exFlight: { exCreate, exStep, exInputFromKeys, exBuildGlider, exPlaceGlider, exChase, CONFIG_explore: CONFIG.explore }, boats: boatsTest, traffic: trafficTest, trees: treesTest, people: peopleTest, buildings: { state: bkState, attrs: () => bkAttrNames },
+  (window as unknown as { __app: unknown }).__app = { reflectState, renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, lights: lightState, tours: TOURS, tour, narration, audio, perf, quality, ui: { ...ui, ui: compactState, openSheet, closeSheets, reveal }, explore, keys, multi: multiTest, exFlight: { exCreate, exStep, exInputFromKeys, exBuildGlider, exPlaceGlider, exChase, CONFIG_explore: CONFIG.explore }, boats: boatsTest, traffic: trafficTest, trees: treesTest, people: peopleTest, buildings: { state: bkState, attrs: () => bkAttrNames, shaped: bkShaped },
     stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive };
 }
 
