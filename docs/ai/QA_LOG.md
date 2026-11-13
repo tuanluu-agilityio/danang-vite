@@ -2,6 +2,9 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-13 14:05 — Điểm lưu trước khi tắt máy
+- Sau sự cố `node_modules` (xem `PROJECT_STATE.md` mục "Trạng thái lúc lưu") đã cài bù bằng `npm install`: `npm ls --depth=0` đủ gói, `npm run build` đạt (`tsc --noEmit` + `vite build`), `npx tsx --version` chạy. **Chưa chạy lại** test trình duyệt nào sau khi cài bù (`test:weather` đạt là trước sự cố, cùng mã nguồn).
+
 ## 2026-11-13 — M1 nguyên mẫu nước (bản làm việc trên `feature/ven-song-chan-thuc`, chưa commit lúc đo)
 - **Máy / trình duyệt**: Windows 11, GPU Intel Arc (ANGLE D3D11), Chromium headless của Playwright, 1600 × 900, URL `?test&perf` (ở `?test` bộ đèn giữ `full`).
 - **Lệnh**: `npm run build && node tests/ven-song-shots.mjs --label=sau`; A/B: bản `main` `752ea22` build ở một worktree tạm, chạy xen kẽ `--label=ab-A1 --dist=<worktree>/dist --noshots --only=ngay,dem,mua`, `--label=ab-B1 --noshots --only=ngay,dem,mua`, rồi A2, B2.

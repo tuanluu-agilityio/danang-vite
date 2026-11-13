@@ -5,16 +5,16 @@
 | | |
 |---|---|
 | **Dự án** | Da Nang Riverside Realism Upgrade (D-036 nước, D-037 nhà) |
-| **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`) |
+| **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
 | **Mốc hiện tại** | M1 — nguyên mẫu nước |
 | **Trạng thái** | M1 đã làm xong phần mã, **chờ người dùng xem và duyệt bằng mắt** trước khi sang M2 |
-| **Cập nhật** | 2026-11-13 13:40 +07 |
+| **Cập nhật** | 2026-11-13 14:05 +07 (điểm lưu trước khi tắt máy, phiên 1) |
 
 ## Việc vừa xong (đã kiểm)
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
 
 ## Việc đang làm
-Không có việc dở. Điểm dừng: chờ người dùng xem nước (`npm run dev`, hoặc ảnh `tests/screens/ven-song/sau/`).
+Không có việc dở, không có thao tác file nào bị ngắt giữa chừng. Điểm dừng: chờ người dùng xem nước (`npm run dev`, hoặc ảnh `tests/screens/ven-song/sau/`). Người dùng **chưa trả lời** hai câu hỏi: (1) nước đã được chưa / chỉnh gì; (2) có làm sắc hoàng hôn không (đụng `dayNight.ts`, hệ ngày / đêm chung).
 
 ## Đã hoàn thành
 - [x] Kiểm kê hiện trạng (`AUDIT.md`), số đo gốc và ảnh "trước" (`tests/screens/ven-song/truoc/`, không commit; dựng lại được bằng lệnh ở `QA_LOG.md`).
@@ -27,6 +27,12 @@ Không có việc dở. Điểm dừng: chờ người dùng xem nước (`npm r
 2. **M2 — nguyên mẫu nhà**: dựng thư viện nhà 5 họ trong Blender (`blender/scripts/`), xuất GLB, thay một cụm nhà ven sông bờ Tây quanh Cầu Rồng; chụp trước / sau. Cách làm đề xuất ở `DECISIONS.md` D-037 (chưa kiểm chứng).
 3. **M3 — mở rộng**: thay nhà cả hai bờ, LOD ba mức, chi tiết bờ kè, vệt sóng tàu, hoàng hôn.
 4. **M4 — tối ưu và QA**: chạy đủ bộ test nặng một lần (`copilot-instructions.md` §5), `test:citynight -- --baseline`, ghi `tests/KET-QUA.md`.
+
+## Trạng thái lúc lưu (2026-11-13 14:05 +07)
+- `git status`: chỉ còn ` M src/config.ts` = thay đổi `strollBase.walk` 3,5 → 1,6 của người dùng (cố ý không commit). Mọi thứ khác của M1 nằm trong `eae444c` và commit điểm lưu này.
+- Không còn tiến trình test nào chạy. Worktree tạm dùng đo A/B đã xóa (`git worktree list` chỉ còn các worktree có từ trước).
+- Sự cố trong phiên: khi xóa worktree tạm, `git worktree remove --force` đi xuyên junction và xóa `.bin`, `.package-lock.json`, `.vite` trong `node_modules` của repo; `npm ci` sau đó hỏng giữa chừng (EPERM, dev server của người dùng đang giữ file) và xóa thêm; đã cài bù bằng `npm install`. Kiểm sau khi cài: `npm ls --depth=0` đủ 7 gói, `npm run build` đạt, `package-lock.json` không đổi. Nếu lệnh npm nào lỗi lạ ở phiên sau: tắt dev server rồi `npm ci`. Lần sau đo A/B: gỡ junction bằng `cmd /c rmdir` trước khi xóa worktree.
+- Ảnh và số đo ở `tests/screens/ven-song/` (`truoc`, `sau`, `sau1`–`sau3` là các vòng chỉnh, `ab-*`) còn trên đĩa, không commit; mất thì dựng lại theo `ASSET_MANIFEST.md`.
 
 ## Vướng mắc
 Không có vướng mắc kỹ thuật. Cần người dùng: duyệt nước M1.
