@@ -189,6 +189,6 @@ function animate() {
 /* Người đi bộ đã là người thật (D-032) ⇒ không lưới nào trong cảnh dùng vật liệu hình khối peopleWalk, nhưng hình tạm của Đi dạo (blocky.ts) vẫn dùng.
    Thêm sẵn lưới đó vào cảnh (visible = false: không lệnh vẽ ở khung thường) để prewarm và hâm nền bộ đèn (D-031) biên dịch program của nó như mọi vật liệu khác;
    vào Đi dạo thì avatars.ts chuyển nó sang nhóm stroll-people. Không dùng rand / rng */
-if (crowdUsable(crowdGet(), renderer.extensions.has('WEBGL_multi_draw'))) scene.add(stBlocky.build());
+if (crowdUsable(crowdGet(), renderer.extensions.has('WEBGL_multi_draw'))) { const b = stBlocky.build(); if (!b.parent) scene.add(b); }   // vào thẳng bằng ?explore=stroll thì nhóm stroll-people đã nhận lưới này: không giật nó ra khỏi nhóm
 await prewarm();   // biên dịch sẵn shader + upload texture trong lúc còn màn hình chờ (D-018)
 animate();

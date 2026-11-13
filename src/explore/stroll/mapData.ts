@@ -41,6 +41,7 @@
 import { CONFIG } from '../../config';
 import { deckY } from '../../bridges/dragon/profile';
 import { SH, shRoadY } from '../../bridges/song-han/profile';
+import { drOpenAt, drOpenAlongX } from '../../environment/driveRoadGeo';
 import { stMakeMap, stNearestValid, type StZone, type StSolid, type StMap } from './map';
 
 export const ST_GATE_SWING = 'shSwing';
@@ -100,20 +101,22 @@ function stSongHanY(x: number, z: number): number {
   if (adz < SH_CURB_C) return base + SH_ROAD;
   return base + SH_SIDEWALK;
 }
-/* Mặt bờ: mặt đất, cộng mặt đường / dải phân cách / vỉa hè nơi có (lấy mặt cao nhất, như khối nào nằm trên cùng) */
+/* Mặt bờ: mặt đất, cộng mặt đường / dải phân cách / vỉa hè nơi có (lấy mặt cao nhất, như khối nào nằm trên cùng).
+   Dải giữa / vỉa hè bị chế độ lái (D-034) cắt tại nút giao, nhánh rẽ, đường dọc mới (streets.ts drCutBoxes, fixedSpans.ts drCutAlongX):
+   ở đó mặt đứng là mặt đường của mảnh lấp (ROAD + 0,02 … 0,03), không còn gờ nổi */
 function stBankY(x: number, z: number): number {
   const ax = Math.abs(x), az = Math.abs(z), adz = Math.abs(z - SHZ), ar = Math.abs(ax - RV_X);
   let y = LAND;
   if (ax >= DR_X) {                                                 // Nguyễn Văn Linh / Võ Văn Kiệt
-    if (az <= DR_MED) y = Math.max(y, ROAD + 0.3);
+    if (az <= DR_MED) y = Math.max(y, ROAD + (drOpenAt(x, z) ? 0.03 : 0.3));
     else if (az <= DR_SIDE_IN) y = Math.max(y, ROAD + 0.03);
-    else if (az >= AX_SIDE.z0 && az <= AX_SIDE.z1) y = Math.max(y, ROAD + 0.2);
+    else if (az >= AX_SIDE.z0 && az <= AX_SIDE.z1) y = Math.max(y, ROAD + (drOpenAt(x, z) ? 0.02 : 0.2));
   }
   if (ax >= SH_X) {                                                 // Lê Duẩn / Phạm Văn Đồng
-    if (adz <= SH_MED) y = Math.max(y, ROAD + 0.3);
+    if (adz <= SH_MED) y = Math.max(y, ROAD + (drOpenAlongX(x, SHZ, SH_MED) ? 0.03 : 0.3));
     else if (adz <= SH_LANE_OUT) y = Math.max(y, ROAD + 0.03);
   }
-  if (ar <= RV_MED) y = Math.max(y, ROAD + 0.3);                    // Bạch Đằng / Trần Hưng Đạo
+  if (ar <= RV_MED) y = Math.max(y, ROAD + (drOpenAt(x, z) ? 0.02 : 0.3));   // Bạch Đằng / Trần Hưng Đạo
   else if (ar <= RV_HALF) y = Math.max(y, ROAD + 0.02);
   return y;
 }

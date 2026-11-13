@@ -139,6 +139,17 @@ export function drCutRects(r: DrRect): DrRect[] {
   const alongX = r.x1 - r.x0 >= r.z1 - r.z0;
   return drSubAll(r, drPlan().open, alongX);
 }
+/* Điểm (x, z) có nằm trong một ô road / slip / junction không: ở đó dải giữa / vỉa hè cũ dựng bằng drCutBoxes đã bị cắt, mặt đứng là mặt đường của mảnh mới.
+   Bản đồ đi dạo (explore/stroll/mapData.ts) hỏi hàm này để cao độ đứng khớp hình học */
+export function drOpenAt(x: number, z: number): boolean {
+  for (const p of drPlan().open) if (x > p.x0 && x < p.x1 && z > p.z0 && z < p.z1) return true;
+  return false;
+}
+/* Như trên cho dải dựng bằng drCutAlongX (tim zc, nửa bề ngang hw): ô nào chồng lên dải thì cắt trọn bề ngang trong khoảng x của ô */
+export function drOpenAlongX(x: number, zc: number, hw: number): boolean {
+  for (const p of drPlan().open) if (x > p.x0 && x < p.x1 && Math.min(zc + hw, p.z1) - Math.max(zc - hw, p.z0) > EPS) return true;
+  return false;
+}
 /* Như drCutRects nhưng trả hộp y0..y1 (BoxGeometry như streets.ts); rect và hình học theo tọa độ cục bộ lệch zOff so với thế giới (site.ts: TP.z) */
 export function drCutBoxes(x0: number, x1: number, z0: number, z1: number, y0: number, y1: number, zOff = 0): THREE.BufferGeometry[] {
   return drCutRects({ x0, x1, z0: z0 + zOff, z1: z1 + zOff }).map((r) => new THREE.BoxGeometry(r.x1 - r.x0, y1 - y0, r.z1 - r.z0).translate((r.x0 + r.x1) / 2, (y0 + y1) / 2, (r.z0 + r.z1) / 2 - zOff));

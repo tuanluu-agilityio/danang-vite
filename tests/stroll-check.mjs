@@ -534,8 +534,10 @@ try {
     await frames(N.page, 3);
     const r = await N.page.evaluate(() => ({ obj: !!window.__app.scene.getObjectByName('stroll-people'), mode: window.__app.cam.mode, st: document.body.classList.contains('stroll'), act: window.__app.stroll?.stroll.active() }));
     check(`8 ?test không explore: không có stroll-people (${r.obj}), mode ${r.mode}, body.stroll ${r.st}, active ${r.act}`, !r.obj && r.mode === 'orbit' && !r.st && r.act === false);
-    const ppl = reqs.filter((u) => /\/people\//.test(u)), gl = reqs.filter((u) => /GLTFLoader|SkeletonUtils/.test(u));
-    check(`8 ?test không explore: ${reqs.length} request, tới people/: ${ppl.length} (= 0), chunk GLTFLoader / SkeletonUtils: ${gl.length} (= 0)`, reqs.length > 0 && ppl.length === 0 && gl.length === 0);
+    /* Không tải nhân vật đi dạo khi chưa vào chế độ: không people/*.glb, không chunk SkeletonUtils. Được phép: people/crowd.bin + crowd.jpg (đám đông người đi bộ, D-032, main.ts chờ tải lúc mở trang)
+       và chunk GLTFLoader khi chỉ dùng cho buildings/kit.glb (kit nhà ven sông, D-037) */
+    const ppl = reqs.filter((u) => /\/people\/.*\.glb/.test(u)), sk = reqs.filter((u) => /SkeletonUtils/.test(u)), glb = reqs.filter((u) => /\.glb(\?|$)/.test(u) && !/\/buildings\/kit\.glb/.test(u));
+    check(`8 ?test không explore: ${reqs.length} request, people/*.glb: ${ppl.length} (= 0), chunk SkeletonUtils: ${sk.length} (= 0), .glb ngoài buildings/kit.glb: ${glb.length} (= 0)`, reqs.length > 0 && ppl.length === 0 && sk.length === 0 && glb.length === 0);
     const pdb = await N.page.evaluate(() => window.__app.renderer.getContextAttributes().preserveDrawingBuffer);
     check(`11 góc nhìn cũ: preserveDrawingBuffer ${pdb} (= false)`, pdb === false);
     check('console sạch (trang ?test)', N.errors.length === 0);

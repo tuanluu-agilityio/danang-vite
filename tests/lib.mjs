@@ -10,7 +10,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
 
 /** Server tĩnh tối giản cho một thư mục (theo symlink). Trả về { url, close }. */
 export function serveDir(dir) {
-  const root = path.resolve(dir);
+  const root = path.resolve(process.env.TEST_DIST || dir);   // TEST_DIST=<dist khac>: chay nguyen mot test tren ban build khac (vd. main) de biet loi co tu truoc khong
   const server = http.createServer((req, res) => {
     let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     if (p.endsWith('/')) p += 'index.html';
@@ -28,6 +28,7 @@ export function serveDir(dir) {
 }
 
 export async function launch() {
+  if (process.env.TEST_REAL_GPU) return chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined, args: [...(process.platform === 'win32' ? ['--use-angle=d3d11'] : []), '--ignore-gpu-blocklist', '--enable-gpu'] });   // TEST_REAL_GPU=1: GPU that, chi de chan doan nhanh; ket qua chinh thuc van la SwiftShader
   return chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || undefined,
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']

@@ -2,6 +2,20 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-14 01:30 → 01:34 — Phần B: `test:stroll` LỖI, phân tích và sửa
+- **Cách chẩn đoán**: thêm hai biến môi trường vào `tests/lib.mjs`: `TEST_REAL_GPU=1` (chạy test bằng GPU thật, vài phút thay vì hàng chục phút; chỉ để chẩn đoán) và `TEST_DIST=<thư mục>` (chạy nguyên test trên bản build khác). Chạy `stroll-check` trên bản nhánh và trên bản `main` `752ea22`.
+- **Kết quả**: cả 4 kiểm trượt đều **trượt y hệt trên `main`**: không lỗi nào do kit nhà hay chi tiết kè của nhánh này, không do máy đám mây (lỗi thứ 5 ở phiên đám mây, hết giờ bấm thẻ Đi dạo, không tái hiện ở đây: do máy đó chậm). Riêng số "chunk GLTFLoader 1" là của nhánh (kit nạp lúc mở trang); `main` ra 0 nhưng vẫn trượt cùng kiểm vì `people/: 2`.
+
+| Kiểm trượt | Nguyên nhân | Sửa ở đâu, vì sao |
+|---|---|---|
+| "Cầu Rồng đường dẫn Đông (vỉa hè) (345, 18,2): chân 2,800, mặt 2,620" | Chế độ lái xe (D-034, `f4714ea`) cắt vỉa hè / dải giữa trên bờ tại ô nút giao, nhánh rẽ (`drCutBoxes`), bản đồ đi dạo `mapData.ts` vẫn cộng +0,2: người đi dạo lơ lửng 18 cm trên mặt đường | **Sửa mã**: `stBankY()` hỏi `drOpenAt()` / `drOpenAlongX()` (mới, `driveRoadGeo.ts`), chỗ bị cắt thì đứng ở mặt đường. Lỗi thật của sản phẩm, test đúng |
+| "Cầu sông Hàn đường dẫn Đông (300, −1077,5): chân 2,900, mặt 2,630" | Như trên: dải giữa Trần Hưng Đạo (x = 299 ± 1,5) bị cắt tại nút giao với trục Cầu sông Hàn, bản đồ vẫn cộng +0,3 | Như trên |
+| "?test không explore: … tới people/: 2 (= 0), chunk GLTFLoader / SkeletonUtils: 1 (= 0)" | `people/crowd.bin` + `crowd.jpg` của đám đông (D-032) tải lúc mở trang theo thiết kế; chunk GLTFLoader là của `buildings/kit.glb` (D-037) | **Sửa test**: kiểm đúng ý ban đầu "không tải nhân vật đi dạo": 0 `people/*.glb`, 0 chunk SkeletonUtils, 0 `.glb` ngoài `buildings/kit.glb` |
+| "nạp lỗi: … hình khối hiện false" | Vào thẳng `?explore=stroll`: nhóm `stroll-people` dựng trước, rồi `main.ts` (D-032) `scene.add(stBlocky.build())` giật lưới hình khối ra khỏi nhóm. Hình khối vẫn hiện trên màn hình (đã dò: `visible` true, cha là Scene) nhưng nằm ngoài nhóm nên test không thấy, và `group.visible` không còn điều khiển nó | **Sửa mã** (`main.ts`): chỉ thêm vào cảnh khi lưới chưa có cha |
+
+- **Sau sửa** (bản build có `strollBase.walk` 1,6 chưa commit của người dùng): `TEST_REAL_GPU=1 node tests/stroll-check.mjs`: "stroll-check: đạt", exit 0 (GPU thật). `test:stroll:unit` 86/87 (ca trượt cũ `hướng theo camYaw` do `walk` 1,6). **Lượt SwiftShader chính thức của `test:stroll`**: chạy ở phần C.
+- **Chưa làm**: test đơn vị cho cao độ chỗ bị cắt (hiện chỉ có kiểm trình duyệt mục 2); các dải nổi khác bị cắt (hầm, Trần Thị Lý, Thuận Phước) nằm ngoài vùng đi dạo nên không đụng.
+
 ## 2026-11-14 01:00 → 01:25 — Sửa giật nước đêm: sao ra khỏi gương + trần pixelRatio 1,5 ban đêm (người dùng: "làm như bạn khuyên … không cần hỏi lại")
 - **Đã sửa**: (1) `src/core/sky.ts`: lưới sao sang lớp 1 (không vào gương mặt nước). (2) `src/core/quality.ts` + `CONFIG.perf.nightMaxRatio` 1,5 / `nightRatioAt` 0,5: khi `shared.uNight ≥ 0,5` pixelRatio không vượt 1,5 (cùng cơ chế với trần khi mưa; đổi lúc chuyển ngày ↔ đêm là một lần cấp lại framebuffer). Ngày vẫn theo bậc (Cao = tới 2).
 - **Kiểm chạy đúng**: `npm run build` đạt; đêm bộ đệm 2160 × 1350 trên màn 200 % (ảnh cắt 648 × 297 = 0,3 × 2160); lệnh vẽ đêm −1 ở ba góc (177 → 176, 209 → 208, 225 → 224: lưới sao không còn trong lượt gương); ảnh `tests/screens/ven-song/sua-B1/nhay-sat-nuoc-0.png`: hết đốm trắng, còn vệt đèn nhà. Điểm ảnh sáng > 120 ở vùng nước: doc-song 4–6,6 % → 1,3 %, sat-nuoc 4,6–5,1 % → 1,7 %, tren-cao 3,7–4,0 % → 0,3 %.

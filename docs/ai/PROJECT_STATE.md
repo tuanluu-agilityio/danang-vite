@@ -43,7 +43,7 @@ Không có gì đang chạy. 2026-11-14: phần A (đo giật nước đêm) xon
 ## Vướng mắc
 - Người dùng báo nước sông ban đêm ở chất lượng Cao hơi giật (2026-11-13). **Đã đo 2026-11-14, chưa sửa**: (1) màn 200 % ⇒ bậc Cao vẽ 2880 × 1800, khung đêm của nhánh 11–16,5 ms GPU so với 9–13 ms của `main` (+15 đến +31 %), góc mặc định sát trần 16,7 ms nên lỡ nhịp khoảng 15 % khung; bloom và 8 mẫu vệt đèn KHÔNG phải nguyên nhân; (2) khoảng 55–70 s đầu sau khi mở trang, ban đêm chạy bộ đèn `full` kèm khung dài, `main` cũng vậy, số đo bẩn; (3) đốm trắng bò trên sông là sao phản chiếu bị vệt đèn nhân lên. Cách sửa đề xuất đã gửi người dùng, **chờ quyết**. Chi tiết ở `QA_LOG.md` mục 2026-11-14.
 - **Máy chạy pin** trong phiên 2026-11-14: số đo GPU trôi mạnh; bộ test nặng (phần C) phải chờ cắm sạc.
-- `test:stroll` LỖI (5) trên nhánh, chưa phân tích (`QA_LOG.md`).
+- `test:stroll`: 4 lỗi đều có từ `main` (D-034 cắt vỉa hè, D-032 đám đông), đã sửa 2026-11-14 (`QA_LOG.md` mục Phần B); GPU thật đạt, lượt SwiftShader ở phần C.
 - Bản demo: artifact riêng tư `https://claude.ai/artifact/6zaERkxE2khY35o7VKqihG` (bản build `51baa21`, mô hình đóng gói base64 vì máy chủ artifact không phục vụ `.glb` / `.bin`).
 
 ## Issue ghi lại để người dùng review sau (2026-11-14, người dùng: "Note lại issue nếu có để review sau")
