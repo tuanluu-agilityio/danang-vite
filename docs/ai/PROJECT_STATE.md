@@ -8,13 +8,13 @@
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; đã push lên `origin/feature/ven-song-chan-thuc` (2026-11-13) |
 | **Mốc hiện tại** | M3 xong trừ 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn: hoãn); đang M4 4.1 đợt 2; còn M4 4.2–4.4 |
 | **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem** (`tests/screens/ven-song/nha2/`, `toi-uu/`); GPU +3 đến +10 % so với `main` ở bốn góc, du-luon mưa +10 đến +12 % |
-| **Cập nhật** | 2026-11-13, bàn giao từ phiên đám mây (container Linux không GPU): xong M3 3.4, M4 4.1 đợt 2 dở, có phản hồi giật nước đêm chưa xử lý |
+| **Cập nhật** | 2026-11-14 00:54, máy người dùng (Intel Arc, chạy pin): đã đo phần A (giật nước đêm), **chưa sửa, chờ người dùng chọn cách sửa**; B–E chưa làm |
 
 ## Việc vừa xong (đã kiểm)
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
 
 ## Việc đang làm
-Không có gì đang chạy (bàn giao 2026-11-13, phiên đám mây → người dùng làm tiếp ở Claude Code trên máy mình). M4 4.1 đợt 2 dở: đã có `test:riverfront`, `test:boats`, `test:citynight` đạt; `test:stroll` LỖI (5) chưa phân tích; chưa chạy / chưa có kết quả: weather (chạy lại vì shader nước đổi dòng bọt mép kè), sunwheel, tour, voice, traffic, trees, people, explore, mobile, gpu, drive, multi, và `test:drawcalls` / `test:perf -- --strict` / `test:tunnel` sau task 3.4.
+Không có gì đang chạy. 2026-11-14: phần A (đo giật nước đêm) xong phần đo, kết quả ở `QA_LOG.md` mục trên cùng; dừng chờ người dùng quyết cách sửa. Máy chạy pin nên chưa chạy test nặng nào. M4 4.1 đợt 2 dở: đã có `test:riverfront`, `test:boats`, `test:citynight` đạt; `test:stroll` LỖI (5) chưa phân tích; chưa chạy / chưa có kết quả: weather (chạy lại vì shader nước đổi dòng bọt mép kè), sunwheel, tour, voice, traffic, trees, people, explore, mobile, gpu, drive, multi, và `test:drawcalls` / `test:perf -- --strict` / `test:tunnel` sau task 3.4.
 
 ## Đã hoàn thành
 - [x] Kiểm kê hiện trạng (`AUDIT.md`), số đo gốc và ảnh "trước" (`tests/screens/ven-song/truoc/`, không commit; dựng lại được bằng lệnh ở `QA_LOG.md`).
@@ -41,7 +41,8 @@ Không có gì đang chạy (bàn giao 2026-11-13, phiên đám mây → ngườ
 - Ảnh và số đo ở `tests/screens/ven-song/` (`truoc`, `sau`, `sau1`–`sau3` là các vòng chỉnh, `ab-*`) còn trên đĩa, không commit; mất thì dựng lại theo `ASSET_MANIFEST.md`.
 
 ## Vướng mắc
-- Người dùng báo nước sông ban đêm ở chất lượng Cao hơi giật (2026-11-13, xem bản demo). Chưa tái hiện / chưa đo (phiên đám mây không có GPU); đang chờ người dùng cho biết máy, FPS, và bản `main` có bị không. Chi tiết + giả thuyết ở `QA_LOG.md` mục trên cùng.
+- Người dùng báo nước sông ban đêm ở chất lượng Cao hơi giật (2026-11-13). **Đã đo 2026-11-14, chưa sửa**: (1) màn 200 % ⇒ bậc Cao vẽ 2880 × 1800, khung đêm của nhánh 11–16,5 ms GPU so với 9–13 ms của `main` (+15 đến +31 %), góc mặc định sát trần 16,7 ms nên lỡ nhịp khoảng 15 % khung; bloom và 8 mẫu vệt đèn KHÔNG phải nguyên nhân; (2) khoảng 55–70 s đầu sau khi mở trang, ban đêm chạy bộ đèn `full` kèm khung dài, `main` cũng vậy, số đo bẩn; (3) đốm trắng bò trên sông là sao phản chiếu bị vệt đèn nhân lên. Cách sửa đề xuất đã gửi người dùng, **chờ quyết**. Chi tiết ở `QA_LOG.md` mục 2026-11-14.
+- **Máy chạy pin** trong phiên 2026-11-14: số đo GPU trôi mạnh; bộ test nặng (phần C) phải chờ cắm sạc.
 - `test:stroll` LỖI (5) trên nhánh, chưa phân tích (`QA_LOG.md`).
 - Bản demo: artifact riêng tư `https://claude.ai/artifact/6zaERkxE2khY35o7VKqihG` (bản build `51baa21`, mô hình đóng gói base64 vì máy chủ artifact không phục vụ `.glb` / `.bin`).
 
@@ -53,7 +54,7 @@ Không có gì đang chạy (bàn giao 2026-11-13, phiên đám mây → ngườ
 - **Chưa chạy**: `test:citynight` (vệt đèn đêm đã chép nguyên vào shader mới, mới xem bằng ảnh), `test:tunnel` (mặt cắt hầm chèn mã vào shader nước: trang nạp không lỗi, chưa bật mặt cắt để xem), `test:drawcalls`, `test:perf -- --strict`, `test:mobile` và các test nặng khác; chưa xem trên điện thoại thật.
 
 ## Việc kế tiếp (một việc)
-**Tái hiện và đo phản hồi "nước sông ban đêm chất lượng Cao hơi giật"** trên máy có GPU thật (mục Vướng mắc; giả thuyết ở `QA_LOG.md` mục trên cùng): `npm run build`, mở ban đêm + Cao, so với `main` bằng A/B xen kẽ (`node tests/ven-song-shots.mjs --only=dem --noshots`, `--dist=<bản main>`), thử `?lightsets=off`, pixelRatio 1. Sau đó theo thứ tự: (1) phân tích `test:stroll` LỖI (5); (2) chạy nốt M4 4.1 đợt 2 (danh sách ở "Việc đang làm"); (3) xem chi tiết kè 3.4 trên GPU thật, ban đêm (cọc neo quá nhỏ, bậc thềm bị lan can chắn); (4) M4 4.2 chép bảng lệnh vẽ vào `tests/KET-QUA.md`, 4.3, 4.4. M3 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn) vẫn hoãn. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ). Lưu ý máy: ở máy không có GPU dùng `CHROMIUM_PATH` + `ven-song-shots.mjs --soft`.
+**Chờ người dùng chọn cách sửa giật nước đêm** (đề xuất: đưa sao ra khỏi gương; trần pixelRatio ban đêm; tách rồi cắt +2 đến +3 ms của nhánh ở pixelRatio 2 khi máy cắm sạc: `node tests/ven-song-night-probe.mjs --label=x "--query=lightsets=sync&buildings=off"`, `…&ground=off`, so với `--dist=tests/screens/ven-song/main-src/dist`). Sau đó theo thứ tự: (1) phân tích `test:stroll` LỖI (5); (2) chạy nốt M4 4.1 đợt 2 (danh sách ở "Việc đang làm"); (3) xem chi tiết kè 3.4 trên GPU thật, ban đêm (cọc neo quá nhỏ, bậc thềm bị lan can chắn); (4) M4 4.2 chép bảng lệnh vẽ vào `tests/KET-QUA.md`, 4.3, 4.4. M3 3.5 (vệt sóng tàu, sóng bạc đầu mịn, hoàng hôn) vẫn hoãn. Việc kỹ thuật còn nợ: `disposeBuildingKit()` chưa từng chạy; mặt cắt hầm khi có kit chưa xem; điện thoại / bậc Thấp chưa kiểm; mat-pho đêm +6 lệnh vẽ (nguồn của +1 chưa rõ). Lưu ý máy: ở máy không có GPU dùng `CHROMIUM_PATH` + `ven-song-shots.mjs --soft`.
 
 ## File quan trọng
 | File | Vai trò |
@@ -68,6 +69,7 @@ Không có gì đang chạy (bàn giao 2026-11-13, phiên đám mây → ngườ
 | `src/environment/riverfront/` | địa danh, biển quảng cáo, dọn nhà; đọc instance nhà của `city.ts`; `embankment.ts` = chi tiết kè (river.ts gộp vào lưới kè) |
 | `src/environment/buildings/` | `reshape.ts` (hạ chiều cao, họ, màu, vùng chuyển tiếp), `ground.ts` (mặt đất khu phố), `kit.ts` (phụ kiện + `bkCull`) |
 | `tests/ven-song-shots.mjs` | ảnh + số đo trước / sau (`--cams=`, `--query=`) |
+| `tests/ven-song-night-probe.mjs` | đo vòng vẽ thật ban đêm ở pixelRatio của màn hình (bloom, bộ đèn), tách chi phí, nhấp nháy, khung dài lúc hâm bộ đèn |
 | `docs/ai/*.md` | bộ nhớ của việc này |
 
 ## Quy trình tiếp tục
