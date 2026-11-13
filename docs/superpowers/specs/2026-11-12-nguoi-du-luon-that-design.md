@@ -1,6 +1,6 @@
 # Người treo dù lượn dạng người thật (D-035) — thiết kế
 
-_Ngày: 2026-11-12 · Nhánh: `feature/nguoi-du-luon-that` (từ `main` `6dd201a`) · Trạng thái: đã triển khai Task 1–5 và sửa sau review toàn nhánh (`227527d`, 2026-11-13); `test:perf`, `test:drawcalls` chưa chạy, `test:multi` chạy tới 7a; chờ người dùng duyệt demo, chưa merge_
+_Ngày: 2026-11-12 · Nhánh: `feature/nguoi-du-luon-that` (từ `main` `6dd201a`) · Trạng thái: đã triển khai Task 1–5 và sửa sau review toàn nhánh (`227527d`, 2026-11-13); `test:perf`, `test:drawcalls` chưa chạy, `test:multi` chạy tới 7a; người dùng đã duyệt demo, PR #31_
 
 Người dùng giao bằng một bản yêu cầu tiếng Anh ("upgrade paragliding human character to PUBG-inspired realistic 3D quality") và dặn làm thẳng tới khi xong, không dừng chờ duyệt spec. Mọi lựa chọn kỹ thuật dưới đây là **quyết định của agent**, trừ các ý ghi "người dùng yêu cầu".
 

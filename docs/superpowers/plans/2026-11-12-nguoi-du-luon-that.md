@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **Trạng thái (2026-11-13):** Task 1–5 xong trên nhánh `feature/nguoi-du-luon-that` (`d7cb895` … `e059626`, spec + plan `5b799c2`, tài liệu `54a575d`); review toàn nhánh xong, sửa ở `227527d` (chỉ `plPreload` nạp `pilot.glb`, dt sau đứt mẫu, ngưỡng lệnh vẽ `multi-check` 3 lưới mỗi dù). Tại `227527d`: `test:explore` đạt 89/89, `test:multi` đạt Mục 1–6 + 7a (93 kiểm) rồi đứng ở 7b (lái xe, D-034), dừng tay; `test:perf -- --strict`, `test:drawcalls` chưa chạy theo lời người dùng (xem demo trước, test chạy một lần sau). Chưa merge, chưa có PR.
+> **Trạng thái (2026-11-13):** Task 1–5 xong trên nhánh `feature/nguoi-du-luon-that` (`d7cb895` … `e059626`, spec + plan `5b799c2`, tài liệu `54a575d`); review toàn nhánh xong, sửa ở `227527d` (chỉ `plPreload` nạp `pilot.glb`, dt sau đứt mẫu, ngưỡng lệnh vẽ `multi-check` 3 lưới mỗi dù). Tại `227527d`: `test:explore` đạt 89/89, `test:multi` đạt Mục 1–6 + 7a (93 kiểm) rồi đứng ở 7b (lái xe, D-034), dừng tay; `test:perf -- --strict`, `test:drawcalls` chưa chạy theo lời người dùng (xem demo trước, test chạy một lần sau). Người dùng duyệt trên demo; PR #31.
 
 **Goal:** Thay người khối treo dưới dù lượn bằng nhân vật có xương (Rocketbox `Military_Male_01`, MIT) có tư thế bay, phản ứng theo lượt rẽ / tăng giảm tốc / gió, và bộ đai + dây dựng bằng code bám theo xương.
 
