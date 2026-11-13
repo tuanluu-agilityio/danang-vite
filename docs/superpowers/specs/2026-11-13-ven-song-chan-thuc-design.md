@@ -23,7 +23,7 @@ Người dùng giao một bản yêu cầu tiếng Anh ("Da Nang Riverside Reali
 - Thời gian khung GPU: lệch không quá khoảng 10 % so với `main` cùng máy, cùng cảnh, đo A/B xen kẽ bằng `tests/ven-song-shots.mjs`.
 - Mọi thông số ở `src/config.ts` (`CONFIG.water`, sau này `CONFIG.buildings`). Không thêm `PointLight` / `SpotLight`.
 - Mô hình ngoài theo D-033: ở đây mô hình do script của repo sinh ra (không có bên thứ ba), vẫn ghi trong README và có test trần dung lượng / tam giác, có đường lùi về khối hộp khi tải lỗi.
-- Trần tài nguyên nhà: mỗi họ ≤ 600 tam giác (gần), ≤ 60 (vừa); tổng GLB ≤ 1,5 MB.
+- Trần tài nguyên nhà: xem §6.2 (mỗi họ ≤ 1 000 tam giác, `kit.glb` ≤ 300 kB).
 
 ## 4. Các cách đã cân nhắc
 **Nước** (chi tiết ở `docs/ai/DECISIONS.md` D-036)
@@ -47,9 +47,37 @@ Người dùng giao phần "làm thế nào" cho agent (bản yêu cầu mục 1
 - `weather/atmosphere.ts`: ghi `waterFx.uRain`, `uStorm`, trả 0 khi về `now`.
 - Thông số: `CONFIG.water`.
 
-## 6. Thiết kế M2–M4 (chưa làm; builder được quyền chỉnh chi tiết, ghi vào `DECISIONS.md`)
-- M2: `blender/scripts/build_building_library.py` sinh 5 họ nhà (đế / thân / mái tách đoạn, UV, vertex color cho vật liệu), `export_assets.py` xuất `public/buildings/library.glb`; `src/environment/buildings/` nạp bằng `GLTFLoader`, thay geometry cho một cụm ven sông bờ Tây quanh Cầu Rồng; lùi về hộp khi tải lỗi / quá giờ / `?buildings=off`.
-- M3: cả hai bờ; LOD gần (mô hình) / vừa (hộp có cửa sổ shader hiện tại) / xa (khối trơn hiện tại); phân bố họ theo khoảng cách tới sông và chiều cao sẵn có; chi tiết kè; vệt sóng tàu; sắc hoàng hôn nếu phạm vi cho phép.
+## 6. Thiết kế M2 — nguyên mẫu nhà (D-037 bản 2, 2026-11-13; quyết định của agent)
+**Ý chính: khối hộp của `buildCity()` ở lại làm THÂN nhà; chi tiết kiến trúc là "bộ phụ kiện" (kit) dựng bằng Blender, đặt chồng lên.** Không đổi ma trận instance nào, nên `collectBuildings()`, biển quảng cáo, dọn nhà, va chạm Đi dạo / Lái xe giữ nguyên. Bản 1 (gộp mọi họ vào một geometry bằng `aPart`) bị loại: mỗi nhà phải xử lý đỉnh của cả 5 họ ở ba lượt vẽ.
+
+### 6.1 Năm họ (chọn theo chiều cao sẵn có + băm chỉ số, không `rand()`)
+| id | Họ | Chiều cao h | Thân (shader) | Kit (Blender) |
+|---|---|---|---|---|
+| 1 | Khách sạn kính | ≥ 45 m | kính xanh xám, đố mảnh, dải sàn | đế thương mại + mái đón, ban công dải mặt sông mỗi tầng, vương miện, khung biển hiệu mái (sáng về đêm), ăng-ten |
+| 2 | Chung cư | 20–45 m | sơn pastel, cửa sổ nhỏ | ban công dải + lan can hai mặt mỗi tầng, tum thang, bồn nước inox, lan can mái |
+| 3 | Thương mại | 14–30 m | kính tầng dưới, dải biển hiệu | mái đón tầng trệt, dải biển hiệu (sáng đêm), tường chắn mái, hộp kỹ thuật |
+| 4 | Văn phòng | ≥ 30 m | kính + bê tông đều | lam đứng suốt chiều cao, mũ mái, khối kỹ thuật mái |
+| 5 | Nhà ống thấp tầng | < 20 m | chia khoang 4,5 m, mỗi khoang một màu (dãy nhà ống) | tường ngăn khoang nhô, ban công từng khoang, tum + bồn inox + sân thượng mỗi khoang, mái hiên tầng trệt |
+
+### 6.2 Định dạng kit (hợp đồng giữa script Blender và mã three)
+- File `public/buildings/kit.glb`, một mesh cho mỗi họ, tên `fam1` … `fam5`. Hệ trục glTF (Y lên). Mặt +X của mô hình là **mặt nhìn ra sông** (mã three lật X cho bờ Đông).
+- `POSITION` = **điểm neo trong hộp đơn vị**: x, z ∈ [−0,5; 0,5], y ∈ [0; 1]. Ma trận instance (w, h, d) của nhà đưa điểm neo ra đúng mép / mái.
+- `_OFF` (vec3, mét, đã ở hệ trục glTF) = độ lệch tuyệt đối cộng sau khi co giãn: vị trí cuối = neo × (w, h, d) + `_OFF`. Nhờ vậy lan can luôn cao 1,1 m, ban công luôn sâu 1,2 m dù nhà to nhỏ.
+- `_RULE` (float): 0 = luôn vẽ; > 0 = chi tiết lặp theo tầng, giá trị là cao độ đáy chi tiết (m, tính từ chân nhà); shader thu về 0 khi `_RULE > h − 3`. Chi tiết theo tầng có neo y = 0 và `_OFF.y` = 3,4·k − 2,5 + … để khớp lưới cửa sổ của shader (ô 3,4 m theo y thế giới, chân nhà ở y = 2,5).
+- `COLOR_0` (RGBA): rgb = màu; a = 1 thì nhân với màu tường của nhà, a = 0 thì màu tuyệt đối (inox, kính, kim loại).
+- `_GLOW` (float 0..1): phần phát sáng về đêm (= màu × `_GLOW` × `uNight`).
+- `NORMAL` phẳng theo mặt. Không UV, không texture, không vật liệu riêng.
+- Trần: mỗi họ ≤ 1 000 tam giác (họ 1 và 2 cần tới 29 tầng ban công), tổng `kit.glb` ≤ 300 kB. (Thay trần 600 tam giác ghi ở §3.)
+- Nguồn: `blender/scripts/build_building_library.py` (dựng + lưu `blender/scenes/riverside_buildings.blend`, trong đó có thêm bộ xem trước đã "giải" ở kích thước mẫu) và `blender/scripts/export_assets.py`; lệnh `npm run gen:buildings`.
+
+### 6.3 Mã three
+- `src/environment/buildings/`: nạp `kit.glb` (GLTFLoader, chờ trước khi dựng cảnh như `crowd`, quá giờ / lỗi / `?buildings=off` thì bỏ kit, nhà vẫn là hộp như cũ); sau MỌI lệnh dọn nhà, đọc `collectBuildings()`, lọc vùng mẫu, mỗi họ một `InstancedMesh` (lớp 1: không vào gương; không đổ bóng) với `instanceMatrix` = ma trận thế giới của nhà, thuộc tính instance `aWall` (màu tường). Vật liệu chuẩn + `onBeforeCompile` áp `_OFF`, `_RULE`, `_GLOW`.
+- Thân: thêm thuộc tính instance `aFam` cho lưới near của `buildCity()` (0 = như cũ); `patchWindows({ perBuilding })` đổi cỡ cửa sổ / màu / khoang theo `aFam`. Vẫn một program `windows-city`.
+- Vùng mẫu M2: bờ Tây, −700 ≤ x ≤ −262, |z| ≤ 500 (`CONFIG.buildings.zone`).
+- Lệnh vẽ: tối đa +5 (mỗi họ một lưới) ở góc thấy vùng mẫu.
+
+## 6b. M3–M4 (chưa làm; builder được quyền chỉnh chi tiết, ghi vào `DECISIONS.md`)
+- M3: cả hai bờ; kit chỉ hiện trong khoảng cách gần (LOD), xa vẫn là hộp có cửa sổ shader / khối trơn như hiện tại; cân nhắc hạ chiều cao một phần tháp ven sông (đụng ma trận instance, phải xét mọi nơi đọc chúng); chi tiết kè; vệt sóng tàu; sắc hoàng hôn.
 - M4: đủ bộ test, `KET-QUA.md`, điện thoại.
 
 ## 7. Tiêu chí nghiệm thu

@@ -15,3 +15,10 @@ Sổ quyết định riêng của việc này. Dòng tóm tắt của mỗi quy�
 - **Đề xuất**: không đổi `items` (vị trí, w, d, h, màu) và không thêm lời gọi `rand()`. Chọn họ nhà cho từng instance bằng băm chỉ số (như đám đông D-032). Mỗi họ là một mô hình dựng bằng script Blender, xuất GLB, gồm ba đoạn đế / thân / mái; shader đỉnh co giãn riêng phần thân theo chiều cao instance để chi tiết đế và mái không bị kéo dãn. Gộp các họ vào một geometry với thuộc tính `aPart`, shader thu đỉnh khác họ về gốc (mẫu tàu thuyền D-026) để mỗi cụm vẫn là một lệnh vẽ. Chỉ dải ven sông (cách kè dưới khoảng 450 m) dùng mô hình chi tiết; xa hơn giữ hộp + cửa sổ shader. Cửa sổ ngày / đêm vẫn do shader vẽ (D-023), thêm biến thể theo họ.
 - **Phải kiểm ở M2 trước khi chốt**: số tam giác mỗi họ sau khi nhân ~1 500 nhà ven sông ở cả ba lượt (chính, bóng, gương); lệnh vẽ +0 ở 5 góc chuẩn; va chạm và biển quảng cáo không lệch.
 - **Trần đề xuất cho spec**: mỗi họ ≤ 600 tam giác (gần), ≤ 60 (vừa); tổng GLB ≤ 1,5 MB; lệnh vẽ góc cũ +0.
+
+### D-037 bản 2 — 2026-11-13 (thay phần "Đề xuất" ở trên; đang làm ở M2)
+- **Đổi**: không thay geometry của nhà. Khối hộp của `buildCity()` ở lại làm thân; chi tiết kiến trúc là bộ phụ kiện (kit) dựng bằng Blender, mỗi họ một `InstancedMesh` đặt chồng lên; mặt đứng theo họ vẽ trong shader qua thuộc tính instance `aFam`.
+- **Vì sao**: bản 1 (gộp 5 họ bằng `aPart`) bắt mỗi nhà xử lý đỉnh của cả 5 họ ở ba lượt vẽ (ước lượng 4,5 triệu tam giác thêm cho 1 500 nhà); thay geometry còn làm `collectBuildings()` và va chạm phải viết lại. Bản 2 không đổi ma trận instance nào.
+- **Định dạng kit** (neo trong hộp đơn vị + `_OFF` mét + `_RULE` theo tầng + `COLOR_0` alpha + `_GLOW`): spec §6.2. Lưu ý: bộ xuất glTF của Blender KHÔNG đổi trục cho thuộc tính tùy biến, nên script phải tự ghi `_OFF` theo trục glTF.
+- **Giá**: tối đa +5 lệnh vẽ ở góc thấy vùng nhà chi tiết (trong trần +6 của spec §3); kit ở lớp 1 nên không vào gương mặt nước, không đổ bóng.
+- **Chưa giải quyết**: phân bố chiều cao (quá nhiều tháp) giữ nguyên vì đổi `h` là đổi ma trận instance; xét ở M3.
