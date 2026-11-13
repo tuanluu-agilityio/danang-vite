@@ -2,6 +2,15 @@
 
 Số "đo" là số máy in ra; chỗ nào ước lượng thì ghi rõ "ước lượng". Mới nhất ở trên.
 
+## 2026-11-13 — M3 Task 3.7: mặt đất khu phố + vùng chuyển tiếp phía trong (bản làm việc trước commit)
+- **Vì sao**: ảnh từ trên xuống (`tests/screens/ven-song/khao/tx-tay-ngay.png`) cho thấy "bãi đất trống" là lưới nhà thưa (ô 36 m, nhà 14–29 m, ô đường để trống) trên nền đất một màu; phía trong dải 300 m là tháp trắng, gãy đột ngột.
+- **Đã làm**: (1) `bkPatchGround()` (`src/environment/buildings/ground.ts`): shader của `MAT.land` vẽ sân quanh từng ô nhà (bê tông / gạch / cỏ / bãi xe theo băm ô), lối lát ở ô đường, vỉa hè giữa kè và hàng nhà đầu; `?ground=off` để đo; (2) `bkReshape()` thêm vùng phía trong (`CONFIG.buildings.inner`): 360 m chuyển tiếp (hạ chiều cao thưa dần, có họ + màu, không kit), tới 1 000 m chỉ nhuộm màu tường thưa dần.
+- **Lệnh**: `node tests/ven-song-shots.mjs --label=khao2 --only=ngay,dem,mua --cams=...` (ba góc mới `tx-tay`, `tx-dong`, `pho-trong`; tham số mới `--cams=`, `--query=`).
+- **Số đo**: lệnh vẽ và tam giác không đổi (tren-cao ngày 273 / 4 239 033; nha-mau 165). Program lúc mở trang 180 → 184 (`MAT.land` nay có program riêng `land-lots`, trước dùng chung với vật liệu trơn khác). Lỗi console 0.
+- **A/B GPU thật, cùng bản build, `?ground=off` (A) so với mặc định (B), 2 vòng xen kẽ (ms)**: tren-cao ngày 11,84 / 12,19 → 12,49 / 12,16; sat-nuoc ngày 8,55 / 8,40 → 8,12 / 8,18; tren-cao đêm 12,18 / 11,73 → 12,35 / 12,08; doc-song đêm 8,88 / 8,88 → 8,81 / 8,57; du-luon mưa 11,45 / 11,42 → 11,24 / 11,24. Lệch nằm trong nhiễu (±0,3 ms). **Chưa đo lại A/B so với `main`** sau khi thêm mặt đứng theo họ cho vùng chuyển tiếp; số tuyệt đối cùng cỡ lượt 4.0.
+- **Test**: `npm run build` đạt; `test:buildings:unit` 35/35; `test:drive:unit` 124/124; `test:stroll:unit` 86/87 (lỗi cũ `hướng theo camYaw` do `strollBase.walk` 1,6 của người dùng).
+- **Xem ảnh (agent tự xem)**: từ trên xuống thấy khối phố có sân, lối lát, bãi cỏ, bãi xe; phố trong không còn rừng tháp trắng (ngày, đêm); bờ Đông lúc mưa ổn. Còn: ô bị riverfront dọn nhà thành sân trống; lối lát không phải đường xe (Lái xe không chạy được, cố ý không vẽ vạch); vài tháp kính sẫm màu hơi nặng ở vùng chuyển tiếp; chưa xem trong hầm cắt, điện thoại, bậc Thấp.
+
 ## 2026-11-13 — M4 Task 4.0: tối ưu GPU (bản làm việc trước commit 4.0)
 - **Lệnh**: như A/B của M3 (`main` `752ea22` build ở thư mục tạm, xen kẽ A1, B1, A2, B2 với `--noshots --only=ngay,dem,mua`); ảnh sau tối ưu: `node tests/ven-song-shots.mjs --label=toi-uu --only=ngay,dem,bao`.
 - **Dò chi phí trước khi sửa (Intel Arc, 1600 × 900, đo bằng tham số URL tạm, script dò đã xóa)**: cỡ gương hầu như không ảnh hưởng (1024 × 512, 768 × 384, 512 × 512 lệch nhau trong khoảng 0,3 ms, cỡ nhiễu); kit khoảng 0,6 ms; nhánh `aFam` trong fragment shader thân nhà khoảng 0,3–0,5 ms; phần còn lại là shader nước.

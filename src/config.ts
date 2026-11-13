@@ -564,6 +564,14 @@ const buildingsBase = {
   // Dải sát sông (D-038, M3): nhà có 0 ≤ |x| − bankX ≤ band (và x ≤ beachX) được bkReshape() hạ chiều cao, gán họ + màu tường, gắn kit (cả hai bờ)
   band: 300,                                            // m — bề rộng dải tính từ mép kè (ước lượng)
   beachX: 1290,                                         // m — từ x này trở ra là dải khách sạn Mỹ Khê (city.ts), không đụng
+  // Phía trong dải (bkReshape): không gắn kit. fade = m — vùng chuyển tiếp: xác suất nhà bị hạ chiều cao giảm 1 → 0, mọi nhà có họ + màu tường;
+  // tint = m tính từ mép trong của dải — tới đây còn nhuộm màu tường (không đổi chiều cao, mặt đứng cũ), tỉ lệ nhà được nhuộm giảm từ tintMax về 0; walls = màu nhuộm (sRGB) (ước lượng)
+  inner: { fade: 360, tint: 1000, tintMax: 0.8, walls: [0xe6dcc8, 0xd9d2c2, 0xcfd6d2, 0xe3d3b4, 0xc9cdc6, 0xddc9b6, 0xd2dcd0, 0xbfc7cc] },
+  // Mặt đất khu phố (bkPatchGround, ground.ts): vẽ trong shader của MAT.land theo đúng lưới 36 m của buildCity (ô đường ix % 5 = 0, iz % 5 = 0), +0 lệnh vẽ.
+  // lot = m — cạnh sân quanh mỗi ô nhà; lane = m — bề rộng lối lát giữa ô đường (không phải đường xe: chế độ Lái xe không chạy được ở đây, nên không vẽ vạch);
+  // mix = ngưỡng cộng dồn [sân bê tông, sân gạch, bãi cỏ] (còn lại: bãi xe nhựa); fade = m mỗi điểm ảnh — mẫu mờ dần từ fade[0] tới fade[1] (chống răng cưa khi xa) (ước lượng)
+  ground: { lot: 31, lane: 9, mix: [0.42, 0.68, 0.88], fade: [3, 12],
+    yard: 0xb3aea2, tile: 0xbfa98e, grass: 0x7e9a60, park: 0x74777a, laneCol: 0xa9a59b, kerb: 0xcfcbc0, walk: 0xbdb5a4 },   // màu sRGB: sân bê tông, gạch, cỏ, bãi xe, lối lát, bó vỉa, vỉa hè giữa kè và hàng nhà đầu
   // Hạ chiều cao (bkReshape, D-038): mỗi đoạn phố (một hàng nhà × một khối giữa hai đường, khối = 5 ô 36 m theo Z như city.ts) có một "tính cách"
   // chọn bằng băm vị trí; t = (|x| − bankX) / band: 0 sát kè … 1 mép trong của dải. Tỉ lệ [nhà ống, khách sạn / chung cư vừa, tháp] nội suy near → far (ước lượng)
   reshape: {

@@ -37,6 +37,7 @@ import { crowdLoad, crowdGet } from './common/people/crowdData';
 import { bkLoad, bkAttrNames } from './environment/buildings/kitData';
 import { buildBuildingKit, bkState, bkCull } from './environment/buildings/kit';
 import { bkReshape, bkShaped } from './environment/buildings/reshape';
+import { bkPatchGround } from './environment/buildings/ground';
 import { crowdUsable } from './common/people/crowd';
 import { stBlocky } from './explore/stroll/blocky';
 import { buildWeather, updateWeather } from './environment/weather';
@@ -89,6 +90,7 @@ buildStreets();
 finalizeRoads();
 buildCity();
 bkReshape();                             // ngay sau buildCity, trước mọi nơi đọc nhà (hầm, riverfront, đường lái xe, Vòng quay, kit): hạ chiều cao dải sát sông, gán họ + màu tường (D-038), không rand()
+bkPatchGround();                         // sân / lối lát quanh nhà vẽ trong shader mặt đất (không rand(), +0 lệnh vẽ)
 buildTrees();
 buildStreetLamps();
 buildTraffic();

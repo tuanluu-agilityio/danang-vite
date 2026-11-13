@@ -53,7 +53,7 @@ src/
     han-tunnel/      Hầm vượt sông Hàn (vỏ hầm, nội thất, máng hầm hở, cửa hầm, đáy sông, mặt cắt, mô phỏng dìm)
     sun-wheel/       Vòng quay Mặt Trời (bệ + nhà ga, khung tháp, vành và nan, 64 cabin, LED đêm, ngồi cabin, Tour)
   environment/       sông Hàn, núi, đường phố, thành phố, cây, giao thông, người đi bộ trên Cầu Rồng (pedestrians.ts)
-    buildings/       nhà dải sát sông (D-037 / D-038): `reshape.ts` hạ chiều cao + gán họ nhà và màu sau `buildCity()`, `kit.ts` / `kitData.ts` nạp `kit.glb` và đặt phụ kiện kiến trúc chồng lên thân hộp (5 họ, mỗi họ một InstancedMesh, cắt theo khung nhìn), `families.ts` chọn họ; `?buildings=off` bỏ phụ kiện
+    buildings/       nhà dải sát sông (D-037 / D-038): `reshape.ts` hạ chiều cao + gán họ nhà và màu sau `buildCity()`, `kit.ts` / `kitData.ts` nạp `kit.glb` và đặt phụ kiện kiến trúc chồng lên thân hộp (5 họ, mỗi họ một InstancedMesh, cắt theo khung nhìn), `families.ts` chọn họ, `ground.ts` vẽ sân / lối lát / bãi cỏ quanh nhà trong shader mặt đất; `?buildings=off` bỏ phụ kiện
     boats/           tàu thuyền: 5 kiểu (hình học gộp), đội tàu InstancedMesh, đèn đêm, tàu tụ tập ban đêm
     riverfront/      hai bờ sông: địa danh thật, mặt dựng LED trái tim + "DN", bảng quảng cáo, chi tiết dải đi bộ
     weather/         thời tiết: khí quyển 4 preset, mưa + mặt ướt, gió (cây, dây, thuyền), bão (chớp, đóng cầu, kịch bản 120 s), nắng hè, cây đổ, âm thanh

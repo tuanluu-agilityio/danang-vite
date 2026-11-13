@@ -2,7 +2,7 @@
 // GPU THẬT (không SwiftShader): cùng góc camera, cùng điều kiện (ngày, hoàng hôn, đêm, mưa, bão) để so trước / sau. Không chấm đạt / lỗi theo ms.
 // Ghi tests/screens/ven-song/<nhãn>/<góc>-<điều kiện>.png và metrics.json (lệnh vẽ, tam giác, ms GPU mỗi khung, thời gian mở trang, số program).
 //
-//   npm run build && node tests/ven-song-shots.mjs --label=truoc [--w=1600] [--h=900] [--only=ngay,dem] [--noshots]
+//   npm run build && node tests/ven-song-shots.mjs --label=truoc [--w=1600] [--h=900] [--only=ngay,dem] [--cams=nha-mau,tx-tay] [--query=ground=off] [--noshots]
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -11,7 +11,7 @@ import { serveDir, openApp, frames } from './lib.mjs';
 import { setWx } from './weather-lib.mjs';
 
 const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3) ?? d;
-const label = arg('label', 'last'), W = +arg('w', 1600), H = +arg('h', 900), only = arg('only', '').split(',').filter(Boolean), noShots = process.argv.includes('--noshots');
+const label = arg('label', 'last'), W = +arg('w', 1600), H = +arg('h', 900), only = arg('only', '').split(',').filter(Boolean), cams = arg('cams', '').split(',').filter(Boolean), noShots = process.argv.includes('--noshots');
 
 /* Góc camera cố định (m, hệ trục của cảnh). Không đổi giữa các lần chạy: ảnh trước / sau phải chồng khít. */
 const CAMS = {
@@ -23,7 +23,11 @@ const CAMS = {
   'mat-pho': { pos: [-299, 1.8, 120], target: [-200, 8, 0] },             // ngang tầm xe trên Bạch Đằng
   'nha-tay': { pos: [120, 60, -420], target: [-420, 30, -560] },          // từ giữa sông nhìn thẳng dãy nhà bờ Tây
   'nha-dong': { pos: [-120, 60, 420], target: [420, 30, 560] },           // từ giữa sông nhìn thẳng dãy nhà bờ Đông
-  'nha-mau': { pos: [-200, 40, 20], target: [-400, 25, -150] }            // gần, chéo 3/4 từ phía sông vào vùng nhà mẫu M2 (kit Blender, D-037)
+  'nha-mau': { pos: [-200, 40, 20], target: [-400, 25, -150] },
+  'tx-tay': { pos: [-520, 620, -299], target: [-520, 0, -300] },         // từ trên xuống dải nhà bờ Tây phía Bắc Cầu Rồng (bãi trống, chuyển tiếp sang phố trong)
+  'tx-dong': { pos: [560, 620, 301], target: [560, 0, 300] },            // từ trên xuống dải nhà bờ Đông phía Nam Cầu Rồng
+  'pho-trong': { pos: [-300, 90, -250], target: [-1100, 30, -420] }     // từ mép sông nhìn sâu vào phố trong bờ Tây: chỗ dải ven sông gặp rừng tháp
+
 };
 /* Điều kiện: night 0..1 của dayNight, preset thời tiết */
 const CONDS = {
@@ -39,7 +43,7 @@ const args = ['--ignore-gpu-blocklist', '--enable-gpu', '--disable-gpu-vsync', '
 if (process.platform === 'win32') args.unshift('--use-angle=d3d11');
 const browser = await chromium.launch({ headless: true, args });
 const t0 = Date.now();
-const { page, errors } = await openApp(browser, srv.url + '?perf', { width: W, height: H });
+const { page, errors } = await openApp(browser, srv.url + '?perf' + (arg('query', '') ? '&' + arg('query', '') : ''), { width: W, height: H });
 const openMs = Date.now() - t0;
 const info = await page.evaluate(() => {
   const A = window.__app, gl = A.renderer.getContext(), d = gl.getExtension('WEBGL_debug_renderer_info');
@@ -77,6 +81,7 @@ for (const [cn, cond] of Object.entries(CONDS)) {
   if (only.length && !only.includes(cn)) continue;
   await setNight(cond.night); await setWx(page, cond.wx);
   for (const [vn, c] of Object.entries(CAMS)) {
+    if (cams.length && !cams.includes(vn)) continue;
     await setCam(c); await frames(page, 6);
     const key = `${vn}-${cn}`;
     metrics.views[key] = await stats();

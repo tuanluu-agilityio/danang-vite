@@ -8,7 +8,7 @@
 | **Nhánh** | `feature/ven-song-chan-thuc` (từ `main` `752ea22`); commit M1 `eae444c`; **chỉ có trên máy, chưa push** (không có upstream) |
 | **Mốc hiện tại** | M3 Task 3.0–3.3 và M4 Task 4.0 (tối ưu GPU) và M3 3.6 xong; còn M3 3.4, 3.5, rồi M4 4.1–4.4 |
 | **Trạng thái** | M1 **đã được người dùng duyệt** (2026-11-13, "Đồng ý"); M2 người dùng cho đi tiếp (2026-11-13: "Đồng ý hạ chiều cao, làm tiếp M3"); M3 phần nhà đã làm, **chờ người dùng xem** (`tests/screens/ven-song/nha2/`, `toi-uu/`); GPU +3 đến +10 % so với `main` ở bốn góc, du-luon mưa +10 đến +12 % |
-| **Cập nhật** | 2026-11-13 15:45 +07 (sau M4 task 4.0) |
+| **Cập nhật** | 2026-11-13 16:25 +07 (sau M3 task 3.7) |
 
 ## Việc vừa xong (đã kiểm)
 Shader mặt nước mới (`src/core/waterShader.ts`) nối vào `Water.js`, ngày / đêm / mưa / bão; ảnh trước / sau 6 điều kiện × 8 góc; đo A/B GPU thật. Chi tiết ở `QA_LOG.md` mục 2026-11-13.
@@ -24,6 +24,7 @@ Không có việc dở. Người dùng đã trả lời (2026-11-13): (1) nướ
 - [x] M2 Task 2.4–2.6 (2026-11-13): `src/environment/buildings/` (`kitData.ts`, `families.ts`, `kit.ts`), `aFam` + mặt đứng theo họ trong `patchWindows`, `CONFIG.buildings`, vùng mẫu 122 nhà bờ Tây; đường lùi `?buildings=off`; ảnh `tests/screens/ven-song/nha1/`; số đo ở `QA_LOG.md`.
 - [x] M3 Task 3.0–3.3 (2026-11-13): `bkReshape()` hạ chiều cao 628 nhà dải sát sông hai bờ, kit hai bờ bằng `aFlip` (596 nhà), LOD kit 600 / 1 400 m, bảng màu tường / kính / mái theo họ, cửa hàng sáng đêm; ảnh `tests/screens/ven-song/nha2/`; A/B chuẩn so với `main` ở `QA_LOG.md` (**+10 đến +26 % GPU, không đạt**).
 - [x] M4 Task 4.0 (2026-11-13, người dùng: "Đồng ý, làm tối ưu GPU trước"): `bkCull()` cắt kit theo khung nhìn + tầm `kitFar` mỗi khung, rút mẫu texture shader nước, `?mirror=WxH` để đo; A/B ở `QA_LOG.md`; quyết định ở `DECISIONS.md` mục "Tối ưu GPU sau M3".
+- [x] M3 Task 3.7 (2026-11-13, người dùng: "làm tiếp"): mặt đất khu phố có sân / lối lát / cỏ / bãi xe vẽ trong shader `MAT.land` (`src/environment/buildings/ground.ts`, `CONFIG.buildings.ground`, `?ground=off`); vùng chuyển tiếp phía trong dải (`CONFIG.buildings.inner`); ảnh `tests/screens/ven-song/khao2/`; không chậm thêm đo được.
 - [x] Spec + plan (`docs/superpowers/specs|plans/2026-11-13-ven-song-chan-thuc*`).
 
 ## Còn lại (theo thứ tự ưu tiên)
@@ -62,7 +63,8 @@ Không có.
 | `src/bridges/han-tunnel/cutaway.ts` | chèn `discard` vào shader nước (cần chuỗi `void main() {` và varying `worldPosition`) |
 | `src/environment/city.ts` | ~7 900 nhà hộp `InstancedMesh`, vị trí từ `rand()` (KHÔNG đổi chuỗi) |
 | `src/environment/riverfront/` | địa danh, biển quảng cáo, dọn nhà; đọc instance nhà của `city.ts` |
-| `tests/ven-song-shots.mjs` | ảnh + số đo trước / sau |
+| `src/environment/buildings/` | `reshape.ts` (hạ chiều cao, họ, màu, vùng chuyển tiếp), `ground.ts` (mặt đất khu phố), `kit.ts` (phụ kiện + `bkCull`) |
+| `tests/ven-song-shots.mjs` | ảnh + số đo trước / sau (`--cams=`, `--query=`) |
 | `docs/ai/*.md` | bộ nhớ của việc này |
 
 ## Quy trình tiếp tục
