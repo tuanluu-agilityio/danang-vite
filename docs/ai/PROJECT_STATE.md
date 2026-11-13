@@ -41,7 +41,9 @@ M4 task 4.1 (bộ test nặng một lượt): đợt 1 gần xong, kết quả t
 - Ảnh và số đo ở `tests/screens/ven-song/` (`truoc`, `sau`, `sau1`–`sau3` là các vòng chỉnh, `ab-*`) còn trên đĩa, không commit; mất thì dựng lại theo `ASSET_MANIFEST.md`.
 
 ## Vướng mắc
-Không có.
+- Người dùng báo nước sông ban đêm ở chất lượng Cao hơi giật (2026-11-13, xem bản demo). Chưa tái hiện / chưa đo (phiên đám mây không có GPU); đang chờ người dùng cho biết máy, FPS, và bản `main` có bị không. Chi tiết + giả thuyết ở `QA_LOG.md` mục trên cùng.
+- `test:stroll` LỖI (5) trên nhánh, chưa phân tích (`QA_LOG.md`).
+- Bản demo: artifact riêng tư `https://claude.ai/artifact/6zaERkxE2khY35o7VKqihG` (bản build `51baa21`, mô hình đóng gói base64 vì máy chủ artifact không phục vụ `.glb` / `.bin`).
 
 ## Kiểm chứng gần nhất (2026-11-13)
 - `npm run build` (gồm `tsc --noEmit`): đạt.
