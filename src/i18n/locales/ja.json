@@ -512,5 +512,14 @@
   "drCreditLabel": "車の3Dモデル",
   "drCreditMod": "改変あり",
   "drCreditTm": "VinFast、VF 3 は所有者の商標です。説明用のモデルで、公式製品ではありません。",
-  "drSound": "車の音"
+  "drSound": "車の音",
+  "bkHint": "W A S D または矢印: 走行 · Space: 急ブレーキ · V: 視点切替 · Q / E: ウインカー · H: クラクション · R: 車線に戻る · マウスドラッグ: 見回す · Esc: 終了",
+  "bkView": "視点切替",
+  "bkHorn": "クラクション",
+  "bkReset": "車線に戻る",
+  "bkStuck": "動けませんか? R を押すと車線に戻ります",
+  "bkSigL": "左ウインカー",
+  "bkSigR": "右ウインカー",
+  "bkLost": "接続が切れました。一人で走行を続けられます。",
+  "bkLostChooser": "接続が切れました。再接続するには「バイク」を選んでください。"
 }

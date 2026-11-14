@@ -512,5 +512,14 @@
   "drCreditLabel": "Mô hình xe",
   "drCreditMod": "đã chỉnh sửa",
   "drCreditTm": "VinFast, VF 3 là nhãn hiệu của chủ sở hữu; mô hình minh hoạ, không phải sản phẩm chính thức.",
-  "drSound": "Tiếng xe"
+  "drSound": "Tiếng xe",
+  "bkHint": "W A S D hoặc mũi tên: lái · Space: phanh gấp · V: đổi góc nhìn · Q / E: xi nhan · H: còi · R: về làn · kéo chuột: nhìn quanh · Esc: thoát",
+  "bkView": "Đổi góc nhìn",
+  "bkHorn": "Còi",
+  "bkReset": "Về làn",
+  "bkStuck": "Bị kẹt? Bấm R để về làn",
+  "bkSigL": "Xi nhan trái",
+  "bkSigR": "Xi nhan phải",
+  "bkLost": "Mất kết nối. Bạn vẫn chạy xe được, nhưng một mình.",
+  "bkLostChooser": "Mất kết nối. Chọn Xe máy để kết nối lại."
 }

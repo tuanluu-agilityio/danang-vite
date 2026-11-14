@@ -392,9 +392,45 @@ body.drive #scene:active{cursor:grabbing;}
   body.drive #drMapNote{left:calc(8px + env(safe-area-inset-left,0px));top:calc(60px + var(--dr-map-h,128px) + env(safe-area-inset-top,0px));bottom:auto;font-size:10px;max-width:calc(50vw - 24px);}
   body.drive #drSpeed{right:auto;bottom:auto;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));}
 }
-/* Xe máy (body.explore.drive.bike): dùng nguyên khung #drHud của ô tô (đồng hồ, bản đồ nhỏ, gợi ý); nút 🔊 #drSoundBtn hiện như ô tô, bấm thì bật / tắt tiếng xe máy (bike/sound.ts).
-   Điều khiển cảm ứng của ô tô điều khiển ô tô, ẩn tới khi xe máy có phần cảm ứng riêng */
-body.bike #drSteer,body.bike #drGas,body.bike #drBrake,body.bike #drLook{display:none !important;}
+/* Xe máy (body.explore.drive.bike, explore/bike/hudBike.ts): dùng nguyên khung #drHud của ô tô (đồng hồ, bản đồ nhỏ, cần gạt + GA + PHANH + vuốt nhìn của drive/touch.ts);
+   #drHint của ô tô nhường chỗ cho #bkHint. Nút 🔊 #drSoundBtn dời lên góc trên trái cạnh ⚙ (giữa đáy là mặt đồng hồ góc nhìn thứ nhất; trên cần gạt là chỗ xi nhan).
+   Máy tính: cột trái dưới ⚙: 🎥 rồi hàng ◄ ►; còi / về làn dùng phím H / R (nút chỉ ở cảm ứng). Cảm ứng: ◄ ► trên cần gạt, hàng ↺ 🎥 📢 trên GA + PHANH,
+   vùng chạm ≥ 44 px, trong vùng an toàn. Chế độ xem (Task 10): ẩn mọi nút điều khiển. #drHud dir="ltr" nên ar không lật */
+#bkHint,#bkStuck,.bk-btn{display:none;}
+body.bike #drHint{display:none !important;}
+body.bike:not(.ex-watching) #drSoundBtn{left:calc(72px + env(safe-area-inset-left,0px));right:auto;top:calc(16px + env(safe-area-inset-top,0px));bottom:auto;transform:none;}
+body.bike #bkHint,body.bike #bkStuck{position:fixed;pointer-events:none;left:50%;transform:translateX(-50%);padding:8px 14px;font-size:12px;color:var(--text);text-align:center;width:max-content;max-width:calc(100vw - 280px);box-sizing:border-box;}   /* 280: chừa ⚙ + 🔊 (trái) và Thoát (phải) */
+body.bike #bkHint.off{opacity:0;transition:opacity .6s;}
+body.bike #bkStuck{top:calc(64px + env(safe-area-inset-top,0px));color:var(--gold);font-size:13px;}
+body.bike #bkStuck.show{display:block;}
+@media (hover:hover){
+  body.bike #bkHint{display:block;top:calc(14px + env(safe-area-inset-top,0px));}
+  body.bike #bkStuck{top:calc(62px + env(safe-area-inset-top,0px));}
+}
+body.bike:not(.ex-watching) .bk-btn{display:flex;align-items:center;justify-content:center;position:fixed;pointer-events:auto;touch-action:manipulation;margin:0;padding:0;box-sizing:border-box;width:44px;height:44px;font-size:20px;line-height:1;color:var(--text);background:var(--panel);border:1px solid var(--panel-line);border-radius:50%;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+body.bike .bk-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+body.bike .bk-sig{font-size:18px;color:rgba(255,255,255,.55);}
+body.bike .bk-sig.on{border-color:#3fbf5a;}
+body.bike .bk-sig.lit{color:#5cf07a;background:rgba(40,120,60,.55);}
+body.bike #bkReset.hot{border-color:var(--gold);box-shadow:0 0 0 3px rgba(230,189,106,.55);}
+body.bike #bkHorn.on{border-color:var(--gold);background:rgba(230,189,106,.45);}
+/* Máy tính: 🎥 dưới ⚙, ◄ ► dưới 🎥; còi / về làn ẩn (phím H / R) */
+body.bike:not(.ex-watching) #bkView{left:calc(14px + env(safe-area-inset-left,0px));top:calc(76px + env(safe-area-inset-top,0px));}
+body.bike:not(.ex-watching) #bkSigL{left:calc(14px + env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));}
+body.bike:not(.ex-watching) #bkSigR{left:calc(66px + env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));}
+body.bike #bkHorn,body.bike #bkReset{display:none !important;}
+@media (hover:none){
+  body.bike:not(.ex-watching) #drSoundBtn{left:calc(76px + env(safe-area-inset-left,0px));top:calc(8px + env(safe-area-inset-top,0px));}
+  body.bike:not(.ex-watching) .bk-btn{width:48px;height:48px;touch-action:none;}
+  body.bike:not(.ex-watching) #bkHorn,body.bike:not(.ex-watching) #bkReset{display:flex !important;}
+  /* xi nhan: trên cần gạt (ngón cái trái); hàng ↺ 🎥 📢 trên GA + PHANH (ngón cái phải), 📢 sát mép phải gần GA */
+  body.bike:not(.ex-watching) #bkSigL{left:calc(16px + env(safe-area-inset-left,0px));top:auto;bottom:calc(36px + var(--dr-pad-h,72px) + env(safe-area-inset-bottom,0px));}
+  body.bike:not(.ex-watching) #bkSigR{left:calc(76px + env(safe-area-inset-left,0px));top:auto;bottom:calc(36px + var(--dr-pad-h,72px) + env(safe-area-inset-bottom,0px));}
+  body.bike:not(.ex-watching) #bkHorn{left:auto;right:calc(16px + env(safe-area-inset-right,0px));top:auto;bottom:calc(36px + var(--dr-gas-h,124px) + env(safe-area-inset-bottom,0px));}
+  body.bike:not(.ex-watching) #bkView{left:auto;right:calc(76px + env(safe-area-inset-right,0px));top:auto;bottom:calc(36px + var(--dr-gas-h,124px) + env(safe-area-inset-bottom,0px));}
+  body.bike:not(.ex-watching) #bkReset{left:auto;right:calc(136px + env(safe-area-inset-right,0px));top:auto;bottom:calc(36px + var(--dr-gas-h,124px) + env(safe-area-inset-bottom,0px));}
+  body.bike #bkStuck.show{display:none;}   /* chữ nói phím R; cảm ứng chỉ cho nút ↺ sáng lên */
+}
 /* Dòng hướng dẫn phím của đi dạo (#stHint): cùng chỗ và kiểu với #exHint, chỉ khi có chuột (hover:hover) và không ở chế độ xem; cảm ứng đã có cần gạt */
 #stHint{display:none;}
 @media (hover:hover){

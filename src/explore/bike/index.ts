@@ -11,7 +11,7 @@
    - Phím (theo e.code, chỉ khi đang lái, bỏ ô nhập và tổ hợp Ctrl / Meta / Alt; blur / ẩn tab nhả hết): R về làn (bkRecover), Q / E xi nhan trái / phải (bkSignal),
      V đổi góc nhìn thứ nhất ↔ thứ ba, H còi (giữ; nhả khi blur / ẩn tab / focus vào ô nhập). Kéo chuột trái / vuốt trên canvas: nhìn quanh (thứ nhất) hoặc quay quanh xe (thứ ba).
    - Lớp body 'explore drive bike': khung HUD #drHud và các quy tắc CSS của body.drive áp nguyên; 'bike' cho phần riêng về sau.
-   - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10), cảm ứng (Task 9). Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
+   - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10). Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
    - Người lái: rider.ts, nhân vật theo stChar (chung Đi dạo), nạp ở preload() / start() (làm nóng qua stRigSetWarm của stroll/index.ts); chưa về thì xe không người,
      về sau stop() thì bỏ. Người gắn vào neo yên của xe nên rời cảnh cùng model.group.
    - Âm thanh (sound.ts bkSound): đề máy ở start(), tắt máy ở stop(); mỗi khung một BkSoundIn tái dùng (hộp xe gần dùng lại mảng trNearby của bkStep,
@@ -20,6 +20,9 @@
      bkFx (vệt pha ban đêm, bụi nước khi mưa) vào cảnh ở start(), ra ở stop(), cập nhật sau model.place. "Hầm kín" = ô kiểu 'tunnel' và |x| ≤ HR.coverHalf:
      ô 'tunnel.tube' gồm cả hai dốc hở (|x| ≤ rampHalf), nơi mặt đường roadOut ướt khi mưa (han-tunnel/materials.ts registerWet).
    - Mặt đường nhìn gần (roadFx.ts, Task 8, mốc bỏ được): start() bkRoadSet(true) ⇒ shared.uRoadNear = 1 (nếu CONFIG.bike.road.detail), stop() về 0.
+   - HUD riêng + cảm ứng (hudBike.ts, Task 9): đèn xi nhan #bkSigL / #bkSigR, nút 🎥 #bkView, 📢 #bkHorn (giữ), ↺ #bkReset, gợi ý #bkHint (thay #drHint), nhắc kẹt #bkStuck.
+     Cảm ứng dùng nguyên drive/touch.ts trên #drHud (cần gạt, GA, PHANH, vuốt #drLook nhìn quanh) qua bộ chuyển bkTouchMerge, đọc SAU phím và gộp như ô tô.
+     Kéo trên canvas nhận cả ngón tay chỉ khi không có giao diện cảm ứng (máy lai có chuột: #drLook ẩn); có thì #drLook lo, hai đường không giành nhau.
    Mỗi khung không cấp phát (D-018). */
 import * as THREE from 'three';
 import { scene, camera, controls, canvas, renderer } from '../../core/renderer';
@@ -32,6 +35,8 @@ import { DR_GATE_SWING } from '../drive/roadData';
 import { drUseBody, DR_CAR_BODY, type DrBox } from '../drive/collide';
 import { drBindDrop } from '../drive/keys';
 import { drHudShow, drHudHide, drHudUpdate, type DrMapDot } from '../drive/hud';
+import { drTouchBind } from '../drive/touch';
+import type { DrInput } from '../drive/motion';
 import { drEnsureNet } from '../drive';
 import { trNearby } from '../../common/trafficQuery';
 import { exNightStep } from '../nightShows';
@@ -45,6 +50,7 @@ import { BkDash } from './dash';
 import { bkSound, bkRiverK, type BkSoundIn } from './sound';
 import { bkFx, bkFxWarmObject, bkGrip, bkGustSteer } from './fx';
 import { bkRoadSet } from './roadFx';
+import { bkHudBind, bkHudShow, bkHudHide, bkHudUpdate, bkBlinkOn, bkStuckOn, bkTouchMerge } from './hudBike';
 import { HR } from '../../bridges/han-tunnel/profile';
 import { stChar } from '../stroll/char';
 import type { SwingController } from '../../bridges/song-han/SwingController';
@@ -85,6 +91,10 @@ const _eye = new THREE.Vector3();
 const _rest: BkPlace = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, lean: 0, steer: 0, wheel: 0, susF: 0, susR: 0, braking: false, sig: 0 };
 const _sig0: BkRiderSig = { lean: 0, acc: 0, susF: 0, susR: 0, steer: 0 };
 const _inp: BkInput = { gas: 0, brake: 0, steer: 0, hard: false, grip: 1 };   // đầu vào tái dùng mỗi khung
+const _dr: DrInput = { gas: 0, brake: 0, steer: 0, hand: false };             // đầu vào cảm ứng tái dùng (bkTouchMerge)
+let touch: ReturnType<typeof drTouchBind> | null = null;                      // cảm ứng trên #drHud (setupBike dựng)
+const readTouch = (o: DrInput): void => { if (touch) touch.read(o); };
+let hornTouch = false;                                                        // đang giữ nút 📢
 const boxes: DrBox[] = [];          // hộp xe tự động gần xe, tái dùng mỗi khung
 let saved: { fov: number; near: number; explore: boolean } | null = null;   // thứ start() đổi, stop() trả lại
 const _snd: BkSoundIn = { v: 0, rpm: 0, throttle: 0, brakeK: 0, sus: 0, sig: 0, rain: 0, tunnel: false, river: 0, view: 1, near: boxes, nNear: 0, x: 0, z: 0, yaw: 0, t: 0 };   // đầu vào âm thanh tái dùng mỗi khung
@@ -110,6 +120,7 @@ function advance(dt: number, inp: BkInput): void {
   if (dash) { dash.bind(model!.dashMat); dash.update(dt, s.v, s.rpm, s.sig); }
   controls.target.set(s.x, s.y, s.z);   // tâm vùng bóng đổ (main.ts shadowCenter) theo xe
   drHudUpdate(s, NO_DOTS);
+  bkHudUpdate(s.sig, bkBlinkOn(shared.uTime.value), bkStuckOn(s.stuck));
   exNightStep(dt, false);
   soundStep(s, nNear, tunnel, dry);
 }
@@ -221,8 +232,8 @@ export const bike = {
   setView(v: 1 | 3): void { camB.view = v === 3 ? 3 : 1; },
   /* Vào lái một mình */
   start(): void {
+    const n = drEnsureNet();   // dựng net trước: lỗi ở đây thì thân va chạm vẫn là ô tô (mạng đường không phụ thuộc thân xe)
     drUseBody(BK_BODY);
-    const n = drEnsureNet();
     net = n;
     state = bkCreate(n, BK_SOLO_SLOT);
     camB.view = 1; bkCamReset();
@@ -236,8 +247,8 @@ export const bike = {
     riderNeed();
     riderStep(state, 0);
     driveView.far = CONFIG.drive.tunnelFar;   // mặt đường hầm hiện ở nút giao với hai đường dọc mới, như ô tô
-    bkKeys.clear();
-    drHudShow(n); bkSound.start();
+    bkKeys.clear(); touch?.reset(); hornTouch = false;
+    drHudShow(n); bkHudShow(); bkSound.start();
     if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore') };
     cam.flight.then = null; cam.mode = 'bike'; controls.enabled = false;
     riderEye();
@@ -248,7 +259,8 @@ export const bike = {
   update(dt: number): void {
     if (!active()) return;
     bkInputFromKeys(bkKeys, _inp);
-    bkSound.horn(bkKeys.has('KeyH'));
+    bkTouchMerge(_inp, _dr, readTouch);   // gộp cảm ứng, không xóa phím (máy lai)
+    bkSound.horn(bkKeys.has('KeyH') || hornTouch);
     const s = state!, tun = bkInTunnel(net!, s) && bkCovered(s), wd = weatherU.uWindDir.value;
     _inp.grip = bkGrip(weatherU.uWet.value, tun);                                       // mặt ướt (trễ theo mưa); đoạn hầm kín luôn khô
     _inp.steer += bkGustSteer(s.v, weatherU.uGust.value, wd[0], wd[1], s.yaw);        // gió giật đẩy nhẹ độ nghiêng (≤ fx.gust.steer)
@@ -259,8 +271,9 @@ export const bike = {
   /* Rời chế độ: trả mọi thứ đã đổi, kể cả khi cam.mode đã bị chỗ khác đổi khỏi 'bike' */
   stop(): void {
     if (state === null) return;
-    state = null; bkKeys.clear(); riderGen++;
+    state = null; bkKeys.clear(); touch?.reset(); hornTouch = false; riderGen++;
     bkSound.stop();
+    bkHudHide();
     rider?.setFirstPerson(false);
     drHudHide();
     model?.group.removeFromParent();
@@ -305,14 +318,43 @@ export function setupBike(c: SwingController, onExit: () => void): void {
     if (e.code === 'Space' && active() && !isField(e.target)) e.preventDefault();
   });
   const drop = drBindDrop(window, document, bkKeys);
-  window.addEventListener('focusin', (e) => { if (active() && isField(e.target)) { drop(); bkSound.horn(false); } });
-  window.addEventListener('blur', () => bkSound.horn(false));
-  document.addEventListener('visibilitychange', () => { if (document.hidden) bkSound.horn(false); });
+  const hornOff = () => { hornTouch = false; bkSound.horn(false); if (hornBtn) hornBtn.classList.remove('on'); };
+  window.addEventListener('focusin', (e) => { if (active() && isField(e.target)) { drop(); touch?.reset(); hornOff(); } });
+  window.addEventListener('blur', hornOff);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) hornOff(); });
+  /* HUD riêng: xi nhan, góc nhìn, về làn bấm một lần (click: chuột, chạm, bàn phím); còi giữ (con trỏ riêng, nhả / hủy / mất capture là thôi) */
+  const d = (id: string) => document.getElementById(id);
+  const hornBtn = d('bkHorn');
+  bkHudBind({ sigL: d('bkSigL'), sigR: d('bkSigR'), stuck: d('bkStuck'), reset: d('bkReset') });
+  const onClick = (id: string, f: () => void) => d(id)?.addEventListener('click', () => { if (active()) f(); });
+  onClick('bkSigL', () => bkSignal(state!, 1));
+  onClick('bkSigR', () => bkSignal(state!, -1));
+  onClick('bkView', () => bike.setView(camB.view === 3 ? 1 : 3));
+  onClick('bkReset', () => bkRecover(state!, net!));
+  if (hornBtn) {
+    let hornId = -1;
+    hornBtn.addEventListener('pointerdown', (e) => {
+      if (!active() || hornId !== -1) return;
+      e.preventDefault();
+      hornId = e.pointerId; hornTouch = true; hornBtn.classList.add('on');
+      try { hornBtn.setPointerCapture(e.pointerId); } catch { /* con trỏ không còn hoạt động */ }
+    });
+    const hornEnd = (e: PointerEvent) => { if (e.pointerId === hornId) { hornId = -1; hornOff(); } };
+    hornBtn.addEventListener('pointerup', hornEnd);
+    hornBtn.addEventListener('pointercancel', hornEnd);
+    hornBtn.addEventListener('lostpointercapture', hornEnd);
+    hornBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+  /* Cảm ứng: drive/touch.ts trên cùng #drHud (bộ của ô tô cũng gắn ở đó nhưng chỉ đọc khi đang lái ô tô); vuốt #drLook nhìn quanh */
+  const hud = d('drHud');
+  if (hud) touch = drTouchBind(hud, { look: (dx, dy) => { if (active()) bkCamDrag(camB, dx, dy); }, activity: () => { /* nhiều người: Task 10 */ } });
+  const touchUi = () => typeof matchMedia === 'function' && matchMedia('(hover: none)').matches;
   bkSound.bind(document.getElementById('drSoundBtn'));   // nút 🔊 / 🔇 chung với ô tô: chỉ toggle tiếng xe máy khi đang lái xe máy
   /* Kéo chuột trái / vuốt (một ngón) trên canvas: nhìn quanh (góc thứ nhất) hoặc quay quanh xe (góc thứ ba) */
   let dragId = -1, lx = 0, ly = 0;
   canvas.addEventListener('pointerdown', (e) => {
     if (!active() || e.button !== 0 || dragId !== -1) return;
+    if (e.pointerType === 'touch' && touchUi()) return;   // có giao diện cảm ứng: ngón tay vuốt #drLook (touch.ts), không giành con trỏ ở đây
     dragId = e.pointerId; lx = e.clientX; ly = e.clientY;
     canvas.setPointerCapture(e.pointerId);
   });

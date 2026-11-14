@@ -82,7 +82,7 @@ const MAX = FS.max;
 function dotTexture(): THREE.DataTexture {
   const n = 32, d = new Uint8Array(n * n * 4);
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-    const u = (x + 0.5) / n * 2 - 1, v = (y + 0.5) / n * 2 - 1, r = Math.hypot(u, v), a = r >= 1 ? 0 : (1 - r * r) ** 2;
+    const u = (x + 0.5) / n * 2 - 1, v = (y + 0.5) / n * 2 - 1, r = Math.hypot(u, v), a = r >= 1 ? 0 : (1 - r * r) ** FS.soft;
     const i = (y * n + x) * 4; d[i] = 255; d[i + 1] = 255; d[i + 2] = 255; d[i + 3] = Math.round(255 * a);
   }
   const t = new THREE.DataTexture(d, n, n, THREE.RGBAFormat);
@@ -94,7 +94,8 @@ const sprayGeo = new THREE.BufferGeometry();
 sprayGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3).setUsage(THREE.DynamicDrawUsage));
 sprayGeo.setAttribute('color', new THREE.BufferAttribute(sCol, 4).setUsage(THREE.DynamicDrawUsage));
 sprayGeo.setDrawRange(0, 0);
-const sprayMat = new THREE.PointsMaterial({ size: FS.size, sizeAttenuation: true, map: dotTexture(), vertexColors: true, transparent: true, opacity: FS.opacity, depthWrite: false });
+/* fog: true có chủ ý (Task 9): hạt ở xa (góc thứ ba, xe người khác) nhạt theo sương như mặt đường quanh nó; hạt sát camera gần như không đổi */
+const sprayMat = new THREE.PointsMaterial({ size: FS.size, sizeAttenuation: true, map: dotTexture(), vertexColors: true, transparent: true, opacity: FS.opacity, depthWrite: false, fog: true });
 sprayMat.name = 'bikeSpray';
 const spray = new THREE.Points(sprayGeo, sprayMat);
 spray.name = 'bike-spray';

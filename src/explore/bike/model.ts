@@ -52,13 +52,14 @@ function bkTempGeometry(): THREE.BufferGeometry {
   return g;
 }
 
-/* Tấm bóng mờ: như drShadowShared của ô tô (mép mềm hình vuông bo), cùng tham số vật liệu ⇒ cùng program */
+/* Tấm bóng mờ: elip mép mềm alpha = (1 − r²)^shadow.soft (xe máy hẹp; tấm vuông bo của ô tô thành mảng chữ nhật tối dưới xe máy).
+   Cùng tham số vật liệu với drShadowShared của ô tô (chỉ khác ảnh) ⇒ cùng program; ô tô không đổi */
 function bkShadowShared(): void {
   if (shadowMat) return;
   const n = 32, d = new Uint8Array(n * n * 4);
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
     const u = (x + 0.5) / n * 2 - 1, v = (y + 0.5) / n * 2 - 1;
-    const e = Math.max(Math.abs(u), Math.abs(v)), a = e >= 1 ? 0 : 1 - e * e * e * e;
+    const r2 = u * u + v * v, a = r2 >= 1 ? 0 : Math.pow(1 - r2, M.shadow.soft);
     d[(y * n + x) * 4 + 3] = Math.round(255 * a);
   }
   const tex = new THREE.DataTexture(d, n, n, THREE.RGBAFormat); tex.needsUpdate = true;
@@ -216,7 +217,7 @@ export class BkBike {
     this.roll.add(this.temp);
     bkShadowShared();
     const sh = new THREE.Mesh(shadowGeo!, shadowMat!);
-    sh.scale.set(B.length + 2 * M.shadow.pad, 1, B.width + 2 * M.shadow.pad);
+    sh.scale.set(M.shadow.len, 1, M.shadow.wid);
     sh.position.y = M.shadow.lift;
     sh.layers.set(1); sh.castShadow = false; sh.receiveShadow = false; sh.renderOrder = 1;
     this.group.add(sh);

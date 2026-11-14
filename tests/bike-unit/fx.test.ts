@@ -91,6 +91,8 @@ test('bụi nước: rain = 0 ⇒ 0; rain = 1, v = 15 ⇒ 0 < n ≤ max; v = 2 �
   assert.ok(n > 0 && n <= FX.spray.max && mx <= FX.spray.max, `n ${n}`);
   const p = sprayPts(), pos = p.geometry.getAttribute('position') as THREE.BufferAttribute;
   assert.ok(p.visible && p.layers.mask === 2 && p.geometry.drawRange.count === n);
+  const pm = p.material as THREE.PointsMaterial;   // sương mù đặt có chủ ý (hạt xa nhạt theo cảnh như mọi vật khác), không ghi độ sâu, trong suốt
+  assert.equal(pm.fog, true); assert.equal(pm.depthWrite, false); assert.equal(pm.transparent, true); assert.ok(pm.opacity >= 0.6 && pm.size >= 0.25, 'đủ thấy (Task 9)');
   for (let i = 0; i < n; i++) {
     assert.ok(Number.isFinite(pos.getX(i)) && Number.isFinite(pos.getY(i)) && Number.isFinite(pos.getZ(i)));
     assert.ok(pos.getX(i) < s.x + CONFIG.bike.body.wheelbase / 2, `hạt ${i} sau trục trước: ${pos.getX(i)} / ${s.x}`);

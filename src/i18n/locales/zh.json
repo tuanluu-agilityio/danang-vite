@@ -512,5 +512,14 @@
   "drCreditLabel": "汽车模型",
   "drCreditMod": "已修改",
   "drCreditTm": "VinFast、VF 3 是其所有者的商标；模型仅作示意，并非官方产品。",
-  "drSound": "汽车声音"
+  "drSound": "汽车声音",
+  "bkHint": "W A S D 或方向键：骑行 · Space：急刹 · V：切换视角 · Q / E：转向灯 · H：鸣笛 · R：回到车道 · 拖动鼠标：环顾四周 · Esc：退出",
+  "bkView": "切换视角",
+  "bkHorn": "鸣笛",
+  "bkReset": "回到车道",
+  "bkStuck": "卡住了？按 R 回到车道",
+  "bkSigL": "左转向灯",
+  "bkSigR": "右转向灯",
+  "bkLost": "连接已断开。你仍可独自骑行。",
+  "bkLostChooser": "连接已断开。请选择“摩托车”重新连接。"
 }

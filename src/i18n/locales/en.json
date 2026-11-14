@@ -512,5 +512,14 @@
   "drCreditLabel": "Car model",
   "drCreditMod": "modified",
   "drCreditTm": "VinFast and VF 3 are trademarks of their owner; illustrative model, not an official product.",
-  "drSound": "Car sound"
+  "drSound": "Car sound",
+  "bkHint": "W A S D or arrows: ride · Space: hard brake · V: switch view · Q / E: indicators · H: horn · R: back to lane · drag mouse: look around · Esc: exit",
+  "bkView": "Switch view",
+  "bkHorn": "Horn",
+  "bkReset": "Back to lane",
+  "bkStuck": "Stuck? Press R to return to the lane",
+  "bkSigL": "Left indicator",
+  "bkSigR": "Right indicator",
+  "bkLost": "Connection lost. You can still ride, but alone.",
+  "bkLostChooser": "Connection lost. Choose Motorbike to reconnect."
 }

@@ -970,6 +970,10 @@ const bikeBase = {
     day: 0.8,          // hệ số sáng MeshBasicMaterial ban ngày (ước lượng)
     night: 1.0         // hệ số sáng khi uNight = 1: đèn nền tự sáng (ước lượng)
   },
+  hud: {               // phần HUD riêng của xe máy (explore/bike/hudBike.ts): đèn xi nhan, nút góc nhìn / còi / về làn, gợi ý phím, nhắc khi kẹt; đồng hồ + bản đồ nhỏ dùng của ô tô
+    hintMs: 8000,      // ms — gợi ý phím #bkHint tự ẩn sau chừng này kể từ lúc vào chế độ (dài hơn ô tô 6 000 vì nhiều phím hơn) (ước lượng)
+    stuckS: 3          // s — xe bị chặn mà vẫn vặn ga quá chừng này thì nhắc "bấm R" và nút Về làn sáng lên (spec §5.3)
+  },
   fx: {                // đêm + mưa (explore/bike/fx.ts, spec §9): vệt đèn pha trên mặt đường, bụi nước bánh xe; không PointLight / SpotLight, không đụng vật liệu đường
     beam: {            // vệt đèn pha: một tấm cộng màu, texture hình quạt, bám mặt đường trước xe; lớp 1 (không vào phản chiếu mặt nước); +1 lệnh vẽ ban đêm
       len: 14,         // m — chiều dài vệt trên mặt đường, đường khô (ước lượng)
@@ -994,9 +998,10 @@ const bikeBase = {
       up: [1.0, 2.4] as [number, number],   // m/s — vận tốc bắn lên nhỏ nhất, lớn nhất (ước lượng)
       side: 0.8,       // m/s — vận tốc bắn ngang lớn nhất mỗi bên (ước lượng)
       gravity: 9.81,   // m/s² — trọng trường kéo hạt xuống
-      size: 0.22,      // m — cỡ hạt (PointsMaterial, sizeAttenuation); 0,16 khó thấy ở góc thứ ba (kiểm ảnh) (ước lượng)
-      opacity: 0.55,   // độ đục hạt mới sinh, mờ dần theo đời (ước lượng)
-      color: 0xd6e0e8, // màu bụi nước ban ngày (ước lượng)
+      size: 0.3,       // m — cỡ hạt (PointsMaterial, sizeAttenuation); 0,22 vẫn gần như không thấy khi mưa (review Task 7, kiểm ảnh Task 9) (ước lượng)
+      opacity: 0.75,   // độ đục hạt mới sinh, mờ dần theo đời; 0,55 quá nhạt trên nền mưa xám (ước lượng)
+      soft: 1.2,       // mũ làm mềm alpha của chấm tròn (1 − r²)^soft; 2 làm lõi chấm quá nhỏ (ước lượng)
+      color: 0xe4ebf0, // màu bụi nước ban ngày, sáng hơn mặt đường ướt một chút (ước lượng)
       nightDim: 0.35   // màu nhân chừng này khi uNight = 1 (hạt không tự sáng) (ước lượng)
     },
     gust: {            // gió giật đẩy nhẹ độ nghiêng: cộng vào steer (BkInput giữ nguyên), chỉ khi v > perf.vBlend
@@ -1032,7 +1037,7 @@ const bikeBase = {
     dashColor: 0x0d1116,   // màu mặt đồng hồ khi chưa có texture canvas (MeshBasicMaterial, không chịu ánh sáng) (ước lượng)
     maxBytes: 1_000_000,   // byte — trần dung lượng scooter.glb (tests/bike-unit/glb.test.ts; spec §17.1)
     maxTris: 22_000,   // tam giác — trần tam giác scooter.glb (như trên; nguồn 19 290)
-    shadow: { pad: 0.3, opacity: 0.5, lift: 0.03 },   // tấm bóng mờ dưới gầm: m — phần nhô ra mỗi chiều so với thân; độ đục tối đa; m — nâng khỏi mặt đường (ước lượng)
+    shadow: { len: 1.9, wid: 0.62, opacity: 0.42, soft: 1.8, lift: 0.03 },   // tấm bóng mờ dưới gầm, hình elip mép mềm: m — dài theo thân, m — ngang (hai bánh + chân người lái, không tính gương); độ đục ở tâm; mũ làm mềm alpha = (1 − r²)^soft; m — nâng khỏi mặt đường (ước lượng; bản cũ chép cỡ ô tô thành tấm chữ nhật tối)
     temp: { paint: 0x8fd3c1, shirt: 0x2f5d8a, helmet: 0xd8d8d8 }   // màu hình tạm (hình 'bike' của common/vehicles/shapes.ts): sơn thân bạc hà như mô hình Grab3D, áo, mũ bảo hiểm (ước lượng)
   },
   rider: {             // người lái có xương (explore/bike/rider.ts): nhân vật đi dạo p0 / p3, tư thế ngồi = bảng góc khớp + IK hai tay / hai chân. Hệ C của nhân vật: +X trước mặt, +Y lên, +Z bên phải
