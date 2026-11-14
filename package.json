@@ -42,6 +42,7 @@
     "test:char": "node tests/char-check.mjs",
     "test:drive": "node tests/drive-check.mjs",
     "test:drive:unit": "tsx --test tests/drive-unit/*.test.ts",
+    "test:bike:unit": "tsx --test tests/bike-unit/*.test.ts",
     "test:pilot:unit": "tsx --test tests/pilot-unit/*.test.ts"
   },
   "dependencies": {

@@ -856,6 +856,66 @@ const driveBase = {
   }
 };
 
+/* ------------------------- Lái xe máy (xe tay ga) ------------------------- */
+/* docs/superpowers/specs/2026-11-14-xe-may-design.md (D-040). Kích thước thân theo mô hình "Motor Scooter" của Grab3D (CC0, scripts/bike/src/manifest.json,
+   spec §17.1); hiệu năng là ước lượng cho xe tay ga 110–125 cc. Dùng chung CONFIG.drive.sim, stepMax, spawn, evac với ô tô. */
+const bikeBase = {
+  body: {
+    length: 1.98,      // m — chiều dài thân (manifest.json: bao 0,737 × 1,978 × 1,377 m)
+    width: 0.74,       // m — chiều rộng thân, cả gương (như trên)
+    height: 1.7,       // m — chiều cao tính cả người lái ngồi, cho vật cản theo cao độ (ước lượng)
+    wheelbase: 1.32,   // m — chiều dài cơ sở (spec §17.1, đo trên mô hình)
+    wheelDia: 0.44     // m — đường kính ngoài bánh (bán kính 0,22 m trên mô hình, spec §17.1)
+  },
+  perf: {
+    vMax: 25,          // m/s — tốc độ tối đa 90 km/h (ước lượng)
+    t50: 5.0,          // s — 0–50 km/h khi vặn hết ga, không tính trễ tay ga (ước lượng)
+    t80: 14,           // s — 0–80 km/h khi vặn hết ga, không tính trễ tay ga (ước lượng)
+    brake: 7,          // m/s² — phanh thường cả hai bánh, đường khô (ước lượng)
+    brakeWet: 5.0,     // m/s² — phanh thường, đường ướt hẳn; spec §5.3 ghi 5,5 nhưng cộng hãm nhả ga coast thì quãng phanh ướt chỉ dài hơn khô ≈ 19 %, hạ để đạt ≥ 20 % (ước lượng)
+    hardBrake: 9,      // m/s² — phanh gấp (Space), đường khô, không trượt (ước lượng)
+    hardBrakeWet: 6.5, // m/s² — phanh gấp, đường ướt hẳn (ước lượng)
+    coast: 1.2,        // m/s² — giảm tốc khi nhả ga: hãm động cơ + ly tâm nhả (ước lượng)
+    walkBack: 1.0,     // m/s — tốc độ dắt lùi lớn nhất khi giữ phanh lúc đứng; cũng là m/s² tăng / giảm tốc khi dắt (ước lượng)
+    leanMax: 0.611,    // rad — độ nghiêng lớn nhất, đường khô (35°) (ước lượng)
+    leanMaxWet: 0.471, // rad — độ nghiêng lớn nhất, đường ướt hẳn (27°) (ước lượng)
+    turnRadius: 2.0,   // m — bán kính quay vòng nhỏ nhất của trục sau khi chạy chậm (ước lượng)
+    vBlend: 4,         // m/s — từ tốc độ này trở lên lái hoàn toàn bằng độ nghiêng; dưới thì trộn dần sang lái bằng góc lái (ước lượng)
+    leanHz: 2.4,       // Hz — tần số lò xo nghiêng khi đứng / chạy chậm (ước lượng)
+    leanHzFast: 1.1,   // Hz — tần số lò xo nghiêng ở vMax: nặng tay khi nhanh (ước lượng)
+    latG: 9.81,        // m/s² — gia tốc trọng trường trong cân bằng nghiêng tan(lean) = v²κ / g
+    steerRate: 3,      // 1/s — tốc độ bẻ ghi đông khi chạy chậm, phần góc lái tối đa mỗi giây (ước lượng)
+    steerReturn: 4,    // 1/s — tốc độ tự trả ghi đông khi nhả phím, phần góc lái tối đa mỗi giây (ước lượng)
+    scrape: 3,         // m/s² — hãm thêm khi thân xe cọ dọc vật cản (ước lượng)
+    throttleTau: 0.15, // s — hằng số thời gian làm mượt tay ga (lọc bậc một) (ước lượng)
+    brakeTau: 0.15,    // s — hằng số thời gian lực phanh tăng / nhả (lọc bậc một) (ước lượng)
+    windLean: 0.035    // rad — độ nghiêng thêm lớn nhất do gió bão (2°) (ước lượng)
+  },
+  cvt: {               // vòng tua hộp số vô cấp, cho âm thanh và kim đồng hồ (explore/bike/motion.ts bkRpm)
+    idle: 1700,        // vòng/phút — cầm chừng (ước lượng)
+    engage: 3200,      // vòng/phút — ly tâm bắt đầu ăn (ước lượng)
+    power: 6500,       // vòng/phút — vùng công suất giữ khi vặn hết ga (ước lượng)
+    max: 8500,         // vòng/phút — tua lớn nhất, ở vMax (ước lượng)
+    engageV: 3.3,      // m/s — dưới tốc độ này ly tâm còn trượt (≈ 12 km/h) (ước lượng)
+    tauUp: 0.25,       // s — hằng số thời gian tua lên (ước lượng)
+    tauDown: 0.6       // s — hằng số thời gian tua xuống (ước lượng)
+  },
+  sus: {               // giảm xóc trước / sau: chỉ hình và camera, không đổi quỹ đạo
+    hz: 2.2,           // Hz — tần số riêng (ước lượng)
+    damp: 0.55,        // tỉ số giảm chấn (ước lượng)
+    travel: 0.06,      // m — hành trình lớn nhất mỗi chiều (ước lượng)
+    diveK: 0.006,      // m mỗi m/s² — lún do gia tốc dọc: phanh chúi đầu, ga nhún đuôi (ước lượng)
+    bumpK: 0.5,        // hệ số — cú hích vận tốc giảm xóc (m/s) = bumpK · độ dốc đổi (rad) · tốc độ (m/s), ở mối nối ô mặt đường (ước lượng)
+    noise: 0.004,      // m — biên độ nhiễu mặt đường ở vMax, giảm theo tốc độ (ước lượng)
+    seed: 4107         // hạt giống rng() riêng cho nhiễu mặt đường (không dùng rand())
+  },
+  signal: {            // xi nhan tự tắt
+    cancelYaw: 0.6,    // rad — đã rẽ quá chừng này theo hướng xi nhan rồi trả thẳng thì tắt (ước lượng)
+    cancelS: 12        // s — đi thẳng quá chừng này thì tắt (ước lượng)
+  },
+  stuckS: 3            // s — bị chặn mà vẫn vặn ga quá chừng này thì gợi ý "bấm R" (ước lượng)
+};
+
 /* ------------------------- Tàu thuyền sông Hàn ------------------------- */
 /* docs/superpowers/specs/2026-11-10-tau-thuyen-song-han-design.md — mọi số là ước lượng (không có số liệu công bố cho từng tàu) */
 export type BoatTypeId = 'A' | 'B' | 'C' | 'D' | 'E';
@@ -1038,6 +1098,7 @@ export const CONFIG = {
   explore: { ...exploreBase, multi: multiParams },
   stroll: strollBase,
   drive: driveBase,
+  bike: bikeBase,
   vehicles: vehiclesBase,
   trees: treesBase,
   people: peopleBase

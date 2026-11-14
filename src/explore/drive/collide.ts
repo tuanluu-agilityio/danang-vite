@@ -14,11 +14,20 @@ import { drGround, type DrNet, type DrSolid } from './net';
 
 export interface DrPose { x: number; y: number; z: number; yaw: number }
 export interface DrBox { x: number; y: number; z: number; yaw: number; hl: number; hw: number }   // hộp xe tự động: nửa dài, nửa rộng
+export interface DrBody { hl: number; hw: number; ax: number; height: number }   // thân xe: nửa dài, nửa rộng, tâm → trục sau, chiều cao (m)
 
 const CAR = CONFIG.drive.car, SIM = CONFIG.drive.sim;
-const HL = CAR.length / 2, HW = CAR.width / 2;                       // nửa dài, nửa rộng thân xe, m
-const AX = CAR.wheelbase / 2;                                        // tâm → trục sau, m
-const REACH = AX + Math.hypot(HL, HW);                               // trục sau → góc xe xa nhất: quãng góc xe quét khi xoay dyaw là ≤ REACH · |dyaw|
+export const DR_CAR_BODY: DrBody = { hl: CAR.length / 2, hw: CAR.width / 2, ax: CAR.wheelbase / 2, height: CAR.height };   // VF 3 (hành vi cũ)
+let HL = 0, HW = 0;                                                  // nửa dài, nửa rộng thân xe đang dùng, m
+let AX = 0;                                                          // tâm → trục sau, m
+let REACH = 0;                                                       // trục sau → góc xe xa nhất: quãng góc xe quét khi xoay dyaw là ≤ REACH · |dyaw|
+let HT = 0;                                                          // chiều cao thân xe (kể cả người lái), m
+/* Đặt thân xe đang dùng cho mọi hàm của module (ô tô hoặc xe máy); người gọi đặt trước khi mô phỏng, không đổi giữa chừng một drMove */
+export function drUseBody(b: DrBody): void {
+  HL = b.hl; HW = b.hw; AX = b.ax; HT = b.height;
+  REACH = AX + Math.hypot(HL, HW);
+}
+drUseBody(DR_CAR_BODY);
 const EPS = 1e-9;
 
 /* ===== Chỉ mục lưới vật cản ===== */
@@ -83,7 +92,7 @@ function drPenSolid(sol: DrSolid, x: number, z: number, c: number, s: number): n
 }
 /* Thân xe chồng hộp xe tự động b không (cùng tầng: chân hai xe chênh < chiều cao xe) */
 function drHitBox(b: DrBox, x: number, y: number, z: number, c: number, s: number): boolean {
-  if (Math.abs(b.y - y) >= CAR.height) return false;
+  if (Math.abs(b.y - y) >= HT) return false;
   const bc = Math.cos(b.yaw), bs = Math.sin(b.yaw), dx = b.x - x, dz = b.z - z;
   /* bốn trục tách: f1 = (c, −s), n1 = (s, c), f2 = (bc, −bs), n2 = (bs, bc); hình chiếu nửa hộp lên trục a là hl|f·a| + hw|n·a| */
   const ff = c * bc + s * bs, fn = c * bs - s * bc;                  // f1·f2, f1·n2
@@ -102,7 +111,7 @@ export function drFits(net: DrNet, p: DrPose, boxes: DrBox[], nBoxes: number, ig
     const lf = i * HL, ln = j * HW;
     if (Number.isNaN(drGround(net, p.x + lf * c + ln * s, p.z - lf * s + ln * c, yRef))) return false;
   }
-  const ya = yRef + SIM.floor, yb = yRef + CAR.height, sol = net.solids, g = drGrid(net);
+  const ya = yRef + SIM.floor, yb = yRef + HT, sol = net.solids, g = drGrid(net);
   const big = g.big;
   for (let i = 0; i < big.length; i++) { const o = sol[big[i]]; if (o.y1 > ya && o.y0 < yb && drHitSolid(o, p.x, p.z, c, s)) return false; }
   const R = HL * Math.abs(c) + HW * Math.abs(s), Rz = HL * Math.abs(s) + HW * Math.abs(c);   // nửa khung bao thân xe theo X, Z
@@ -129,7 +138,7 @@ function drBad(net: DrNet, p: DrPose): void {
     const lf = i * HL, ln = j * HW;
     if (Number.isNaN(drGround(net, p.x + lf * c + ln * s, p.z - lf * s + ln * c, yRef))) n++;
   }
-  const ya = yRef + SIM.floor, yb = yRef + CAR.height, sol = net.solids, g = drGrid(net), big = g.big;
+  const ya = yRef + SIM.floor, yb = yRef + HT, sol = net.solids, g = drGrid(net), big = g.big;
   for (let i = 0; i < big.length; i++) { const o = sol[big[i]]; if (o.y1 > ya && o.y0 < yb) { const q = drPenSolid(o, p.x, p.z, c, s); if (q > 0) d += q; } }
   const R = HL * Math.abs(c) + HW * Math.abs(s), Rz = HL * Math.abs(s) + HW * Math.abs(c);
   const ix0 = Math.floor((p.x - R) / DRC), ix1 = Math.floor((p.x + R) / DRC), iz0 = Math.floor((p.z - Rz) / DRC), iz1 = Math.floor((p.z + Rz) / DRC);
