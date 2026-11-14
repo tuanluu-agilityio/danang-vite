@@ -949,6 +949,24 @@ const bikeBase = {
     maxTris: 22_000,   // tam giác — trần tam giác scooter.glb (như trên; nguồn 19 290)
     shadow: { pad: 0.3, opacity: 0.5, lift: 0.03 },   // tấm bóng mờ dưới gầm: m — phần nhô ra mỗi chiều so với thân; độ đục tối đa; m — nâng khỏi mặt đường (ước lượng)
     temp: { paint: 0x8fd3c1, shirt: 0x2f5d8a, helmet: 0xd8d8d8 }   // màu hình tạm (hình 'bike' của common/vehicles/shapes.ts): sơn thân bạc hà như mô hình Grab3D, áo, mũ bảo hiểm (ước lượng)
+  },
+  rider: {             // người lái có xương (explore/bike/rider.ts): nhân vật đi dạo p0 / p3, tư thế ngồi = bảng góc khớp + IK hai tay / hai chân. Hệ C của nhân vật: +X trước mặt, +Y lên, +Z bên phải
+    headLean: 0.6,     // đầu nghiêng theo xe chừng này phần độ nghiêng (còn lại bù về phương đứng), không đơn vị (spec §6)
+    accLean: 0.06,     // rad — lưng ngả ra sau khi vặn hết ga (gia tốc dọc = 0 → 50 km/h trong perf.t50) (ước lượng)
+    brakeLean: 0.09,   // rad — lưng chúi trước khi phanh gấp (giảm tốc = perf.hardBrake) (ước lượng)
+    hz: 2,             // Hz — tần số lò xo phản ứng (lưng, đầu) (ước lượng)
+    damp: 0.7,         // tỉ số giảm chấn lò xo phản ứng (ước lượng)
+    steerLook: 0.4,    // đầu quay theo góc lái chừng này phần (nhìn vào hướng rẽ khi chạy chậm), không đơn vị (ước lượng)
+    dtMax: 0.1,        // s — kẹp bước thời gian của lò xo (tab ẩn rồi quay lại không văng) (ước lượng)
+    helmet: { r: 0.125, color: '#2a2f3a', up: 0.1, fore: -0.02, scale: [1.15, 1.25, 1.08] as [number, number, number], pitch: 0.3 },   // mũ bảo hiểm nửa đầu dựng bằng code: r m bán kính, màu vỏ; tâm cao hơn xương đầu up m, ra trước fore m (hệ C lúc đứng thẳng); scale hệ số kéo dài theo [trước–sau, cao, ngang]; pitch rad ngửa mũ (vành trước cao hơn vành sau, không che mắt) (ước lượng)
+    handTol: 0.02,     // m — sai số cho phép điểm nắm bàn tay – tay nắm (unit test, spec §6)
+    footTol: 0.03,     // m — sai số cho phép cổ chân – điểm đặt chân trên sàn (unit test, spec §6)
+    seat: { fore: 0.02, up: 0.09 },   // m — xương hông (Pelvis) so với neo `seat` (đỉnh yên): ra trước, cao lên (bề dày mông dưới khớp hông) (ước lượng)
+    ankle: { back: 0.04, up: 0.1 },   // m — đích cổ chân so với neo foot_l / foot_r (điểm giữa bàn chân trên sàn): lùi sau, cao lên (cổ chân Rocketbox cao ≈ 0,10 m khi đứng) (ước lượng)
+    pose: { spine: 0.12, neck: 0.0, head: -0.06, hip: 1.25, knee: 1.1, legSplit: 0.04, ankle: 0.0, clavicle: 0.04, clavicleFore: 0.08 },   // rad — bảng góc khớp tư thế ngồi nền (bkRiderPose), cộng lên tư thế đứng của mô hình: lưng cúi trước (tổng ba đốt), cổ, đầu cúi (âm = ngẩng), gập hông (nâng gối), gập gối, đùi xoay ra ngoài, bàn chân chúc (từ tư thế đứng phẳng), xương đòn nâng, xương đòn đưa trước; IK chỉnh đùi / cẳng chân / tay sau đó (ước lượng)
+    legPole: [1.0, 0.3, 0.1] as [number, number, number],   // m — điểm cực của gối so với khớp hông [trước, lên, ra ngoài]: gối hướng về trước (ước lượng)
+    arm: { pole: [-0.35, -1.0, 0.45], wrist: [0.15, -0.15, 0.0], palm: [0.35, -1.0, 0.0], twist: 0.5, grip: [0.75, 0.03] },   // tay (pilot/bones.ts ik với bộ số này): pole m — điểm cực khuỷu so với vai [sau, xuống, ra ngoài]; wrist — hướng ngón = hướng cẳng tay cộng [trước, lên, vào trong]; palm — hướng lòng bàn tay [trước, lên, vào trong] (úp xuống tay nắm); twist 0..1 phần xoay cổ tay chia sang cẳng tay; grip — điểm nắm: tỉ lệ quãng cổ tay → gốc ngón giữa, m lệch về phía lòng bàn tay (ước lượng)
+    finger: { curl: [1.2, 1.4, 1.0], thumb: [0.3, 0.5, 0.4], thumbRoll: 0.6 }   // rad — ngón co nắm tay nắm (đốt gốc, giữa, ngọn); ngón cái co từng đốt; ngón cái xoay quanh hướng ngón (ước lượng)
   }
 };
 

@@ -9,6 +9,8 @@
      V đổi góc nhìn (góc thứ nhất ở Task 5, giờ chỉ có góc thứ ba). Còi H: âm thanh ở Task 8.
    - Lớp body 'explore drive bike': khung HUD #drHud và các quy tắc CSS của body.drive áp nguyên; 'bike' cho phần riêng về sau.
    - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10), cảm ứng (Task 9). Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
+   - Người lái: rider.ts, nhân vật theo stChar (chung Đi dạo), nạp ở preload() / start() (làm nóng qua stRigSetWarm của stroll/index.ts); chưa về thì xe không người,
+     về sau stop() thì bỏ. Người gắn vào neo yên của xe nên rời cảnh cùng model.group.
    Mỗi khung không cấp phát (D-018). */
 import type * as THREE from 'three';
 import { scene, camera, controls, canvas, renderer } from '../../core/renderer';
@@ -28,6 +30,8 @@ import { exNightStep } from '../nightShows';
 import { bkCreate, bkStep, bkRecover, bkSignal, bkPitch, BK_BODY, type BkState, type BkInput } from './motion';
 import { bkInputFromKeys, BK_KEYS } from './keys';
 import { BkBike, bkModelLoad, bkModelSetWarm } from './model';
+import { BkRider, bkRiderLoad, type BkRiderSig } from './rider';
+import { stChar } from '../stroll/char';
 import type { SwingController } from '../../bridges/song-han/SwingController';
 
 /* Làm nóng shader của xe máy (D-018), như drive/index.ts drCarSetWarm: hai biến thể (vẽ thẳng ra canvas ban ngày, vào render target của composer ban đêm),
@@ -52,6 +56,10 @@ let net: DrNet | null = null;
 let state: BkState | null = null;
 let ctrl: SwingController | null = null;
 let model: BkBike | null = null;   // hình xe của mình, dựng lần đầu vào chế độ
+let rider: BkRider | null = null;  // người lái có xương (rider.ts); null khi nhân vật chưa nạp / nạp lỗi: xe không người (không hình tạm cho người)
+let riderCh = -1;                  // nhân vật của rider hiện có (stChar)
+let riderGen = 0;                  // tăng ở mỗi start() / stop(): kết quả nạp về muộn của lần trước bị bỏ
+const _sig: BkRiderSig = { lean: 0, acc: 0, susF: 0, susR: 0, steer: 0 };   // tín hiệu người lái tái dùng mỗi khung
 let view: 1 | 3 = 3;
 const bkKeys = new Set<string>();   // e.code đang giữ
 const camS: DrCam = { yaw: 0, pitch: 0, idle: 0 };
@@ -69,10 +77,32 @@ function advance(dt: number, inp: BkInput): void {
   if (ctrl) drSetGate(n, DR_GATE_SWING, ctrl.state !== 'CLOSED');
   bkStep(s, inp, n, boxes, trNearby(s.x, s.z, CONFIG.drive.ai.radius, boxes), dt);
   model!.place(s);
+  riderStep(s, dt);
   drCamPlace(camera, s, camS, n, dt, false, K3);
   controls.target.set(s.x, s.y, s.z);   // tâm vùng bóng đổ (main.ts shadowCenter) theo xe
   drHudUpdate(s, NO_DOTS);
   exNightStep(dt, false);
+}
+
+/* Người lái theo xe (sau model.place): tín hiệu từ trạng thái chuyển động */
+function riderStep(s: BkState, dt: number): void {
+  if (!rider || !model) return;
+  _sig.lean = s.lean; _sig.acc = s.acc; _sig.susF = s.susF; _sig.susR = s.susR; _sig.steer = s.steer;
+  rider.update(model, _sig, dt);
+}
+
+/* Nạp người lái theo nhân vật đã chọn (stChar, chung với Đi dạo). Về sau stop() / start() khác thì bỏ; nhân vật đổi thì thay người cũ */
+function riderNeed(): void {
+  const ch = stChar.get(), gen = ++riderGen;
+  if (rider && riderCh === ch) return;
+  void bkRiderLoad(ch).then((src) => {
+    if (gen !== riderGen || state === null || !src) return;
+    try {
+      const r = new BkRider(src);
+      rider?.dispose(); rider = r; riderCh = ch;
+      riderStep(state, 0);
+    } catch (e) { console.warn('Lái xe máy: không dựng được người lái', e); }
+  });
 }
 
 /* Xe đứng yên ở (x, z) hướng yaw, trạng thái mới; y bỏ trống thì lấy mặt đường cao nhất tại đó. Cho test (__app.bike) và đặt lại vị trí */
@@ -89,6 +119,7 @@ function bkPlaceAt(x: number, z: number, yaw: number, y?: number): void {
   state = s;
   camS.yaw = 0; camS.pitch = 0; camS.idle = 0;
   model.place(s);
+  riderStep(s, 0);
   drCamPlace(camera, s, camS, net, 0, true, K3);
   controls.target.set(s.x, s.y, s.z);
 }
@@ -99,6 +130,7 @@ export const bike = {
   get state(): BkState | null { return state; },
   get net(): DrNet | null { return net; },
   get model(): BkBike | null { return model; },   // hình xe của mình (test: real, anchors)
+  get rider(): BkRider | null { return rider; },  // người lái (test: debug(), setFirstPerson)
   get view(): 1 | 3 { return view; },
   /* Đổi góc nhìn: góc thứ nhất làm ở Task 5, giờ luôn góc thứ ba */
   setView(v: 1 | 3): void { view = v === 1 ? 3 : v; },
@@ -112,6 +144,8 @@ export const bike = {
     if (!model) model = new BkBike();
     scene.add(model.group);
     model.place(state);
+    riderNeed();
+    riderStep(state, 0);
     driveView.far = CONFIG.drive.tunnelFar;   // mặt đường hầm hiện ở nút giao với hai đường dọc mới, như ô tô
     bkKeys.clear();
     drHudShow(n);
@@ -133,7 +167,7 @@ export const bike = {
   /* Rời chế độ: trả mọi thứ đã đổi, kể cả khi cam.mode đã bị chỗ khác đổi khỏi 'bike' */
   stop(): void {
     if (state === null) return;
-    state = null; bkKeys.clear();
+    state = null; bkKeys.clear(); riderGen++;
     drHudHide();
     model?.group.removeFromParent();
     driveView.far = 1;
@@ -149,8 +183,8 @@ export const bike = {
   /* Cho test: như update nhưng nhận đầu vào trực tiếp; đặt xe tại chỗ */
   step(dt: number, inp: BkInput): void { if (active()) advance(dt, inp); },
   placeAt: bkPlaceAt,
-  /* Nạp mô hình thật (scooter.glb) sớm, khi chọn thẻ Xe máy */
-  preload(): void { void bkModelLoad(); }
+  /* Nạp mô hình thật (scooter.glb) và nhân vật người lái sớm, khi chọn thẻ Xe máy */
+  preload(): void { void bkModelLoad(); void bkRiderLoad(stChar.get()); }
 };
 
 /* onExit: thoát chung (explore.exit), dùng khi mất kết nối lúc đang xem (Task 10) */
