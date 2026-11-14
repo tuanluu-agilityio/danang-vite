@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_016of581ToFCYxYP4E33LSjn",
+  "agent_id": "a8464a3fbe8ff89bf",
+  "task_description": "Final review chat branch",
+  "token_usage": {
+    "input_tokens": 46,
+    "cache_creation_tokens": 177016,
+    "cache_read_tokens": 3134660,
+    "output_tokens": 22860,
+    "api_call_count": 22
+  },
+  "started_at": "2026-11-14T21:58:54.790266+07:00",
+  "completed_at": "2026-11-14T22:04:24.6666945+07:00"
+}
