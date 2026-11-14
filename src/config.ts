@@ -1023,7 +1023,8 @@ const bikeBase = {
     streakFar: 150,    // m — vệt mờ hết ở khoảng cách này (ước lượng)
     streakColor: [1.0, 0.72, 0.42] as [number, number, number]   // màu vệt (đèn đường natri / LED ấm), RGB tuyến tính (ước lượng)
   },
-  remote: {            // xe máy của người chơi khác (explore/multi/remoteDrive.ts, labels.ts); hình rẻ: hình tạm xe + người khối (model.ts BkBike lite) + tấm bóng = 2 lệnh vẽ mỗi xe
+  remote: {            // xe máy của người chơi khác (explore/multi/remoteDrive.ts, labels.ts): xe thật + người lái có xương theo nhân vật họ chọn (11 + 4 = 15 lệnh vẽ mỗi xe); đang nạp / lỗi: hình tạm xe + người khối (BkBike lite) + tấm bóng = 2 lệnh vẽ
+    real: true,        // true: đổi sang xe thật + nhân vật đã chọn khi nạp xong (yêu cầu người dùng 2026-11-14, bỏ trần 4 lệnh vẽ); false: luôn hình tạm (ước lượng)
     labelAbove: 0.4    // m — nhãn tên đặt cao hơn đỉnh mũ người lái chừng này (đỉnh = body.height) (ước lượng)
   },
   model: {             // hình xe máy trong cảnh (explore/bike/model.ts)
