@@ -89,6 +89,21 @@ try {
   const dp = last(dv, 'pos'), wd = last(wk, 'pos');
   ok(dp && Array.isArray(dp.f) && dp.d && dp.d[0].length === 8 && dp.d[0][1] === 1530 && dp.d[0][5] === 30 && dp.d[0][6] === -0.56 && dp.d[0][7] === 5, 'pos lái xe: f mảng, d 8 phần tử, kẹp x = 1530, v = 30, st = −0,56, giữ ts');
   ok(wd && wd.d && wd.d[0][0] === 0, 'người khác (đi dạo) nhận nhóm d');
+  ok(dj && dj.veh === 0 && dl.drivers[0].veh === 0, 'ô tô (join không veh): joined vọng veh 0, drivers veh 0');
+
+  // Xe máy (D-040): join drive veh 1 + ch 1 nhận joined veh 1; drivers có veh 1, ch 1; st của xe máy kẹp như góc lái
+  const bk = client(); await bk.opened;
+  await sleep(300);
+  bk.send({ t: 'join', name: 'Xe', kind: 'drive', veh: 1, ch: 1 });
+  await sleep(800);
+  const bj = last(bk, 'joined'), bl = last(bk, 'lobby');
+  ok(bj && bj.kind === 'drive' && bj.slot === 1 && bj.veh === 1, 'join drive veh 1 nhận joined kind drive veh 1 slot 1');
+  ok(bl && bl.drivers && bl.drivers.length === 2 && bl.drivers[1].veh === 1 && bl.drivers[1].ch === 1, `lobby: drivers ${bl && bl.drivers ? JSON.stringify(bl.drivers) : '?'}`);
+  bk.send({ t: 'pos', x: 10, y: 2.6, z: 0, yaw: 0, v: 8, st: 0.48, ts: 7 });
+  await sleep(500);
+  const bp = last(dv, 'pos');
+  ok(bp && bp.d && bp.d.some(e => e[0] === 1 && e[6] === 0.48), 'người lái ô tô nhận nhóm d của xe máy (st = độ nghiêng × 0,8)');
+  bk.ws.close();
   dv.ws.close();
   wk.ws.close();
 

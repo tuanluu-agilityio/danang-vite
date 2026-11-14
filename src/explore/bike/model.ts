@@ -35,11 +35,11 @@ const _q = new THREE.Quaternion(), _v = new THREE.Vector3();
 /* ===== Vật liệu, hình học dùng chung ===== */
 let tempMat: THREE.MeshStandardMaterial | null = null, shadowMat: THREE.MeshBasicMaterial | null = null, shadowGeo: THREE.PlaneGeometry | null = null;
 
-/* Hình tạm: chép hình 'bike' của đội xe, bỏ aRole, tô màu phần màu theo instance, giãn X về chiều dài thân */
-function bkTempGeometry(): THREE.BufferGeometry {
+/* Hình tạm: chép hình 'bike' của đội xe, bỏ aRole, tô màu phần màu theo instance, giãn X về chiều dài thân. shirtColor: màu áo khác mặc định (xe người khác: màu slot) */
+function bkTempGeometry(shirtColor?: THREE.ColorRepresentation): THREE.BufferGeometry {
   const g = vhBuildTypeGeometry('bike').clone();
   const role = g.getAttribute('aRole') as THREE.BufferAttribute, col = g.getAttribute('color') as THREE.BufferAttribute;
-  const T = M.temp, paint = new THREE.Color(T.paint), shirt = new THREE.Color(T.shirt), helmet = new THREE.Color(T.helmet);
+  const T = M.temp, paint = new THREE.Color(T.paint), shirt = new THREE.Color(shirtColor ?? T.shirt), helmet = new THREE.Color(T.helmet);
   for (let i = 0; i < role.count; i++) {
     const r = role.getX(i), c = r === Role.Paint ? paint : r === Role.Accent ? shirt : r === Role.Helmet ? helmet : null;
     if (c) col.setXYZ(i, c.r, c.g, c.b);
@@ -185,7 +185,10 @@ export function bkModelSetLoader(fn: (() => Promise<THREE.Object3D>) | null): vo
   loader = fn || bkModelDefaultLoader; cache = null; late = null;
 }
 
-/* ===== Một xe máy ===== */
+/* ===== Một xe máy =====
+   opts.lite (xe máy người chơi khác, multi/remoteDrive.ts): chỉ hình tạm (xe + người khối đội mũ, 1 lưới) + tấm bóng = 2 lệnh vẽ, không bao giờ đổi sang mô hình thật,
+   không nạp glb; opts.shirt: màu áo người khối (màu slot, để phân biệt người chơi). Xe của mình: mặc định (hình tạm rồi mô hình thật) */
+export interface BkBikeOpts { lite?: boolean; shirt?: THREE.ColorRepresentation }
 export class BkBike {
   readonly group = new THREE.Group();
   private readonly roll = new THREE.Group();                         // nút cuộn lean quanh đường chạm đất
@@ -207,10 +210,10 @@ export class BkBike {
   private readonly last: BkPlace = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, lean: 0, steer: 0, wheel: 0, susF: 0, susR: 0, braking: false, sig: 0 };
   private placed = false;
 
-  constructor() {
+  constructor(opts: BkBikeOpts = {}) {
     this.group.name = 'bike';
     this.group.add(this.roll);
-    this.tempGeo = bkTempGeometry();
+    this.tempGeo = bkTempGeometry(opts.shirt);
     this.temp = new THREE.Mesh(this.tempGeo, bkTempMaterial());
     this.temp.name = 'bike-temp';
     this.temp.layers.set(1); this.temp.castShadow = false; this.temp.receiveShadow = false;
@@ -224,6 +227,7 @@ export class BkBike {
     const a = {} as BkAnchors;
     for (const [k, n] of ANCHORS) { const o = new THREE.Object3D(); o.name = 'bike-temp-' + n; this.roll.add(o); a[k] = o; }
     this.anchors = a;
+    if (opts.lite) return;
     void bkModelLoad();
     late!.then((src) => { if (src && !this.disposed) this.swap(src); });   // không bao giờ từ chối
   }

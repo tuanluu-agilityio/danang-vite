@@ -177,6 +177,6 @@ export function setupExplore(ctrl: SwingController): void {
     document.querySelector('button[data-pick="car"]')?.addEventListener('click', () => drive.preload());   // chọn thẻ Ô tô: nạp mô hình xe ngay
     document.querySelector('button[data-pick="bike"]')?.addEventListener('click', () => bike.preload());   // chọn thẻ Xe máy: nạp mô hình xe máy ngay (Task 3)
     exShowChooser((choice) => { if (choice === 'glider') explore.start(); else if (choice === 'walk') stroll.start(); else if (choice === 'car') drive.start(); else if (choice === 'bike') bike.start(); },
-      (choice) => { if (choice === 'walk') stroll.startWatching(); else if (choice === 'car') drive.startWatching(); else explore.startWatching(); });   // 'guided': màn chọn tự ẩn, giao diện cũ
+      (choice) => { if (choice === 'walk') stroll.startWatching(); else if (choice === 'car') drive.startWatching(); else if (choice === 'bike') bike.startWatching(); else explore.startWatching(); });   // 'guided': màn chọn tự ẩn, giao diện cũ
   }
 }

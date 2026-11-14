@@ -4,7 +4,7 @@ import { SkyRoom } from './room';
 import type { Out } from './room';
 
 interface Env { SKY: DurableObjectNamespace; ALLOWED_ORIGINS: string }
-interface Att { id: string; slot: number; name: string; seen?: number; kind?: 'walk' | 'drive'; ch?: number }   // seen: giờ có tin cuối của người giữ slot, ghi thưa (mỗi heartbeatMs) để sống sót qua hibernation; kind: 'walk' = slot nằm ở nhóm đi dạo, 'drive' = nhóm lái xe, không có = nhóm bay; ch: nhân vật người đi dạo chọn (chỉ ghi khi khác 0)
+interface Att { id: string; slot: number; name: string; seen?: number; kind?: 'walk' | 'drive'; ch?: number; veh?: number }   // seen: giờ có tin cuối của người giữ slot, ghi thưa (mỗi heartbeatMs) để sống sót qua hibernation; kind: 'walk' = slot nằm ở nhóm đi dạo, 'drive' = nhóm lái xe, không có = nhóm bay; ch: nhân vật người đi dạo / đi xe máy chọn (chỉ ghi khi khác 0); veh: 1 = chỗ lái xe máy (chỉ ghi khi khác 0)
 
 // So khớp scheme + hostname, bỏ cổng
 function originKey(o: string): string | null {
@@ -110,10 +110,11 @@ export class SkyObject implements DurableObject {
       const seen = this.room.seenOf(a.id);
       const stale = slot >= 0 && !(seen - (a.seen ?? -Infinity) < P.heartbeatMs);
       const k = walk ? 'walk' : drive ? 'drive' : undefined;   // loại ghi trong attachment; người bay không ghi (attachment như bản cũ)
-      const ch = this.room.chOf(a.id);
-      if (slot !== a.slot || name !== a.name || a.kind !== k || (a.ch ?? 0) !== ch || stale) {
+      const ch = this.room.chOf(a.id), veh = this.room.vehOf(a.id);
+      if (slot !== a.slot || name !== a.name || a.kind !== k || (a.ch ?? 0) !== ch || (a.veh ?? 0) !== veh || stale) {
         const next: Att = slot < 0 ? { id: a.id, slot, name } : k ? { id: a.id, slot, name, seen, kind: k } : { id: a.id, slot, name, seen };
         if (ch) next.ch = ch;
+        if (veh) next.veh = veh;
         ws.serializeAttachment(next);
       }
     }

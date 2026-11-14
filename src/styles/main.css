@@ -419,6 +419,7 @@ body.bike:not(.ex-watching) #bkView{left:calc(14px + env(safe-area-inset-left,0p
 body.bike:not(.ex-watching) #bkSigL{left:calc(14px + env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));}
 body.bike:not(.ex-watching) #bkSigR{left:calc(66px + env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));}
 body.bike #bkHorn,body.bike #bkReset{display:none !important;}
+body.bike.ex-watching #bkHint,body.bike.ex-watching #bkStuck{display:none !important;}   /* xem xe người khác (hết chỗ lái): không gợi ý phím / nhắc kẹt của xe mình */
 @media (hover:none){
   body.bike:not(.ex-watching) #drSoundBtn{left:calc(76px + env(safe-area-inset-left,0px));top:calc(8px + env(safe-area-inset-top,0px));}
   body.bike:not(.ex-watching) .bk-btn{width:48px;height:48px;touch-action:none;}

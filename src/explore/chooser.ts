@@ -6,7 +6,7 @@ import { getLang, onChange, t } from '../i18n';
 import { exMulti } from './multi';
 import { exShowLobby } from './multi/lobby';
 
-export type ExChoice = 'glider' | 'guided' | 'walk' | 'car' | 'bike';   // car: lái xe (có máy chủ thì qua sảnh 5 chỗ lái, không thì lái một mình); bike: xe máy (giờ luôn lái một mình, sảnh ở Task 10)
+export type ExChoice = 'glider' | 'guided' | 'walk' | 'car' | 'bike';   // car: lái xe (có máy chủ thì qua sảnh 5 chỗ lái, không thì lái một mình); bike: xe máy (chung sảnh 5 chỗ lái với ô tô, phiên 'drive' veh 1)
 
 const el = () => document.getElementById('chooser');
 
@@ -46,11 +46,11 @@ export function exShowChooser(onPick: (choice: ExChoice) => void, onWatch: (choi
   lockGliderOnTouch(root);
   /* Lần trước mất kết nối khi đang xem (explore.exit tải lại trang): đọc cờ một lần rồi xóa, hiện exMpLostChooser */
   try {
-    const lost = sessionStorage.getItem('exMpNotice');   // 'lost' (xem bầu trời dù lượn) | 'lostWalk' (xem người đi dạo: câu nhắc chọn Đi dạo, vì thẻ Dù lượn bị khóa trên điện thoại) | 'lostDrive' (xem xe: nhắc chọn Ô tô)
-    if (lost === 'lost' || lost === 'lostWalk' || lost === 'lostDrive') {
+    const lost = sessionStorage.getItem('exMpNotice');   // 'lost' (xem bầu trời dù lượn) | 'lostWalk' (xem người đi dạo: câu nhắc chọn Đi dạo, vì thẻ Dù lượn bị khóa trên điện thoại) | 'lostDrive' (xem xe: nhắc chọn Ô tô) | 'lostBike' (xem xe từ thẻ Xe máy: nhắc chọn Xe máy)
+    if (lost === 'lost' || lost === 'lostWalk' || lost === 'lostDrive' || lost === 'lostBike') {
       sessionStorage.removeItem('exMpNotice');
       const n = document.getElementById('exMpLostNote');
-      if (n) { const k = lost === 'lostWalk' ? 'stLostChooser' : lost === 'lostDrive' ? 'drLostChooser' : ''; if (k) { n.dataset.i18n = k; n.textContent = t(k); } n.hidden = false; }
+      if (n) { const k = lost === 'lostWalk' ? 'stLostChooser' : lost === 'lostDrive' ? 'drLostChooser' : lost === 'lostBike' ? 'bkLostChooser' : ''; if (k) { n.dataset.i18n = k; n.textContent = t(k); } n.hidden = false; }
     }
   } catch { /* bộ nhớ bị chặn */ }
   wireLang(root);
@@ -60,8 +60,10 @@ export function exShowChooser(onPick: (choice: ExChoice) => void, onWatch: (choi
     b.addEventListener('click', () => {
       if (root.hidden) return;
       const choice = b.dataset.pick as ExChoice;
-      /* Dù lượn / Đi dạo / Ô tô có máy chủ: sang bước chọn slot + nhập tên (mở kết nối ở đây, không sớm hơn); không có máy chủ: bay / đi / lái một mình ngay như trước */
-      if ((choice === 'glider' || choice === 'walk' || choice === 'car') && exMulti.begin(() => {}, choice === 'walk' ? 'walk' : choice === 'car' ? 'drive' : 'fly')) {
+      /* Dù lượn / Đi dạo / Ô tô / Xe máy có máy chủ: sang bước chọn slot + nhập tên (mở kết nối ở đây, không sớm hơn); không có máy chủ: bay / đi / lái một mình ngay như trước.
+         Ô tô và Xe máy chung 5 chỗ lái (phiên 'drive'); xe máy xin chỗ với veh 1. Thẻ đã chọn đi theo onWatch: người xem chạy module của thẻ đó, nhận lời mời thì lên đúng loại xe */
+      const kind = choice === 'walk' ? 'walk' : choice === 'car' || choice === 'bike' ? 'drive' : 'fly';
+      if ((choice === 'glider' || choice === 'walk' || choice === 'car' || choice === 'bike') && exMulti.begin(() => {}, kind, choice === 'bike' ? 1 : 0)) {
         const solo = () => { exHideChooser(); onPick(choice); };
         exShowLobby(exMulti.session!, { onFly: solo, onWatch: () => { exHideChooser(); onWatch(choice); }, onSolo: solo, onBack: () => b.focus({ preventScroll: true }) });
         return;

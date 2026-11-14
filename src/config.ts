@@ -1023,6 +1023,9 @@ const bikeBase = {
     streakFar: 150,    // m — vệt mờ hết ở khoảng cách này (ước lượng)
     streakColor: [1.0, 0.72, 0.42] as [number, number, number]   // màu vệt (đèn đường natri / LED ấm), RGB tuyến tính (ước lượng)
   },
+  remote: {            // xe máy của người chơi khác (explore/multi/remoteDrive.ts, labels.ts); hình rẻ: hình tạm xe + người khối (model.ts BkBike lite) + tấm bóng = 2 lệnh vẽ mỗi xe
+    labelAbove: 0.4    // m — nhãn tên đặt cao hơn đỉnh mũ người lái chừng này (đỉnh = body.height) (ước lượng)
+  },
   model: {             // hình xe máy trong cảnh (explore/bike/model.ts)
     url: 'bike/scooter.glb',   // mô hình xe tay ga (npm run gen:bike từ scripts/bike/src/scooter.glb, Grab3D, CC0), đường dẫn tương đối BASE_URL
     timeoutMs: 8000,   // ms — quá thời gian này mà chưa nạp + làm nóng xong thì bkModelLoad trả null (vẫn đổi sang mô hình thật khi xong muộn) (ước lượng)

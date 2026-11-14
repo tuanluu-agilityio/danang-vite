@@ -14,7 +14,7 @@ import { stAvatars } from '../stroll/avatars';
 import { stChar } from '../stroll/char';
 import { exDrivers } from './remoteDrive';
 import { drCars } from '../drive/cars';
-import type { Kind } from './protocol';
+import { exVehNorm, type Kind } from './protocol';
 import type { GliderState } from '../flight';
 import type { StState } from '../stroll/motion';
 import type { DrState } from '../drive/motion';
@@ -70,7 +70,7 @@ function idleStop(): void {
   idleShow('');
 }
 
-/* Danh sách người chơi ở góc màn hình: đầu "Lái xe n/5 · Đi dạo n/5 · Bay n/5", rồi nhóm người lái (chấm thoi), người đi dạo (chấm vuông) và người bay (chấm tròn),
+/* Danh sách người chơi ở góc màn hình: đầu "Lái xe n/5 · Đi dạo n/5 · Bay n/5", rồi nhóm người lái (chấm thoi, tên kèm 🚗 / 🛵 theo loại xe), người đi dạo (chấm vuông) và người bay (chấm tròn),
    mỗi người một dòng có chấm màu theo slot; dòng của mình đậm. Dùng textContent */
 function renderRoster(): void {
   const box = document.getElementById('exMpRoster');
@@ -78,7 +78,7 @@ function renderRoster(): void {
   const flyers = session ? session.flyers : [], walkers = session ? session.walkers : [], drivers = session ? session.drivers : [];
   const head = t('drRosterAll', { d: drivers.length, w: walkers.length, f: flyers.length });
   const kind = session ? session.kind : 'fly', mine = session ? session.mySlot : -1;
-  const key = drivers.map(f => f.slot + ':' + f.name).join('|') + '#' + walkers.map(f => f.slot + ':' + f.name).join('|') + '#' + flyers.map(f => f.slot + ':' + f.name).join('|') + '#' + kind + mine + '#' + head;
+  const key = drivers.map(f => f.slot + ':' + exVehNorm(f.veh) + ':' + f.name).join('|') + '#' + walkers.map(f => f.slot + ':' + f.name).join('|') + '#' + flyers.map(f => f.slot + ':' + f.name).join('|') + '#' + kind + mine + '#' + head;
   if (key === rosterKey) return;
   rosterKey = key;
   box.hidden = !session || session.phase === 'solo';
@@ -89,7 +89,9 @@ function renderRoster(): void {
       const row = document.createElement('div'); row.className = 'ex-mp-row' + (k === 'walk' ? ' walk' : k === 'drive' ? ' drive' : '') + (k === kind && f.slot === mine ? ' me' : '');
       const dot = document.createElement('i'); dot.style.background = M.colors[f.slot % M.colors.length];
       const nm = document.createElement('span'); nm.textContent = f.name;
-      row.append(dot, nm); box.appendChild(row);
+      if (k === 'drive') { const ic = document.createElement('span'); ic.textContent = exVehIcon(f.veh); ic.setAttribute('aria-hidden', 'true'); row.append(dot, ic, nm); }   // biểu tượng tách khỏi tên (tên RTL không kéo lệch)
+      else row.append(dot, nm);
+      box.appendChild(row);
     }
   };
   group(drivers, 'drive'); group(walkers, 'walk'); group(flyers, 'fly');
@@ -101,10 +103,14 @@ function stEnsureAvatars(): void {
   if (!mesh.parent) scene.add(mesh);
 }
 
-/* Xe người lái hiện cho cả người bay và người đi dạo: gắn / gỡ nhóm xe theo số xe (không có xe thì không ở trong cảnh) */
-exDrivers.onCars = (n: number): void => {
-  const g = drCars.group;
+/* Biểu tượng loại xe trong danh sách người lái (sảnh, góc màn hình): 🛵 xe máy, 🚗 ô tô (máy chủ cũ không gửi veh = ô tô) */
+export const exVehIcon = (veh: unknown): string => exVehNorm(veh) === 1 ? '🛵' : '🚗';
+
+/* Xe người lái hiện cho cả người bay và người đi dạo: gắn / gỡ nhóm ô tô và nhóm xe máy người khác theo số xe (không có xe thì không ở trong cảnh) */
+exDrivers.onCars = (n: number, nb = 0): void => {
+  const g = drCars.group, b = exDrivers.bikes;
   if (n > 0) { if (!g.parent) scene.add(g); } else if (g.parent) g.removeFromParent();
+  if (nb > 0) { if (!b.parent) scene.add(b); } else if (b.parent) b.removeFromParent();
 };
 
 export const exMulti = {
@@ -117,12 +123,14 @@ export const exMulti = {
   get session(): MultiSession | null { return session; },
   onChange: (() => {}) as () => void,   // móc cho giao diện sảnh (Task 6) và test
 
-  /* Mở phiên loại kind ('fly' giành chỗ bay, 'walk' giành chỗ đi dạo, 'drive' giành chỗ lái xe); onReady gọi một lần khi có thông tin đầu tiên (sảnh hoặc ngoại tuyến). Trả false nếu không có địa chỉ */
-  begin(onReady: () => void, kind: Kind = 'fly'): boolean {
+  /* Mở phiên loại kind ('fly' giành chỗ bay, 'walk' giành chỗ đi dạo, 'drive' giành chỗ lái xe); veh (chỉ 'drive'): 0 ô tô, 1 xe máy (chung 5 chỗ lái với ô tô).
+     onReady gọi một lần khi có thông tin đầu tiên (sảnh hoặc ngoại tuyến). Trả false nếu không có địa chỉ */
+  begin(onReady: () => void, kind: Kind = 'fly', veh = 0): boolean {
     const url = exMulti.url();
     if (!url || session) return false;
     const s = session = new MultiSession(() => exConnect(url, M.connectTimeoutMs), undefined, kind);
-    if (kind === 'walk') s.ch = stChar.get();   // nhân vật đã chọn lần trước; sảnh đổi thì ghi lại (lobby.ts)
+    if (kind === 'drive') s.veh = veh === 1 ? 1 : 0;
+    if (kind === 'walk' || s.veh === 1) s.ch = stChar.get();   // nhân vật đã chọn lần trước (chung Đi dạo và xe máy); sảnh đổi thì ghi lại (lobby.ts)
     let ready = false;
     s.onPos = f => exRemotes.onPos(f, performance.now());
     s.onWalkPos = w => stAvatars.onPos(w, performance.now());
@@ -172,12 +180,13 @@ export const exMulti = {
     session.sendWalk(r(s.x), r(s.y), r(s.z), a(s.yaw), s.pose, Math.round(nowMs));
   },
 
-  /* Mỗi khung khi lái xe có chỗ: gửi vị trí + vận tốc + góc lái sendHz lần/s (s = null: không gửi). Cả lúc đang sơ tán khỏi nhịp quay Cầu sông Hàn */
-  updateDrive(nowMs: number, s: DrState | null): void {
+  /* Mỗi khung khi lái xe có chỗ: gửi vị trí + vận tốc + góc lái sendHz lần/s (s = null: không gửi). Cả lúc đang sơ tán khỏi nhịp quay Cầu sông Hàn.
+     st: giá trị của trường st, mặc định góc lái ô tô; xe máy truyền bkLeanToWire(độ nghiêng) */
+  updateDrive(nowMs: number, s: DrState | null, st?: number): void {
     if (!session || !s || session.kind !== 'drive' || session.phase !== 'flying' || nowMs - sentAt < 1000 / M.sendHz) return;
     sentAt = nowMs;
     const r = (v: number) => Math.round(v * 100) / 100, a = (v: number) => Math.round(v * 1000) / 1000;
-    session.sendDrive({ x: r(s.x), y: r(s.y), z: r(s.z), yaw: a(s.yaw), v: r(s.v), st: a(s.steer), ts: Math.round(nowMs) });
+    session.sendDrive({ x: r(s.x), y: r(s.y), z: r(s.z), yaw: a(s.yaw), v: r(s.v), st: a(st ?? s.steer), ts: Math.round(nowMs) });
   },
 
   /* Người chơi vừa bấm phím điều khiển: đếm lại thời gian rời máy */

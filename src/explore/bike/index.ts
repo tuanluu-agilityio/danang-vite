@@ -11,7 +11,12 @@
    - Phím (theo e.code, chỉ khi đang lái, bỏ ô nhập và tổ hợp Ctrl / Meta / Alt; blur / ẩn tab nhả hết): R về làn (bkRecover), Q / E xi nhan trái / phải (bkSignal),
      V đổi góc nhìn thứ nhất ↔ thứ ba, H còi (giữ; nhả khi blur / ẩn tab / focus vào ô nhập). Kéo chuột trái / vuốt trên canvas: nhìn quanh (thứ nhất) hoặc quay quanh xe (thứ ba).
    - Lớp body 'explore drive bike': khung HUD #drHud và các quy tắc CSS của body.drive áp nguyên; 'bike' cho phần riêng về sau.
-   - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10). Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
+   - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
+   - Nhiều người (Task 10, theo drive/index.ts): thẻ Xe máy mở phiên 'drive' veh 1 (5 chỗ chung với ô tô, chooser.ts). Có chỗ thì xuất phát theo slot, gửi vị trí + vận tốc
+     + st = bkLeanToWire(độ nghiêng) sendHz lần/s (exMulti.updateDrive); xe người khác (ô tô / xe máy, multi/remoteDrive.ts) chỉ vẽ, nhãn, chấm trên bản đồ nhỏ, không va chạm.
+     Xe của mình KHÔNG nằm trong drCars / exDrivers (vẽ ở model.ts). Hết chỗ: chế độ xem (startWatching) — camera sau xe được xem (cam3 của xe máy nếu xe đó là xe máy,
+     drive.cam nếu ô tô), đồng hồ + bản đồ theo xe đó, không điều khiển; nhận lời mời thì start() (join đã mang veh 1). Rời máy: nhường chỗ sang xem; mất kết nối lúc xem:
+     cờ 'lostBike' rồi thoát; máy chủ cũ không vọng veh (phiên về 'solo' / 'offline') lúc đang xem: lái một mình luôn.
    - Người lái: rider.ts, nhân vật theo stChar (chung Đi dạo), nạp ở preload() / start() (làm nóng qua stRigSetWarm của stroll/index.ts); chưa về thì xe không người,
      về sau stop() thì bỏ. Người gắn vào neo yên của xe nên rời cảnh cùng model.group.
    - Âm thanh (sound.ts bkSound): đề máy ở start(), tắt máy ở stop(); mỗi khung một BkSoundIn tái dùng (hộp xe gần dùng lại mảng trNearby của bkStep,
@@ -34,7 +39,13 @@ import { drSetGate, type DrNet } from '../drive/net';
 import { DR_GATE_SWING } from '../drive/roadData';
 import { drUseBody, DR_CAR_BODY, type DrBox } from '../drive/collide';
 import { drBindDrop } from '../drive/keys';
-import { drHudShow, drHudHide, drHudUpdate, type DrMapDot } from '../drive/hud';
+import { drHudShow, drHudHide, drHudUpdate } from '../drive/hud';
+import { drCamPlace, type DrCam } from '../drive/camera';
+import { drCars } from '../drive/cars';
+import { exMulti } from '../multi';
+import { exDrivers } from '../multi/remoteDrive';
+import { bkLeanToWire } from '../multi/protocol';
+import { exWatchShow, exWatchHide, exWatchRender, exFlyNotice } from '../multi/watch';
 import { drTouchBind } from '../drive/touch';
 import type { DrInput } from '../drive/motion';
 import { drEnsureNet } from '../drive';
@@ -72,7 +83,6 @@ bkModelWarmAlso(bkFxWarmObject);   // vệt pha + bụi nước làm nóng cùng
 
 const BK_SOLO_SLOT = -1;   // bkCreate / drSpawnPose: lái một mình xuất phát ở giữa các chỗ của slot (trên Cầu Rồng, đi Đông, bên phải)
 const C1 = CONFIG.bike.cam1;
-const NO_DOTS: DrMapDot[] = [];   // lái một mình: bản đồ nhỏ không có xe người khác
 
 let net: DrNet | null = null;
 let state: BkState | null = null;
@@ -99,8 +109,14 @@ const boxes: DrBox[] = [];          // hộp xe tự động gần xe, tái dùn
 let saved: { fov: number; near: number; explore: boolean } | null = null;   // thứ start() đổi, stop() trả lại
 const _snd: BkSoundIn = { v: 0, rpm: 0, throttle: 0, brakeK: 0, sus: 0, sig: 0, rain: 0, tunnel: false, river: 0, view: 1, near: boxes, nNear: 0, x: 0, z: 0, yaw: 0, t: 0 };   // đầu vào âm thanh tái dùng mỗi khung
 
+let watching = false;               // đang xem xe người khác (hết chỗ lái hoặc vừa nhường chỗ): không có xe của mình, không đọc phím
+let chased = false;                 // camera đã bám xe được xem lần nào chưa (lần đầu đặt thẳng, không trượt từ xa)
+let exit: () => void = () => {};    // thoát chung (explore.exit), dùng khi mất kết nối lúc đang xem
+const camW: DrCam = { yaw: 0, pitch: 0, idle: 0 };   // camera sau xe được xem (drCamPlace)
+const _ws = { x: 0, z: 0, yaw: 0, v: 0 };            // xe đang xem đưa cho HUD (đồng hồ, bản đồ nhỏ), tái dùng mỗi khung
+
 const active = () => cam.mode === 'bike' && state !== null;
-const inMode = () => active();     // chế độ xem (hết chỗ) ở Task 10
+const inMode = () => active() || watching;   // Esc và giao diện lái áp cho cả chế độ xem
 const isField = (t: EventTarget | null) => !!t && /^(SELECT|INPUT|TEXTAREA)$/.test((t as HTMLElement).tagName || '');
 
 /* Một bước: cổng nhịp quay, chuyển động (sơ tán nằm trong bkStep), hình xe, camera, HUD, hiệu ứng đêm */
@@ -119,10 +135,44 @@ function advance(dt: number, inp: BkInput): void {
   rider?.setFirstPerson(bkCamHideHead(camB));   // cùng giá trị trộn đã làm mượt mà camera dùng
   if (dash) { dash.bind(model!.dashMat); dash.update(dt, s.v, s.rpm, s.sig); }
   controls.target.set(s.x, s.y, s.z);   // tâm vùng bóng đổ (main.ts shadowCenter) theo xe
-  drHudUpdate(s, NO_DOTS);
+  const now = performance.now();
+  exMulti.update(dt, now, null);                        // xe người khác, người bay / đi dạo, nhãn tên; không làm gì khi lái một mình
+  exMulti.updateDrive(now, s, bkLeanToWire(s.lean));    // gửi vị trí + vận tốc + độ nghiêng (qua trường st) khi đang giữ chỗ
+  drHudUpdate(s, exDrivers.dots());
   bkHudUpdate(s.sig, bkBlinkOn(shared.uTime.value), bkStuckOn(s.stuck));
   exNightStep(dt, false);
   soundStep(s, nNear, tunnel, dry);
+}
+
+/* Mỗi khung khi xem: xe người khác, nhãn, danh sách; camera sau xe được xem (bộ số cam3 của xe máy nếu xe đó là xe máy, drive.cam nếu ô tô), đồng hồ và bản đồ theo xe đó.
+   Không có ai thì giữ nguyên */
+function watchStep(dt: number): void {
+  if (ctrl) drSetGate(net!, DR_GATE_SWING, ctrl.state !== 'CLOSED');
+  exMulti.update(dt, performance.now(), null);
+  const w = exMulti.watchDriver(), ses = exMulti.session;
+  if (w && ses) {
+    const K = exDrivers.vehOf(ses.watched) === 1 ? CONFIG.bike.cam3 : CONFIG.drive.cam;
+    drCamPlace(camera, w, camW, net!, dt, !chased, K); chased = true;
+    if (camera.fov !== K.fov || camera.near !== CONFIG.bike.cam3.near) { camera.fov = K.fov; camera.near = CONFIG.bike.cam3.near; onResize(); }
+    controls.target.set(w.x, w.y, w.z);
+    _ws.x = w.x; _ws.z = w.z; _ws.yaw = w.yaw; _ws.v = w.v;
+    drHudUpdate(_ws, exDrivers.dots(w));
+  }
+  exNightStep(dt, false);
+}
+
+/* Đổi phiên khi đang xem hoặc đang lái: vào lái, mất kết nối, bị thu hồi chỗ (như drOnMultiChange của ô tô) */
+function bkOnMultiChange(): void {
+  const s = exMulti.session; if (!s) return;
+  if (watching) {
+    if (s.phase === 'flying') { bike.start(); return; }   // chấp nhận lời mời: xuất phát như vào lái thường (join mang veh 1)
+    if (s.phase === 'solo' && s.notice === 'offline') { bike.start(); return; }   // máy chủ cũ không vọng veh khi nhận lời mời: phiên đã trả chỗ, lái một mình
+    if (s.phase === 'solo') { try { sessionStorage.setItem('exMpNotice', 'lostBike'); } catch { /* bộ nhớ bị chặn */ } exit(); return; }   // màn chọn đọc cờ này và hiện bkLostChooser
+    exWatchRender();
+  } else if (active()) {
+    if (s.phase === 'watching') { bike.startWatching(true); return; }   // chỗ bị thu hồi (rời máy): sang xem, camera giữ nguyên
+    if (s.phase === 'solo' && s.notice === 'lost') exFlyNotice(s, 'bkLost');   // vẫn lái, người khác đã biến mất
+  }
 }
 
 /* Âm thanh: điền BkSoundIn từ trạng thái xe (không cấp phát); bkSound tự giới hạn số lần ghi tham số (updateMs) */
@@ -230,12 +280,18 @@ export const bike = {
   get fx(): typeof bkFx { return bkFx; },                 // test: drawn() (vệt pha, số hạt bụi nước), group
   /* Đổi góc nhìn: trộn vị trí + hướng + fov + near trong cam1.mixS, không dừng xe */
   setView(v: 1 | 3): void { camB.view = v === 3 ? 3 : 1; },
-  /* Vào lái một mình */
+  get watching(): boolean { return watching; },
+  /* Vào lái: một mình (không phiên / ngoại tuyến) hoặc với slot lái vừa được cấp (xuất phát theo slot) */
   start(): void {
+    if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
     const n = drEnsureNet();   // dựng net trước: lỗi ở đây thì thân va chạm vẫn là ô tô (mạng đường không phụ thuộc thân xe)
     drUseBody(BK_BODY);
     net = n;
-    state = bkCreate(n, BK_SOLO_SLOT);
+    const ses = exMulti.session;
+    const slot = ses && ses.kind === 'drive' && ses.mySlot >= 0 ? ses.mySlot : BK_SOLO_SLOT;
+    if (ses) exMulti.onChange = bkOnMultiChange;
+    exDrivers.setSelf(-1);    // xe của mình không nằm trong drCars (model.ts vẽ)
+    state = bkCreate(n, slot);
     camB.view = 1; bkCamReset();
     motionK = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? C1.motionReduced : C1.motion;
     if (!model) model = new BkBike();
@@ -256,7 +312,31 @@ export const bike = {
     controls.target.set(state.x, state.y, state.z);
     document.body.classList.add('explore', 'drive', 'bike');
   },
+  /* Chế độ xem bám xe người khác (hết chỗ lái, hoặc vừa nhường chỗ do rời máy): cam.mode = 'bike' nhưng không có xe / trạng thái của mình, không đọc phím, không tiếng máy;
+     carry = true khi vừa nhường chỗ (camera đang ở sau xe cũ, trượt dần sang xe được xem). Không có phiên thì không làm gì */
+  startWatching(carry = false): void {
+    const s = exMulti.session; if (!s) return;
+    const n = drEnsureNet();
+    net = n;
+    if (state !== null) {   // vừa nhường chỗ: cất xe, người lái, hiệu ứng, tiếng của mình
+      riderGen++; rider?.setFirstPerson(false);
+      model?.group.removeFromParent(); bkFx.stop(); bkSound.stop(); bkHudHide();
+    }
+    state = null; watching = true; chased = carry;
+    bkKeys.clear(); touch?.reset(); hornTouch = false;
+    bkRoadSet(false);                         // hạt nhựa + vệt ướt chỉ khi tự lái
+    exDrivers.setSelf(-1);
+    driveView.far = CONFIG.drive.tunnelFar;
+    drHudShow(n);
+    if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore') };
+    cam.flight.then = null; cam.mode = 'bike'; controls.enabled = false;
+    camW.yaw = 0; camW.pitch = 0; camW.idle = 0;
+    document.body.classList.add('explore', 'drive', 'bike', 'ex-watching');
+    exMulti.onChange = bkOnMultiChange;
+    exWatchShow(s);
+  },
   update(dt: number): void {
+    if (watching) { watchStep(dt); return; }
     if (!active()) return;
     bkInputFromKeys(bkKeys, _inp);
     bkTouchMerge(_inp, _dr, readTouch);   // gộp cảm ứng, không xóa phím (máy lai)
@@ -270,8 +350,10 @@ export const bike = {
   afterRender(): void { /* chưa có việc */ },
   /* Rời chế độ: trả mọi thứ đã đổi, kể cả khi cam.mode đã bị chỗ khác đổi khỏi 'bike' */
   stop(): void {
-    if (state === null) return;
+    if (state === null && !watching) return;
     state = null; bkKeys.clear(); touch?.reset(); hornTouch = false; riderGen++;
+    if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
+    exDrivers.clear(); drCars.clear(); drCars.group.removeFromParent(); exDrivers.bikes.removeFromParent();   // xe người khác (ô tô, xe máy)
     bkSound.stop();
     bkHudHide();
     rider?.setFirstPerson(false);
@@ -296,14 +378,15 @@ export const bike = {
   preload(): void { void bkModelLoad(); void bkRiderLoad(stChar.get()); }
 };
 
-/* onExit: thoát chung (explore.exit), dùng khi mất kết nối lúc đang xem (Task 10) */
+/* onExit: thoát chung (explore.exit), dùng khi mất kết nối lúc đang xem */
 export function setupBike(c: SwingController, onExit: () => void): void {
-  ctrl = c; void onExit;
+  ctrl = c; exit = onExit;
   window.addEventListener('keydown', (e) => {
     if (!active() || e.key === 'Escape') return;   // Esc do explore/index.ts xử lý (thoát chung)
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (isField(e.target)) return;
     if (!BK_KEYS.has(e.code)) return;
+    exMulti.activity();   // phím điều khiển (kể cả tự lặp) tính là còn đó
     if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault();   // không cuộn trang, Space không bấm nút đang focus
     bkKeys.add(e.code);
     if (e.repeat) return;
@@ -326,7 +409,7 @@ export function setupBike(c: SwingController, onExit: () => void): void {
   const d = (id: string) => document.getElementById(id);
   const hornBtn = d('bkHorn');
   bkHudBind({ sigL: d('bkSigL'), sigR: d('bkSigR'), stuck: d('bkStuck'), reset: d('bkReset') });
-  const onClick = (id: string, f: () => void) => d(id)?.addEventListener('click', () => { if (active()) f(); });
+  const onClick = (id: string, f: () => void) => d(id)?.addEventListener('click', () => { if (active()) { exMulti.activity(); f(); } });
   onClick('bkSigL', () => bkSignal(state!, 1));
   onClick('bkSigR', () => bkSignal(state!, -1));
   onClick('bkView', () => bike.setView(camB.view === 3 ? 1 : 3));
@@ -336,7 +419,7 @@ export function setupBike(c: SwingController, onExit: () => void): void {
     hornBtn.addEventListener('pointerdown', (e) => {
       if (!active() || hornId !== -1) return;
       e.preventDefault();
-      hornId = e.pointerId; hornTouch = true; hornBtn.classList.add('on');
+      hornId = e.pointerId; hornTouch = true; hornBtn.classList.add('on'); exMulti.activity();
       try { hornBtn.setPointerCapture(e.pointerId); } catch { /* con trỏ không còn hoạt động */ }
     });
     const hornEnd = (e: PointerEvent) => { if (e.pointerId === hornId) { hornId = -1; hornOff(); } };
@@ -347,7 +430,7 @@ export function setupBike(c: SwingController, onExit: () => void): void {
   }
   /* Cảm ứng: drive/touch.ts trên cùng #drHud (bộ của ô tô cũng gắn ở đó nhưng chỉ đọc khi đang lái ô tô); vuốt #drLook nhìn quanh */
   const hud = d('drHud');
-  if (hud) touch = drTouchBind(hud, { look: (dx, dy) => { if (active()) bkCamDrag(camB, dx, dy); }, activity: () => { /* nhiều người: Task 10 */ } });
+  if (hud) touch = drTouchBind(hud, { look: (dx, dy) => { if (active()) bkCamDrag(camB, dx, dy); }, activity: () => exMulti.activity() });
   const touchUi = () => typeof matchMedia === 'function' && matchMedia('(hover: none)').matches;
   bkSound.bind(document.getElementById('drSoundBtn'));   // nút 🔊 / 🔇 chung với ô tô: chỉ toggle tiếng xe máy khi đang lái xe máy
   /* Kéo chuột trái / vuốt (một ngón) trên canvas: nhìn quanh (góc thứ nhất) hoặc quay quanh xe (góc thứ ba) */
