@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01Cg82b31wLrUXJ2iJ8CGPF6",
+  "agent_id": "aa787b6a2ad75cd7d",
+  "subagent_type": "general-purpose",
+  "task_description": "Review Task 8 road detail",
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 94521,
+    "cache_read_tokens": 151881,
+    "output_tokens": 5664,
+    "api_call_count": 3
+  },
+  "started_at": "2026-11-14T18:44:24.1146958+07:00",
+  "completed_at": "2026-11-14T18:45:29.7233234+07:00"
+}
