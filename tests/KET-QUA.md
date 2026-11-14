@@ -4,6 +4,12 @@ Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (
 
 Khung test mặc định 480×270 khớp `(max-height: 500px)` nên cả bộ test chạy ở chế độ gọn (không blur): draw call không đổi; số hitch của `test:perf` không so sát được với mốc D-018 (đo khi còn blur).
 
+## Chat hiện thẳng trên màn hình (2026-11-14, nhánh `feature/chat-hien-truc-tiep`, D-041, PR #37)
+
+- Tại `91fcf2c`: `typecheck` sạch, `test:multi:unit` 153/153, `build` đạt (chunk `index` 791,80 kB, css 45,75 kB; trước 791,61 kB và 45,19 kB).
+- Ảnh chụp bố cục bằng Chromium (1280 × 720, 390 × 844; tin giả dựng bằng DOM; đóng / mở): xem tay, không chấm tự động, ảnh không commit.
+- Không có test trình duyệt; chưa thấy tin thật, việc mờ sau 12 s, RTL, cảm ứng nằm ngang.
+
 ## Trò chuyện theo khoảng cách (2026-11-14, nhánh `feature/chat-gan-nhau`, D-041, PR #36)
 
 Chat gần nhau (`src/explore/multi/chat.ts`, `chatCore.ts`, `server/multi/src/room.ts`). **Không có test trình duyệt tự động** (`tests/chat-check.mjs` / `test:chat` không được viết, theo lời người dùng "viết tài liệu không cần test trình duyệt", 2026-11-14) và **không chạy test nặng nào** (`test:multi`, `test:stroll`, `test:drive`, `test:bike`, `test:mobile`, `test:explore`, `test:drawcalls`, `test:perf`). Số lệnh vẽ / program không đo; theo thiết kế bong bóng là DOM, 0 lệnh vẽ, 0 program, 0 đèn.
