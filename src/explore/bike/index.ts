@@ -278,6 +278,7 @@ export const bike = {
   get cfg(): typeof CONFIG.bike { return CONFIG.bike; },   // test / kiểm tay: chỉnh số camera lúc chạy
   get sound(): typeof bkSound { return bkSound; },        // test: nodes(), on, graph
   get fx(): typeof bkFx { return bkFx; },                 // test: drawn() (vệt pha, số hạt bụi nước), group
+  get input(): Readonly<BkInput> { return _inp; },        // test: đầu vào của khung gần nhất (grip theo mặt ướt / hầm kín)
   /* Đổi góc nhìn: trộn vị trí + hướng + fov + near trong cam1.mixS, không dừng xe */
   setView(v: 1 | 3): void { camB.view = v === 3 ? 3 : 1; },
   get watching(): boolean { return watching; },
