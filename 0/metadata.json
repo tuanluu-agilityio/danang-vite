@@ -1,0 +1,73 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M7DH8H44RHZKHDH1B3K02Z71",
+  "session_id": "64cdb7ee-a726-4d4c-b18f-93217be4146a",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-14T17:21:46.1475674Z",
+  "branch": "feature/thoi-tiet-thuc",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/superpowers/specs/2026-11-14-thoi-tiet-thuc-design.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5-2",
+  "turn_id": "0adc83e84c03",
+  "checkpoint_transcript_start": 197,
+  "transcript_lines_at_start": 197,
+  "compact_transcript_start": 17,
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 16137,
+    "cache_read_tokens": 770269,
+    "output_tokens": 4674,
+    "api_call_count": 5
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_019XhCAryV4ft8Rna8SbR27p",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:subagent-driven-development"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "0adc83e84c03",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 36,
+        "end": 37,
+        "entry_ids": [
+          "a815576f-68f4-4b0d-bc18-eff45ea3586a"
+        ],
+        "tool_use_id": "toolu_019XhCAryV4ft8Rna8SbR27p"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_019XhCAryV4ft8Rna8SbR27p"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:subagent-driven-development",
+        "default_collapsed": true
+      }
+    }
+  ]
+}
