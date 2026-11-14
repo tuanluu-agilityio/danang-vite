@@ -27,7 +27,13 @@ export function serveDir(dir) {
   return new Promise((ok) => server.listen(0, '127.0.0.1', () => ok({ url: `http://127.0.0.1:${server.address().port}/`, close: () => server.close() })));
 }
 
+/** Mặc định SwiftShader (CPU, như mọi test cũ). TEST_REAL_GPU=1: GPU thật (Windows: ANGLE D3D11, như tests/gpu-time.mjs) cho test nhẹ chạy nhanh. */
 export async function launch() {
+  if (process.env.TEST_REAL_GPU === '1') {
+    const args = ['--ignore-gpu-blocklist', '--enable-gpu'];
+    if (process.platform === 'win32') args.unshift('--use-angle=d3d11');
+    return chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined, headless: true, args });
+  }
   return chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || undefined,
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']

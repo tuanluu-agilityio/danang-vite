@@ -556,6 +556,7 @@ html[dir=rtl] #env .env-rule{background:linear-gradient(270deg,rgba(255,255,255,
 #env .env-grid dt .env-ico{font-size:13px;opacity:.9;}
 #env .env-grid dt span{white-space:normal;min-width:0;line-height:1.25;}   /* nhãn dài (ar, ru) xuống dòng thay vì tràn khỏi thẻ */
 #env .env-grid dd{margin:0;font-size:13.5px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:start;}
+#env .env-grid dd[data-dir],#env .env-grid dd[data-uv]{white-space:normal;overflow-wrap:anywhere;line-height:1.25;}   /* chữ dài (th hướng "ตะวันตกเฉียงเหนือ", ru UV "11 Экстремальный") xuống dòng thay vì tràn khỏi cột (env-check mục 9) */
 html[dir=rtl] #env .env-grid dd[dir=ltr]{text-align:end;}   /* số dir="ltr" vẫn canh về đầu dòng của trang (bên phải) */
 #env .env-grid dd small{font-size:10.5px;font-weight:400;color:var(--muted);margin-inline-start:3px;}
 #env .env-grid .arrow{display:inline-block;width:11px;height:11px;margin-inline-end:4px;vertical-align:-1px;transition:transform .8s cubic-bezier(.2,.7,.2,1);}
