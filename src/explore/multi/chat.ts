@@ -90,7 +90,7 @@ function paintStatus(): void {
   let txt: string, lock = true;
   if (ph === 'flying') {
     if (near.length === 0) txt = t('chatNone');
-    else { lock = false; txt = near.length === 1 ? t('chatOne', { name: '⁨' + near[0].name + '⁩' }) : t('chatMany', { n: near.length }); }   // tên bọc cô lập hướng chữ
+    else { lock = false; txt = near.length === 1 ? t('chatOne', { name: '\u2068' + near[0].name + '\u2069' }) : t('chatMany', { n: near.length }); }   // tên bọc cô lập hướng chữ
   } else txt = t(ph === 'watching' ? 'chatWatch' : 'chatLost');
   if (el.status.textContent !== txt) el.status.textContent = txt;
   if (lock !== locked) { locked = lock; el.input.disabled = lock; }
@@ -264,7 +264,11 @@ function bind(): void {
   input.addEventListener('input', () => { fit(); paintSend(); });
   input.addEventListener('keydown', (e) => {
     exChat.onActivity();
-    if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); exChat.close(); return; }   // chỉ đóng bảng: không nổi bọt tới window (explore/index.ts thoát chế độ)
+    if (e.key === 'Escape') {
+      e.stopPropagation();   // không nổi bọt tới window (explore/index.ts thoát chế độ)
+      if (e.isComposing || e.keyCode === 229) return;   // đang gõ bộ gõ (IME): để IME hủy phần đang soạn, không đóng bảng
+      e.preventDefault(); exChat.close(); return;   // chỉ đóng bảng
+    }
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); send(); }   // Shift + Enter xuống dòng; đang gõ bộ gõ (IME) thì không gửi
   });
   /* Enter ngoài ô nhập / nút: mở bảng và đưa focus vào ô */
