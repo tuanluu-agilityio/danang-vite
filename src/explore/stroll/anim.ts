@@ -5,6 +5,7 @@
    - rate = tốc độ thật / tốc độ tự nhiên của đoạn trộn, kẹp [rateMin, rateMax]: chân chạm đất gần đúng không trượt.
    - Dáng lạ (khách bản cũ, số ngoài 0..4, NaN) và rơi không còn tốc độ ngang: đứng yên (idle). Khách bản cũ gửi dáng 3 khi nhảy; người đó hiện đứng yên. */
 import { CONFIG } from '../../config';
+import { exCharNorm } from '../multi/protocol';
 import { ST_POSE_WALK, ST_POSE_RUN, ST_POSE_FALL, ST_POSE_PHOTO } from './motion';
 
 export const ST_CLIPS = ['idle', 'walk', 'jog', 'sprint', 'photo'] as const;
@@ -35,9 +36,6 @@ export function stClipMix(pose: number, speed: number, natural: ArrayLike<number
   out.rate = r < A.rateMin ? A.rateMin : r > A.rateMax ? A.rateMax : r;
 }
 
-/* Mô hình của slot: mình luôn mô hình 0; người khác dùng 1..others theo slot (slot âm vẫn trong khoảng) */
-export function stModelFor(slot: number, isSelf: boolean): number {
-  if (isSelf) return 0;
-  const n = A.others;
-  return 1 + (((slot % n) + n) % n);
-}
+/* Mô hình của nhân vật người chơi chọn (0 nam, 1 nữ; giá trị lạ / không có = nam). Mình và người khác dùng chung hàm này:
+   mô hình chỉ phụ thuộc lựa chọn của chủ nhân vật, không theo slot hay theo máy đang nhìn, nên mọi máy thấy cùng một người như nhau */
+export function stCharModel(ch: unknown): number { return A.chars[exCharNorm(ch)]; }

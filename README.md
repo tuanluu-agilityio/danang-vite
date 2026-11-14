@@ -70,7 +70,7 @@ server/
   multi/             máy chủ dù lượn nhiều người (Cloudflare Worker + Durable Object, `npm --prefix server/multi run dev`)
 public/
   car/               `vf3.glb` (xe VinFast VF 3 cho chế độ Lái xe, ≤ 1,5 MB) và LICENSE-VF3.txt
-  people/            5 nhân vật đi dạo p0..p4.glb (có xương + chuyển động), người treo dù lượn `pilot.glb` (có xương, đoạn `sit`), `crowd.bin` + `crowd.jpg` (10 nhân vật giản lược cho đám đông người đi bộ, chuyển động nướng sẵn) và LICENSE-Rocketbox.txt
+  people/            5 nhân vật đi dạo p0..p4.glb (có xương + chuyển động; chế độ Đi dạo dùng p0 nam và p3 nữ theo lựa chọn ở sảnh), ảnh xem trước `thumb-m.webp` / `thumb-f.webp` (`npm run gen:thumbs`), người treo dù lượn `pilot.glb` (có xương, đoạn `sit`), `crowd.bin` + `crowd.jpg` (10 nhân vật giản lược cho đám đông người đi bộ, chuyển động nướng sẵn) và LICENSE-Rocketbox.txt
   voice/             clip thuyết minh của Tour
 scripts/
   car/               convert.py: xử lý mô hình VF 3 thô `vinfast_vf3.glb` (xoá biển số, tách bánh, đổi hướng / tỉ lệ, thu ảnh) thành `public/car/vf3.glb` (`npm run gen:car`, cần Blender 4.5, chạy qua `scripts/people/blender.mjs`)

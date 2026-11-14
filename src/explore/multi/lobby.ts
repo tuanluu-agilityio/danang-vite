@@ -1,6 +1,7 @@
 /* ===== Dù lượn, đi dạo và lái xe nhiều người: bước chọn slot và nhập tên (trong hộp thoại #chooser) =====
    Hiện sau khi bấm thẻ Dù lượn (hoặc Đi dạo) lúc có máy chủ: 5 chấm + "Còn N trên 5 chỗ", tên những người cùng loại (session.peers), ô tên, nút Bay ngay / Đi dạo ngay / Lái ngay.
    Chữ chọn theo session.kind (multi/keys.ts: exMp* cho dù lượn, st* cho đi dạo, dr* cho lái xe); tên nhớ dùng chung cho ba loại.
+   Sảnh đi dạo có thêm ô chọn nhân vật nam / nữ (#stCharPick, cả khi ngoại tuyến): nhớ ở stChar, ghi vào session.ch để join gửi kèm, nạp trước mô hình vừa chọn.
    Cập nhật trực tiếp theo MultiSession; tên người khác chỉ ghi bằng textContent. Tên của mình nhớ ở localStorage.
    Pha lobby: cho nhập tên và giành chỗ. Pha solo (không kết nối được): báo ngoại tuyến. Nút Bay một mình hiện ở cả hai pha (đóng phiên rồi bay một mình).
    Pha flying: gọi onFly. Pha watching (hết chỗ): gọi onWatch (chế độ xem do Task 7 làm).
@@ -12,6 +13,8 @@ import { exMulti } from './index';
 import { exSanitizeName } from './protocol';
 import { exMpKeys, exMpSlots } from './keys';
 import type { MultiSession } from './session';
+import { stChar } from '../stroll/char';
+import { stAvatars } from '../stroll/avatars';
 
 export interface LobbyCallbacks { onFly: () => void; onWatch: () => void; onSolo: () => void; onBack: () => void }
 
@@ -74,6 +77,14 @@ function render(): void {
   setKey('exMpFly', K.go);
   setKey('exMpSolo', K.solo);
   setKey('exMpOffline', K.offline);
+  /* Chọn nhân vật: chỉ sảnh đi dạo; hiện cả khi ngoại tuyến (đi một mình vẫn theo nhân vật đã chọn) */
+  const pick = $('stCharPick'), ch = stChar.get();
+  pick.hidden = session.kind !== 'walk';
+  pick.querySelectorAll<HTMLElement>('button[data-ch]').forEach((b) => {
+    const on = Number(b.dataset.ch) === ch;
+    if ((b.getAttribute('aria-checked') === 'true') !== on) b.setAttribute('aria-checked', String(on));
+    b.tabIndex = on ? 0 : -1;
+  });
   const offline = ph === 'solo';
   $('exMpOnline').hidden = offline;
   $('exMpOffline').hidden = !offline;
@@ -104,6 +115,14 @@ function render(): void {
   fly.disabled = !ready || exSanitizeName(input.value) === null;
 }
 
+/* Đổi nhân vật ở sảnh: nhớ, đưa vào phiên (join gửi kèm), nạp trước mô hình */
+function pickChar(ch: number): void {
+  if (!cur || cur.session.kind !== 'walk') return;
+  stChar.set(ch); cur.session.ch = stChar.get();
+  stAvatars.preload();
+  render();
+}
+
 function go(): void {
   if (!cur) return;
   const name = exSanitizeName($<HTMLInputElement>('exMpNameIn').value);
@@ -125,6 +144,16 @@ function bind(): void {
     $<HTMLButtonElement>('exMpFly').disabled = cur.session.phase !== 'lobby' || ok === null;
   });
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+  $('stCharPick').querySelectorAll<HTMLElement>('button[data-ch]').forEach((b) => {
+    b.addEventListener('click', () => pickChar(Number(b.dataset.ch)));
+    b.addEventListener('keydown', (e) => {   // nhóm radio: mũi tên đổi lựa chọn và chuyển focus
+      if (!/^Arrow/.test(e.key)) return;
+      e.preventDefault(); e.stopPropagation();
+      const ch = Number(b.dataset.ch) === 1 ? 0 : 1;
+      pickChar(ch);
+      $('stCharPick').querySelector<HTMLElement>('button[data-ch="' + ch + '"]')?.focus({ preventScroll: true });
+    });
+  });
   $('exMpFly').addEventListener('click', go);
   $('exMpSolo').addEventListener('click', solo);
   $('exMpBack').addEventListener('click', back);
@@ -143,6 +172,7 @@ export function exShowLobby(session: MultiSession, cb: LobbyCallbacks): void {
   if (!input.value) input.value = loadName();
   listKey = '';
   cur = { session, cb };
+  if (session.kind === 'walk') session.ch = stChar.get();
   exMulti.onChange = render;
   render();
   input.focus({ preventScroll: true });

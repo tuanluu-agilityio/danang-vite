@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG } from '../../src/config.ts';
-import { stClipMix, stModelFor, ST_CLIPS, type StClipMix } from '../../src/explore/stroll/anim.ts';
+import { stClipMix, stCharModel, ST_CLIPS, type StClipMix } from '../../src/explore/stroll/anim.ts';
 
 const NAT = [0, 1.05, 3.0, 5.84, 0];
 const [IDLE, WALK, JOG, SPRINT, PHOTO] = [0, 1, 2, 3, 4];
@@ -72,9 +72,12 @@ test('mọi trường hợp: tổng trọng số = 1 ± 1e-6, không âm, rate t
   }
 });
 
-test('stModelFor: mình → 0; người khác slot 0..4 → 1, 2, 3, 4, 1; slot âm vẫn trong 1..4', () => {
-  assert.equal(stModelFor(2, true), 0); assert.equal(stModelFor(-1, true), 0);
-  assert.deepEqual([0, 1, 2, 3, 4].map((s) => stModelFor(s, false)), [1, 2, 3, 4, 1]);
-  for (const s of [-1, -2, -5, -100]) { const m = stModelFor(s, false); assert.ok(m >= 1 && m <= 4, `slot ${s} → ${m}`); }
+test('stCharModel: 0 nam → p0, 1 nữ → p3; không có / giá trị lạ → nam; hai nhân vật là hai mô hình khác nhau và có thật', () => {
+  const C = CONFIG.stroll.anim.chars;
+  assert.deepEqual(C, [0, 3]);
+  assert.equal(stCharModel(0), C[0]); assert.equal(stCharModel(1), C[1]);
+  for (const v of [undefined, null, 2, -1, '1', 1.5, NaN, {}]) assert.equal(stCharModel(v), C[0], `ch ${String(v)}`);
+  assert.notEqual(C[0], C[1]);
+  for (const k of C) assert.ok(CONFIG.stroll.anim.models[k], `mô hình ${k}`);
   assert.equal(CONFIG.stroll.anim.models.length, 5);
 });

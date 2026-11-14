@@ -147,7 +147,7 @@ test("kind 'walk': join gửi kind; lobby có 5 walkers và 0 flyers → watchin
   const b = await makeKind('walk');
   lobby2(b.t, [0, 1, 2, 3, 4], [1, 3]);
   assert.equal(b.s.phase, 'lobby'); assert.equal(b.s.peers.length, 2);
-  b.s.join('An'); assert.deepEqual(b.t.sent.at(-1), { t: 'join', name: 'An', kind: 'walk' });
+  b.s.join('An'); assert.deepEqual(b.t.sent.at(-1), { t: 'join', name: 'An', kind: 'walk', ch: 0 });   // chưa chọn: nam
   b.t.onMessage({ t: 'joined', slot: 0, kind: 'walk' });
   assert.equal(b.s.phase, 'flying'); assert.equal(b.s.mySlot, 0);   // 'flying' = đang giữ chỗ, cả khi đi dạo
 });
@@ -343,8 +343,8 @@ test('khách cũ bỏ qua nhóm d: session.ts của main (bay và đi dạo) nh�
   assert.equal(drv.phase, 'lobby', 'phiên drive mới với máy chủ mới: vào sảnh');
   oldFly.join('Bay'); oldWalk.join('Di'); drv.join('Lai'); await tick();
   assert.equal(oldFly.phase, 'flying'); assert.equal(oldWalk.phase, 'flying'); assert.equal(drv.phase, 'flying');
-  assert.deepEqual(oldFly.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(oldFly.walkers, [{ slot: 0, name: 'Di' }]);
-  assert.deepEqual(oldWalk.walkers, [{ slot: 0, name: 'Di' }]); assert.deepEqual(oldWalk.peers, [{ slot: 0, name: 'Di' }]);
+  assert.deepEqual(oldFly.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(oldFly.walkers, [{ slot: 0, name: 'Di', ch: 0 }]);
+  assert.deepEqual(oldWalk.walkers, [{ slot: 0, name: 'Di', ch: 0 }]); assert.deepEqual(oldWalk.peers, [{ slot: 0, name: 'Di', ch: 0 }]);
   assert.deepEqual(drv.drivers, [{ slot: 0, name: 'Lai' }]); assert.deepEqual(drv.flyers, [{ slot: 0, name: 'Bay' }]);
   // chỉ người lái cử động: khách cũ nhận gói có d (bỏ qua), f rỗng
   w.clock.now = 2000; drv.sendDrive({ x: 5, y: 2.6, z: 0, yaw: 0, v: 5, st: 0.1, ts: 42 });
@@ -359,5 +359,26 @@ test('khách cũ bỏ qua nhóm d: session.ts của main (bay và đi dạo) nh�
   assert.equal(oldFly.phase, 'flying'); assert.equal(oldWalk.phase, 'flying'); assert.equal(oldFly.mySlot, 0);
   // người lái rời đi: lobby mới (có drivers rỗng) khách cũ vẫn đọc đúng
   drv.dispose(); await tick();
-  assert.deepEqual(oldFly.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(oldWalk.walkers, [{ slot: 0, name: 'Di' }]);
+  assert.deepEqual(oldFly.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(oldWalk.walkers, [{ slot: 0, name: 'Di', ch: 0 }]);
+});
+
+/* ===== Chọn nhân vật đi dạo (nam / nữ): join kind 'walk' gửi ch; bay và lái không gửi ===== */
+test("nhân vật: phiên walk gửi ch đã chọn trong join (cả lần join lại sau khi bị thu chỗ); phiên bay / lái không có ch", async () => {
+  const w = await makeKind('walk');
+  lobby2(w.t, [], []);
+  w.s.ch = 1; w.s.join('Lan');
+  assert.deepEqual(w.t.sent.at(-1), { t: 'join', name: 'Lan', kind: 'walk', ch: 1 });
+  w.t.onMessage({ t: 'joined', slot: 0, kind: 'walk' }); w.t.onMessage({ t: 'released' });
+  assert.equal(w.s.phase, 'watching');
+  w.s.join('Lan');   // lời mời: vào lại vẫn đúng nhân vật
+  assert.deepEqual(w.t.sent.at(-1), { t: 'join', name: 'Lan', kind: 'walk', ch: 1 });
+  const f = await makeKind('fly');
+  lobby2(f.t, [], []); f.s.ch = 1; f.s.join('Bay');
+  assert.deepEqual(f.t.sent.at(-1), { t: 'join', name: 'Bay' });
+});
+
+test('nhân vật: walkers của lobby giữ nguyên ch từ máy chủ; máy chủ cũ không gửi ch thì trường không có (bên vẽ coi là nam)', async () => {
+  const w = await makeKind('walk');
+  w.t.onMessage({ t: 'lobby', flyers: [], walkers: [{ slot: 0, name: 'A', ch: 0 }, { slot: 1, name: 'B', ch: 1 }, { slot: 2, name: 'Cu' }], drivers: [] });
+  assert.deepEqual(w.s.walkers.map(x => x.ch), [0, 1, undefined]);
 });

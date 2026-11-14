@@ -58,3 +58,13 @@ test('LICENSE-Rocketbox.txt có và ghi MIT', () => {
   assert.ok(existsSync(f));
   assert.match(readFileSync(f, 'utf8'), /MIT/);
 });
+
+test('ảnh xem trước hai nhân vật ở sảnh (npm run gen:thumbs): có, là WebP, mỗi ảnh ≤ 20 kB; index.html trỏ đúng', () => {
+  const html = readFileSync(join(DIR, '..', '..', 'index.html'), 'utf8');
+  for (const f of ['thumb-m.webp', 'thumb-f.webp']) {
+    const b = readFileSync(join(DIR, f));
+    assert.equal(b.subarray(0, 4).toString('latin1'), 'RIFF'); assert.equal(b.subarray(8, 12).toString('latin1'), 'WEBP');
+    assert.ok(b.length <= 20000, `${f}: ${b.length} byte`);
+    assert.ok(html.includes('people/' + f), `index.html thiếu people/${f}`);
+  }
+});

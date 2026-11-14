@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "gen:voice": "node scripts/gen-narration.mjs",
+    "gen:thumbs": "node scripts/people/thumbs.mjs",
     "gen:people": "node scripts/people/blender.mjs scripts/people/convert.py",
     "gen:crowd": "node scripts/people/blender.mjs scripts/people/crowd.py",
     "gen:car": "node scripts/people/blender.mjs scripts/car/convert.py",
@@ -38,6 +39,7 @@
     "test:people": "node tests/people-check.mjs",
     "test:stroll:unit": "tsx --test tests/stroll-unit/*.test.ts",
     "test:stroll": "node tests/stroll-check.mjs",
+    "test:char": "node tests/char-check.mjs",
     "test:drive": "node tests/drive-check.mjs",
     "test:drive:unit": "tsx --test tests/drive-unit/*.test.ts",
     "test:pilot:unit": "tsx --test tests/pilot-unit/*.test.ts"

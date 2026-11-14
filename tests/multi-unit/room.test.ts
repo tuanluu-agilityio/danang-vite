@@ -239,7 +239,7 @@ test('lobby: flyers chỉ gồm người bay, walkers chỉ gồm người đi d
   join(r, 'a', 'Bay');
   const l = has(joinW(r, 'b', 'Di'), x => x.msg.t === 'lobby')[0].msg;
   assert.deepEqual(l.flyers, [{ slot: 0, name: 'Bay' }]);
-  assert.deepEqual(l.walkers, [{ slot: 0, name: 'Di' }]);
+  assert.deepEqual(l.walkers, [{ slot: 0, name: 'Di', ch: 0 }]);
   assert.equal(r.slotOf('b'), -1); assert.equal(r.walkSlotOf('b'), 0);
   assert.equal(r.slotOf('a'), 0); assert.equal(r.walkSlotOf('a'), -1);
   assert.equal(r.kindOf('a'), 'fly'); assert.equal(r.kindOf('b'), 'walk'); assert.equal(r.kindOf('zz'), null);
@@ -319,7 +319,7 @@ test('leave / disconnect / sweep trả đúng chỗ đi dạo và phát lobby m�
   r.message('w2', J({ t: 'hb' }), 9000);
   const s = r.sweep(P.slotTimeoutMs + 1);
   assert.equal(has(s, x => x.msg.t === 'released' && x.to === 'w1').length, 1);
-  assert.deepEqual((has(s, x => x.msg.t === 'lobby')[0].msg as any).walkers, [{ slot: 2, name: 'W2' }]);
+  assert.deepEqual((has(s, x => x.msg.t === 'lobby')[0].msg as any).walkers, [{ slot: 2, name: 'W2', ch: 0 }]);
   assert.equal(r.hasFlyers(), true);
   r.disconnect('w2');
   assert.equal(r.hasFlyers(), false);
@@ -382,7 +382,7 @@ test('lobby có drivers: flyers / walkers / drivers tách riêng; lobby luôn c�
   join(r, 'a', 'Bay'); joinW(r, 'b', 'Di');
   const l = has(joinD(r, 'c', 'Lai'), x => x.msg.t === 'lobby')[0].msg as any;
   assert.deepEqual(l.flyers, [{ slot: 0, name: 'Bay' }]);
-  assert.deepEqual(l.walkers, [{ slot: 0, name: 'Di' }]);
+  assert.deepEqual(l.walkers, [{ slot: 0, name: 'Di', ch: 0 }]);
   assert.deepEqual(l.drivers, [{ slot: 0, name: 'Lai' }]);
 });
 
@@ -478,4 +478,53 @@ test('khách cũ (bay, đi dạo) giữa phòng đầy người lái: vẫn đư
   assert.deepEqual(joinW(r, 'oldw', 'Cu2')[0].msg, { t: 'joined', slot: 0, kind: 'walk' });
   const m = posD(r, 'd3', { x: 5 }, 1000)[0].msg as any;
   assert.ok(Array.isArray(m.f)); assert.equal(m.d[0][0], 3);
+});
+
+/* ===== Chọn nhân vật đi dạo (nam / nữ): ch đi theo slot đi dạo, phát trong walkers ===== */
+const joinC = (r: SkyRoom, id: string, name: string, ch: unknown) => r.message(id, J({ t: 'join', name, kind: 'walk', ch }), 0);
+const walkersOf = (outs: any[]) => (has(outs, (o: any) => o.msg.t === 'lobby')[0].msg as any).walkers;
+
+test('nhân vật: A nam, B nữ → lobby phát đúng cho mọi người; người vào sau nhận đủ ngay ở lobby đầu, bất kể ai vào trước', () => {
+  for (const order of [[0, 1], [1, 0]]) {
+    const r = new SkyRoom();
+    r.connect('a', 0); r.connect('b', 0);
+    joinC(r, 'a', 'A', order[0]);
+    const l = has(joinC(r, 'b', 'B', order[1]), (o: any) => o.msg.t === 'lobby')[0];
+    assert.equal(l.to, 'all');
+    assert.deepEqual((l.msg as any).walkers, [{ slot: 0, name: 'A', ch: order[0] }, { slot: 1, name: 'B', ch: order[1] }]);
+    const late = r.connect('c', 0)!;   // C vào sau: lobby đầu đã có nhân vật của A và B
+    assert.deepEqual((late[0].msg as any).walkers, [{ slot: 0, name: 'A', ch: order[0] }, { slot: 1, name: 'B', ch: order[1] }]);
+    assert.deepEqual(walkersOf(joinC(r, 'c', 'C', 1))[2], { slot: 2, name: 'C', ch: 1 });
+  }
+});
+
+test('nhân vật: khách cũ không gửi ch và giá trị lạ → 0 (nam), không lỗi; người bay / lái không có ch', () => {
+  const r = new SkyRoom();
+  const bad: unknown[] = [undefined, null, 2, -1, '1', 1.5, NaN, {}, [1], true];
+  bad.slice(0, 5).forEach((v, i) => { r.connect('w' + i, 0); joinC(r, 'w' + i, 'W' + i, v); });
+  r.connect('x', 0);
+  assert.deepEqual((r.connect('y', 0)![0].msg as any).walkers.map((w: any) => w.ch), [0, 0, 0, 0, 0]);
+  const r2 = new SkyRoom();
+  bad.slice(5).forEach((v, i) => { r2.connect('w' + i, 0); joinC(r2, 'w' + i, 'W' + i, v); });
+  r2.connect('f', 0); r2.message('f', J({ t: 'join', name: 'Bay', ch: 1 }), 0);
+  r2.connect('d', 0); r2.message('d', J({ t: 'join', name: 'Lai', kind: 'drive', ch: 1 }), 0);
+  const m = r2.connect('y', 0)![0].msg as any;
+  assert.deepEqual(m.walkers.map((w: any) => w.ch), [0, 0, 0, 0, 0]);
+  assert.deepEqual(m.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(m.drivers, [{ slot: 0, name: 'Lai' }]);
+  assert.equal(r2.chOf('f'), 0); assert.equal(r2.chOf('d'), 0);
+});
+
+test('nhân vật: người rời đi rồi người khác vào đúng slot đó → ch của người mới; pos không đổi ch; restore sau hibernation giữ ch', () => {
+  const r = new SkyRoom();
+  r.connect('a', 0); r.connect('b', 0);
+  joinC(r, 'a', 'A', 1); assert.equal(r.chOf('a'), 1);
+  r.message('a', J({ t: 'pos', x: 1, y: 3, z: 1, yaw: 0, pose: 1, ch: 0 }), 10);
+  assert.equal(r.chOf('a'), 1);
+  r.message('a', J({ t: 'leave' }), 20);
+  assert.deepEqual(walkersOf(joinC(r, 'b', 'B', 0)), [{ slot: 0, name: 'B', ch: 0 }]);
+  const r2 = new SkyRoom();
+  r2.restore([{ id: 'p', slot: 1, name: 'P', kind: 'walk', ch: 1 }, { id: 'q', slot: 2, name: 'Q', kind: 'walk' }, { id: 'f', slot: 0, name: 'F', ch: 1 }], 0);
+  const m = r2.connect('z', 0)![0].msg as any;
+  assert.deepEqual(m.walkers, [{ slot: 1, name: 'P', ch: 1 }, { slot: 2, name: 'Q', ch: 0 }]);
+  assert.deepEqual(m.flyers, [{ slot: 0, name: 'F' }]);
 });

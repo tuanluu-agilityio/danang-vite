@@ -18,6 +18,7 @@ export class MultiSession {
   invite = false;     // đang xem và còn chỗ trống
   notice: Notice = '';
   name = '';
+  ch = 0;             // nhân vật đi dạo mình chọn (0 nam, 1 nữ); gửi kèm join kind 'walk' (sảnh và lời mời đều qua join())
   onChange: () => void = () => {};
   onPos: (f: number[][]) => void = () => {};
   onWalkPos: (w: number[][]) => void = () => {};
@@ -50,7 +51,7 @@ export class MultiSession {
   join(name: string): void {
     this.name = name; this.notice = '';
     if (this.kind === 'drive' && this.first) return;
-    this.t?.send(this.kind === 'fly' ? { t: 'join', name } : { t: 'join', name, kind: this.kind });
+    this.t?.send(this.kind === 'fly' ? { t: 'join', name } : this.kind === 'walk' ? { t: 'join', name, kind: 'walk', ch: this.ch } : { t: 'join', name, kind: this.kind });
   }
 
   // Rời chỗ (do rời máy): trả slot, chuyển sang xem, báo 'released' như khi máy chủ thu hồi chỗ

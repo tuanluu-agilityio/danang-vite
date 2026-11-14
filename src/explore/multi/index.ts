@@ -11,6 +11,7 @@ import { exRemotes } from './remote';
 import { exLabelsUpdate, exLabelsClear } from './labels';
 import { ExIdle } from './idle';
 import { stAvatars } from '../stroll/avatars';
+import { stChar } from '../stroll/char';
 import { exDrivers } from './remoteDrive';
 import { drCars } from '../drive/cars';
 import type { Kind } from './protocol';
@@ -121,6 +122,7 @@ export const exMulti = {
     const url = exMulti.url();
     if (!url || session) return false;
     const s = session = new MultiSession(() => exConnect(url, M.connectTimeoutMs), undefined, kind);
+    if (kind === 'walk') s.ch = stChar.get();   // nhân vật đã chọn lần trước; sảnh đổi thì ghi lại (lobby.ts)
     let ready = false;
     s.onPos = f => exRemotes.onPos(f, performance.now());
     s.onWalkPos = w => stAvatars.onPos(w, performance.now());
