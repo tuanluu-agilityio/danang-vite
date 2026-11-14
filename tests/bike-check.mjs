@@ -26,7 +26,7 @@
 //   Mục 12: stop() / start() × 3: số bộ nghe sự kiện, bkSound.nodes(), số lưới trong cảnh không tăng.
 //   Mục 13: sau bike.stop(): drive.start() lái được, va chạm cỡ ô tô (đâm lan can, góc xe cỡ VF 3 không lấn); stroll.start() vào được; explore.start() (dù lượn) vào được.
 //   Mục 14: console không có lỗi ở mọi trang.
-//   Mục 15 (tùy chọn, `-- --multi`): hai trang xe máy cùng phòng qua `wrangler dev` cục bộ (cổng 8799, KHÔNG dùng Worker thật): thấy nhau là xe máy, ≤ 4 lệnh vẽ mỗi xe, dấu nghiêng khớp.
+//   Mục 15 (tùy chọn, `-- --multi`): hai trang xe máy cùng phòng qua `wrangler dev` cục bộ (cổng 8799, KHÔNG dùng Worker thật): thấy nhau là xe máy thật + nhân vật đã chọn (A nam, B nữ), dấu nghiêng khớp.
 //
 //   Mỗi mục bọc try / catch riêng, có giới hạn thời gian từng mục và tổng; luôn đóng trình duyệt ở finally.
 //   npm run build && npm run test:bike [-- --no-shots] [-- --multi]
