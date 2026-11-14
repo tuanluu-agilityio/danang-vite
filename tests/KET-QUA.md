@@ -4,6 +4,21 @@ Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (
 
 Khung test mặc định 480×270 khớp `(max-height: 500px)` nên cả bộ test chạy ở chế độ gọn (không blur): draw call không đổi; số hitch của `test:perf` không so sát được với mốc D-018 (đo khi còn blur).
 
+## Trò chuyện theo khoảng cách (2026-11-14, nhánh `feature/chat-gan-nhau`, D-041)
+
+Chat gần nhau (`src/explore/multi/chat.ts`, `chatCore.ts`, `server/multi/src/room.ts`). **Không có test trình duyệt tự động** (`tests/chat-check.mjs` / `test:chat` không được viết, theo lời người dùng "viết tài liệu không cần test trình duyệt", 2026-11-14) và **không chạy test nặng nào** (`test:multi`, `test:stroll`, `test:drive`, `test:bike`, `test:mobile`, `test:explore`, `test:drawcalls`, `test:perf`). Số lệnh vẽ / program không đo; theo thiết kế bong bóng là DOM, 0 lệnh vẽ, 0 program, 0 đèn.
+
+| Phép đo | Kết quả |
+|---|---|
+| `typecheck` (`ccc39f3`) | sạch |
+| `test:multi:unit` (`ccc39f3`) | 151/151 (98 trước chat) |
+| `build` (`ccc39f3`) | đạt; chunk `index` 790,23 kB, `three` 636,51 kB, css 45,19 kB; trước chat tại `870f27b`: `index` 773,88 kB, css 41,60 kB |
+| `test:stroll:unit` / `test:drive:unit` / `test:bike:unit` (`adec796`) | 93/93 / 124/124 / 109/109 |
+| `test:multi:worker` (`3d6f80f`, `wrangler dev` cục bộ cổng 8799) | TẤT CẢ ĐẠT; 5 kiểm chat bằng WebSocket thật: hai người gần nhận, người xa 380 m không nhận, `chatAck n: 1`, `lobby.chat === 1`, chưa giữ chỗ thì `why 'slot'`. Worker thật `danang-sky` **chưa deploy** |
+| Thử tay Task 3 (Playwright, GPU thật, `wrangler dev` 8797 + vite 5197, chỉ Đi dạo, hai người) | nút hiện; cả hai thấy "Bạn đang ở gần …"; gửi qua lại có ✓; `<img onerror>` hiện thành chữ; bong bóng trên đầu người gửi; chấm chưa đọc + huy hiệu; Esc trong ô chỉ đóng bảng. Không phải test tự động, không có ảnh lưu |
+| Review từng task (agent đọc diff) | Task 1, 2, 3 "Approved", không có lỗi Critical / Important; review toàn nhánh chưa có kết quả lúc ghi |
+| **Chưa kiểm trong trình duyệt** | chat ở dù lượn, ô tô, xe máy; điện thoại dọc / ngang; RTL `ar`; mất kết nối; ba người trở lên; ra / vào tầm khi di chuyển; chồng lấn nút chat với HUD (`left:105px` viết cứng khi lái trên máy cảm ứng nằm ngang); mở đóng nhiều lần / lệnh vẽ |
+
 ## Lái xe máy tay ga (2026-11-14, nhánh `feature/xe-may`, D-040)
 
 Chế độ Lái xe máy (`src/explore/bike/`, `public/bike/scooter.glb`). **Không chạy test nặng nào trên nhánh này** theo lời người dùng (2026-11-14: "không cần chạy test, tôi tự test. Chỉ cần update documents cho AI model"): không có kết quả của `test:drive`, `test:mobile` (Mục 8 xe máy đã viết, **chưa từng chạy**), `test:explore`, `test:stroll`, `test:multi`, `test:drawcalls`, `test:perf -- --strict`, `test:gpu`. Bảng chuẩn ở các mục khác của tệp này chưa được sửa. Dưới đây chỉ có số đo thật lúc làm và các lệnh nhanh; test đơn vị chạy lần cuối tại `d934709` / `a6fe107`, **không chạy lại tại `54dd2cb`** (commit cuối chỉ thêm test trình duyệt + một getter test trong `bike/index.ts`).

@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-14-chat-gan-nhau-design.md` (đọc trước; mọi số và câu chữ lấy từ đó).
 
-**Thư mục làm việc:** worktree `D:\2026 - Tuan\danang-vite\.worktrees\chat-gan-nhau`, nhánh `feature/chat-gan-nhau` (từ `feature/xe-may` `870f27b`). Không có `node_modules` riêng ở gốc: Node tự tìm lên `D:\2026 - Tuan\danang-vite\node_modules` (đã kiểm: `typecheck` sạch, `test:multi:unit` 98/98). **Không `npm ci` / `npm install` ở gốc worktree, không tạo junction.** Riêng `server/multi` cần `npm --prefix server/multi ci` (Task 1) để có `wrangler`.
+**Thư mục làm việc:** worktree `D:\2026 - Tuan\danang-vite\.worktrees\chat-gan-nhau`, nhánh `feature/chat-gan-nhau` (từ `feature/xe-may` `870f27b`, đã gộp `origin/main` `515badc` ở `50e842e` nên là `main` + chat). Không có `node_modules` riêng ở gốc: Node tự tìm lên `D:\2026 - Tuan\danang-vite\node_modules` (đã kiểm: `typecheck` sạch, `test:multi:unit` 98/98). **Không `npm ci` / `npm install` ở gốc worktree, không tạo junction.** Riêng `server/multi` cần `npm --prefix server/multi ci` (Task 1) để có `wrangler`.
 
 ## Global Constraints
 
@@ -63,9 +63,9 @@ export function exIsBadText(text: string): boolean;            // so theo từ, 
 
 `SkyRoom.message` nhận `{t:'chat'}` theo thứ tự kiểm: (1) không giữ slot → `chatAck why 'slot'`; (2) kết nối đã có `ratePerWin` tin trong `rateWinMs` → `why 'rate'` (tin bị từ chối không tính vào hạn mức); (3) `exSanitizeChat` trả `null` → `'empty'`; (4) `exIsBadText` → `'bad'`; (5) đặt `seen = now` cho người gửi, gửi `{t:'chat', k, slot, name, text}` riêng tới từng slot đủ điều kiện (spec §5: mọi nhóm, khác người gửi, `pos` khác `null`, `now − seen ≤ slotTimeoutMs`, khoảng cách 3D `≤ radius`; người gửi chưa có `pos` thì không ai nhận), rồi `chatAck { id, n }` tới người gửi. `id` không phải số nguyên an toàn thì coi là 0. Giới hạn kích thước: gói dài hơn `chat.msgBytes` bỏ; gói không phải `chat` dài hơn `maxMsgBytes` bỏ như cũ. `lobby()` luôn kèm `chat: 1`.
 
-- [ ] **Step 1:** `npm --prefix server/multi ci` (chỉ trong `server/multi`). Kiểm: `ls server/multi/node_modules/.bin/wrangler*` có.
+- [x] **Step 1:** `npm --prefix server/multi ci` (chỉ trong `server/multi`). Kiểm: `ls server/multi/node_modules/.bin/wrangler*` có.
 
-- [ ] **Step 2: Viết test thất bại `tests/multi-unit/chatText.test.ts`** (`node:test`, mẫu import như `room.test.ts`):
+- [x] **Step 2: Viết test thất bại `tests/multi-unit/chatText.test.ts`** (`node:test`, mẫu import như `room.test.ts`):
 
 ```ts
 test('exSanitizeChat: giữ chữ thường, cắt khoảng trắng', () => { assert.equal(exSanitizeChat('  xin chào  '), 'xin chào'); });
@@ -94,7 +94,7 @@ test('exIsBadText: chặn theo từ, không chặn chuỗi con', () => {
 });
 ```
 
-- [ ] **Step 3: Viết test thất bại `tests/multi-unit/chatRoom.test.ts`.** Hàm phụ: `J`, `mk(r, id, kind, name, x, y, z, now)` (connect + join kind + một `pos` hợp lệ theo loại: `bank` / `pose` / `v`+`st`), `chat(r, id, text, now, id = 1)`, `to(outs, id)` = các `msg` gửi riêng tới `id`. Tọa độ gốc dùng `(0, 10, 0)` (nằm trong khung cả ba loại; người bay `y` ≥ 7). Các ca (mỗi ca một `test`, tên tiếng Việt):
+- [x] **Step 3: Viết test thất bại `tests/multi-unit/chatRoom.test.ts`.** Hàm phụ: `J`, `mk(r, id, kind, name, x, y, z, now)` (connect + join kind + một `pos` hợp lệ theo loại: `bank` / `pose` / `v`+`st`), `chat(r, id, text, now, id = 1)`, `to(outs, id)` = các `msg` gửi riêng tới `id`. Tọa độ gốc dùng `(0, 10, 0)` (nằm trong khung cả ba loại; người bay `y` ≥ 7). Các ca (mỗi ca một `test`, tên tiếng Việt):
   1. trong tầm: A (walk) tại 0, B (walk) cách 100 m theo x → B nhận đúng một `{t:'chat', k:'walk', slot:0, name:'A', text:'chào'}`; A nhận `{t:'chatAck', id:1, n:1}`; không có `Out` nào `to: 'all'`.
   2. ngoài tầm: C cách 150,5 m không nhận; `n` chỉ đếm người trong tầm.
   3. đúng biên: người cách đúng 150 m (x = 150, cùng y, z) nhận.
@@ -117,17 +117,17 @@ test('exIsBadText: chặn theo từ, không chặn chuỗi con', () => {
   20. `lobby` có `chat: 1` (ở `connect`, sau `join`, sau `sweep`).
   21. người gửi đang ở gần hết hạn im lặng gửi chat thì `seenOf` của họ = `now` (chat tính là còn sống).
 
-- [ ] **Step 4:** Chạy `npm run test:multi:unit`. Mong đợi: các ca mới FAIL (hàm chưa có), 98 ca cũ đạt.
+- [x] **Step 4:** Chạy `npm run test:multi:unit`. Mong đợi: các ca mới FAIL (hàm chưa có), 98 ca cũ đạt.
 
-- [ ] **Step 5:** Hiện thực `params.chat`, kiểu + `exSanitizeChat` (`protocol.ts`), `exIsBadText` (`badwords.ts`, dùng `TONED`, `WORD`, `SUB`, **không** dùng `PLAIN`; `SUB` so theo từ / dãy từ nguyên vẹn trong chuỗi đã tách từ, không bỏ khoảng trắng), `onChat` + giới hạn kích thước + `lobby.chat` + `Conn.chat: number[]` (`room.ts`; `connect` và `restore` tạo `Conn` có cả hai mảng). Sửa ca `connect nhận lobby…` trong `room.test.ts` thành kỳ vọng có `chat: 1`; tìm và sửa mọi ca khác so nguyên `lobby` (`session.test.ts`, `workerAtt.test.ts` nếu có).
+- [x] **Step 5:** Hiện thực `params.chat`, kiểu + `exSanitizeChat` (`protocol.ts`), `exIsBadText` (`badwords.ts`, dùng `TONED`, `WORD`, `SUB`, **không** dùng `PLAIN`; `SUB` so theo từ / dãy từ nguyên vẹn trong chuỗi đã tách từ, không bỏ khoảng trắng), `onChat` + giới hạn kích thước + `lobby.chat` + `Conn.chat: number[]` (`room.ts`; `connect` và `restore` tạo `Conn` có cả hai mảng). Sửa ca `connect nhận lobby…` trong `room.test.ts` thành kỳ vọng có `chat: 1`; tìm và sửa mọi ca khác so nguyên `lobby` (`session.test.ts`, `workerAtt.test.ts` nếu có).
 
-- [ ] **Step 6:** `npm run typecheck && npm --prefix server/multi run typecheck && npm run test:multi:unit`. Mong đợi: sạch; mọi ca đạt (98 cũ + mới).
+- [x] **Step 6:** `npm run typecheck && npm --prefix server/multi run typecheck && npm run test:multi:unit`. Mong đợi: sạch; mọi ca đạt (98 cũ + mới).
 
-- [ ] **Step 7: Thêm mục chat vào `tests/multi-unit/worker.integration.mjs`** (sau các mục sẵn có, dọn phòng trước): ba kết nối thật join `kind: 'walk'` tên `Gan1`, `Gan2`, `Xa`; gửi `pos` (`pose: 0`) tại x = 0 / 40 / 380, z = −100, y = 3; `Gan1` gửi `{t:'chat', text:'xin chào', id:7}`; chờ 1 s. Kiểm: `Gan2` nhận `chat` có `name: 'Gan1'`, `k: 'walk'`, `text: 'xin chào'`; `Xa` không nhận tin `chat` nào; `Gan1` nhận `chatAck` `id: 7, n: 1` và không nhận `chat`; lobby đầu của mỗi kết nối có `chat === 1`; kết nối chưa join gửi chat nhận `why: 'slot'`.
+- [x] **Step 7: Thêm mục chat vào `tests/multi-unit/worker.integration.mjs`** (sau các mục sẵn có, dọn phòng trước): ba kết nối thật join `kind: 'walk'` tên `Gan1`, `Gan2`, `Xa`; gửi `pos` (`pose: 0`) tại x = 0 / 40 / 380, z = −100, y = 3; `Gan1` gửi `{t:'chat', text:'xin chào', id:7}`; chờ 1 s. Kiểm: `Gan2` nhận `chat` có `name: 'Gan1'`, `k: 'walk'`, `text: 'xin chào'`; `Xa` không nhận tin `chat` nào; `Gan1` nhận `chatAck` `id: 7, n: 1` và không nhận `chat`; lobby đầu của mỗi kết nối có `chat === 1`; kết nối chưa join gửi chat nhận `why: 'slot'`.
 
-- [ ] **Step 8:** Kiểm không còn `wrangler` mồ côi giữ cổng 8799 (PowerShell `Get-CimInstance Win32_Process | ? CommandLine -match 'wrangler'`; nếu là của phiên khác thì **đừng kill**, báo lại và bỏ qua bước chạy). `npm run test:multi:worker`. Mong đợi: mọi dòng `ĐẠT`, exit 0.
+- [x] **Step 8:** Kiểm không còn `wrangler` mồ côi giữ cổng 8799 (PowerShell `Get-CimInstance Win32_Process | ? CommandLine -match 'wrangler'`; nếu là của phiên khác thì **đừng kill**, báo lại và bỏ qua bước chạy). `npm run test:multi:worker`. Mong đợi: mọi dòng `ĐẠT`, exit 0.
 
-- [ ] **Step 9:** Commit: `feat(chat): máy chủ giao tin theo khoảng cách, giao thức chat / chatAck (D-041 Task 1)`.
+- [x] **Step 9:** Commit: `feat(chat): máy chủ giao tin theo khoảng cách, giao thức chat / chatAck (D-041 Task 1)`.
 
 ---
 
@@ -172,22 +172,22 @@ export class ChLog {
 
 `chNear`: một người vào kết quả khi `d ≤ nearIn`, hoặc khi khóa của họ có trong `prev` và `d ≤ radius`; `self` là `null` → `[]`; thứ tự kết quả theo thứ tự `peers`. `MultiSession.recv`: nhánh `'chat'` / `'chatAck'` kiểm kiểu trường (chuỗi / số hữu hạn, `k` thuộc ba loại) rồi gọi móc và `return` (không gọi `onChange`); gói sai kiểu bỏ. `lost()` và `offline()` đặt `chatOk = false`.
 
-- [ ] **Step 1: Viết test thất bại `tests/multi-unit/chatCore.test.ts`:**
+- [x] **Step 1: Viết test thất bại `tests/multi-unit/chatCore.test.ts`:**
   - `chNear`: người ở 139 m vào; 145 m không vào khi `prev` rỗng, vẫn ở lại khi có trong `prev`; 150 m còn (có trong `prev`), 150,1 m ra; khoảng cách 3D (cao 200 m không vào); `self` `null` → rỗng; hai người cùng slot khác loại là hai khóa khác nhau.
   - `ChLog`: `addMine` id 1, 2, 3 và `pending`; `ack(1, 2, undefined)` → `ok`, `n = 2`; `ack(2, 0, undefined)` → `alone`; `ack(3, undefined, 'rate')` → `rate`; `'bad'` → `bad`; `'slot'` / `'empty'` → `fail`; `ack` id lạ → `null`; `ack` lần hai cho tin đã `ok` không đổi; `expire` sau `ackMs` → `fail` và chỉ trả tin vừa đổi; hồi âm tới sau khi đã `fail` không đổi lại; `failAll`; `addTheirs` bảng đóng tăng `unread`, bảng mở không; `read()` về 0; `canSend` sai sau 5 `addMine` trong 10 s, đúng lại sau 10 s; quá `historyMax` thì `trim()` trả tin cũ nhất và `list.length === historyMax`; `key` duy nhất tăng dần cho cả tin mình lẫn tin người khác; `clear()`.
   - i18n: 9 file `locales/*.json` đều có đủ các khóa `chatBtn, chatNone, chatOne, chatMany, chatLost, chatWatch, chatPlaceholder, chatSend, chatSending, chatSent, chatAlone, chatFail, chatRate, chatBad`, chuỗi không rỗng; `chatOne` chứa `{name}`, `chatMany` và `chatSent` chứa `{n}` ở mọi ngôn ngữ. (Ca này FAIL tới Task 3; ghi `{ todo: 'Task 3' }` bằng tùy chọn `todo` của `node:test` rồi gỡ ở Task 3.)
 
-- [ ] **Step 2: Thêm ca vào `tests/multi-unit/session.test.ts`** (dùng `Fake`, `make` sẵn có):
+- [x] **Step 2: Thêm ca vào `tests/multi-unit/session.test.ts`** (dùng `Fake`, `make` sẵn có):
   - lobby có `chat: 1` → `chatOk` đúng; lobby không có → sai (máy chủ cũ); sau `onClose` → sai.
   - `sendChat('hi', 1)` trước `joined` → `false`, không gửi gì; sau `joined` + `chatOk` → `true`, `t.sent` có `{t:'chat', text:'hi', id:1}`; `chatOk` sai → `false`.
   - nhận `{t:'chat', k:'walk', slot:1, name:'B', text:'yo'}` → `onChat` được gọi đúng một lần, `onChange` **không** tăng; nhận `chatAck` → `onChatAck`.
   - gói sai kiểu (`text: 5`, `k: 'x'`, `slot: 'a'`, thiếu `name`, `chatAck` `id: 'q'`) → không gọi móc, không ném lỗi.
   - phiên đã `dispose()` nhận chat → không gọi móc.
 
-- [ ] **Step 3:** `npm run test:multi:unit` → ca mới FAIL.
-- [ ] **Step 4:** Hiện thực `session.ts` và `chatCore.ts` theo Interfaces.
-- [ ] **Step 5:** `npm run typecheck && npm run test:multi:unit` → sạch, mọi ca đạt (trừ ca i18n `todo`).
-- [ ] **Step 6:** Commit: `feat(chat): phiên gửi / nhận chat, lõi sổ tin + danh sách gần (D-041 Task 2)`.
+- [x] **Step 3:** `npm run test:multi:unit` → ca mới FAIL.
+- [x] **Step 4:** Hiện thực `session.ts` và `chatCore.ts` theo Interfaces.
+- [x] **Step 5:** `npm run typecheck && npm run test:multi:unit` → sạch, mọi ca đạt (trừ ca i18n `todo`).
+- [x] **Step 6:** Commit: `feat(chat): phiên gửi / nhận chat, lõi sổ tin + danh sách gần (D-041 Task 2)`.
 
 ---
 
@@ -260,14 +260,14 @@ Thuộc tính placeholder: xem `src/i18n` hỗ trợ `data-i18n-ph` chưa; chưa
 - `.ex-mp-bubble{position:absolute;left:0;top:0;max-width:200px;padding:4px 8px;font:500 12px/1.3 var(--font-body);color:#10181c;background:rgba(255,255,255,.92);border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;overflow:hidden;max-height:4.2em;will-change:transform;}` + `[hidden]{display:none}`.
 - `body.ex-chat` thêm cho `#exChat`, `#exChatBtn`: `user-select` bình thường trong `#exChatList` (đè `body.compact .panel{user-select:none}`) để chép được chữ.
 
-- [ ] **Step 1:** Thêm ca bong bóng vào `tests/multi-unit/labels.test.ts` (DOM giả của file đó): `exLabelsSay('walk', 1, 'chào', 1000)` rồi `exLabelsUpdate` tại 1000 với người đi dạo slot 1 trước camera → có đúng một phần tử lớp `ex-mp-bubble` không `hidden`, `textContent === 'chào'`; tại `1000 + bubbleMs + 1` → `hidden`; chữ 100 ký tự → dài `bubbleChars + 1` và kết thúc bằng "…"; slot ngoài khoảng (`'drive', 9`) không ném lỗi; nhãn đang ẩn (sau camera) thì bong bóng ẩn; `exLabelsClear()` ẩn bong bóng. Chạy → FAIL.
-- [ ] **Step 2:** Hiện thực `labels.ts` → ca đạt; ca cũ của `labels.test.ts` vẫn đạt.
-- [ ] **Step 3:** Thêm 14 khóa vào 9 file locale (đặt sau khóa `exMp*` cuối), gỡ `todo` của ca i18n → đạt.
-- [ ] **Step 4:** `index.html`, `main.css`, `chat.ts`, nối `index.ts`, `main.ts` (`multiTest.chat = exChat`).
-- [ ] **Step 5:** `npm run typecheck && npm run test:multi:unit && npm run test:stroll:unit && npm run test:drive:unit && npm run test:bike:unit && npm run build`. Mong đợi: sạch, không ca nào giảm, build đạt. Ghi kích thước chunk `index` / css trước và sau vào báo cáo.
-- [ ] **Step 6:** `grep -n "innerHTML\|insertAdjacentHTML\|outerHTML" src/explore/multi/chat.ts src/explore/multi/labels.ts` → không có dòng nào.
-- [ ] **Step 7: Thử tay nhanh** (không SwiftShader): một cửa sổ PowerShell `npm --prefix server/multi run dev -- --port 8797`, một cửa sổ `npm run dev -- --port 5197`; mở hai tab `http://localhost:5197/?test&chooser&multi=ws%3A%2F%2F127.0.0.1%3A8797%2Fsky`, cả hai vào Đi dạo. Kiểm bằng mắt hoặc Playwright có GPU: nút hiện, hai người đứng gần nhau (điểm xuất phát cách nhau < 140 m) thấy `chatOne`, gửi qua lại, bong bóng hiện trên đầu, Esc trong ô chỉ đóng bảng. Tắt hai tiến trình khi xong (kill theo PID của chính mình). Không làm được thì ghi rõ trong báo cáo, không coi là đã kiểm.
-- [ ] **Step 8:** Commit: `feat(chat): nút + bảng trò chuyện, bong bóng trên nhãn tên, 9 ngôn ngữ (D-041 Task 3)`.
+- [x] **Step 1:** Thêm ca bong bóng vào `tests/multi-unit/labels.test.ts` (DOM giả của file đó): `exLabelsSay('walk', 1, 'chào', 1000)` rồi `exLabelsUpdate` tại 1000 với người đi dạo slot 1 trước camera → có đúng một phần tử lớp `ex-mp-bubble` không `hidden`, `textContent === 'chào'`; tại `1000 + bubbleMs + 1` → `hidden`; chữ 100 ký tự → dài `bubbleChars + 1` và kết thúc bằng "…"; slot ngoài khoảng (`'drive', 9`) không ném lỗi; nhãn đang ẩn (sau camera) thì bong bóng ẩn; `exLabelsClear()` ẩn bong bóng. Chạy → FAIL.
+- [x] **Step 2:** Hiện thực `labels.ts` → ca đạt; ca cũ của `labels.test.ts` vẫn đạt.
+- [x] **Step 3:** Thêm 14 khóa vào 9 file locale (đặt sau khóa `exMp*` cuối), gỡ `todo` của ca i18n → đạt.
+- [x] **Step 4:** `index.html`, `main.css`, `chat.ts`, nối `index.ts`, `main.ts` (`multiTest.chat = exChat`).
+- [x] **Step 5:** `npm run typecheck && npm run test:multi:unit && npm run test:stroll:unit && npm run test:drive:unit && npm run test:bike:unit && npm run build`. Mong đợi: sạch, không ca nào giảm, build đạt. Ghi kích thước chunk `index` / css trước và sau vào báo cáo.
+- [x] **Step 6:** `grep -n "innerHTML\|insertAdjacentHTML\|outerHTML" src/explore/multi/chat.ts src/explore/multi/labels.ts` → không có dòng nào.
+- [x] **Step 7: Thử tay nhanh** (không SwiftShader): một cửa sổ PowerShell `npm --prefix server/multi run dev -- --port 8797`, một cửa sổ `npm run dev -- --port 5197`; mở hai tab `http://localhost:5197/?test&chooser&multi=ws%3A%2F%2F127.0.0.1%3A8797%2Fsky`, cả hai vào Đi dạo. Kiểm bằng mắt hoặc Playwright có GPU: nút hiện, hai người đứng gần nhau (điểm xuất phát cách nhau < 140 m) thấy `chatOne`, gửi qua lại, bong bóng hiện trên đầu, Esc trong ô chỉ đóng bảng. Tắt hai tiến trình khi xong (kill theo PID của chính mình). Không làm được thì ghi rõ trong báo cáo, không coi là đã kiểm. **(Làm được ở chế độ Đi dạo, hai người; dù lượn, ô tô, xe máy chưa thử.)**
+- [x] **Step 8:** Commit: `feat(chat): nút + bảng trò chuyện, bong bóng trên nhãn tên, 9 ngôn ngữ (D-041 Task 3)`.
 
 ---
 
@@ -295,10 +295,10 @@ Mục (trang chính vào **Đi dạo**):
 11. Mất máy chủ (cuối cùng): kill `wrangler` → trong 10 s trạng thái = `chatLost`, ô khóa; tin đang gửi dở (gửi ngay trước khi kill) thành `chatFail`.
 12. Không có lỗi console / pageerror nào trong cả lượt (trừ lỗi WebSocket đóng do mục 11).
 
-- [ ] **Step 1:** Viết `tests/chat-check.mjs` + script `test:chat`.
-- [ ] **Step 2:** `npm run build`. Kiểm tiến trình mồ côi (`*-check.mjs`, `drawcalls.mjs`, `wrangler`): của phiên khác thì không kill; nếu có test trình duyệt khác đang chạy thì báo lại rồi vẫn chạy (ghi chú CPU bị tranh).
-- [ ] **Step 3:** `npm run test:chat` (ước 20 – 40 phút trên SwiftShader; giới hạn 60 phút). Lỗi do test thì sửa test; lỗi sản phẩm thì sửa mã + thêm ca đơn vị tương ứng, chạy lại riêng mục đó (cho phép cờ `-- --only=N`). Ghi đúng kết quả cuối: số kiểm đạt / lỗi, mục nào không chạy được và vì sao.
-- [ ] **Step 4:** Tài liệu (chỉ ghi điều có thật; test nào chưa chạy thì ghi "chưa chạy"):
+- [ ] **Step 1:** Viết `tests/chat-check.mjs` + script `test:chat`. **(Không làm theo lời người dùng "viết tài liệu không cần test trình duyệt", 2026-11-14.)**
+- [ ] **Step 2:** `npm run build`. Kiểm tiến trình mồ côi (`*-check.mjs`, `drawcalls.mjs`, `wrangler`): của phiên khác thì không kill; nếu có test trình duyệt khác đang chạy thì báo lại rồi vẫn chạy (ghi chú CPU bị tranh). **(Không làm theo lời người dùng "viết tài liệu không cần test trình duyệt", 2026-11-14.)**
+- [ ] **Step 3:** `npm run test:chat` (ước 20 – 40 phút trên SwiftShader; giới hạn 60 phút). Lỗi do test thì sửa test; lỗi sản phẩm thì sửa mã + thêm ca đơn vị tương ứng, chạy lại riêng mục đó (cho phép cờ `-- --only=N`). Ghi đúng kết quả cuối: số kiểm đạt / lỗi, mục nào không chạy được và vì sao. **(Không làm theo lời người dùng "viết tài liệu không cần test trình duyệt", 2026-11-14.)**
+- [x] **Step 4:** Tài liệu (chỉ ghi điều có thật; test nào chưa chạy thì ghi "chưa chạy"): **(Làm với số liệu thật: dòng `test:chat` không thêm vì lệnh không tồn tại; `KET-QUA.md` ghi rõ không có test trình duyệt.)**
   - `copilot-instructions.md` §1 (một cụm về chat), §5 thêm dòng `npm run test:chat`.
   - `tests.instructions.md`: cổng 8797, bot + `chat.debug()`, không nối Worker thật.
   - `ui-views.instructions.md`: vị trí nút chat (mép trái giữa), `z-index` 6, Enter / Esc, lớp `body.ex-chat`.
@@ -307,17 +307,31 @@ Mục (trang chính vào **Đi dạo**):
   - `activeContext.md` (đầu mục Trạng thái + Bước tiếp theo: Worker **chưa deploy** bản có chat ⇒ trên mạng nút chat chưa hiện; deploy phải hỏi riêng; nhánh xếp trên `feature/xe-may`), `progress.md`.
   - `tests/KET-QUA.md`: kết quả `test:chat`, `test:multi:unit`, `test:multi:worker`, kích thước chunk.
   - Spec: dòng trạng thái đầu file. Plan: đánh dấu ô, thêm mục "Trạng thái thực hiện" ở cuối (xong / còn / lệnh tiếp tục).
-- [ ] **Step 5:** Commit: `test(chat): chat-check trình duyệt + bot; tài liệu agent (D-041 Task 4)`.
+- [ ] **Step 5:** Commit: `test(chat): chat-check trình duyệt + bot; tài liệu agent (D-041 Task 4)`. **(Thay bằng một commit tài liệu `docs(chat): memory bank, hướng dẫn agent, trạng thái spec / plan (D-041)`; không có `chat-check.mjs` để commit.)**
 
 ---
 
 ## Trạng thái thực hiện
 
-_(cập nhật sau mỗi task: commit, test đã chạy và kết quả, việc còn lại)_
+_(cập nhật 2026-11-14)_
 
-- Task 1: chưa làm
-- Task 2: chưa làm
-- Task 3: chưa làm
-- Task 4: chưa làm
+- Task 1 (giao thức + máy chủ): xong, `3d6f80f`. `test:multi:worker` đạt qua `wrangler dev`, gồm 5 kiểm chat.
+- Task 2 (phiên + `chatCore.ts`): xong, `5cb55bf`.
+- Task 3 (giao diện, bong bóng, 9 ngôn ngữ): xong, `adec796`; sửa sau review `ccc39f3` (Esc khi đang gõ bộ gõ, ký tự cô lập viết dạng escape). Nhánh gộp `origin/main` (xe máy PR #34) ở `50e842e`.
+- Task 4: Step 1–3 (`tests/chat-check.mjs`, `npm run test:chat`) **không làm** theo lời người dùng (2026-11-14); Step 4 (tài liệu) xong; Step 5 thay bằng commit tài liệu.
+- Đã chạy tại `ccc39f3`: `typecheck` sạch, `test:multi:unit` 151/151, `build` đạt (`index` 790,23 kB, css 45,19 kB). Tại `adec796`: `test:stroll:unit` 93/93, `test:drive:unit` 124/124, `test:bike:unit` 109/109. Review từng task: Approved; review toàn nhánh chưa có kết quả khi viết mục này.
+- **Chưa chạy**: mọi test trình duyệt và test nặng (`test:multi`, `test:stroll`, `test:drive`, `test:bike`, `test:mobile`, `test:explore`, `test:drawcalls`, `test:perf`). Chưa push, chưa PR, chưa merge; Worker `danang-sky` chưa deploy (deploy phải hỏi người dùng riêng).
+- **Còn lại:** người dùng thử demo; (nếu muốn) viết + chạy `test:chat` rồi test nặng một lần; kết quả review toàn nhánh; push / PR / merge; hỏi deploy Worker.
 
-**Tiếp tục ở phiên khác:** `cd "D:\2026 - Tuan\danang-vite\.worktrees\chat-gan-nhau"`, `git log --oneline -8`, đọc mục này rồi làm task đầu tiên còn "chưa làm". Kiểm nhanh: `npm run typecheck && npm run test:multi:unit`.
+**Thử tay hai phiên (cục bộ):**
+
+```
+npm --prefix server/multi run dev -- --port 8797      # cửa sổ 1 (Worker cục bộ; lần đầu cần npm --prefix server/multi ci)
+npm run dev -- --port 5197                            # cửa sổ 2
+# mở hai tab / hai trình duyệt:
+http://localhost:5197/?test&chooser&multi=ws%3A%2F%2F127.0.0.1%3A8797%2Fsky
+```
+
+Mỗi tab chọn một chế độ (Đi dạo, Xe máy…), nhập tên, lại gần nhau dưới 140 m (nhãn tên ghi khoảng cách), bấm 💬 ở mép trái hoặc Enter; đi xa quá 150 m thì dòng trạng thái về "Chưa có ai ở gần…" và tin không tới nữa.
+
+**Tiếp tục ở phiên khác:** `cd "D:\2026 - Tuan\danang-vite\.worktrees\chat-gan-nhau"`, `git log --oneline -8`, đọc mục này. Kiểm nhanh: `npm run typecheck && npm run test:multi:unit`. Việc tiếp theo là "Còn lại" ở trên (không còn task nào "chưa làm" ngoài Task 4 Step 1–3 bị bỏ có chủ ý).

@@ -149,6 +149,14 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - SwiftShader chặn luồng chính ở khung đầu lâu hơn `CONFIG.explore.pilot.loadMs` (15 s) nên `?explore=glider` trong test trình duyệt hay ra người khối (một `console.warn` "quá giờ"). Test cần người thật: mở trang thường, đặt `__app.exFlight.CONFIG_explore.pilot.loadMs = 180000`, rồi `explore.start()` (mẫu `tests/pilot-shots.mjs`, `explore-check` mục 7). Ca kiểm đường lùi (`?pilot=off`, chặn `pilot.glb`) giữ giá trị thật.
 - Đọc số đo qua `__app.explore.pilotDebug()` → `{ real, handErr, pose, calls }`; `calls` là số lưới đang hiện của dù (= lệnh vẽ); null khi `?pilot=off` (dù không vào danh sách). Muốn đo tư thế ổn định: đóng băng `explore.update` rồi tự bước bằng `explore.step(1/60, inp)`.
 
+## Mẫu trò chuyện theo khoảng cách (`src/explore/multi/chat*.ts`, D-041)
+- `exMulti.onChange` là **một móc đơn** bị từng chế độ gán lại (sảnh, lái xe, đi dạo…): tính năng nhiều người mới không dùng nó mà nối thẳng trong `s.onChange` của `exMulti.begin()` (mẫu `exChat.sync(s)`, chạy trước `exMulti.onChange()`), gắn ở `begin` (`exChat.attach`), dọn ở `end()` (`exChat.detach`).
+- Tin gửi riêng một người dùng `Out.to = id` sẵn có của `SkyRoom` (máy chủ tính danh sách người nhận rồi trả từng `Out`); `worker.ts` không cần đổi. Danh tính người gửi lấy từ kết nối, không đọc từ trường trong tin.
+- Giới hạn kích thước theo loại tin: trần lớn (1024 đơn vị UTF-16, `multiParams`) kiểm **trước** `JSON.parse`, tin không phải chat bị trần nhỏ 256 **sau** parse; đừng nâng trần chung cho mọi tin.
+- Esc nghe ở `window` pha nổi bọt sẽ thoát chế độ khám phá (tải lại trang bỏ tham số URL): mọi ô nhập mới trong chế độ khám phá phải `stopPropagation` ở `keydown` (ô chat làm vậy, kể cả khi đang gõ bộ gõ `isComposing`); phím điều khiển WASD trong ô cũng không được đi xuống.
+- Tin nhận từ mạng **không** gọi `session.onChange` (tránh vẽ lại sảnh / danh sách mỗi tin); `chatCore` tự báo giao diện qua móc riêng.
+- Worktree đặt trong `.worktrees/` dùng `node_modules` của thư mục cha qua cơ chế tìm ngược của Node: không cần junction, không `npm ci` / `npm install` ở gốc worktree; chỉ `server/multi` cần `npm --prefix server/multi ci` riêng để có `wrangler`.
+
 ## Mẫu kiểm thử
 - `?test` → `window.__app` (renderer, scene, camera, cam, songHan, hr, tours, narration…). Thêm đối tượng mới vào `__app` khi cần kiểm.
 - `tests/lib.mjs`: `serveDir`, `launch` (SwiftShader), `openApp`, `frames`, `waitFlight`. Test đọc `dist/` → build trước.

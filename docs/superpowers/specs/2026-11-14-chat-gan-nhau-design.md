@@ -1,6 +1,6 @@
 # Trò chuyện theo khoảng cách (proximity chat) — thiết kế
 
-_Ngày: 2026-11-14 · Quyết định: D-041 · Nhánh: `feature/chat-gan-nhau` (từ `feature/xe-may` `870f27b`, vì xe máy D-040 chưa vào `main`) · Trạng thái: người dùng giao bản yêu cầu "Proximity-based real-time chat" (2026-11-14) và bảo tự quyết kỹ thuật, làm liền spec → plan → mã; chưa duyệt riêng từng mục._
+_Ngày: 2026-11-14 · Quyết định: D-041 · Nhánh: `feature/chat-gan-nhau` (từ `feature/xe-may` `870f27b`, vì xe máy D-040 chưa vào `main`) · Trạng thái: người dùng giao bản yêu cầu "Proximity-based real-time chat" (2026-11-14) và bảo tự quyết kỹ thuật, làm liền spec → plan → mã; chưa duyệt riêng từng mục. **Đã triển khai Task 1–3 trên nhánh (gộp `origin/main` ở `50e842e`, mã `ccc39f3`), chưa push / PR / merge, Worker chưa deploy; test trình duyệt (`test:chat`, Task 4) không làm theo lời người dùng (2026-11-14).**_
 
 Ghi chú nguồn gốc: **(ND)** = có trong bản yêu cầu của người dùng; **(Claude)** = lựa chọn của Claude, người dùng chưa duyệt riêng; không ghi gì = suy ra từ mã hiện có.
 
@@ -169,7 +169,7 @@ Không thư viện mới, không biến môi trường mới, không đổi `wra
 
 - `test:multi:unit` (thêm): phòng (trong / ngoài tầm, đúng biên, khác loại, ba người một vùng, ra khỏi tầm thì thôi nhận, vào tầm thì nhận, không slot, chưa có `pos`, `seen` quá hạn, rỗng, dài, HTML giữ nguyên là chữ, trường giả danh bị bỏ, giới hạn tần suất, gói hỏng, 15 chỗ, `lobby.chat`), `exSanitizeChat`, `exIsBadText`, phiên (`chatOk`, gọi lại, không gửi khi không giữ chỗ), `chatCore` (trễ hai ngưỡng, hồi âm, quá hạn, chưa đọc, cắt lịch sử).
 - `test:multi:worker` (thêm): ba WebSocket thật qua `wrangler dev`: hai gần, một xa.
-- `test:chat` (mới, `tests/chat-check.mjs`, trình duyệt + bot): bốn chế độ; chỉ báo A / B / C; gửi tới bot gần mà bot xa không nhận; nhận tin + bong bóng; `<img onerror>` hiện thành chữ; Enter / Shift + Enter / Esc; gõ WASD trong ô không di chuyển; tắt máy chủ ⇒ trạng thái mất kết nối; mở đóng 50 lần không tăng số trình nghe / nút DOM; lệnh vẽ không đổi khi mở bảng.
+- `test:chat` (mới, `tests/chat-check.mjs`, trình duyệt + bot) **chưa viết** (theo lời người dùng 2026-11-14; hiện chỉ có `window.__app.multi.chat.debug()` sẵn cho test sau này), dự kiến: bốn chế độ; chỉ báo A / B / C; gửi tới bot gần mà bot xa không nhận; nhận tin + bong bóng; `<img onerror>` hiện thành chữ; Enter / Shift + Enter / Esc; gõ WASD trong ô không di chuyển; tắt máy chủ ⇒ trạng thái mất kết nối; mở đóng 50 lần không tăng số trình nghe / nút DOM; lệnh vẽ không đổi khi mở bảng.
 - `typecheck`, `build`; `test:mobile` nếu chạm bố cục điện thoại. Test nặng khác chạy một lần cuối nhánh theo lệ của dự án.
 
 ## 13. Triển khai
@@ -182,3 +182,9 @@ Chat chỉ hoạt động trên mạng sau khi Worker `danang-sky` được depl
 - Một người mở nhiều tab chiếm nhiều chỗ thì mỗi tab có hạn mức chat riêng (như hạn chế sẵn có của phòng).
 - Lọc từ tục ngắn (vi + en), không phải kiểm duyệt.
 - Bản dịch 8 ngôn ngữ của khóa `chat*` cần người bản ngữ duyệt.
+- Tin rỗng / tục vẫn tính vào hạn mức 5 tin / 10 s của máy chủ; lọc từ tục so nguyên từ nên dạng biến thể ("fucking") lọt.
+- Không tự kết nối lại: mất kết nối thành `solo`, phải vào lại chế độ, lịch sử xóa. Người đang xem (không giữ chỗ) không chat.
+- Người gửi chưa có `pos` trên máy chủ (tab ẩn sau hibernation) thì `n: 0`.
+- U+2028 / U+2029 không bị bỏ; `\p{Cf}` xóa cả ký tự tag của cờ emoji vùng.
+- Đồng hồ 500 ms chạy cả khi máy chủ không hỗ trợ chat (thoát sớm ở vòng đầu).
+- Chưa kiểm trong trình duyệt: dù lượn, ô tô, xe máy, điện thoại, RTL, mất kết nối, ba người trở lên, chồng lấn nút chat với HUD (xem `tests/KET-QUA.md`).

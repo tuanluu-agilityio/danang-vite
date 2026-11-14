@@ -5,7 +5,7 @@ File này là **điểm vào chung** cho mọi agent (Claude Code qua `CLAUDE.md
 
 ## 1. Dự án trong một đoạn
 
-Mô hình 3D các công trình trên sông Hàn, Đà Nẵng: Cầu Rồng, Thuận Phước, Trần Thị Lý, Cầu sông Hàn (cầu quay) và Hầm vượt sông Hàn (phương án đề xuất, chưa xây), cùng hai bờ sông, ngày/đêm, Tour có thuyết minh, các chế độ tự khám phá (dù lượn, đi dạo, lái xe VinFast VF 3, lái xe máy tay ga góc nhìn thứ nhất / thứ ba — D-040, nhánh `feature/xe-may`, chưa merge), giao diện 9 ngôn ngữ.
+Mô hình 3D các công trình trên sông Hàn, Đà Nẵng: Cầu Rồng, Thuận Phước, Trần Thị Lý, Cầu sông Hàn (cầu quay) và Hầm vượt sông Hàn (phương án đề xuất, chưa xây), cùng hai bờ sông, ngày/đêm, Tour có thuyết minh, các chế độ tự khám phá (dù lượn, đi dạo, lái xe VinFast VF 3, lái xe máy tay ga góc nhìn thứ nhất / thứ ba — D-040, nhánh `feature/xe-may`, chưa merge), trò chuyện theo khoảng cách giữa người chơi cùng phòng (≤ 150 m, D-041, nhánh `feature/chat-gan-nhau`, chưa merge), giao diện 9 ngôn ngữ.
 Vite 6 + TypeScript 5.9 + three@0.165, **không dùng framework UI**. Chuyển từ một file HTML ~4 600 dòng (`tests/original/index.html`) và phải giữ nguyên hành vi lẫn draw call của bản gốc.
 
 ## 2. Quy trình Memory Bank (bắt buộc)
@@ -65,8 +65,8 @@ npm run test:people    # người đi bộ: 1 lưới + 1 lệnh vẽ mỗi hệ
 npm run test:stroll:unit # đi dạo: bản đồ va chạm, chuyển động, trộn chuyển động theo tốc độ, nhân vật (bộ nạp giả), file glb, cần gạt, phím (nhanh, không trình duyệt)
 npm run test:stroll    # đi dạo: một mình, nhân vật có xương, không xuyên tòa nhà / lan can, camera, sảnh, ảnh, cảm ứng, 9 ngôn ngữ; đọc dist/
 npm run test:char      # chọn nhân vật nam / nữ ở Đi dạo (D-039): ba trình duyệt độc lập + bot qua wrangler dev cục bộ (cổng 8798), mọi máy thấy mỗi người đúng nhân vật người đó chọn, vào sau, tải lại, khách cũ không có `ch`; đọc dist/
-npm run test:multi:unit   # dù lượn nhiều người: logic phòng, tên, nội suy, idle (nhanh, không trình duyệt)
-npm run test:multi:worker # Worker qua wrangler dev: kiểm Origin
+npm run test:multi:unit   # dù lượn nhiều người: logic phòng, tên, nội suy, idle; trò chuyện theo khoảng cách (D-041: phòng, lọc, `exSanitizeChat`, `exIsBadText`, `chatCore`, bong bóng ở `labels`) (nhanh, không trình duyệt)
+npm run test:multi:worker # Worker qua wrangler dev: kiểm Origin; chat bằng WebSocket thật (người gần nhận, người xa không)
 npm run test:multi        # dù lượn nhiều người: trình duyệt + bot qua wrangler dev cục bộ; đọc dist/
 npm run test:drive:unit # lái xe: mạng đường (ô, cao độ, liên thông), vật cản, va chạm, chuyển động theo số liệu VF 3, sơ tán nhịp quay, camera, mô hình glb (trần dung lượng / tam giác, giấy phép, ghi công), hình xe + bánh + đèn, HUD, âm thanh, khóa i18n, giao thức nhiều người (nhanh, không trình duyệt)
 npm run test:drive     # lái xe: vào bằng thẻ Ô tô / `?explore=drive`, lái qua 4 cầu + 2 ống hầm, đâm lan can / tường hầm / thân rồng, gầm Cầu Rồng, barie Cầu sông Hàn khi quay, ảnh hầm, đèn ngày / đêm / phanh, chặn / làm chậm `vf3.glb` (hình tạm), HUD 9 ngôn ngữ, thoát sang Đi dạo, lệnh vẽ; đọc dist/; một lượt chạy rất nặng (SwiftShader)
