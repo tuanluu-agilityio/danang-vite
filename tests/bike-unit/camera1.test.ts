@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG } from '../../src/config.ts';
 import { drMakeNet, type DrPad } from '../../src/explore/drive/net.ts';
-import { bkCamCreate, bkCamEye, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye } from '../../src/explore/bike/camera.ts';
+import { bkCamCreate, bkCamEye, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye, bkCamHideHead } from '../../src/explore/bike/camera.ts';
 import type { BkState } from '../../src/explore/bike/motion.ts';
 
 const C1 = CONFIG.bike.cam1, K3 = CONFIG.bike.cam3, CVT = CONFIG.bike.cvt, DT = 1 / 60;
@@ -21,7 +21,7 @@ test('xe thẳng đứng: mắt cao hơn mặt đường 1,55–1,80 m (yên 0,8
   const s = state(), c = bkCamCreate(), o = eye();
   bkCamEye(s, c, o);
   assert.ok(o.y - s.y >= 1.55 && o.y - s.y <= 1.8, `cao ${o.y - s.y}`);
-  assert.ok(Math.hypot(o.x - s.x, o.z - s.z) < 0.6, 'trong thân xe');
+  assert.ok(Math.hypot(o.x - s.x, o.z - s.z) < CONFIG.bike.body.length / 2, 'trên thân xe (điểm nhìn lùi sau mắt cam1.back)');
   assert.ok(Math.abs(o.yaw - s.yaw) < 1e-9 && Math.abs(o.roll) < 1e-9);
   /* mắt đặt theo người lái (bkCamSetEye) thì dùng số đó (điểm nhìn lùi thêm cam1.back) */
   bkCamSetEye({ fore: -0.3, up: 1.65 });
@@ -121,4 +121,37 @@ test('bkCamPlace: góc thứ nhất đặt camera ở mắt, fov / near của ca
   assert.equal(cam.fov, K3.fov); assert.equal(cam.near, K3.near);
   assert.ok(Math.abs(Math.hypot(cam.position.x - s.x, cam.position.z - s.z) - K3.dist) < 0.05, 'sau xe cam3.dist');
   assert.equal(bkCamPlace(cam, s, c, n, DT), false);
+});
+
+test('ẩn đầu theo mix đã làm mượt (smoothstep), không theo mix tuyến tính', () => {
+  const c = bkCamCreate();
+  c.mix = 0; assert.equal(bkCamHideHead(c), true);
+  /* mix tuyến tính đã quá headMix nhưng vị trí camera (smoothstep) còn sát mắt ⇒ vẫn ẩn */
+  const lin = C1.headMix * 1.3, sm = lin * lin * (3 - 2 * lin);
+  assert.ok(sm < C1.headMix, 'giả thiết của ca thử');
+  c.mix = lin; assert.equal(bkCamHideHead(c), true);
+  c.mix = 0.5; assert.equal(bkCamHideHead(c), false);
+  c.mix = 1; assert.equal(bkCamHideHead(c), false);
+});
+
+test('motion nhân cả chúi φ (vị trí + hướng nhìn) do giảm xóc; motion = 0 ⇒ mắt không theo giảm xóc', () => {
+  bkCamSetEye(null);
+  const flat = state({ yaw: 0, v: 10 }), dive = state({ yaw: 0, v: 10, susF: 0.05, susR: -0.02 });
+  const look = (motion: number, s: BkState) => { const c = bkCamCreate(), o = eye(); bkCamStep(c, flat, DT, motion); bkCamEye(s, c, o); return o; };
+  const a0 = look(0, flat), b0 = look(0, dive);
+  for (const k of ['x', 'y', 'z', 'pitch'] as const) assert.ok(Math.abs(a0[k] - b0[k]) < 1e-12, `motion 0: ${k} ${a0[k]} / ${b0[k]}`);
+  const a1 = look(1, flat), b1 = look(1, dive), a3 = look(0.3, flat), b3 = look(0.3, dive);
+  const d1 = b1.pitch - a1.pitch, d3 = b3.pitch - a3.pitch;
+  assert.ok(d1 < -1e-3, `chúi đầu khi phanh: ${d1}`);
+  assert.ok(Math.abs(d3 - 0.3 * d1) < 1e-4 * Math.abs(d1) + 1e-9, `motion 0,3 ⇒ 30 %: ${d3} / ${d1}`);
+});
+
+test('độ lún giảm xóc chỉ vào mắt qua một đường (nhún bob, ≤ bobMax), không cộng thêm lún trực tiếp', () => {
+  bkCamSetEye(null);
+  const rest = state({ yaw: 0 }), sunk = state({ yaw: 0, susF: 0.05, susR: 0.05 }), c = bkCamCreate();
+  for (let i = 0; i < 240; i++) bkCamStep(c, sunk, DT, 1);
+  const o = eye(), r = eye(), c0 = bkCamCreate();
+  bkCamEye(sunk, c, o); bkCamEye(rest, c0, r);
+  assert.ok(Math.abs(o.y - r.y - c.bob) < 1e-9, `chỉ bob: ${o.y - r.y} so với bob ${c.bob}`);
+  assert.ok(o.y - r.y < 0 && o.y - r.y >= -C1.bobMax - 1e-12, `lún ${o.y - r.y}`);
 });

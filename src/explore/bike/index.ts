@@ -7,7 +7,7 @@
      camera (camera.ts): mặc định góc thứ nhất trên yên, V trộn sang góc thứ ba (drCamPlace với CONFIG.bike.cam3) trong cam1.mixS; fov / near đổi thì onResize();
      mặt đồng hồ (dash.ts) vẽ lại ≤ dash.hz; controls.target theo xe (tâm vùng bóng đổ), HUD (đồng hồ + bản đồ nhỏ của ô tô), exNightStep(dt, false).
    - Mắt góc thứ nhất: đo MỘT lần khi người lái thật gắn vào mô hình thật (riderEye: giữa hai xương mắt ở tư thế ngồi nền, hệ thân xe), không theo xương mỗi khung;
-     chưa có thì cam1.eye. Camera còn sát mắt (mix < cam1.headMix) thì ẩn đầu + mũ (rider.setFirstPerson). prefers-reduced-motion ⇒ cam1.motionReduced.
+     chưa có thì cam1.eye. Camera còn sát mắt (smoothstep(mix) < cam1.headMix, bkCamHideHead) thì ẩn đầu + mũ (rider.setFirstPerson). prefers-reduced-motion ⇒ cam1.motionReduced.
    - Phím (theo e.code, chỉ khi đang lái, bỏ ô nhập và tổ hợp Ctrl / Meta / Alt; blur / ẩn tab nhả hết): R về làn (bkRecover), Q / E xi nhan trái / phải (bkSignal),
      V đổi góc nhìn thứ nhất ↔ thứ ba, H còi (giữ; nhả khi blur / ẩn tab / focus vào ô nhập). Kéo chuột trái / vuốt trên canvas: nhìn quanh (thứ nhất) hoặc quay quanh xe (thứ ba).
    - Lớp body 'explore drive bike': khung HUD #drHud và các quy tắc CSS của body.drive áp nguyên; 'bike' cho phần riêng về sau.
@@ -39,7 +39,7 @@ import { bkCreate, bkStep, bkRecover, bkSignal, bkPitch, BK_BODY, type BkState, 
 import { bkInputFromKeys, BK_KEYS } from './keys';
 import { BkBike, bkModelLoad, bkModelSetWarm, bkModelWarmAlso, type BkPlace } from './model';
 import { BkRider, bkRiderLoad, type BkRiderSig } from './rider';
-import { bkCamCreate, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye, type BkCam } from './camera';
+import { bkCamCreate, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye, bkCamHideHead, type BkCam } from './camera';
 import { BkDash } from './dash';
 import { bkSound, bkRiverK, type BkSoundIn } from './sound';
 import { bkFx, bkFxWarmObject, bkGrip, bkGustSteer } from './fx';
@@ -104,7 +104,7 @@ function advance(dt: number, inp: BkInput): void {
   riderEye();
   bkCamStep(camB, s, dt, motionK);
   if (bkCamPlace(camera, s, camB, n, dt)) onResize();   // fov / near đổi trong lúc trộn góc nhìn
-  rider?.setFirstPerson(camB.mix < C1.headMix);
+  rider?.setFirstPerson(bkCamHideHead(camB));   // cùng giá trị trộn đã làm mượt mà camera dùng
   if (dash) { dash.bind(model!.dashMat); dash.update(dt, s.v, s.rpm, s.sig); }
   controls.target.set(s.x, s.y, s.z);   // tâm vùng bóng đổ (main.ts shadowCenter) theo xe
   drHudUpdate(s, NO_DOTS);

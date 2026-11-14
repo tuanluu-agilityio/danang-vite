@@ -2,14 +2,15 @@
    Spec D-040 §7, §17.5.
    - Mắt: một điểm cố định trong hệ thân xe (tâm giữa hai vệt bánh trên mặt đường, mũi +X), không lấy từ xương đầu mỗi khung (tránh rung theo hoạt ảnh).
      index.ts đo một lần khi người lái gắn vào xe (xương đầu ở tư thế ngồi nền + cam1.headEye) rồi gọi bkCamSetEye; chưa có người lái thật thì cam1.eye.
-   - Vị trí mắt theo đủ chuyển động thân xe: góc chúi + nhún do giảm xóc, cuộn lean quanh đường chạm đất, dốc pitch, yaw (như model.ts place()),
-     cộng dồn (surge, dọc xe) và nhún (bob, đứng). Hướng nhìn thì đầu người giữ thăng bằng: cuộn = lò xo tới rollK · lean, chúi = pitchK · góc chúi giảm xóc,
+   - Vị trí mắt theo chuyển động thân xe: góc chúi φ do giảm xóc, cuộn lean quanh đường chạm đất, dốc pitch, yaw (như model.ts place()),
+     cộng dồn (surge, dọc xe) và nhún (bob, đứng). Độ lún trung bình của giảm xóc vào mắt CHỈ qua nhún bob (lò xo, kẹp ±bobMax: cổ người hấp thụ phần còn lại),
+     không cộng thêm lún trực tiếp (trước Task 7 tính hai lần). Hướng nhìn thì đầu người giữ thăng bằng: cuộn = lò xo tới rollK · lean, chúi = pitchK · φ,
      cộng dốc, cúi sẵn cam1.tilt và góc nhìn quanh do kéo chuột (yaw / pitch, kẹp, thôi kéo returnAfter giây thì tự về).
-   - Lò xo cuộn / nhún / dồn: bậc hai, Euler ẩn, bước con ≤ 1/120 s, dt kẹp cam1.dtMax; nhún và dồn nhân `motion` (prefers-reduced-motion ⇒ motionReduced,
-     index.ts chọn), motion = 0 thì tắt hẳn; cuộn giữ (đường chân trời nghiêng là thông tin lái, không phải rung).
+   - Lò xo cuộn / nhún / dồn: bậc hai, Euler ẩn, bước con ≤ 1/120 s, dt kẹp cam1.dtMax; nhún, dồn và φ (vị trí lẫn hướng nhìn) nhân `motion`
+     (prefers-reduced-motion ⇒ motionReduced, index.ts chọn; bkCamStep ghi vào c.k), motion = 0 thì tắt hẳn; cuộn giữ (đường chân trời nghiêng là thông tin lái, không phải rung).
    - Đổi góc nhìn: c.view là đích, c.mix đi tuyến tính 0 (thứ nhất) ↔ 1 (thứ ba) trong mixS giây; vị trí + hướng trộn theo smoothstep(mix).
      Góc thứ ba = drCamPlace với CONFIG.bike.cam3, gọi mỗi khung cả khi đang ở góc thứ nhất (trạng thái trễ của nó luôn sẵn: bấm V không giật),
-     cuộn thêm c.roll (đích roll3K · lean khi mix = 1). Góc thứ ba có DrCam riêng (c3) cho kéo chuột quay quanh xe; một lúc chỉ một xe máy của mình.
+     cuộn thêm c.roll (đích roll3K · lean khi mix = 1). Đầu người lái ẩn khi camera còn sát mắt theo cùng giá trị đã smoothstep (bkCamHideHead). Góc thứ ba có DrCam riêng (c3) cho kéo chuột quay quanh xe; một lúc chỉ một xe máy của mình.
    - fov / near nội suy theo mix (cam1 ↔ cam3); bkCamPlace trả true khi một trong hai đổi để người gọi chạy onResize() (ma trận chiếu).
    Không cấp phát mỗi khung (D-018). */
 import * as THREE from 'three';
@@ -18,7 +19,7 @@ import { drCamPlace, drCamDrag, type DrCam } from '../drive/camera';
 import type { DrNet } from '../drive/net';
 import type { BkState } from './motion';
 
-export interface BkCam { view: 1 | 3; mix: number; yaw: number; pitch: number; idle: number; roll: number; rollV: number; bob: number; bobV: number; surge: number; surgeV: number }   // view đích; mix 0 thứ nhất .. 1 thứ ba; yaw / pitch rad nhìn quanh (trái + / lên +); idle s từ lần kéo cuối; roll rad (trái +), bob m (lên +), surge m (trước +) và vận tốc của chúng
+export interface BkCam { view: 1 | 3; mix: number; yaw: number; pitch: number; idle: number; roll: number; rollV: number; bob: number; bobV: number; surge: number; surgeV: number; k: number }   // view đích; mix 0 thứ nhất .. 1 thứ ba; yaw / pitch rad nhìn quanh (trái + / lên +); idle s từ lần kéo cuối; roll rad (trái +), bob m (lên +), surge m (trước +) và vận tốc của chúng; k: hệ số motion của lần bkCamStep cuối (0..1)
 export interface BkEye { x: number; y: number; z: number; yaw: number; pitch: number; roll: number }   // m thế giới; yaw rad (quy ước xe: 0 mũi +X); pitch rad (lên +); roll rad (nghiêng trái +)
 
 const C1 = CONFIG.bike.cam1, K3 = CONFIG.bike.cam3, L = CONFIG.bike.body.wheelbase, LEAN_MAX = CONFIG.bike.perf.leanMax, HARD = CONFIG.bike.perf.hardBrake;
@@ -36,16 +37,21 @@ const c3: DrCam = { yaw: 0, pitch: 0, idle: 0 };   // góc nhìn quanh của gó
 
 export function bkCamCreate(): BkCam {
   c3.yaw = 0; c3.pitch = 0; c3.idle = 0;
-  return { view: 1, mix: 0, yaw: 0, pitch: 0, idle: 0, roll: 0, rollV: 0, bob: 0, bobV: 0, surge: 0, surgeV: 0 };
+  return { view: 1, mix: 0, yaw: 0, pitch: 0, idle: 0, roll: 0, rollV: 0, bob: 0, bobV: 0, surge: 0, surgeV: 0, k: 1 };
 }
+
+/* Trộn đã làm mượt (vị trí / hướng / fov / near dùng giá trị này) */
+const mixS = (c: BkCam): number => { const t = clamp(fin(c.mix), 0, 1); return t * t * (3 - 2 * t); };
+/* Ẩn đầu + mũ người lái: camera còn sát mắt (so với cùng giá trị trộn đã làm mượt mà camera đang dùng) */
+export function bkCamHideHead(c: BkCam): boolean { return mixS(c) < C1.headMix; }
 
 /* Thuần: tư thế mắt góc thứ nhất từ trạng thái xe + trạng thái camera (lò xo, nhìn quanh) */
 export function bkCamEye(s: BkState, c: BkCam, out: BkEye): void {
   const susF = fin(s.susF), susR = fin(s.susR), lean = fin(s.lean), p = fin(s.pitch), yaw = fin(s.yaw);
   const ex = eyeAt.fore - C1.back + fin(c.surge), ey = eyeAt.up;
-  /* phần trên lò xo: chúi φ (đầu xuống khi giảm xóc trước nén hơn sau), nhún xuống theo độ lún trung bình */
-  const phi = (susR - susF) / L, cp = Math.cos(phi), sp = Math.sin(phi);
-  const x0 = ex * cp - ey * sp, y0 = ex * sp + ey * cp - (susF + susR) / 2;
+  /* phần trên lò xo: chúi φ (đầu xuống khi giảm xóc trước nén hơn sau) nhân motion; độ lún trung bình vào qua c.bob (bkCamStep) */
+  const phi = clamp(fin(c.k), 0, 1) * (susR - susF) / L, cp = Math.cos(phi), sp = Math.sin(phi);
+  const x0 = ex * cp - ey * sp, y0 = ex * sp + ey * cp;
   /* cuộn quanh đường chạm đất (trục X cục bộ): lean > 0 sang trái (−Z cục bộ) */
   const y1 = y0 * Math.cos(lean), z1 = -y0 * Math.sin(lean);
   /* dốc quanh Z, rồi yaw quanh Y */
@@ -71,6 +77,7 @@ export function bkCamStep(c: BkCam, s: BkState, dt: number, motion: number): voi
   c.idle += d;
   if (c.idle > C1.returnAfter) { const k = Math.exp(-C1.returnRate * d); c.yaw *= k; c.pitch *= k; }
   const m = clamp(fin(motion), 0, 1);
+  c.k = m;
   const tRoll = (C1.rollK + (C1.roll3K - C1.rollK) * c.mix) * clamp(fin(s.lean), -LEAN_MAX, LEAN_MAX);
   const tBob = m * clamp(-C1.bobK * (fin(s.susF) + fin(s.susR)) / 2, -C1.bobMax, C1.bobMax);
   const tSurge = m * C1.surgeMax * clamp(-fin(s.acc) / HARD, -1, 1);   // phanh (acc < 0) ⇒ dồn trước; tăng tốc ⇒ lùi
@@ -91,7 +98,7 @@ const AZ = new THREE.Vector3(0, 0, 1);
 
 /* Đặt camera: trộn thứ nhất ↔ thứ ba theo smoothstep(c.mix); đặt fov + near; trả true khi fov / near đổi (người gọi onResize) */
 export function bkCamPlace(camera: THREE.PerspectiveCamera, s: BkState, c: BkCam, net: DrNet, dt: number, snap?: boolean): boolean {
-  const t = clamp(fin(c.mix), 0, 1), m = t * t * (3 - 2 * t);
+  const m = mixS(c);
   /* góc thứ ba (luôn chạy để trạng thái trễ sẵn), cuộn thêm quanh trục nhìn */
   drCamPlace(camera, s, c3, net, dt, snap, K3);
   _q3.copy(camera.quaternion).multiply(_qr.setFromAxisAngle(AZ, fin(c.roll)));
