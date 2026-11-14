@@ -1,0 +1,276 @@
+<pasted_content id="9b0b">
+# TASK: Implement Male / Female Character Selection & Multiplayer Synchronization
+
+**Project:** https://danangbridges.netlify.app/
+
+**Target:** Walking Mode – Multiplayer
+
+## 1. OBJECTIVE
+
+Enhance the existing Walking Mode by allowing players to select their character gender before entering the multiplayer environment.
+
+Provide two options:
+- Male
+- Female
+
+The most important requirement is that every connected player must see the correct character selected by every other player.
+
+The local player's character representation and remote players' character representations must always be consistent across all clients.
+
+This is a targeted enhancement. Do not rebuild the existing multiplayer system.
+
+## 2. CURRENT PROBLEM
+
+Currently, Walking Mode does not provide a male/female character selection option.
+
+There is also an inconsistency in multiplayer character representation.
+
+For example:
+- Player A sees Player B as female.
+- Player B sees their own character as male.
+- The two clients display different character representations for the same player.
+
+Investigate the root cause before implementing the solution.
+
+Potential causes include local-only character selection, incorrect default character initialization, incomplete multiplayer state synchronization, or remote avatar initialization issues.
+
+Do not assume the cause without inspecting the codebase.
+
+## 3. REQUIRED FEATURES
+
+### 3.1. Character Selection UI
+
+Add a character selection interface to the existing Walking Mode entry/join flow.
+
+Requirements:
+- Two clear options: Male and Female.
+- Display a visual preview of each character.
+- Clearly highlight the currently selected character.
+- Provide a confirmation/start button.
+- Preserve the existing player name input and joining flow.
+- Follow the existing UI design language.
+- Use Male as the default selection if no existing behavior requires otherwise.
+
+The selected character must remain consistent during the current session, including respawning and reconnecting where supported by the existing architecture.
+
+### 3.2. Character Model Integration
+
+Review the existing character assets and avatar rendering implementation.
+
+Requirements:
+- Identify available male and female character models.
+- Reuse existing assets whenever possible.
+- If one character model is missing, determine an appropriate solution using the existing project's assets and architecture.
+- Ensure both characters support existing walking animations, movement, rotation, and camera behavior.
+- Maintain consistent model scale, materials, animation quality, and visual presentation.
+
+Do not introduce unnecessary dependencies or heavyweight assets.
+
+### 3.3. Multiplayer Character Synchronization (CRITICAL)
+
+The selected character must be synchronized through the existing multiplayer infrastructure.
+
+Requirements:
+
+1. The selected character must be included in the player's multiplayer identity/state during the joining process.
+2. Other connected clients must receive the correct character selection.
+3. Remote avatars must be rendered using the character selected by their respective owners.
+4. New players joining an existing session must receive the correct character information for all existing players.
+5. Character identity must remain consistent during movement, animation updates, respawning, and reconnection.
+6. Each client must correctly distinguish its own character from remote players' characters.
+7. Never use the local player's character selection as the default representation for every remote player.
+8. Changes to one player's character must not unintentionally affect another player's avatar.
+
+Expected behavior:
+
+- Player A selects Male.
+- Player B selects Female.
+
+Both clients must see:
+- Player A: Male.
+- Player B: Female.
+
+This behavior must work regardless of which player joins first.
+
+### 3.4. Player Initialization & Synchronization Timing
+
+Review the complete lifecycle of player initialization.
+
+Pay particular attention to:
+- Player registration.
+- Initial multiplayer state synchronization.
+- Remote player discovery.
+- Remote avatar creation.
+- Character model loading.
+- Subsequent player state updates.
+- Player disconnection and reconnection.
+
+Ensure that remote avatars are not incorrectly initialized using a default character before the actual character selection becomes available.
+
+Avoid duplicate avatar creation and unnecessary model reloading.
+
+For older player states that do not contain character selection information, implement a safe backward-compatible fallback.
+
+## 4. IMPLEMENTATION WORKFLOW
+
+### Phase 1: Review Existing Architecture
+
+Before modifying anything, thoroughly inspect the existing project.
+
+You MUST understand:
+
+- The overall project structure.
+- How Walking Mode is implemented.
+- How local player creation works.
+- How remote player creation works.
+- How player information is currently managed.
+- How multiplayer communication and state synchronization work.
+- How character models and animations are loaded.
+- How player sessions, joining, leaving, and reconnecting are handled.
+
+Trace the entire lifecycle of a player from joining a session to being displayed on other clients.
+
+**Important:**
+
+Do not introduce a new architecture, data structure, class hierarchy, file organization, or networking mechanism based on assumptions.
+
+Review the actual project implementation and adapt the solution to its existing conventions and architecture.
+
+### Phase 2: Identify Root Cause
+
+Explain precisely why the current implementation produces inconsistent character representations between clients.
+
+Identify the actual files, functions, and synchronization steps responsible.
+
+Determine the smallest reliable change that resolves the issue.
+
+### Phase 3: Implement Character Selection
+
+Add the Male/Female selection interface.
+
+Integrate the selection into the existing player initialization and joining workflow.
+
+Ensure the selection is available to the multiplayer system before the player's avatar is initialized on other clients.
+
+### Phase 4: Implement Multiplayer Synchronization
+
+Modify the existing player state and synchronization mechanisms as necessary.
+
+Ensure:
+- Character selection is transmitted correctly.
+- Existing clients receive the correct information.
+- Late-joining clients receive the correct initial player information.
+- Remote avatar rendering uses the correct player's selection.
+- Existing networking functionality remains intact.
+
+Follow the existing project's data flow and architecture rather than introducing an independent parallel system.
+
+### Phase 5: Validate & Optimize
+
+Test the complete functionality using multiple browser sessions or devices.
+
+Fix any issues discovered before considering the task complete.
+
+## 5. MULTIPLAYER TEST SCENARIOS
+
+**Test A – Male + Female**
+- Browser A selects Male.
+- Browser B selects Female.
+- A sees B as Female.
+- B sees A as Male.
+
+**Test B – Reverse Selection**
+- Browser A selects Female.
+- Browser B selects Male.
+- Both clients see the correct characters.
+
+**Test C – Multiple Players**
+- Three or more players join.
+- Every player selects their preferred character.
+- All clients display every player correctly.
+
+**Test D – Late Join**
+- A and B are already connected.
+- C joins later.
+- C sees the correct characters of A and B.
+- A and B see C correctly.
+
+**Test E – Reconnection**
+- A player disconnects and reconnects.
+- Character selection follows the existing session persistence behavior.
+
+**Test F – Movement & Animation**
+- Players walk, stop, rotate, and move around the environment.
+- Character identity remains unchanged.
+
+**Test G – Backward Compatibility**
+- Simulate a player without character selection information.
+- The system uses a safe default without errors.
+
+## 6. PERFORMANCE & COMPATIBILITY
+
+- Preserve the existing Three.js architecture.
+- Reuse existing multiplayer infrastructure.
+- Avoid unnecessary dependencies.
+- Avoid unnecessary model reloading.
+- Cache character assets where appropriate.
+- Clean up avatar resources when players disconnect.
+- Prevent memory leaks and duplicate animation loops.
+- Preserve existing movement, collision detection, camera, and animation behavior.
+- Do not modify unrelated transportation or exploration modes.
+
+## 7. COMPLETION CRITERIA
+
+The implementation is complete only when:
+
+1. Players can select Male or Female before entering Walking Mode.
+2. The local player sees their selected character.
+3. Other players see the correct selected character.
+4. All clients display consistent character identities.
+5. Late joining and reconnection work correctly.
+6. Existing multiplayer functionality remains operational.
+7. No significant performance regression is introduced.
+
+## 8. FINAL REPORT
+
+After implementation, provide:
+
+- Root cause of the original issue.
+- Files modified and their responsibilities.
+- Explanation of how the feature integrates with the existing architecture.
+- Explanation of how character selection is synchronized.
+- Results of all multiplayer test scenarios.
+- Any remaining limitations or known issues.
+
+## FINAL INSTRUCTIONS
+
+Work autonomously.
+
+Do not ask the user to design the architecture or decide implementation details that can be determined by inspecting the existing codebase.
+
+Do not create unnecessary abstractions or refactor unrelated components.
+
+Prioritize minimal, reliable, maintainable changes that fit the existing project.
+
+**Review → Identify Root Cause → Plan → Implement → Test → Verify.**
+
+Do not declare completion until the multiplayer behavior has been tested across multiple independent clients.
+</pasted_content id="9b0b">
+
+---
+
+<task-notification>
+<task-id>beqn8t28x</task-id>
+<tool-use-id>toolu_01KXWTPn8hbX7i2RR3JxGWQg</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\2f4ad7e0-562b-409c-8e7f-3f7d3047b83a\tasks\beqn8t28x.output</output-file>
+<status>completed</status>
+<summary>Background command "Run three-browser character sync check" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+link demo
+
+---
+
+không cần chạy test nặng lại
