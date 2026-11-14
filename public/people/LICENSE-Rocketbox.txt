@@ -1,5 +1,6 @@
 Nguồn / Source: Microsoft Rocketbox, https://github.com/microsoft/Microsoft-Rocketbox
 Commit: 0943055db6ec570bcef9f2c8b41c9e5467c808f9 — p0..p4.glb chuyển đổi bằng scripts/people/convert.py (đã thu nhỏ texture, cắt chuyển động)
+Ảnh xem trước nhân vật / Character thumbnails: thumb-m.webp, thumb-f.webp vẽ từ p0.glb, p3.glb bằng scripts/people/thumbs.mjs
 Người treo dù lượn / Paraglider pilot: pilot.glb chuyển đổi bằng scripts/people/pilot.py từ Military_Male_01 (đã bỏ dao, đổi màu sang ô liu / than, tô phủ phù hiệu, gộp vật liệu thành một atlas, thêm đoạn sit từ m_sit_chair_breathe_01)
 Đám đông người đi bộ / Crowd: crowd.bin + crowd.jpg chuyển đổi bằng scripts/people/crowd.py (giản lược lưới, gộp xương, nướng chuyển động); nhân vật: Male_Adult_10, Female_Adult_12, Male_Adult_01, Female_Adult_03, Male_Adult_17, Male_Adult_09, Female_Adult_17, Female_Adult_08, Male_Child_01, Female_Child_01
 

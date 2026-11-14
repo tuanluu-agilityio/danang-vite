@@ -1,5 +1,6 @@
 /* ===== Đi dạo: nhân vật hiển thị (mình + tối đa 4 người khác) =====
-   Nhóm 'stroll-people' (THREE.Group): mỗi slot đi dạo (đi một mình dùng 0) hiện bằng một nhân vật có xương (rig.ts, mô hình theo stModelFor: mình luôn 0, người khác 1 + slot mod 4).
+   Nhóm 'stroll-people' (THREE.Group): mỗi slot đi dạo (đi một mình dùng 0) hiện bằng một nhân vật có xương (rig.ts). Mô hình theo nhân vật chủ slot chọn (stCharModel, anim.ts): mình theo stChar (char.ts), người khác theo ch trong walkers của lobby;
+   ch tới cùng lúc với tên (sync) và trước mẫu vị trí đầu, nên không có lúc nào người khác được dựng bằng nhân vật mặc định rồi mới đổi.
    Mô hình chưa nạp xong hoặc nạp lỗi: slot hiện bằng hình khối (blocky.ts, InstancedMesh con của nhóm) nên lỗi mạng không bao giờ làm mất nhân vật.
    - Nạp lười: lần đầu một slot đang hiện cần mô hình k thì gọi bộ nạp (stRigLoad, test thay bằng __setLoader); kết quả chỉ vào bộ đệm sources[k].
      Bản sao chỉ tạo trong vòng khung (stPlace) cho slot đang hiện và đúng mô hình lúc đó, nên kết quả về muộn (slot đã đổi chủ, đã trống, đã rời chế độ) không bao giờ gắn nhầm (Review Focus 2).
@@ -10,9 +11,10 @@
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
 import { ExTrack, type ExPose } from '../multi/interp';
-import type { Flyer } from '../multi/protocol';
+import { exCharNorm, type Flyer } from '../multi/protocol';
 import { ST_POSE_WALK, ST_POSE_RUN, type StState } from './motion';
-import { stModelFor } from './anim';
+import { stCharModel } from './anim';
+import { stChar } from './char';
 import { stBlocky } from './blocky';
 import { stRigLoad, StRig, type StRigSource } from './rig';
 
@@ -23,6 +25,7 @@ const M = CONFIG.explore.multi, C = CONFIG.stroll, N = M.stroll.slots;
 interface StSlot {
   who: 0 | 1 | 2;             // 0 trống, 1 mình, 2 người khác
   name: string | null;        // tên người khác (từ sync); null = không có
+  ch: number;                 // nhân vật người khác chọn (từ sync; máy chủ cũ không gửi = 0 nam). Slot của mình không đọc trường này
   track: ExTrack;
   pose: ExPose;               // đệm lấy mẫu (bank chở pose)
   st: { x: number; y: number; z: number; yaw: number; pose: number };   // trạng thái trả cho slotState
@@ -32,7 +35,7 @@ interface StSlot {
 }
 
 const slots: StSlot[] = Array.from({ length: N }, () => ({
-  who: 0 as const, name: null, track: new ExTrack(), pose: { x: 0, y: 0, z: 0, yaw: 0, bank: 0 },
+  who: 0 as const, name: null, ch: 0, track: new ExTrack(), pose: { x: 0, y: 0, z: 0, yaw: 0, bank: 0 },
   st: { x: 0, y: 0, z: 0, yaw: 0, pose: 0 }, live: false, rig: null, model: -1
 }));
 let group: THREE.Group | null = null, me = -1, lastNow = -1;
@@ -56,6 +59,9 @@ function stNeed(model: number): StRigSource | null {
   return null;
 }
 
+/* Mô hình của slot: mình theo lựa chọn của mình, người khác theo lựa chọn của họ (không bao giờ lấy lựa chọn của mình cho người khác) */
+const stModelOf = (s: StSlot): number => stCharModel(s.who === 1 ? stChar.get() : s.ch);
+
 /* Gỡ nhân vật thật của slot i (đổi chủ, đổi mô hình, rời chế độ) */
 function stDrop(i: number): void {
   const s = slots[i];
@@ -68,7 +74,7 @@ function stPlace(i: number, speed: number, dt: number): void {
   const s = slots[i];
   if (!group) return;
   if (!s.live) { stBlocky.place(i, null, 0); if (s.rig) s.rig.root.visible = false; return; }
-  const model = stModelFor(i, s.who === 1);
+  const model = stModelOf(s);
   if (s.rig && s.model !== model) stDrop(i);
   if (!s.rig) {
     const src = stNeed(model);
@@ -115,8 +121,8 @@ export const stAvatars = {
     return group;
   },
 
-  /* Bắt đầu nạp mô hình (mặc định 0, nhân vật của mình) trước khi cần, vd. lúc chọn thẻ Đi dạo. Không ném */
-  preload(model = 0): void { stNeed(model); },
+  /* Bắt đầu nạp mô hình nhân vật mình đang chọn trước khi cần (lúc chọn thẻ Đi dạo, lúc đổi nhân vật ở sảnh). Không ném */
+  preload(): void { stNeed(stCharModel(stChar.get())); },
 
   /* Nhân vật của mình ở slot (đi một mình: 0); s = null thì bỏ hiện slot đó. dt (s): bước chuyển động vừa chạy, cho mixer */
   setSelf(slot: number, s: StState | null, dt = 0): void {
@@ -143,12 +149,12 @@ export const stAvatars = {
     if (mySlot >= 0 && mySlot !== me && me >= 0 && slots[me]?.who === 1) { slots[me].who = 0; stHide(me); me = -1; }
     for (let i = 0; i < N; i++) {
       const s = slots[i];
-      let name: string | null = null;
-      for (const w of walkers) if (w.slot === i) { name = w.name; break; }
+      let name: string | null = null, ch = 0;
+      for (const w of walkers) if (w.slot === i) { name = w.name; ch = exCharNorm(w.ch); break; }
       if (i === me) { s.name = name; continue; }   // nhân vật của mình: chỉ setSelf đổi
       if (i === mySlot) { s.name = name; if (s.who === 2) { s.who = 0; stHide(i); } continue; }   // slot vừa thành của mình: bỏ người khác cũ, chờ setSelf
       if (name === null) { s.name = null; if (s.who === 2) { s.who = 0; stHide(i); } continue; }
-      if (name !== s.name || s.who !== 2) { s.name = name; s.who = 2; stHide(i); }
+      if (name !== s.name || ch !== s.ch || s.who !== 2) { s.name = name; s.ch = ch; s.who = 2; stHide(i); }   // đổi chủ (tên hoặc nhân vật khác): gỡ bản sao cũ
     }
     stRefreshVisible();
   },
@@ -191,7 +197,7 @@ export const stAvatars = {
   /* Rời chế độ / rời phòng: gỡ hết nhân vật thật, ẩn hình khối, quên tên (nhóm và bộ đệm mô hình giữ lại để tái dùng) */
   clear(): void {
     me = -1; lastNow = -1;
-    for (let i = 0; i < N; i++) { const s = slots[i]; s.who = 0; s.name = null; stHide(i); }
+    for (let i = 0; i < N; i++) { const s = slots[i]; s.who = 0; s.name = null; s.ch = 0; stHide(i); }
     stRefreshVisible();
   },
 
@@ -200,7 +206,7 @@ export const stAvatars = {
     const s = slots[slot];
     if (!s || s.who === 0) return null;
     const r = s.rig, real = !!r && s.live && r.root.visible;
-    return { model: r ? s.model : stModelFor(slot, s.who === 1), real, mix: r ? Array.from(r.w) : [], rate: r ? r.rate : 0 };
+    return { model: r ? s.model : stModelOf(s), real, mix: r ? Array.from(r.w) : [], rate: r ? r.rate : 0 };
   },
 
   /* Chỉ dùng trong unit test: thay bộ nạp (null = stRigLoad thật) và quên bộ đệm mô hình */

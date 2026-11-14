@@ -1,6 +1,6 @@
 /* ===== Đi dạo: test nhân vật hiển thị (src/explore/stroll/avatars.ts, rig.ts, blocky.ts) =====
    Node, không GPU: bộ nạp giả qua stAvatars.__setLoader trả nguồn dựng tay (một Group có "xương" Bip01_Pelvis, 5 đoạn VectorKeyframeTrack).
-   Kiểm hình tạm khi chưa nạp / nạp lỗi (Review Focus 1), slot đổi chủ khi đang nạp (Review Focus 2), dt kẹp + đồng pha (Review Focus 3), quy tắc mô hình theo slot. */
+   Kiểm hình tạm khi chưa nạp / nạp lỗi (Review Focus 1), slot đổi chủ khi đang nạp (Review Focus 2), dt kẹp + đồng pha (Review Focus 3), mô hình theo nhân vật từng người chọn (nam / nữ), không theo slot hay máy đang nhìn. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -12,6 +12,7 @@ import { stAvatars, stAvatarVar } from '../../src/explore/stroll/avatars.ts';
 import { stBlocky } from '../../src/explore/stroll/blocky.ts';
 import { StRig, stRigSource, type StRigSource } from '../../src/explore/stroll/rig.ts';
 import { ST_CLIPS } from '../../src/explore/stroll/anim.ts';
+import { stChar } from '../../src/explore/stroll/char.ts';
 import { ST_POSE_IDLE, ST_POSE_WALK, ST_POSE_RUN, ST_POSE_FALL, ST_POSE_PHOTO, type StState } from '../../src/explore/stroll/motion.ts';
 
 const DUR = [2, 1.2, 0.8, 0.6, 0.8];         // thời lượng giả từng đoạn, s
@@ -37,11 +38,12 @@ function deferredLoader() {
 const tick = () => new Promise((r) => setTimeout(r, 0));
 const st = (pose = 0, speed = 0): StState => ({ x: 1, y: 2.6, z: 3, yaw: 0.5, speed, vy: 0, air: false, pose, evac: false, photo: 0, tx: 0, tz: 0 });
 const rigs = () => stAvatars.build().children.filter((c) => c.name === 'stroll-rig');
-const W = (slot: number, name: string) => ({ slot, name });
+const W = (slot: number, name: string, ch?: number) => (ch === undefined ? { slot, name } : { slot, name, ch });
+const M = 0, F = 3;   // mô hình nam / nữ (CONFIG.stroll.anim.chars)
 /* Người khác ở slot i có một mẫu vị trí (pose 1) rồi update */
 function other(i: number, now: number): void { stAvatars.onPos([[i, 10 * i, 2.6, 0, 0, 1, now]], now); stAvatars.update(now); }
 
-function fresh(loader: ((m: number) => Promise<StRigSource | null>) | null): void { stAvatars.clear(); stAvatars.__setLoader(loader); }
+function fresh(loader: ((m: number) => Promise<StRigSource | null>) | null): void { stAvatars.clear(); stAvatars.__setLoader(loader); stChar.set(0); }
 
 test('build trả Group tên stroll-people, gọi hai lần trả cùng một đối tượng', () => {
   const g = stAvatars.build();
@@ -93,7 +95,7 @@ test('nạp lỗi (loader trả null): vẫn hình khối, không ném, không u
       assert.equal(stAvatars.debug(0)!.real, false); assert.equal(stBlocky.shown(0), true);
       assert.equal(rigs().length, 0);
     }
-    assert.doesNotThrow(() => stAvatars.preload(3));
+    assert.doesNotThrow(() => stAvatars.preload());
     await tick();
   } finally { process.off('unhandledRejection', h); }
   assert.deepEqual(bad, []);
@@ -101,14 +103,14 @@ test('nạp lỗi (loader trả null): vẫn hình khối, không ném, không u
 
 test('slot đổi chủ trong lúc đang nạp: kết quả cũ bị bỏ, nhóm không có con thừa', async () => {
   const L = deferredLoader(); fresh(L.fn);
-  stAvatars.sync([W(1, 'An')], -1); other(1, 1000);
-  assert.equal(stAvatars.debug(1)!.model, 2); assert.deepEqual(L.calls, [2]);
-  stAvatars.sync([], -1);                     // An rời đi khi mô hình 2 còn đang nạp
-  L.resolve(2, fakeSource()); await tick();
+  stAvatars.sync([W(1, 'An', 1)], -1); other(1, 1000);
+  assert.equal(stAvatars.debug(1)!.model, F); assert.deepEqual(L.calls, [F]);
+  stAvatars.sync([], -1);                     // An rời đi khi mô hình nữ còn đang nạp
+  L.resolve(F, fakeSource()); await tick();
   stAvatars.update(1100);
   assert.equal(stAvatars.debug(1), null); assert.equal(rigs().length, 0);
-  /* slot 1 thành của mình (mô hình 0) đúng lúc mô hình 2 vừa về: không gắn mô hình 2 */
-  stAvatars.sync([W(1, 'Bình')], -1); other(1, 1200); assert.equal(stAvatars.debug(1)!.real, true);
+  /* slot 1 thành của mình (nam) đúng lúc mô hình nữ vừa về: không gắn mô hình nữ */
+  stAvatars.sync([W(1, 'Bình', 1)], -1); other(1, 1200); assert.equal(stAvatars.debug(1)!.real, true);
   stAvatars.sync([W(1, 'Tôi')], 1); stAvatars.setSelf(1, st(), 0.016);
   assert.equal(rigs().length, 0, 'bản sao của người khác đã gỡ');
   assert.equal(stAvatars.debug(1)!.model, 0); assert.equal(stAvatars.debug(1)!.real, false);
@@ -119,18 +121,19 @@ test('slot đổi chủ trong lúc đang nạp: kết quả cũ bị bỏ, nhóm
   assert.equal(stBlocky.mesh!.visible, false);
 });
 
-test('người khác slot 0..4 dùng model 1,2,3,4,1; mình ở slot 3 dùng model 0', async () => {
+test('người khác dùng mô hình theo ch của chính họ (slot nào cũng vậy); mình ở slot 3 dùng lựa chọn của mình', async () => {
   fresh(async () => fakeSource());
-  stAvatars.sync([0, 1, 2, 3, 4].map((i) => W(i, `N${i}`)), -1);
+  const CH = [1, 0, 1, 1, 0];
+  stAvatars.sync([0, 1, 2, 3, 4].map((i) => W(i, `N${i}`, CH[i])), -1);
   for (let i = 0; i < 5; i++) other(i, 2000);
   await tick();
   stAvatars.update(2050);
-  assert.deepEqual([0, 1, 2, 3, 4].map((i) => stAvatars.debug(i)!.model), [1, 2, 3, 4, 1]);
+  assert.deepEqual([0, 1, 2, 3, 4].map((i) => stAvatars.debug(i)!.model), [F, M, F, F, M]);
   assert.ok([0, 1, 2, 3, 4].every((i) => stAvatars.debug(i)!.real), 'cả năm đã là nhân vật thật');
   assert.equal(rigs().length, 5);
-  stAvatars.sync([0, 1, 2, 3, 4].map((i) => W(i, `N${i}`)), 3); stAvatars.setSelf(3, st(), 0.016);
+  stAvatars.sync([0, 1, 2, 3, 4].map((i) => W(i, `N${i}`, CH[i])), 3); stAvatars.setSelf(3, st(), 0.016);
   await tick(); stAvatars.setSelf(3, st(), 0.016);
-  assert.equal(stAvatars.debug(3)!.model, 0); assert.equal(stAvatars.debug(3)!.real, true);
+  assert.equal(stAvatars.debug(3)!.model, M); assert.equal(stAvatars.debug(3)!.real, true);
   assert.equal(stAvatars.self, 3);
   assert.equal(rigs().length, 5, 'slot 3 đổi mô hình: bản sao cũ gỡ, không thừa');
 });
@@ -258,4 +261,73 @@ test('ExTrack.sample(step = true): dáng 1 rồi 4 trả 1 ở giữa khoảng, 
   t.sample(100, o, true); assert.equal(o.bank, 4);
   t.sample(150, o, true); assert.equal(o.bank, 4);
   t.sample(50, o); assert.ok(Math.abs(o.bank - 2.5) < 1e-9, 'mặc định vẫn nội suy tuyến tính');
+});
+
+/* ===== Chọn nhân vật nam / nữ: mọi máy thấy một người bằng mô hình người đó chọn ===== */
+/* Mô phỏng hai máy bằng hai lượt: máy A (mình = A) rồi máy B (mình = B), cùng một danh sách walkers từ máy chủ */
+test('A nam + B nữ và ngược lại: máy A và máy B thấy cùng một mô hình cho từng người', async () => {
+  for (const [ca, cb] of [[0, 1], [1, 0], [1, 1], [0, 0]]) {
+    const walkers = [W(0, 'A', ca), W(1, 'B', cb)], want = [ca ? F : M, cb ? F : M];
+    const seen: number[][] = [];
+    for (const mine of [0, 1]) {
+      fresh(async () => fakeSource());
+      stChar.set(mine === 0 ? ca : cb);
+      stAvatars.sync(walkers, mine); stAvatars.setSelf(mine, st(), 0.016);
+      other(1 - mine, 5000); await tick();
+      stAvatars.setSelf(mine, st(), 0.016); stAvatars.update(5050);
+      assert.ok(stAvatars.debug(0)!.real && stAvatars.debug(1)!.real);
+      seen.push([stAvatars.debug(0)!.model, stAvatars.debug(1)!.model]);
+    }
+    assert.deepEqual(seen[0], want, `máy A, ca ${ca}/${cb}`); assert.deepEqual(seen[1], want, `máy B, ca ${ca}/${cb}`);
+  }
+});
+
+test('lựa chọn của mình không áp cho người khác; người không có ch (máy chủ / khách cũ) → nam, không lỗi', async () => {
+  const L: number[] = []; fresh(async (m) => { L.push(m); return fakeSource(); });
+  stChar.set(1);
+  stAvatars.sync([W(0, 'Tôi', 1), W(1, 'Cũ'), W(2, 'Lạ', 7 as number)], 0); stAvatars.setSelf(0, st(), 0.016);
+  other(1, 6000); other(2, 6000); await tick();
+  stAvatars.setSelf(0, st(), 0.016); stAvatars.update(6050);
+  assert.deepEqual([0, 1, 2].map((i) => stAvatars.debug(i)!.model), [F, M, M]);
+  assert.deepEqual([...new Set(L)].sort(), [M, F], 'mỗi mô hình chỉ nạp một lần');
+  assert.equal(L.length, 2);
+});
+
+test('nhân vật có từ trước mẫu vị trí đầu: không dựng mặc định rồi đổi; đi lại / đổi dáng không đổi mô hình, không dựng lại bản sao', async () => {
+  const L: number[] = []; fresh(async (m) => { L.push(m); return fakeSource(); });
+  stAvatars.sync([W(2, 'Lan', 1)], -1);
+  assert.equal(stAvatars.debug(2)!.model, F, 'chưa có mẫu nào đã biết là nữ'); assert.deepEqual(L, []);
+  other(2, 7000); await tick(); stAvatars.update(7050);
+  assert.deepEqual(L, [F], 'không nạp mô hình nam cho người chọn nữ');
+  const rig = rigs()[0];
+  for (let k = 0; k < 6; k++) {
+    stAvatars.onPos([[2, k, 2.6, k, k * 0.3, k % 5, 7100 + k * 100]], 7100 + k * 100);
+    stAvatars.sync([W(2, 'Lan', 1)], -1);   // lobby phát lại (người khác vào / ra): cùng chủ thì giữ nguyên
+    stAvatars.update(7400 + k * 100);
+    assert.equal(stAvatars.debug(2)!.model, F);
+  }
+  assert.equal(rigs().length, 1); assert.equal(rigs()[0], rig, 'vẫn bản sao cũ');
+});
+
+test('slot đổi chủ sang người chọn nhân vật khác (cả khi trùng tên): bản sao cũ gỡ, dựng đúng mô hình mới; rời rồi vào lại giữ đúng nhân vật', async () => {
+  fresh(async () => fakeSource());
+  stAvatars.sync([W(1, 'An', 0)], -1); other(1, 8000); await tick(); stAvatars.update(8050);
+  assert.equal(stAvatars.debug(1)!.model, M); assert.equal(stAvatars.debug(1)!.real, true);
+  stAvatars.sync([W(1, 'An', 1)], -1);
+  assert.equal(rigs().length, 0, 'bản sao nam đã gỡ, chờ mẫu đầu của chủ mới');
+  other(1, 8200); await tick(); stAvatars.update(8250);
+  assert.equal(stAvatars.debug(1)!.model, F); assert.equal(rigs().length, 1);
+  stAvatars.sync([], -1); assert.equal(stAvatars.debug(1), null); assert.equal(rigs().length, 0);
+  stAvatars.sync([W(3, 'An', 1)], -1); other(3, 8400); stAvatars.update(8450);   // kết nối lại, được slot khác
+  assert.equal(stAvatars.debug(3)!.model, F); assert.equal(rigs().length, 1);
+});
+
+test('mình đổi nhân vật ở sảnh rồi đi: nhân vật của mình theo lựa chọn mới, bản sao cũ gỡ', async () => {
+  fresh(async () => fakeSource());
+  stAvatars.setSelf(0, st(), 0.016); await tick(); stAvatars.setSelf(0, st(), 0.016);
+  assert.equal(stAvatars.debug(0)!.model, M);
+  stChar.set(1); assert.equal(stChar.get(), 1);
+  stAvatars.setSelf(0, st(), 0.016); await tick(); stAvatars.setSelf(0, st(), 0.016);
+  assert.equal(stAvatars.debug(0)!.model, F); assert.equal(stAvatars.debug(0)!.real, true); assert.equal(rigs().length, 1);
+  stChar.set(9); assert.equal(stChar.get(), 0, 'giá trị lạ → nam');
 });

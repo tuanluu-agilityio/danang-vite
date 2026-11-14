@@ -1,13 +1,14 @@
 /* ===== Phòng bầu trời chung: logic thuần, không phụ thuộc Cloudflare (Durable Object bọc ngoài) ===== */
 import { multiParams as P } from '../../../src/explore/multi/params';
-import { exSanitizeName } from '../../../src/explore/multi/protocol';
+import { exSanitizeName, exCharNorm } from '../../../src/explore/multi/protocol';
 import type { ServerMsg, Flyer, Kind } from '../../../src/explore/multi/protocol';
 import { exIsBad } from './badwords';
 
 export type Out = { to: string | 'all'; msg: ServerMsg };
 
 // pos: [slot, x, y, z, yaw, bank (người đi dạo: pose), giờ gửi]; người lái: [slot, x, y, z, yaw, v, st, giờ gửi]; giờ gửi = ts của khách (khách mới) hoặc giờ máy chủ nhận (khách cũ); dirty: có vị trí mới chưa phát
-interface Slot { id: string; name: string; seen: number; pos: number[] | null; dirty: boolean }
+// ch: nhân vật người đi dạo chọn (0 nam, 1 nữ), chỉ dùng ở nhóm đi dạo; phát kèm walkers của lobby để mọi khách (cả người vào sau) vẽ đúng
+interface Slot { id: string; name: string; seen: number; pos: number[] | null; dirty: boolean; ch: number }
 interface Conn { stamps: number[] }
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -25,7 +26,7 @@ export class SkyRoom {
     const walkers: Flyer[] = [];
     const drivers: Flyer[] = [];
     this.slots.forEach((s, i) => { if (s) flyers.push({ slot: i, name: s.name }); });
-    this.walkSlots.forEach((s, i) => { if (s) walkers.push({ slot: i, name: s.name }); });
+    this.walkSlots.forEach((s, i) => { if (s) walkers.push({ slot: i, name: s.name, ch: s.ch }); });
     this.driveSlots.forEach((s, i) => { if (s) drivers.push({ slot: i, name: s.name }); });
     return { to: 'all', msg: { t: 'lobby', flyers, walkers, drivers } };
   }
@@ -41,6 +42,8 @@ export class SkyRoom {
   walkSlotOf(id: string): number { return this.walkSlots.findIndex(s => s !== null && s.id === id); }   // slot đi dạo, -1 nếu không đi dạo
 
   driveSlotOf(id: string): number { return this.driveSlots.findIndex(s => s !== null && s.id === id); }   // slot lái xe, -1 nếu không lái
+
+  chOf(id: string): number { const w = this.walkSlotOf(id); return w < 0 ? 0 : this.walkSlots[w].ch; }   // nhân vật của người đi dạo (để lưu vào attachment); 0 nếu không đi dạo
 
   kindOf(id: string): Kind | null { return this.slotOf(id) >= 0 ? 'fly' : this.walkSlotOf(id) >= 0 ? 'walk' : this.driveSlotOf(id) >= 0 ? 'drive' : null; }
 
@@ -60,13 +63,13 @@ export class SkyRoom {
 
   /* Dựng lại sau hibernation. seen lấy từ attachment nếu có; không có (attachment cũ) thì coi như vừa im lặng gần hết hạn:
      người còn bay có một chu kỳ nhịp sống để lên tiếng, người đã chết không được gia hạn thêm mỗi lần thức dậy */
-  restore(list: { id: string; slot: number; name: string; seen?: number; kind?: 'walk' | 'drive' }[], now: number): void {
+  restore(list: { id: string; slot: number; name: string; seen?: number; kind?: 'walk' | 'drive'; ch?: number }[], now: number): void {
     for (const e of list) {
       const group = this.groupOf(e.kind === 'walk' || e.kind === 'drive' ? e.kind : 'fly');
       if (e.slot < 0 || e.slot >= group.length) continue;
       if (!this.conns.has(e.id)) this.conns.set(e.id, { stamps: [] });
       const seen = typeof e.seen === 'number' && Number.isFinite(e.seen) ? Math.min(e.seen, now) : now - P.slotTimeoutMs + P.heartbeatMs;
-      group[e.slot] = { id: e.id, name: e.name, seen, pos: null, dirty: false };
+      group[e.slot] = { id: e.id, name: e.name, seen, pos: null, dirty: false, ch: e.kind === 'walk' ? exCharNorm(e.ch) : 0 };
     }
   }
 
@@ -80,7 +83,7 @@ export class SkyRoom {
     const group = this.groupOf(kind);
     const slot = kind === null ? -1 : group.findIndex(s => s !== null && s.id === id);
     switch (m.t) {
-      case 'join': return this.onJoin(id, kind !== null, m.name, m.kind === 'walk' || m.kind === 'drive' ? m.kind : 'fly', now);
+      case 'join': return this.onJoin(id, kind !== null, m.name, m.kind === 'walk' || m.kind === 'drive' ? m.kind : 'fly', m.ch, now);
       case 'leave': return this.release(id) ? [this.lobby()] : [];
       case 'hb': if (slot < 0) return []; group[slot].seen = now; return this.flush(now);
       case 'pos': return slot >= 0 ? this.onPos(conn, group[slot]!, slot, kind, m, now) : [];
@@ -89,7 +92,7 @@ export class SkyRoom {
   }
 
   // kind 'fly': tin trả lời không có trường kind (khách cũ hiểu được); 'walk' / 'drive' kèm kind
-  private onJoin(id: string, holding: boolean, rawName: unknown, kind: Kind, now: number): Out[] {
+  private onJoin(id: string, holding: boolean, rawName: unknown, kind: Kind, rawCh: unknown, now: number): Out[] {
     if (holding) return [];
     const k = kind === 'fly' ? {} : { kind };
     const name = typeof rawName === 'string' ? exSanitizeName(rawName) : null;
@@ -97,7 +100,7 @@ export class SkyRoom {
     const group = this.groupOf(kind);
     const free = group.findIndex(s => s === null);
     if (free < 0) return [{ to: id, msg: { t: 'rejected', why: 'full', ...k } }];
-    group[free] = { id, name, seen: now, pos: null, dirty: false };
+    group[free] = { id, name, seen: now, pos: null, dirty: false, ch: kind === 'walk' ? exCharNorm(rawCh) : 0 };   // khách cũ không gửi ch: nam (đúng nhân vật họ tự thấy)
     return [{ to: id, msg: { t: 'joined', slot: free, ...k } }, this.lobby()];
   }
 

@@ -708,7 +708,7 @@ const strollBase = {
     fade: 0.2,         // s — hằng thời gian làm mượt trọng số các đoạn khi đổi dáng (ước lượng)
     fallMin: 0.1,      // m/s — dáng rơi (3) có tốc độ ngang dưới mức này thì đứng yên, trên mức này thì như đang chạy (ước lượng)
     warmMs: 4000,      // ms — chờ biên dịch sẵn shader của mô hình vừa nạp tối đa chừng này, quá thì vẫn dùng mô hình (D-018; mất ngữ cảnh WebGL không treo) (ước lượng)
-    others: 4,         // số mô hình dành cho người khác (mô hình 1..others); mình luôn dùng mô hình 0 (ước lượng)
+    chars: [0, 3],     // mô hình của nhân vật chọn ở sảnh: [nam, nữ] = p0 (Male_Adult_10), p3 (Female_Adult_03), hai người trẻ nét Á; mọi máy vẽ một người bằng mô hình theo lựa chọn của chính người đó
     models: ['people/p0.glb', 'people/p1.glb', 'people/p2.glb', 'people/p3.glb', 'people/p4.glb']   // đường dẫn tương đối BASE_URL tới 5 mô hình có xương (scripts/people/convert.py)
   }
 };
