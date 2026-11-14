@@ -3,7 +3,7 @@
   "checkpoint_id": "01M7DCTEN0YH9SK9JAEYZS6WFS",
   "strategy": "manual-commit",
   "branch": "feature/thoi-tiet-thuc",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     "src/config.ts"
   ],
@@ -28,14 +28,21 @@
       "compact_transcript": "/2/transcript.jsonl",
       "content_hash": "/2/content_hash.txt",
       "prompt": "/2/prompt.txt"
+    },
+    {
+      "metadata": "/3/metadata.json",
+      "transcript": "/3/full.jsonl",
+      "compact_transcript": "/3/transcript.jsonl",
+      "content_hash": "/3/content_hash.txt",
+      "prompt": "/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 16,
-    "cache_creation_tokens": 21909,
-    "cache_read_tokens": 1998538,
-    "output_tokens": 9000,
-    "api_call_count": 6,
+    "input_tokens": 28,
+    "cache_creation_tokens": 90831,
+    "cache_read_tokens": 2346434,
+    "output_tokens": 14905,
+    "api_call_count": 11,
     "subagent_tokens": {
       "input_tokens": 50,
       "cache_creation_tokens": 216028,
