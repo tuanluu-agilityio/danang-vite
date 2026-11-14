@@ -1,4 +1,5 @@
-/* ===== Trò chuyện theo khoảng cách (D-041): nút 💬, bảng tin, phím, đồng hồ danh sách gần =====
+/* ===== Trò chuyện theo khoảng cách (D-041): nút 💬, tin hiện thẳng trên màn hình, ô nhập, phím, đồng hồ danh sách gần =====
+   Tin không nằm trong khung: #exChatList luôn hiện (không nền, không nhận chuột), mỗi tin một dòng, quá feedMs thì mờ đi (lớp .old). "Mở" (#exChat.open) = hiện ô nhập + dòng trạng thái và cho xem lại / cuộn mọi tin còn giữ.
    Phần DOM của chat; sổ tin và quy tắc gần ở chatCore.ts, bong bóng trên đầu ở labels.ts (exLabelsSay). index.ts gọi attach / sync / detach / setSelf.
    - body.ex-chat: phiên từng có chatOk (máy chủ biết chat) và đang giữ chỗ / đang xem / vừa mất kết nối; CSS chỉ hiện nút khi body.explore.ex-chat.
    - Danh sách gần: setInterval(nearTickMs) từ attach tới detach, ngoài vòng vẽ; chỉ ghi DOM khi khóa danh sách đổi. Vòng vẽ chỉ gọi setSelf (5 lần/s, không cấp phát).
@@ -18,7 +19,7 @@ const M = CONFIG.explore.multi, C = M.chat, NW = M.stroll.slots, ND = M.drive.sl
 const log = new ChLog(C.historyMax, C.ackMs, C.ratePerWin, C.rateWinMs);   // giờ trong sổ là Date.now() (cùng đồng hồ cho hạn hồi âm, hạn mức và giờ HH:MM)
 interface Els { btn: HTMLButtonElement; near: HTMLElement; dot: HTMLElement; panel: HTMLElement; status: HTMLElement; list: HTMLElement; form: HTMLFormElement; input: HTMLTextAreaElement; send: HTMLButtonElement }
 let el: Els | null = null;
-const rows = new Map<number, { row: HTMLElement; st: HTMLElement | null }>();   // khóa tin → nút DOM của tin + dòng trạng thái (chỉ tin mình)
+const rows = new Map<number, { row: HTMLElement; st: HTMLElement | null; at: number; old: boolean }>();   // khóa tin → nút DOM của tin + dòng trạng thái (chỉ tin mình) + giờ nhận + đã mờ
 let session: MultiSession | null = null;
 let had = false;          // phiên này từng có chatOk (mất kết nối thì chatOk về false nhưng vẫn hiện để thấy trạng thái)
 let avail = false;        // body.ex-chat đang bật
@@ -55,7 +56,7 @@ function paintState(m: ChMsg): void {
   r.st.className = 'ex-chat-st' + (ERR.has(m.state) ? ' err' : '');
 }
 
-/* Thêm một tin vào cuối bảng: dòng đầu (chấm màu slot, tên, giờ), thân chữ, và dòng trạng thái với tin mình. Đang ở gần cuối hoặc tin mình thì cuộn xuống cuối */
+/* Thêm một tin vào cuối danh sách: một dòng "● tên: chữ" (giờ HH:MM ở title), thêm trạng thái với tin mình. Chưa mở, đang ở gần cuối hoặc tin mình thì cuộn xuống cuối */
 function addRow(m: ChMsg): void {
   if (!el) return;
   const L = el.list, stick = m.mine || L.scrollHeight - L.scrollTop - L.clientHeight < 40;
@@ -64,20 +65,25 @@ function addRow(m: ChMsg): void {
   const head = document.createElement('div'); head.className = 'ex-chat-head';
   const dot = document.createElement('i'); dot.style.background = slot >= 0 ? M.colors[slot % M.colors.length] : 'var(--gold)';
   const nm = document.createElement('b'); nm.dir = 'auto'; nm.textContent = name;
-  const tm = document.createElement('span'); tm.textContent = hhmm(m.at);
-  head.append(dot, nm, tm);
+  head.append(dot, nm);
+  row.title = hhmm(m.at);
   const body = document.createElement('div'); body.className = 'ex-chat-body'; body.dir = 'auto'; body.textContent = m.text;
   row.append(head, body);
   let st: HTMLElement | null = null;
   if (m.mine) { st = document.createElement('div'); row.appendChild(st); }
-  rows.set(m.key, { row, st });
+  rows.set(m.key, { row, st, at: m.at, old: false });
   L.appendChild(row);
   if (m.mine) paintState(m);
   for (const g of log.trim()) { const r = rows.get(g.key); if (r) { r.row.remove(); rows.delete(g.key); } }
-  if (stick) L.scrollTop = L.scrollHeight;
+  if (stick || !opened) L.scrollTop = L.scrollHeight;
 }
 
-/* Chấm đỏ chưa đọc: chỉ khi bảng đóng */
+/* Tin quá feedMs thì mờ đi (CSS chỉ ẩn khi chưa mở ô nhập) */
+function fade(now: number): void {
+  rows.forEach((r) => { if (!r.old && now - r.at > C.feedMs) { r.old = true; r.row.classList.add('old'); } });
+}
+
+/* Chấm đỏ chưa đọc: tin tới lúc tab đang ẩn (tin tới lúc đang nhìn thì hiện thẳng trên màn hình, coi như đã đọc) */
 function paintDot(): void { if (el) el.dot.hidden = opened || log.unread === 0; }
 
 /* Nút gửi khóa khi khóa gửi hoặc ô rỗng */
@@ -141,7 +147,9 @@ function peers(s: MultiSession): ChPeer[] {
 function tick(): void {
   const s = session;
   if (!s || !avail) return;
-  for (const m of log.expire(Date.now())) paintState(m);
+  const now = Date.now();
+  for (const m of log.expire(now)) paintState(m);
+  fade(now);
   if (s.phase !== 'flying') return;
   near = chNear(self, peers(s), prev, C.nearIn, C.radius);
   const key = near.map(p => chKey(p.k, p.slot) + '=' + p.name).join('|');
@@ -190,7 +198,7 @@ export const exChat = {
       if (s !== session) return;
       const text = exSanitizeChat(c.text);   // máy chủ đã làm sạch; làm lại để máy chủ lạ không chèn ký tự điều khiển / bidi
       if (text === null) return;
-      addRow(log.addTheirs(c.k, c.slot, c.name, text, Date.now(), opened));
+      addRow(log.addTheirs(c.k, c.slot, c.name, text, Date.now(), opened || !document.hidden));
       exLabelsSay(c.k, c.slot, text, performance.now());
       paintDot();
     };
@@ -227,7 +235,7 @@ export const exChat = {
 
   open(): void {
     if (!el || !avail) return;
-    if (!opened) { opened = true; el.panel.hidden = false; el.btn.setAttribute('aria-expanded', 'true'); }
+    if (!opened) { opened = true; el.panel.classList.add('open'); el.btn.setAttribute('aria-expanded', 'true'); }
     log.read(); paintDot();
     el.list.scrollTop = el.list.scrollHeight;
   },
@@ -237,7 +245,8 @@ export const exChat = {
     if (!el) return;
     if (document.activeElement === el.input) el.input.blur();
     if (!opened) return;
-    opened = false; el.panel.hidden = true; el.btn.setAttribute('aria-expanded', 'false');
+    opened = false; el.panel.classList.remove('open'); el.btn.setAttribute('aria-expanded', 'false');
+    el.list.scrollTop = el.list.scrollHeight;
     paintDot();
   },
 
