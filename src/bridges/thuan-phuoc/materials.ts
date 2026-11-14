@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { makeLaneTexture } from '../../common/textures';
 import { bridgePatch, patchWindows } from '../../common/shaders';
 import { registerWet } from '../../environment/weather/wetness';
+import { roadSharePatch } from '../../environment/weather/summer';
 
 /* [materials] + [lighting]
    LED đổi màu dùng bridgePatch(), bảng màu 'sea': xanh dương → tím → hồng → xanh lá,
@@ -15,7 +16,7 @@ export function tpMaterials() {
     cable: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xc8ced3, roughness: 0.36, metalness: 0.75 }), { led: 2.6, palette: 'sea', sag: 'cable' }),   // võng thêm khi nóng (weather/summer.ts)
     hanger: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xc8ced3, roughness: 0.38, metalness: 0.75 }), { led: 1.8, palette: 'sea', sway: 'tp', sag: 'hanger' }),   // hanger lắc theo gió (weather/wind.ts)
     joint: new THREE.MeshStandardMaterial({ color: 0x2c2f33, roughness: 0.5, metalness: 0.7 }),
-    road: registerWet(new THREE.MeshStandardMaterial({ map: road, roughness: 0.93 })),   // mặt ướt khi mưa (weather/wetness.ts)
+    road: roadSharePatch(registerWet(new THREE.MeshStandardMaterial({ map: road, roughness: 0.93 }))),   // mặt ướt khi mưa (weather/wetness.ts); hạt nhựa + vệt ướt khi lái xe máy, chung program MAT.road2 (weather/summer.ts, D-040)
     beacon: new THREE.MeshBasicMaterial({ color: 0xff2a1a }),
     building: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.75, metalness: 0.05 }),
     textures: [road] as THREE.Texture[]

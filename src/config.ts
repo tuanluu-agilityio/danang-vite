@@ -1004,6 +1004,20 @@ const bikeBase = {
       ref: 10          // m/s — gió giật (weatherU.uGust) từ mức này thì cộng đủ steer; bão: gust 10 m/s (weather.presets.storm)
     }
   },
+  road: {              // mặt đường nhìn gần + vệt đèn khi ướt (explore/bike/roadFx.ts, spec §9 + §17.3, mốc bỏ được): vá shader 7 vật liệu đường, cường độ qua shared.uRoadNear (0 ngoài chế độ xe máy ⇒ góc cũ trùng từng điểm ảnh)
+    detail: true,      // false = không vá vật liệu nào (khóa program như cũ), bỏ hẳn mốc này
+    wet: true,         // false = chỉ hạt nhựa, không vệt đèn khi ướt
+    grain: 0.06,       // biên độ hạt nhựa nhân vào màu gốc (±), không đơn vị (ước lượng)
+    grainFar: 40,      // m — hạt mờ về 0 tại khoảng cách này tới camera (ước lượng)
+    grainNear: 0.4,    // phần của grainFar bắt đầu mờ, không đơn vị (ước lượng)
+    grainHz: [2.3, 9.0] as [number, number],   // 1/m — hai tần số nhiễu theo tọa độ thế giới XZ (sỏi lớn, hạt mịn) (ước lượng)
+    grainFineFar: 14,  // m — tần số mịn mờ hẳn ở khoảng cách này (tránh răng cưa / lấp lánh khi chạy) (ước lượng)
+    streak: 0.5,       // cường độ vệt đèn khi uWet = uNight = 1, nhìn sượt hẳn, không đơn vị (ước lượng)
+    streakN: 240,      // số dải theo góc quanh camera trên một vòng (vệt kéo dọc hướng nhìn); độ rộng một dải ≈ 360° / streakN (ước lượng)
+    streakNear: 4,     // m — vệt bắt đầu hiện từ khoảng cách này (dưới bánh xe không có) (ước lượng)
+    streakFar: 150,    // m — vệt mờ hết ở khoảng cách này (ước lượng)
+    streakColor: [1.0, 0.72, 0.42] as [number, number, number]   // màu vệt (đèn đường natri / LED ấm), RGB tuyến tính (ước lượng)
+  },
   model: {             // hình xe máy trong cảnh (explore/bike/model.ts)
     url: 'bike/scooter.glb',   // mô hình xe tay ga (npm run gen:bike từ scripts/bike/src/scooter.glb, Grab3D, CC0), đường dẫn tương đối BASE_URL
     timeoutMs: 8000,   // ms — quá thời gian này mà chưa nạp + làm nóng xong thì bkModelLoad trả null (vẫn đổi sang mô hình thật khi xong muộn) (ước lượng)

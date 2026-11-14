@@ -1,5 +1,6 @@
 /* Uniform dùng chung cho mọi hiệu ứng LED / cửa sổ đêm */
-export const shared = { uTime: { value: 0 }, uNight: { value: 0 } };
+export const shared = { uTime: { value: 0 }, uNight: { value: 0 },
+  uRoadNear: { value: 0 } };   // D-040 Task 8: cường độ hạt nhựa + vệt ướt trên vật liệu đường (explore/bike/roadFx.ts); 0 ngoài chế độ xe máy ⇒ không đổi điểm ảnh
 /* Hệ số cỡ hạt lửa / nước theo chiều cao khung hình (cập nhật khi đổi kích thước) */
 export const pScale = { value: 1 };
 /* Uniform thời tiết (mặt ướt, mưa, gió, mù nóng, hệ số lắc). TÁCH khỏi `shared` vì MAT.ledRail dùng nguyên object `shared` làm uniforms.

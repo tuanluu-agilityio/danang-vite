@@ -3,6 +3,7 @@ import { makeLaneTexture } from '../../common/textures';
 import { bridgePatch, type BridgePatchOptions } from '../../common/shaders';
 import { TTL, ttlPattern } from './profile';
 import { registerWet } from '../../environment/weather/wetness';
+import { roadSharePatch } from '../../environment/weather/summer';
 
 /* [materials] LED đổi màu qua bridgePatch(), bảng màu 'sail', 3 pattern */
 export function ttlMaterials() {
@@ -17,7 +18,7 @@ export function ttlMaterials() {
     steel: bridgePatch(new THREE.MeshStandardMaterial({ color: 0xb9bfc4, roughness: 0.32, metalness: 0.85 }), { weather: true }),
     joint: new THREE.MeshStandardMaterial({ color: 0x2c2f33, roughness: 0.5, metalness: 0.7 }),
     nvtSteel: new THREE.MeshStandardMaterial({ color: 0x7a8a92, roughness: 0.55, metalness: 0.6 }),
-    road: registerWet(new THREE.MeshStandardMaterial({ map: makeLaneTexture(3), roughness: 0.93 })),   // mặt ướt khi mưa (weather/wetness.ts)
+    road: roadSharePatch(registerWet(new THREE.MeshStandardMaterial({ map: makeLaneTexture(3), roughness: 0.93 }))),   // mặt ướt khi mưa (weather/wetness.ts); hạt nhựa + vệt ướt khi lái xe máy, chung program MAT.road2 (weather/summer.ts, D-040)
     beacon: new THREE.MeshBasicMaterial({ color: 0xff2a1a }),
     textures: [] as THREE.Texture[]
   };

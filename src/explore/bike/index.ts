@@ -19,6 +19,7 @@
    - Đêm + mưa (fx.ts, Task 7): grip = bkGrip(weatherU.uWet, xe trong đoạn hầm kín) mỗi khung; gió giật cộng bkGustSteer vào steer (BkInput giữ nguyên, chỉ khi v > vBlend);
      bkFx (vệt pha ban đêm, bụi nước khi mưa) vào cảnh ở start(), ra ở stop(), cập nhật sau model.place. "Hầm kín" = ô kiểu 'tunnel' và |x| ≤ HR.coverHalf:
      ô 'tunnel.tube' gồm cả hai dốc hở (|x| ≤ rampHalf), nơi mặt đường roadOut ướt khi mưa (han-tunnel/materials.ts registerWet).
+   - Mặt đường nhìn gần (roadFx.ts, Task 8, mốc bỏ được): start() bkRoadSet(true) ⇒ shared.uRoadNear = 1 (nếu CONFIG.bike.road.detail), stop() về 0.
    Mỗi khung không cấp phát (D-018). */
 import * as THREE from 'three';
 import { scene, camera, controls, canvas, renderer } from '../../core/renderer';
@@ -43,6 +44,7 @@ import { bkCamCreate, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye, bkCamHideHe
 import { BkDash } from './dash';
 import { bkSound, bkRiverK, type BkSoundIn } from './sound';
 import { bkFx, bkFxWarmObject, bkGrip, bkGustSteer } from './fx';
+import { bkRoadSet } from './roadFx';
 import { HR } from '../../bridges/han-tunnel/profile';
 import { stChar } from '../stroll/char';
 import type { SwingController } from '../../bridges/song-han/SwingController';
@@ -230,6 +232,7 @@ export const bike = {
     scene.add(model.group);
     model.place(state);
     scene.add(bkFx.group); bkFx.start(n);
+    bkRoadSet(true);                          // hạt nhựa + vệt ướt trên vật liệu đường (roadFx.ts; uRoadNear = 1 nếu CONFIG.bike.road.detail)
     riderNeed();
     riderStep(state, 0);
     driveView.far = CONFIG.drive.tunnelFar;   // mặt đường hầm hiện ở nút giao với hai đường dọc mới, như ô tô
@@ -262,6 +265,7 @@ export const bike = {
     drHudHide();
     model?.group.removeFromParent();
     bkFx.stop();
+    bkRoadSet(false);                         // uRoadNear = 0: vật liệu đường về đúng ảnh cũ
     driveView.far = 1;
     drUseBody(DR_CAR_BODY);
     document.body.classList.remove('drive', 'bike');
