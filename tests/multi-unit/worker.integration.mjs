@@ -107,6 +107,30 @@ try {
   dv.ws.close();
   wk.ws.close();
 
+  // Chat theo khoảng cách (D-041): phòng đã dọn; ba người đi dạo ở x = 0 / 40 / 380 (z −100, y 3); Gan1 nói, chỉ Gan2 (cách 40 m) nhận; kết nối chưa join nhận why slot
+  await sleep(1000);
+  const cg = { Gan1: 0, Gan2: 40, Xa: 380 };
+  const ch = {};
+  for (const name of Object.keys(cg)) { const c = client(); await c.opened; ch[name] = c; }
+  const ng = client(); await ng.opened;
+  await sleep(300);
+  ok(Object.values(ch).every(c => c.msgs[0] && c.msgs[0].t === 'lobby' && c.msgs[0].chat === 1), 'lobby đầu của mỗi kết nối có chat 1');
+  for (const [name, c] of Object.entries(ch)) c.send({ t: 'join', name, kind: 'walk' });
+  await sleep(800);
+  for (const [name, c] of Object.entries(ch)) c.send({ t: 'pos', x: cg[name], y: 3, z: -100, yaw: 0, pose: 0, ts: 9 });
+  await sleep(500);
+  ch.Gan1.send({ t: 'chat', text: 'xin chào', id: 7 });
+  ng.send({ t: 'chat', text: 'xin chào', id: 3 });
+  await sleep(1000);
+  const g2 = ch.Gan2.msgs.filter(m => m.t === 'chat');
+  ok(g2.length === 1 && g2[0].name === 'Gan1' && g2[0].k === 'walk' && g2[0].text === 'xin chào', `Gan2 (cách 40 m) nhận chat của Gan1: ${JSON.stringify(g2)}`);
+  ok(!ch.Xa.msgs.some(m => m.t === 'chat'), 'Xa (cách 380 m) không nhận chat');
+  const a1 = last(ch.Gan1, 'chatAck');
+  ok(a1 && a1.id === 7 && a1.n === 1 && !ch.Gan1.msgs.some(m => m.t === 'chat'), `Gan1 nhận chatAck id 7 n 1, không nhận lại tin mình: ${JSON.stringify(a1)}`);
+  const an = last(ng, 'chatAck');
+  ok(an && an.id === 3 && an.why === 'slot', `kết nối chưa join gửi chat: chatAck why slot: ${JSON.stringify(an)}`);
+  for (const c of [...Object.values(ch), ng]) c.ws.close();
+
   ok(await upgradeStatus('https://evil.example') === 403, 'Origin lạ -> 403');
   ok(await upgradeStatus(null) === 403, 'không có Origin -> 403');
   ok(await upgradeStatus('http://localhost:5173') === 101, 'Origin http://localhost:5173 -> 101');

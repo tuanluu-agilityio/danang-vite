@@ -45,5 +45,20 @@ export const multiParams = {
     vMax: 30,            // m/s — tốc độ có dấu lớn nhất máy chủ nhận: 100 km/h (27,78 m/s) cộng dư nhỏ (ước lượng)
     steerMax: 0.56       // rad — góc lái lớn nhất máy chủ nhận: asin(2,075 / 4,05) ≈ 0,538 cộng dư nhỏ (ước lượng)
   },
+  chat: {                // trò chuyện theo khoảng cách (D-041): máy chủ chỉ giao tin tới người giữ chỗ ở gần người gửi
+    radius: 150,         // m — khoảng cách 3D tối đa giữa hai pos để nhận tin, tính cả biên (ước lượng)
+    nearIn: 140,         // m — khách báo "ở gần" khi d ≤ nearIn, thôi báo khi d > radius (trễ hai ngưỡng, chống nhấp nháy) (ước lượng)
+    textMax: 200,        // code point tối đa của một tin sau khi làm sạch (ước lượng)
+    linesMax: 4,         // số dòng tối đa của một tin, phần sau nối bằng khoảng trắng (ước lượng)
+    marksMax: 4,         // dấu chồng (\p{M}) liên tiếp tối đa, dài hơn thì dồn còn chừng này (ước lượng)
+    msgBytes: 1024,      // độ dài tối đa của gói chat nhận từ khách, đơn vị UTF-16 của chuỗi JSON; gói khác vẫn theo maxMsgBytes (ước lượng)
+    ratePerWin: 5,       // số tin tối đa một kết nối được gửi trong rateWinMs (ước lượng)
+    rateWinMs: 10000,    // ms — cửa sổ trượt tính tần suất gửi tin (ước lượng)
+    ackMs: 4000,         // ms — khách chờ hồi âm chatAck, quá thì báo "Chưa gửi được" (ước lượng)
+    nearTickMs: 500,     // ms — chu kỳ khách tính lại danh sách người ở gần (setInterval) (ước lượng)
+    bubbleMs: 5000,      // ms — bong bóng chữ trên đầu người gửi hiện trong chừng này (ước lượng)
+    bubbleChars: 60,     // ký tự tối đa hiện trong bong bóng trên đầu (ước lượng)
+    historyMax: 60       // số tin tối đa giữ trong lịch sử của phiên (chỉ trong bộ nhớ) (ước lượng)
+  },
   clockSlewMs: 4        // ms tối đa độ lệch giờ người gửi → giờ khách được giảm mỗi mẫu (gói nhanh hơn tới), giữ dù không vọt (ước lượng)
 };
