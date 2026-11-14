@@ -1,0 +1,263 @@
+<pasted_content id="79df">
+# TASK: DESIGN A REAL-TIME WEATHER & LOCAL TIME SYSTEM FOR DA NANG 3D
+
+## 1. PROJECT CONTEXT
+
+I have an existing interactive 3D website:
+
+https://danangbridges.netlify.app/
+
+The project allows visitors to explore famous bridges in Da Nang, Vietnam, through an interactive 3D environment.
+
+The website currently includes:
+- Interactive 3D city and river environments.
+- Multiple bridges and exploration viewpoints.
+- Day/night environment controls.
+- Weather simulation controls.
+- Weather intensity settings.
+- Storm simulation scenarios.
+- Multiple exploration modes, including paragliding, walking, and driving.
+
+Your task is to design and eventually implement a premium Real-time Weather & Local Time feature.
+
+**IMPORTANT: This task must follow a DESIGN-FIRST workflow. Do not start implementation immediately.**
+
+## 2. PRODUCT VISION
+
+Create a beautiful environmental information interface that makes visitors feel they are exploring a living, real-world version of Da Nang.
+
+The interface should communicate two things:
+
+1. What time is it currently in Da Nang?
+2. What is the actual weather condition in Da Nang right now?
+
+The feature should feel like a sophisticated environmental monitoring system integrated into a 3D exploration experience.
+
+It must not look like a conventional weather application.
+
+## 3. DESIGN REQUIREMENTS
+
+### A. Real-time Local Clock
+
+Display:
+- Current local time in HH:mm:ss format.
+- Day of the week.
+- Full date.
+- Location: Da Nang, Vietnam.
+- Timezone: ICT (UTC+7).
+
+Requirements:
+- Update the clock every second.
+- Use the IANA timezone Asia/Ho_Chi_Minh.
+- Ensure correct time independently of the visitor's device timezone.
+- Use elegant typography with clear visual hierarchy.
+- Make the seconds display visually subtle.
+
+### B. Real-time Weather Information
+
+Display the following information:
+
+**Primary information**
+- Current temperature in Celsius.
+- Weather condition with a corresponding icon.
+- Weather description in Vietnamese.
+- Feels-like temperature.
+
+**Additional information**
+- Relative humidity.
+- Wind speed.
+- Wind direction.
+- Precipitation.
+- Cloud cover.
+- UV index, if available.
+
+Use meaningful weather icons and concise labels.
+
+The temperature should be the most visually prominent weather element.
+
+### C. Visual Design Direction
+
+Design language:
+
+- Premium dark glassmorphism.
+- Translucent panels.
+- Subtle background blur.
+- Elegant typography.
+- Soft lighting and atmospheric gradients.
+- Minimal borders.
+- Carefully controlled shadows.
+- Smooth micro-interactions.
+- High-quality iconography.
+
+The interface should complement the existing 3D environment without competing with the actual scenery.
+
+Avoid:
+- Large opaque dashboard panels.
+- Excessive information.
+- Bright and distracting colors.
+- Conventional weather app layouts.
+- Unnecessary charts and graphs.
+
+### D. Day/Night Awareness
+
+The interface should visually adapt to the actual local time.
+
+Examples:
+- Morning: subtle warm sunrise accents.
+- Daytime: clean blue atmospheric accents.
+- Sunset: warm orange accents.
+- Night: deep navy and cool blue accents.
+
+The visual adaptation must not automatically change the existing 3D environment settings.
+
+## 4. DESIGN PLACEMENT OPTIONS
+
+Explore at least two UI placement concepts before choosing the final design.
+
+**Concept A: Floating Weather HUD**
+
+A compact floating panel positioned in a suitable corner of the 3D viewport.
+
+**Concept B: Expandable Environmental Panel**
+
+A small persistent time/weather indicator that expands into a more detailed environmental information panel when clicked.
+
+Evaluate both concepts based on:
+- Visual harmony with the existing website.
+- Visibility without obstructing the 3D scene.
+- Desktop usability.
+- Mobile responsiveness.
+- Compatibility with existing UI elements.
+
+You may propose a better third concept if justified.
+
+## 5. TECHNICAL CONSIDERATIONS
+
+Do not implement anything during the design phase.
+
+However, the prototype must consider the following technical constraints:
+
+- The project already has existing weather simulation functionality.
+- Actual weather data and simulated weather must remain independent.
+- Real-world weather data must never overwrite user-controlled simulation settings.
+- Existing day/night controls must continue working.
+- The feature must not interfere with existing 3D camera controls, navigation or multiplayer interactions.
+- Minimize performance overhead.
+
+For the eventual implementation, investigate Open-Meteo:
+
+https://open-meteo.com/en/docs
+
+Suggested location:
+- Latitude: 16.061
+- Longitude: 108.227
+- Timezone: Asia/Ho_Chi_Minh
+- Temperature: Celsius
+- Wind speed: km/h
+
+Use the current weather endpoint and appropriate variables.
+
+Weather refresh should be periodic (approximately 10–15 minutes), not every second.
+
+The clock should update locally without repeated API requests.
+
+Display the actual weather observation/update timestamp so visitors understand that weather data is not necessarily refreshed continuously.
+
+## 6. WORKFLOW — STRICTLY DESIGN FIRST
+
+### PHASE 1: REVIEW EXISTING PROJECT
+
+Before designing:
+
+1. Review the entire project structure.
+2. Identify the existing UI architecture and design conventions.
+3. Inspect current weather simulation and day/night controls.
+4. Identify available UI components that could be reused.
+5. Determine suitable placement for the new feature.
+6. Identify potential conflicts with existing functionality.
+
+Do not modify any source files.
+
+### PHASE 2: DESIGN PROTOTYPE
+
+Create a visual and interactive prototype for review.
+
+Requirements:
+
+- Implement only a standalone design prototype or isolated preview.
+- Do not integrate it into the production application.
+- Do not modify existing production functionality.
+- Use realistic mock weather data for the prototype.
+- Include representative sunny, cloudy, rainy and nighttime states.
+- Demonstrate both compact and expanded states.
+- Demonstrate hover, click and expand/collapse interactions.
+- Show responsive desktop and mobile layouts.
+
+The prototype must be sufficiently polished to evaluate the actual visual quality, not merely a wireframe.
+
+### PHASE 3: DESIGN REVIEW CHECKPOINT
+
+Stop after completing the prototype.
+
+Present:
+
+1. Screenshots or a live preview of each proposed design.
+2. Comparison of the placement concepts.
+3. Explanation of the recommended design.
+4. Desktop and mobile previews.
+5. Interaction behavior.
+6. Proposed integration location within the existing website.
+7. Any technical concerns discovered during project review.
+
+**WAIT FOR MY EXPLICIT APPROVAL.**
+
+Do not proceed to implementation until I approve the prototype.
+
+If I request design changes, update the prototype and present it again for review.
+
+### PHASE 4: IMPLEMENTATION — ONLY AFTER APPROVAL
+
+After receiving approval:
+
+1. Review the final approved prototype.
+2. Create an implementation plan based on the actual project architecture.
+3. Identify the files and components that need modification.
+4. Implement the approved design.
+5. Integrate the real weather API.
+6. Implement the live local clock.
+7. Add loading, error, stale-data and offline states.
+8. Ensure the existing weather simulation remains independent.
+9. Test all existing exploration modes and controls.
+10. Verify responsive behavior and performance.
+
+Do not redesign the approved interface without permission.
+
+## 7. QUALITY EXPECTATIONS
+
+The final result should feel like a premium feature of a sophisticated 3D digital tourism platform.
+
+Prioritize:
+- Visual quality.
+- Excellent typography.
+- Information hierarchy.
+- Minimalism.
+- Smooth interactions.
+- Performance.
+- Compatibility with the existing application.
+
+Do not introduce unnecessary dependencies.
+
+Do not refactor unrelated project code.
+
+Do not invent an entirely new UI architecture if the existing project already provides suitable patterns.
+
+## 8. FIRST ACTION
+
+Start with PHASE 1 and PHASE 2 only.
+
+Review the existing project, then create the design prototype.
+
+Do not implement the real API or modify production source code yet.
+
+Your first deliverable is a beautiful, interactive prototype that I can review and approve.
+</pasted_content id="79df">
