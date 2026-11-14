@@ -128,9 +128,13 @@ export function bkModelSource(scene: THREE.Object3D): BkSource {
 /* ===== Nạp (nhớ đệm), làm nóng ===== */
 let warm: ((o: THREE.Object3D) => Promise<unknown>) | null = null;
 export function bkModelSetWarm(fn: ((o: THREE.Object3D) => Promise<unknown>) | null): void { warm = fn; }
+/* Vật thể khác của chế độ cần làm nóng cùng lượt (fx.ts: vệt pha, bụi nước): mỗi hàm trả một nhóm tạm, gỡ ra sau khi làm nóng */
+const warmAlso: (() => THREE.Object3D)[] = [];
+export function bkModelWarmAlso(fn: () => THREE.Object3D): void { if (!warmAlso.includes(fn)) warmAlso.push(fn); }
 
-/* Làm nóng mọi thứ xe dùng: cảnh nguồn (thân, cổ lái, bánh, đèn), mặt đồng hồ (MeshBasicMaterial), hình tạm, tấm bóng. Bản đèn sáng / phanh cùng program
-   với bản thường nên không cần. Gỡ cảnh nguồn ra (về không cha) sau khi làm nóng; chờ tối đa model.warmMs */
+/* Làm nóng mọi thứ xe dùng: cảnh nguồn (thân, cổ lái, bánh, đèn), mặt đồng hồ (MeshBasicMaterial), hình tạm, tấm bóng, cùng các nhóm của bkModelWarmAlso
+   (vệt pha, bụi nước: khung đêm / mưa đầu tiên không giật). Bản đèn sáng / phanh cùng program với bản thường nên không cần. Gỡ cảnh nguồn ra (về không cha)
+   sau khi làm nóng; chờ tối đa model.warmMs */
 async function bkModelWarmAll(src: BkSource): Promise<void> {
   if (!warm) return;
   const g = new THREE.Group(), tg = bkTempGeometry(), dm = bkDashMaterial();
@@ -138,6 +142,7 @@ async function bkModelWarmAll(src: BkSource): Promise<void> {
   bkShadowShared(); g.add(new THREE.Mesh(shadowGeo!, shadowMat!));
   g.add(new THREE.Mesh(shadowGeo!, dm));
   g.add(src.scene);
+  for (const f of warmAlso) g.add(f());
   let timer = 0;
   try { await Promise.race([warm(g), new Promise<void>((r) => { timer = setTimeout(r, M.warmMs) as unknown as number; })]); }
   catch { /* biên dịch trước lỗi: lần vẽ đầu tự biên dịch */ }

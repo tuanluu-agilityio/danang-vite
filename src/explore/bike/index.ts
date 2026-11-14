@@ -3,7 +3,7 @@
    drive/* không bao giờ import ngược từ bike/*.
    - Mạng đường DÙNG CHUNG với ô tô: drEnsureNet() của drive/index.ts (dựng một lần cho cả trang; drCollectRuntime chỉ push, dựng net thứ hai sẽ nhân đôi vật cản).
    - Thân va chạm: start() đặt drUseBody(BK_BODY), stop() trả DR_CAR_BODY (drive.start() cũng tự đặt lại thân ô tô).
-   - Mỗi khung: phím → BkInput (keys.ts), grip = 1 (Task 7 nối thời tiết), bkStep với hộp xe tự động gần xe (trNearby), hình xe (model.ts),
+   - Mỗi khung: phím → BkInput (keys.ts), grip + gió giật (fx.ts), bkStep với hộp xe tự động gần xe (trNearby), hình xe (model.ts),
      camera (camera.ts): mặc định góc thứ nhất trên yên, V trộn sang góc thứ ba (drCamPlace với CONFIG.bike.cam3) trong cam1.mixS; fov / near đổi thì onResize();
      mặt đồng hồ (dash.ts) vẽ lại ≤ dash.hz; controls.target theo xe (tâm vùng bóng đổ), HUD (đồng hồ + bản đồ nhỏ của ô tô), exNightStep(dt, false).
    - Mắt góc thứ nhất: đo MỘT lần khi người lái thật gắn vào mô hình thật (riderEye: giữa hai xương mắt ở tư thế ngồi nền, hệ thân xe), không theo xương mỗi khung;
@@ -15,7 +15,10 @@
    - Người lái: rider.ts, nhân vật theo stChar (chung Đi dạo), nạp ở preload() / start() (làm nóng qua stRigSetWarm của stroll/index.ts); chưa về thì xe không người,
      về sau stop() thì bỏ. Người gắn vào neo yên của xe nên rời cảnh cùng model.group.
    - Âm thanh (sound.ts bkSound): đề máy ở start(), tắt máy ở stop(); mỗi khung một BkSoundIn tái dùng (hộp xe gần dùng lại mảng trNearby của bkStep,
-     river từ |x| so với mép kè, tunnel từ ô mặt đường dưới xe, mưa = 0 trong hầm); nút 🔊 #drSoundBtn chung với ô tô, bkSound.bind chỉ toggle khi đang lái xe máy.
+     river từ |x| so với mép kè, tunnel từ ô mặt đường dưới xe, mưa = 0 trong đoạn hầm kín); nút 🔊 #drSoundBtn chung với ô tô, bkSound.bind chỉ toggle khi đang lái xe máy.
+   - Đêm + mưa (fx.ts, Task 7): grip = bkGrip(weatherU.uWet, xe trong đoạn hầm kín) mỗi khung; gió giật cộng bkGustSteer vào steer (BkInput giữ nguyên, chỉ khi v > vBlend);
+     bkFx (vệt pha ban đêm, bụi nước khi mưa) vào cảnh ở start(), ra ở stop(), cập nhật sau model.place. "Hầm kín" = ô kiểu 'tunnel' và |x| ≤ HR.coverHalf:
+     ô 'tunnel.tube' gồm cả hai dốc hở (|x| ≤ rampHalf), nơi mặt đường roadOut ướt khi mưa (han-tunnel/materials.ts registerWet).
    Mỗi khung không cấp phát (D-018). */
 import * as THREE from 'three';
 import { scene, camera, controls, canvas, renderer } from '../../core/renderer';
@@ -34,11 +37,13 @@ import { exNightStep } from '../nightShows';
 import { weatherU, shared } from '../../core/shared';
 import { bkCreate, bkStep, bkRecover, bkSignal, bkPitch, BK_BODY, type BkState, type BkInput } from './motion';
 import { bkInputFromKeys, BK_KEYS } from './keys';
-import { BkBike, bkModelLoad, bkModelSetWarm, type BkPlace } from './model';
+import { BkBike, bkModelLoad, bkModelSetWarm, bkModelWarmAlso, type BkPlace } from './model';
 import { BkRider, bkRiderLoad, type BkRiderSig } from './rider';
 import { bkCamCreate, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye, type BkCam } from './camera';
 import { BkDash } from './dash';
 import { bkSound, bkRiverK, type BkSoundIn } from './sound';
+import { bkFx, bkFxWarmObject, bkGrip, bkGustSteer } from './fx';
+import { HR } from '../../bridges/han-tunnel/profile';
 import { stChar } from '../stroll/char';
 import type { SwingController } from '../../bridges/song-han/SwingController';
 
@@ -55,6 +60,7 @@ bkModelSetWarm(async (o: THREE.Object3D) => {
   renderer.setRenderTarget(rt);
   await b;
 });
+bkModelWarmAlso(bkFxWarmObject);   // vệt pha + bụi nước làm nóng cùng lượt với mô hình
 
 const BK_SOLO_SLOT = -1;   // bkCreate / drSpawnPose: lái một mình xuất phát ở giữa các chỗ của slot (trên Cầu Rồng, đi Đông, bên phải)
 const C1 = CONFIG.bike.cam1;
@@ -92,6 +98,8 @@ function advance(dt: number, inp: BkInput): void {
   const nNear = trNearby(s.x, s.z, CONFIG.drive.ai.radius, boxes);
   bkStep(s, inp, n, boxes, nNear, dt);
   model!.place(s);
+  const tunnel = bkInTunnel(n, s), dry = tunnel && bkCovered(s);
+  bkFx.update(s, shared.uNight.value, dry ? 0 : weatherU.uRain.value, dt, s.pitch, dry ? 0 : weatherU.uWet.value);
   riderStep(s, dt);
   riderEye();
   bkCamStep(camB, s, dt, motionK);
@@ -101,15 +109,14 @@ function advance(dt: number, inp: BkInput): void {
   controls.target.set(s.x, s.y, s.z);   // tâm vùng bóng đổ (main.ts shadowCenter) theo xe
   drHudUpdate(s, NO_DOTS);
   exNightStep(dt, false);
-  soundStep(s, n, nNear);
+  soundStep(s, nNear, tunnel, dry);
 }
 
 /* Âm thanh: điền BkSoundIn từ trạng thái xe (không cấp phát); bkSound tự giới hạn số lần ghi tham số (updateMs) */
-function soundStep(s: BkState, n: DrNet, nNear: number): void {
-  const tunnel = bkInTunnel(n, s);
+function soundStep(s: BkState, nNear: number, tunnel: boolean, dry: boolean): void {
   _snd.v = s.v; _snd.rpm = s.rpm; _snd.throttle = s.throttle; _snd.brakeK = s.brakeK; _snd.sig = s.sig;
   _snd.sus = Math.max(Math.abs(s.susF), Math.abs(s.susR));
-  _snd.rain = tunnel ? 0 : weatherU.uRain.value; _snd.tunnel = tunnel; _snd.river = bkRiverK(s.x);
+  _snd.rain = dry ? 0 : weatherU.uRain.value; _snd.tunnel = tunnel; _snd.river = bkRiverK(s.x);
   _snd.view = camB.view; _snd.nNear = nNear; _snd.x = s.x; _snd.z = s.z; _snd.yaw = s.yaw; _snd.t = shared.uTime.value;
   bkSound.update(_snd);
 }
@@ -126,6 +133,8 @@ function bkInTunnel(n: DrNet, s: BkState): boolean {
   }
   return best >= 0 && n.pads[best].kind === 'tunnel';
 }
+/* Trong ô hầm thì đã ở đoạn có mái chưa (ngoài |x| > coverHalf là dốc hở: mưa, mặt ướt) */
+const bkCovered = (s: BkState): boolean => Math.abs(s.x) <= HR.coverHalf;
 
 /* Người lái theo xe (sau model.place): tín hiệu từ trạng thái chuyển động */
 function riderStep(s: BkState, dt: number): void {
@@ -205,6 +214,7 @@ export const bike = {
   get dash(): BkDash | null { return dash; },
   get cfg(): typeof CONFIG.bike { return CONFIG.bike; },   // test / kiểm tay: chỉnh số camera lúc chạy
   get sound(): typeof bkSound { return bkSound; },        // test: nodes(), on, graph
+  get fx(): typeof bkFx { return bkFx; },                 // test: drawn() (vệt pha, số hạt bụi nước), group
   /* Đổi góc nhìn: trộn vị trí + hướng + fov + near trong cam1.mixS, không dừng xe */
   setView(v: 1 | 3): void { camB.view = v === 3 ? 3 : 1; },
   /* Vào lái một mình */
@@ -219,6 +229,7 @@ export const bike = {
     if (!dash) dash = new BkDash();
     scene.add(model.group);
     model.place(state);
+    scene.add(bkFx.group); bkFx.start(n);
     riderNeed();
     riderStep(state, 0);
     driveView.far = CONFIG.drive.tunnelFar;   // mặt đường hầm hiện ở nút giao với hai đường dọc mới, như ô tô
@@ -235,7 +246,9 @@ export const bike = {
     if (!active()) return;
     bkInputFromKeys(bkKeys, _inp);
     bkSound.horn(bkKeys.has('KeyH'));
-    _inp.grip = 1;                            // Task 7: theo thời tiết (weatherU.uWet), khô trong hầm kín
+    const s = state!, tun = bkInTunnel(net!, s) && bkCovered(s), wd = weatherU.uWindDir.value;
+    _inp.grip = bkGrip(weatherU.uWet.value, tun);                                       // mặt ướt (trễ theo mưa); đoạn hầm kín luôn khô
+    _inp.steer += bkGustSteer(s.v, weatherU.uGust.value, wd[0], wd[1], s.yaw);        // gió giật đẩy nhẹ độ nghiêng (≤ fx.gust.steer)
     advance(dt, _inp);
   },
   /* Gọi ngay sau lệnh vẽ khung chính (main.ts); chỗ cho mặt đồng hồ / chụp ảnh của task sau */
@@ -248,6 +261,7 @@ export const bike = {
     rider?.setFirstPerson(false);
     drHudHide();
     model?.group.removeFromParent();
+    bkFx.stop();
     driveView.far = 1;
     drUseBody(DR_CAR_BODY);
     document.body.classList.remove('drive', 'bike');

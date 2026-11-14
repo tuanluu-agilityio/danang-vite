@@ -970,6 +970,40 @@ const bikeBase = {
     day: 0.8,          // hệ số sáng MeshBasicMaterial ban ngày (ước lượng)
     night: 1.0         // hệ số sáng khi uNight = 1: đèn nền tự sáng (ước lượng)
   },
+  fx: {                // đêm + mưa (explore/bike/fx.ts, spec §9): vệt đèn pha trên mặt đường, bụi nước bánh xe; không PointLight / SpotLight, không đụng vật liệu đường
+    beam: {            // vệt đèn pha: một tấm cộng màu, texture hình quạt, bám mặt đường trước xe; lớp 1 (không vào phản chiếu mặt nước); +1 lệnh vẽ ban đêm
+      len: 14,         // m — chiều dài vệt trên mặt đường, đường khô (ước lượng)
+      width: 5,        // m — bề ngang tấm ở đầu xa (quạt trong texture hẹp dần về phía xe) (ước lượng)
+      ahead: 1.2,      // m — mép gần của vệt ra trước tâm xe (ước lượng)
+      opacity: 0.55,   // độ sáng cộng lớn nhất khi uNight = 1, đường khô, không đơn vị (ước lượng)
+      nightMin: 0.3,   // uNight từ mức này trở xuống thì không vẽ vệt (ước lượng)
+      wetGain: 1.4,    // đường ướt hẳn (uWet = 1): vệt sáng hơn và dài hơn chừng này lần (mặt ướt phản xạ như gương) (ước lượng)
+      rows: 8,         // số đoạn dọc của tấm: mỗi hàng đỉnh đặt theo cao độ mặt đường (drGround) để bám dốc cầu / dốc hầm (spec §9)
+      lift: 0.04,      // m — nâng khỏi mặt đường (cùng polygonOffset) để không nhấp nháy với nhựa đường (ước lượng)
+      px: 64,          // px — cạnh texture quạt (DataTexture dựng bằng code)
+      color: 0xfff0d2  // màu ánh đèn pha LED hơi ấm (ước lượng)
+    },
+    spray: {           // bụi nước sau hai bánh khi mưa: một THREE.Points, +1 lệnh vẽ khi mưa và đang chạy
+      max: 120,        // số hạt lớn nhất (spec §9)
+      vMin: 4,         // m/s — dưới tốc độ này không tung nước (ước lượng)
+      life: 0.5,       // s — đời một hạt (ước lượng)
+      seed: 9113,      // hạt giống rng() riêng (không dùng rand() / Math.random())
+      vFull: 15,       // m/s — từ tốc độ này tung nước đủ mức (ước lượng)
+      rearK: 0.7,      // phần hạt sinh ở bánh sau (còn lại bánh trước), không đơn vị (ước lượng)
+      carry: 0.5,      // hạt bay tới trước với chừng này phần tốc độ xe nên tụt lại sau bánh, không đơn vị (ước lượng)
+      up: [1.0, 2.4] as [number, number],   // m/s — vận tốc bắn lên nhỏ nhất, lớn nhất (ước lượng)
+      side: 0.8,       // m/s — vận tốc bắn ngang lớn nhất mỗi bên (ước lượng)
+      gravity: 9.81,   // m/s² — trọng trường kéo hạt xuống
+      size: 0.22,      // m — cỡ hạt (PointsMaterial, sizeAttenuation); 0,16 khó thấy ở góc thứ ba (kiểm ảnh) (ước lượng)
+      opacity: 0.55,   // độ đục hạt mới sinh, mờ dần theo đời (ước lượng)
+      color: 0xd6e0e8, // màu bụi nước ban ngày (ước lượng)
+      nightDim: 0.35   // màu nhân chừng này khi uNight = 1 (hạt không tự sáng) (ước lượng)
+    },
+    gust: {            // gió giật đẩy nhẹ độ nghiêng: cộng vào steer (BkInput giữ nguyên), chỉ khi v > perf.vBlend
+      steer: 0.06,     // phần steer (−1..1) cộng thêm lớn nhất, gió giật thổi ngang thân xe hẳn (ước lượng)
+      ref: 10          // m/s — gió giật (weatherU.uGust) từ mức này thì cộng đủ steer; bão: gust 10 m/s (weather.presets.storm)
+    }
+  },
   model: {             // hình xe máy trong cảnh (explore/bike/model.ts)
     url: 'bike/scooter.glb',   // mô hình xe tay ga (npm run gen:bike từ scripts/bike/src/scooter.glb, Grab3D, CC0), đường dẫn tương đối BASE_URL
     timeoutMs: 8000,   // ms — quá thời gian này mà chưa nạp + làm nóng xong thì bkModelLoad trả null (vẫn đổi sang mô hình thật khi xong muộn) (ước lượng)
