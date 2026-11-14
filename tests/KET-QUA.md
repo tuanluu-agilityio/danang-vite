@@ -4,7 +4,7 @@ Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (
 
 Khung test mặc định 480×270 khớp `(max-height: 500px)` nên cả bộ test chạy ở chế độ gọn (không blur): draw call không đổi; số hitch của `test:perf` không so sát được với mốc D-018 (đo khi còn blur).
 
-## Trò chuyện theo khoảng cách (2026-11-14, nhánh `feature/chat-gan-nhau`, D-041)
+## Trò chuyện theo khoảng cách (2026-11-14, nhánh `feature/chat-gan-nhau`, D-041, PR #36)
 
 Chat gần nhau (`src/explore/multi/chat.ts`, `chatCore.ts`, `server/multi/src/room.ts`). **Không có test trình duyệt tự động** (`tests/chat-check.mjs` / `test:chat` không được viết, theo lời người dùng "viết tài liệu không cần test trình duyệt", 2026-11-14) và **không chạy test nặng nào** (`test:multi`, `test:stroll`, `test:drive`, `test:bike`, `test:mobile`, `test:explore`, `test:drawcalls`, `test:perf`). Số lệnh vẽ / program không đo; theo thiết kế bong bóng là DOM, 0 lệnh vẽ, 0 program, 0 đèn.
 
@@ -14,7 +14,9 @@ Chat gần nhau (`src/explore/multi/chat.ts`, `chatCore.ts`, `server/multi/src/r
 | `test:multi:unit` (`ccc39f3`) | 151/151 (98 trước chat) |
 | `build` (`ccc39f3`) | đạt; chunk `index` 790,23 kB, `three` 636,51 kB, css 45,19 kB; trước chat tại `870f27b`: `index` 773,88 kB, css 41,60 kB |
 | `test:stroll:unit` / `test:drive:unit` / `test:bike:unit` (`adec796`) | 93/93 / 124/124 / 109/109 |
-| `test:multi:worker` (`3d6f80f`, `wrangler dev` cục bộ cổng 8799) | TẤT CẢ ĐẠT; 5 kiểm chat bằng WebSocket thật: hai người gần nhận, người xa 380 m không nhận, `chatAck n: 1`, `lobby.chat === 1`, chưa giữ chỗ thì `why 'slot'`. Worker thật `danang-sky` **chưa deploy** |
+| `test:multi:worker` (`3d6f80f`, `wrangler dev` cục bộ cổng 8799) | TẤT CẢ ĐẠT; 5 kiểm chat bằng WebSocket thật: hai người gần nhận, người xa 380 m không nhận, `chatAck n: 1`, `lobby.chat === 1`, chưa giữ chỗ thì `why 'slot'`. Worker thật `danang-sky` đã deploy sau đó (hai dòng dưới) |
+| Sau gộp `origin/main` `3be9ca3` (PR #35), `bb5ab71` (2026-11-14) | `typecheck` sạch; `test:multi:unit` 153/153; `test:bike:unit` 109/109; `build` đạt, chunk `index` 791,61 kB. Sửa sau review toàn nhánh `0905fef` chưa xem trong trình duyệt |
+| Deploy Worker `danang-sky` (2026-11-14, theo lời người dùng, từ mã nhánh tại `bb5ab71`) | version `c5f0ac75-cb7f-4739-92c8-ee2b74564a10`. Kiểm trực tiếp trên máy chủ thật (một WebSocket với Origin của trang thật, không giữ chỗ): `lobby` trả `chat: 1`; gửi `chat` khi chưa giữ chỗ nhận `chatAck why 'slot'`. Chưa thử hai người thật gửi tin cho nhau trên máy chủ thật; chưa kiểm bản Netlify (PR #36) |
 | Thử tay Task 3 (Playwright, GPU thật, `wrangler dev` 8797 + vite 5197, chỉ Đi dạo, hai người) | nút hiện; cả hai thấy "Bạn đang ở gần …"; gửi qua lại có ✓; `<img onerror>` hiện thành chữ; bong bóng trên đầu người gửi; chấm chưa đọc + huy hiệu; Esc trong ô chỉ đóng bảng. Không phải test tự động, không có ảnh lưu |
 | Review từng task (agent đọc diff) | Task 1, 2, 3 "Approved", không có lỗi Critical / Important; review toàn nhánh (đọc mã, 10 kịch bản đầu-cuối) xong: không có lỗi Critical; một lỗi Important (ô nhập bị `disabled` lúc đang gõ khi người kia ra khỏi tầm, làm phím lọt xuống điều khiển) đã sửa ở commit sau `7d1456e` cùng với việc Esc khi bảng mở mà focus không ở ô chỉ đóng bảng; còn Minor cần xem trong trình duyệt: bảng chat che nút 📷 trên điện thoại dọc và đè bảng Cài đặt khi mở, Enter trên bàn phím ảo Android khi đang soạn từ có thể không gửi, hạn mức tần suất về 0 khi mở kết nối mới hoặc sau hibernation |
 | **Chưa kiểm trong trình duyệt** | chat ở dù lượn, ô tô, xe máy; điện thoại dọc / ngang; RTL `ar`; mất kết nối; ba người trở lên; ra / vào tầm khi di chuyển; chồng lấn nút chat với HUD (`left:105px` viết cứng khi lái trên máy cảm ứng nằm ngang); mở đóng nhiều lần / lệnh vẽ |

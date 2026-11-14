@@ -1,6 +1,6 @@
 # Trò chuyện theo khoảng cách (proximity chat) — thiết kế
 
-_Ngày: 2026-11-14 · Quyết định: D-041 · Nhánh: `feature/chat-gan-nhau` (từ `feature/xe-may` `870f27b`, vì xe máy D-040 chưa vào `main`) · Trạng thái: người dùng giao bản yêu cầu "Proximity-based real-time chat" (2026-11-14) và bảo tự quyết kỹ thuật, làm liền spec → plan → mã; chưa duyệt riêng từng mục. **Đã triển khai Task 1–3 trên nhánh (gộp `origin/main` ở `50e842e`, mã `ccc39f3`), chưa push / PR / merge, Worker chưa deploy; test trình duyệt (`test:chat`, Task 4) không làm theo lời người dùng (2026-11-14).**_
+_Ngày: 2026-11-14 · Quyết định: D-041 · Nhánh: `feature/chat-gan-nhau` (từ `feature/xe-may` `870f27b`, vì xe máy D-040 chưa vào `main`) · Trạng thái: người dùng giao bản yêu cầu "Proximity-based real-time chat" (2026-11-14) và bảo tự quyết kỹ thuật, làm liền spec → plan → mã; chưa duyệt riêng từng mục. **Đã triển khai Task 1–3 trên nhánh (gộp `origin/main` ở `50e842e` và `bb5ab71`, mã `0905fef`), PR #36, Worker `danang-sky` đã deploy 2026-11-14; test trình duyệt (`test:chat`, Task 4) không làm theo lời người dùng (2026-11-14).**_
 
 Ghi chú nguồn gốc: **(ND)** = có trong bản yêu cầu của người dùng; **(Claude)** = lựa chọn của Claude, người dùng chưa duyệt riêng; không ghi gì = suy ra từ mã hiện có.
 
@@ -174,7 +174,7 @@ Không thư viện mới, không biến môi trường mới, không đổi `wra
 
 ## 13. Triển khai
 
-Chat chỉ hoạt động trên mạng sau khi Worker `danang-sky` được deploy bản mới (`npm --prefix server/multi run deploy`). **Deploy phải hỏi người dùng riêng**; nhánh này không deploy. Trước lúc đó trang mới gặp máy chủ cũ sẽ ẩn chat, mọi thứ khác như cũ. Thứ tự deploy trang / Worker nào trước cũng an toàn (mục 10).
+Chat chỉ hoạt động trên mạng sau khi Worker `danang-sky` được deploy bản mới (`npm --prefix server/multi run deploy`). **Đã deploy 2026-11-14** theo lời người dùng, từ mã nhánh tại `bb5ab71`, version `c5f0ac75-cb7f-4739-92c8-ee2b74564a10`; kiểm trực tiếp: `lobby.chat: 1`, `chatAck why 'slot'` khi chưa giữ chỗ (chưa thử hai người thật). Lần deploy sau vẫn phải hỏi người dùng riêng. Trang Netlify có chat sau khi PR #36 merge; trước đó hoặc với máy chủ cũ trang mới gặp máy chủ cũ sẽ ẩn chat, mọi thứ khác như cũ. Thứ tự deploy trang / Worker nào trước cũng an toàn (mục 10).
 
 ## 14. Hạn chế đã biết
 

@@ -5,7 +5,7 @@ File này là **điểm vào chung** cho mọi agent (Claude Code qua `CLAUDE.md
 
 ## 1. Dự án trong một đoạn
 
-Mô hình 3D các công trình trên sông Hàn, Đà Nẵng: Cầu Rồng, Thuận Phước, Trần Thị Lý, Cầu sông Hàn (cầu quay) và Hầm vượt sông Hàn (phương án đề xuất, chưa xây), cùng hai bờ sông, ngày/đêm, Tour có thuyết minh, các chế độ tự khám phá (dù lượn, đi dạo, lái xe VinFast VF 3, lái xe máy tay ga góc nhìn thứ nhất / thứ ba — D-040, nhánh `feature/xe-may`, chưa merge), trò chuyện theo khoảng cách giữa người chơi cùng phòng (≤ 150 m, D-041, nhánh `feature/chat-gan-nhau`, chưa merge), giao diện 9 ngôn ngữ.
+Mô hình 3D các công trình trên sông Hàn, Đà Nẵng: Cầu Rồng, Thuận Phước, Trần Thị Lý, Cầu sông Hàn (cầu quay) và Hầm vượt sông Hàn (phương án đề xuất, chưa xây), cùng hai bờ sông, ngày/đêm, Tour có thuyết minh, các chế độ tự khám phá (dù lượn, đi dạo, lái xe VinFast VF 3, lái xe máy tay ga góc nhìn thứ nhất / thứ ba — D-040, PR #34), trò chuyện theo khoảng cách giữa người chơi cùng phòng (≤ 150 m, D-041, PR #36), giao diện 9 ngôn ngữ.
 Vite 6 + TypeScript 5.9 + three@0.165, **không dùng framework UI**. Chuyển từ một file HTML ~4 600 dòng (`tests/original/index.html`) và phải giữ nguyên hành vi lẫn draw call của bản gốc.
 
 ## 2. Quy trình Memory Bank (bắt buộc)
