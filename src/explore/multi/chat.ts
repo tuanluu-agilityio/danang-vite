@@ -93,7 +93,10 @@ function paintStatus(): void {
     else { lock = false; txt = near.length === 1 ? t('chatOne', { name: '\u2068' + near[0].name + '\u2069' }) : t('chatMany', { n: near.length }); }   // tên bọc cô lập hướng chữ
   } else txt = t(ph === 'watching' ? 'chatWatch' : 'chatLost');
   if (el.status.textContent !== txt) el.status.textContent = txt;
-  if (lock !== locked) { locked = lock; el.input.disabled = lock; }
+  locked = lock;
+  /* Ô đang được gõ thì không tắt (disabled làm mất focus: chữ gõ tiếp thành phím lái, bộ gõ đang soạn bị cắt); nút gửi và send() vẫn chặn. Rời ô thì trình nghe blur tắt nó */
+  const off = lock && document.activeElement !== el.input;
+  if (el.input.disabled !== off) el.input.disabled = off;
   paintSend();
 }
 
@@ -262,6 +265,12 @@ function bind(): void {
   btn.addEventListener('animationend', () => btn.classList.remove('pulse'));
   form.addEventListener('submit', (e) => { e.preventDefault(); send(); });
   input.addEventListener('input', () => { fit(); paintSend(); });
+  input.addEventListener('blur', () => { if (locked) input.disabled = true; });   // ô bị khóa lúc đang gõ: tắt hẳn khi người dùng rời ô
+  /* Esc khi bảng đang mở mà focus không ở ô nhập (vừa bấm vào danh sách tin, máy cảm ứng): chỉ đóng bảng. Pha capture ở window chạy trước trình nghe thoát chế độ của explore/index.ts */
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !opened || e.target === input) return;
+    e.stopPropagation(); e.preventDefault(); exChat.close();
+  }, true);
   input.addEventListener('keydown', (e) => {
     exChat.onActivity();
     if (e.key === 'Escape') {

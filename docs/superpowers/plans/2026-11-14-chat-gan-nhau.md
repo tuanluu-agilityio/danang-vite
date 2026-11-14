@@ -319,9 +319,9 @@ _(cập nhật 2026-11-14)_
 - Task 2 (phiên + `chatCore.ts`): xong, `5cb55bf`.
 - Task 3 (giao diện, bong bóng, 9 ngôn ngữ): xong, `adec796`; sửa sau review `ccc39f3` (Esc khi đang gõ bộ gõ, ký tự cô lập viết dạng escape). Nhánh gộp `origin/main` (xe máy PR #34) ở `50e842e`.
 - Task 4: Step 1–3 (`tests/chat-check.mjs`, `npm run test:chat`) **không làm** theo lời người dùng (2026-11-14); Step 4 (tài liệu) xong; Step 5 thay bằng commit tài liệu.
-- Đã chạy tại `ccc39f3`: `typecheck` sạch, `test:multi:unit` 151/151, `build` đạt (`index` 790,23 kB, css 45,19 kB). Tại `adec796`: `test:stroll:unit` 93/93, `test:drive:unit` 124/124, `test:bike:unit` 109/109. Review từng task: Approved; review toàn nhánh chưa có kết quả khi viết mục này.
+- Đã chạy tại `ccc39f3`: `typecheck` sạch, `test:multi:unit` 151/151, `build` đạt (`index` 790,23 kB, css 45,19 kB). Tại `adec796`: `test:stroll:unit` 93/93, `test:drive:unit` 124/124, `test:bike:unit` 109/109. Review từng task: Approved; review toàn nhánh (đọc mã, 10 kịch bản đầu-cuối) xong: không có lỗi Critical; một lỗi Important (ô nhập bị `disabled` lúc đang gõ khi người kia ra khỏi tầm, làm phím lọt xuống điều khiển) đã sửa ở commit sau `7d1456e` cùng với việc Esc khi bảng mở mà focus không ở ô chỉ đóng bảng; còn Minor cần xem trong trình duyệt: bảng chat che nút 📷 trên điện thoại dọc và đè bảng Cài đặt khi mở, Enter trên bàn phím ảo Android khi đang soạn từ có thể không gửi, hạn mức tần suất về 0 khi mở kết nối mới hoặc sau hibernation.
 - **Chưa chạy**: mọi test trình duyệt và test nặng (`test:multi`, `test:stroll`, `test:drive`, `test:bike`, `test:mobile`, `test:explore`, `test:drawcalls`, `test:perf`). Chưa push, chưa PR, chưa merge; Worker `danang-sky` chưa deploy (deploy phải hỏi người dùng riêng).
-- **Còn lại:** người dùng thử demo; (nếu muốn) viết + chạy `test:chat` rồi test nặng một lần; kết quả review toàn nhánh; push / PR / merge; hỏi deploy Worker.
+- **Còn lại:** người dùng thử demo; (nếu muốn) viết + chạy `test:chat` rồi test nặng một lần; push / PR / merge; hỏi deploy Worker.
 
 **Thử tay hai phiên (cục bộ):**
 
