@@ -4,15 +4,18 @@
    - Mạng đường DÙNG CHUNG với ô tô: drEnsureNet() của drive/index.ts (dựng một lần cho cả trang; drCollectRuntime chỉ push, dựng net thứ hai sẽ nhân đôi vật cản).
    - Thân va chạm: start() đặt drUseBody(BK_BODY), stop() trả DR_CAR_BODY (drive.start() cũng tự đặt lại thân ô tô).
    - Mỗi khung: phím → BkInput (keys.ts), grip = 1 (Task 7 nối thời tiết), bkStep với hộp xe tự động gần xe (trNearby), hình xe (model.ts),
-     camera góc thứ ba = drCamPlace với CONFIG.bike.cam3, controls.target theo xe (tâm vùng bóng đổ), HUD (đồng hồ + bản đồ nhỏ của ô tô), exNightStep(dt, false).
+     camera (camera.ts): mặc định góc thứ nhất trên yên, V trộn sang góc thứ ba (drCamPlace với CONFIG.bike.cam3) trong cam1.mixS; fov / near đổi thì onResize();
+     mặt đồng hồ (dash.ts) vẽ lại ≤ dash.hz; controls.target theo xe (tâm vùng bóng đổ), HUD (đồng hồ + bản đồ nhỏ của ô tô), exNightStep(dt, false).
+   - Mắt góc thứ nhất: đo MỘT lần khi người lái thật gắn vào mô hình thật (riderEye: giữa hai xương mắt ở tư thế ngồi nền, hệ thân xe), không theo xương mỗi khung;
+     chưa có thì cam1.eye. Camera còn sát mắt (mix < cam1.headMix) thì ẩn đầu + mũ (rider.setFirstPerson). prefers-reduced-motion ⇒ cam1.motionReduced.
    - Phím (theo e.code, chỉ khi đang lái, bỏ ô nhập và tổ hợp Ctrl / Meta / Alt; blur / ẩn tab nhả hết): R về làn (bkRecover), Q / E xi nhan trái / phải (bkSignal),
-     V đổi góc nhìn (góc thứ nhất ở Task 5, giờ chỉ có góc thứ ba). Còi H: âm thanh ở Task 8.
+     V đổi góc nhìn thứ nhất ↔ thứ ba. Còi H: âm thanh ở Task 8. Kéo chuột trái / vuốt trên canvas: nhìn quanh (thứ nhất) hoặc quay quanh xe (thứ ba).
    - Lớp body 'explore drive bike': khung HUD #drHud và các quy tắc CSS của body.drive áp nguyên; 'bike' cho phần riêng về sau.
    - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10), cảm ứng (Task 9). Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
    - Người lái: rider.ts, nhân vật theo stChar (chung Đi dạo), nạp ở preload() / start() (làm nóng qua stRigSetWarm của stroll/index.ts); chưa về thì xe không người,
      về sau stop() thì bỏ. Người gắn vào neo yên của xe nên rời cảnh cùng model.group.
    Mỗi khung không cấp phát (D-018). */
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import { scene, camera, controls, canvas, renderer } from '../../core/renderer';
 import { composer, onResize } from '../../core/postprocessing';
 import { cam } from '../../views/state';
@@ -21,7 +24,6 @@ import { driveView } from '../../environment/driveRoads';
 import { drSetGate, type DrNet } from '../drive/net';
 import { DR_GATE_SWING } from '../drive/roadData';
 import { drUseBody, DR_CAR_BODY, type DrBox } from '../drive/collide';
-import { drCamPlace, drCamDrag, type DrCam } from '../drive/camera';
 import { drBindDrop } from '../drive/keys';
 import { drHudShow, drHudHide, drHudUpdate, type DrMapDot } from '../drive/hud';
 import { drEnsureNet } from '../drive';
@@ -29,8 +31,10 @@ import { trNearby } from '../../common/trafficQuery';
 import { exNightStep } from '../nightShows';
 import { bkCreate, bkStep, bkRecover, bkSignal, bkPitch, BK_BODY, type BkState, type BkInput } from './motion';
 import { bkInputFromKeys, BK_KEYS } from './keys';
-import { BkBike, bkModelLoad, bkModelSetWarm } from './model';
+import { BkBike, bkModelLoad, bkModelSetWarm, type BkPlace } from './model';
 import { BkRider, bkRiderLoad, type BkRiderSig } from './rider';
+import { bkCamCreate, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye, type BkCam } from './camera';
+import { BkDash } from './dash';
 import { stChar } from '../stroll/char';
 import type { SwingController } from '../../bridges/song-han/SwingController';
 
@@ -49,7 +53,7 @@ bkModelSetWarm(async (o: THREE.Object3D) => {
 });
 
 const BK_SOLO_SLOT = -1;   // bkCreate / drSpawnPose: lái một mình xuất phát ở giữa các chỗ của slot (trên Cầu Rồng, đi Đông, bên phải)
-const K3 = CONFIG.bike.cam3;
+const C1 = CONFIG.bike.cam1;
 const NO_DOTS: DrMapDot[] = [];   // lái một mình: bản đồ nhỏ không có xe người khác
 
 let net: DrNet | null = null;
@@ -60,9 +64,14 @@ let rider: BkRider | null = null;  // người lái có xương (rider.ts); null
 let riderCh = -1;                  // nhân vật của rider hiện có (stChar)
 let riderGen = 0;                  // tăng ở mỗi start() / stop(): kết quả nạp về muộn của lần trước bị bỏ
 const _sig: BkRiderSig = { lean: 0, acc: 0, susF: 0, susR: 0, steer: 0 };   // tín hiệu người lái tái dùng mỗi khung
-let view: 1 | 3 = 3;
 const bkKeys = new Set<string>();   // e.code đang giữ
-const camS: DrCam = { yaw: 0, pitch: 0, idle: 0 };
+const camB: BkCam = bkCamCreate();  // camera thứ nhất / thứ ba (camera.ts); view mặc định 1
+let dash: BkDash | null = null;     // mặt đồng hồ canvas, dựng lần đầu vào chế độ
+let motionK = C1.motion;            // hệ số chuyển động phụ: prefers-reduced-motion ⇒ motionReduced (đọc ở start())
+let eyeFor: BkRider | null = null;  // người lái đã đo mắt góc thứ nhất (riderEye)
+const _eye = new THREE.Vector3();
+const _rest: BkPlace = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, lean: 0, steer: 0, wheel: 0, susF: 0, susR: 0, braking: false, sig: 0 };
+const _sig0: BkRiderSig = { lean: 0, acc: 0, susF: 0, susR: 0, steer: 0 };
 const _inp: BkInput = { gas: 0, brake: 0, steer: 0, hard: false, grip: 1 };   // đầu vào tái dùng mỗi khung
 const boxes: DrBox[] = [];          // hộp xe tự động gần xe, tái dùng mỗi khung
 let saved: { fov: number; near: number; explore: boolean } | null = null;   // thứ start() đổi, stop() trả lại
@@ -78,7 +87,11 @@ function advance(dt: number, inp: BkInput): void {
   bkStep(s, inp, n, boxes, trNearby(s.x, s.z, CONFIG.drive.ai.radius, boxes), dt);
   model!.place(s);
   riderStep(s, dt);
-  drCamPlace(camera, s, camS, n, dt, false, K3);
+  riderEye();
+  bkCamStep(camB, s, dt, motionK);
+  if (bkCamPlace(camera, s, camB, n, dt)) onResize();   // fov / near đổi trong lúc trộn góc nhìn
+  rider?.setFirstPerson(camB.mix < C1.headMix);
+  if (dash) { dash.bind(model!.dashMat); dash.update(dt, s.v, s.rpm, s.sig); }
   controls.target.set(s.x, s.y, s.z);   // tâm vùng bóng đổ (main.ts shadowCenter) theo xe
   drHudUpdate(s, NO_DOTS);
   exNightStep(dt, false);
@@ -89,6 +102,24 @@ function riderStep(s: BkState, dt: number): void {
   if (!rider || !model) return;
   _sig.lean = s.lean; _sig.acc = s.acc; _sig.susF = s.susF; _sig.susR = s.susR; _sig.steer = s.steer;
   rider.update(model, _sig, dt);
+}
+
+/* Mắt góc thứ nhất theo người lái: đo một lần khi có người lái thật trên mô hình thật. Đặt xe về tư thế nghỉ (thẳng đứng, không lái, giảm xóc 0),
+   người lái tư thế ngồi nền (lò xo phản ứng chưa chạy với người mới), giữa hai xương mắt (+ cam1.eyeFore; không có thì xương đầu + cam1.headEye)
+   → hệ thân xe (nhóm ngoài: yaw · dốc, dốc = 0); rồi đặt lại như cũ */
+function riderEye(): void {
+  const s = state, r = rider, m = model;
+  if (!r || !m || !m.real) { if (eyeFor) { eyeFor = null; bkCamSetEye(null); } return; }
+  if (eyeFor === r || !s) return;
+  eyeFor = r;
+  _rest.x = s.x; _rest.y = s.y; _rest.z = s.z; _rest.yaw = s.yaw;
+  m.place(_rest);
+  r.update(m, _sig0, 0);
+  r.setFirstPerson(false);
+  const eyes = r.eyeLocal(m.group, _eye);
+  bkCamSetEye(eyes ? { fore: _eye.x + C1.eyeFore, up: _eye.y } : { fore: _eye.x + C1.headEye.fore, up: _eye.y + C1.headEye.up });
+  m.place(s);
+  riderStep(s, 0);
 }
 
 /* Nạp người lái theo nhân vật đã chọn (stChar, chung với Đi dạo). Về sau stop() / start() khác thì bỏ; nhân vật đổi thì thay người cũ */
@@ -117,11 +148,19 @@ function bkPlaceAt(x: number, z: number, yaw: number, y?: number): void {
   s.x = x; s.z = z; s.yaw = yaw; s.y = y ?? (Number.isFinite(gy) ? gy : CONFIG.roadY);
   bkPitch(s, net);
   state = s;
-  camS.yaw = 0; camS.pitch = 0; camS.idle = 0;
+  bkCamReset();
   model.place(s);
   riderStep(s, 0);
-  drCamPlace(camera, s, camS, net, 0, true, K3);
+  riderEye();
+  if (bkCamPlace(camera, s, camB, net, 0, true)) onResize();
   controls.target.set(s.x, s.y, s.z);
+}
+
+/* Trạng thái camera về đầu (giữ góc nhìn đang chọn, trộn xong ngay) */
+function bkCamReset(): void {
+  const v = camB.view;
+  Object.assign(camB, bkCamCreate());
+  camB.view = v; camB.mix = v === 3 ? 1 : 0;
 }
 
 export const bike = {
@@ -131,17 +170,22 @@ export const bike = {
   get net(): DrNet | null { return net; },
   get model(): BkBike | null { return model; },   // hình xe của mình (test: real, anchors)
   get rider(): BkRider | null { return rider; },  // người lái (test: debug(), setFirstPerson)
-  get view(): 1 | 3 { return view; },
-  /* Đổi góc nhìn: góc thứ nhất làm ở Task 5, giờ luôn góc thứ ba */
-  setView(v: 1 | 3): void { view = v === 1 ? 3 : v; },
+  get view(): 1 | 3 { return camB.view; },
+  get cam(): BkCam { return camB; },               // test: mix, roll, bob, surge, yaw / pitch nhìn quanh
+  get dash(): BkDash | null { return dash; },
+  get cfg(): typeof CONFIG.bike { return CONFIG.bike; },   // test / kiểm tay: chỉnh số camera lúc chạy
+  /* Đổi góc nhìn: trộn vị trí + hướng + fov + near trong cam1.mixS, không dừng xe */
+  setView(v: 1 | 3): void { camB.view = v === 3 ? 3 : 1; },
   /* Vào lái một mình */
   start(): void {
     drUseBody(BK_BODY);
     const n = drEnsureNet();
     net = n;
     state = bkCreate(n, BK_SOLO_SLOT);
-    camS.yaw = 0; camS.pitch = 0; camS.idle = 0;
+    camB.view = 1; bkCamReset();
+    motionK = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? C1.motionReduced : C1.motion;
     if (!model) model = new BkBike();
+    if (!dash) dash = new BkDash();
     scene.add(model.group);
     model.place(state);
     riderNeed();
@@ -151,8 +195,8 @@ export const bike = {
     drHudShow(n);
     if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore') };
     cam.flight.then = null; cam.mode = 'bike'; controls.enabled = false;
-    camera.fov = K3.fov; onResize();          // onResize cập nhật ma trận chiếu và hệ số cỡ điểm theo fov mới
-    drCamPlace(camera, state, camS, n, 0, true, K3);
+    riderEye();
+    bkCamPlace(camera, state, camB, n, 0, true); onResize();   // fov / near góc thứ nhất; onResize cập nhật ma trận chiếu và hệ số cỡ điểm
     controls.target.set(state.x, state.y, state.z);
     document.body.classList.add('explore', 'drive', 'bike');
   },
@@ -168,6 +212,7 @@ export const bike = {
   stop(): void {
     if (state === null) return;
     state = null; bkKeys.clear(); riderGen++;
+    rider?.setFirstPerson(false);
     drHudHide();
     model?.group.removeFromParent();
     driveView.far = 1;
@@ -202,7 +247,7 @@ export function setupBike(c: SwingController, onExit: () => void): void {
     if (e.code === 'KeyR') bkRecover(state!, net!);
     else if (e.code === 'KeyQ') bkSignal(state!, 1);
     else if (e.code === 'KeyE') bkSignal(state!, -1);
-    else if (e.code === 'KeyV') bike.setView(view === 3 ? 1 : 3);
+    else if (e.code === 'KeyV') bike.setView(camB.view === 3 ? 1 : 3);
   });
   window.addEventListener('keyup', (e) => {
     bkKeys.delete(e.code);
@@ -210,16 +255,16 @@ export function setupBike(c: SwingController, onExit: () => void): void {
   });
   const drop = drBindDrop(window, document, bkKeys);
   window.addEventListener('focusin', (e) => { if (active() && isField(e.target)) drop(); });
-  /* Kéo chuột trái trên canvas: xoay camera quanh xe */
+  /* Kéo chuột trái / vuốt (một ngón) trên canvas: nhìn quanh (góc thứ nhất) hoặc quay quanh xe (góc thứ ba) */
   let dragId = -1, lx = 0, ly = 0;
   canvas.addEventListener('pointerdown', (e) => {
-    if (!active() || e.pointerType === 'touch' || e.button !== 0) return;
+    if (!active() || e.button !== 0 || dragId !== -1) return;
     dragId = e.pointerId; lx = e.clientX; ly = e.clientY;
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
     if (e.pointerId !== dragId) return;
-    drCamDrag(camS, e.clientX - lx, e.clientY - ly, K3);
+    bkCamDrag(camB, e.clientX - lx, e.clientY - ly);
     lx = e.clientX; ly = e.clientY;
   });
   const end = (e: PointerEvent) => { if (e.pointerId === dragId) dragId = -1; };

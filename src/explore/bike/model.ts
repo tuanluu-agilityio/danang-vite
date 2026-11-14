@@ -71,9 +71,12 @@ function bkTempMaterial(): THREE.MeshStandardMaterial {
   if (!tempMat) { tempMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.1 }); tempMat.name = 'bikeTemp'; }
   return tempMat;
 }
-/* Vật liệu mặt đồng hồ: mỗi xe một bản (texture canvas riêng ở task sau), cùng tham số ⇒ cùng program */
+/* Vật liệu mặt đồng hồ: mỗi xe một bản, cùng tham số ⇒ cùng program. Có sẵn map (ảnh 1 × 1 trắng) để program đã làm nóng trùng với lúc
+   dash.ts gắn texture canvas (đổi map cùng loại không biên dịch lại) */
+let dashBlank: THREE.DataTexture | null = null;
 function bkDashMaterial(): THREE.MeshBasicMaterial {
-  const m = new THREE.MeshBasicMaterial({ color: M.dashColor });
+  if (!dashBlank) { dashBlank = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, THREE.RGBAFormat); dashBlank.colorSpace = THREE.SRGBColorSpace; dashBlank.needsUpdate = true; }
+  const m = new THREE.MeshBasicMaterial({ color: M.dashColor, map: dashBlank });
   m.name = 'bikeDash';
   return m;
 }

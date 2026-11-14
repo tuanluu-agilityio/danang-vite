@@ -189,6 +189,17 @@ export class BkRider {
     this.bones.head.scale.setScalar(on ? 1e-4 : 1);
   }
 
+  /* Mắt trong hệ của nút frame (camera góc thứ nhất đo một lần ở tư thế ngồi nền: index.ts riderEye): điểm giữa hai xương mắt Bip01_LEye / REye
+     (Rocketbox có), trả true; thiếu thì vị trí xương đầu, trả false (người gọi cộng cam1.headEye) */
+  eyeLocal(frame: THREE.Object3D, out: THREE.Vector3): boolean {
+    frame.updateWorldMatrix(true, true);
+    const l = this.root.getObjectByName('Bip01_LEye') ?? this.root.getObjectByName('Bip01 LEye'), r = this.root.getObjectByName('Bip01_REye') ?? this.root.getObjectByName('Bip01 REye');
+    if (l && r) out.setFromMatrixPosition(l.matrixWorld).add(_a.setFromMatrixPosition(r.matrixWorld)).multiplyScalar(0.5);
+    else out.setFromMatrixPosition(this.bones.head.matrixWorld);
+    frame.worldToLocal(out);
+    return !!(l && r);
+  }
+
   /* m — khoảng cách điểm nắm – tay nắm (hai tay), cổ chân – đích cổ chân trên sàn (hai chân), sau update gần nhất */
   debug(): { handL: number; handR: number; footL: number; footR: number } {
     const b = this.bones;
