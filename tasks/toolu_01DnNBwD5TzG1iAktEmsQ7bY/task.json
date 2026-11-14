@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01DnNBwD5TzG1iAktEmsQ7bY",
+  "agent_id": "a57433ac3197965f3",
+  "task_description": "Review Task 6 (spec + quality)",
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 102784,
+    "cache_read_tokens": 149336,
+    "output_tokens": 8356,
+    "api_call_count": 3
+  },
+  "started_at": "2026-11-14T16:37:19.1063508+07:00",
+  "completed_at": "2026-11-14T16:38:22.1325742+07:00"
+}
