@@ -1,6 +1,6 @@
 # Giờ và thời tiết thực tế tại Đà Nẵng (D-042): thiết kế
 
-_Ngày: 2026-11-14 · Nhánh: `feature/thoi-tiet-thuc` (từ `main` `3be9ca3`) · Trạng thái: người dùng đã duyệt prototype phương án B và việc hiện chỉ báo trong chế độ khám phá (2026-11-14)_
+_Ngày: 2026-11-14 · Nhánh: `feature/thoi-tiet-thuc` (từ `main` `3be9ca3`) · Trạng thái: người dùng đã duyệt prototype phương án B và việc hiện chỉ báo trong chế độ khám phá (2026-11-14); **đã triển khai trên nhánh** (HEAD mã `19658a3`, 2026-11-15, chưa push). Khác bản này sau khi đo trên trình duyệt: vị trí chỉ báo ở vài chế độ (lái xe cảm ứng dưới `#drMapNote` qua `--env-dr-top`; điện thoại đi dạo trái top 60 px; điện thoại xem dù lượn trái top 72 px; cửa sổ hẹp xe máy left 118 / top 134 px), 45 khóa i18n (không phải 46), `?test` không đọc bộ nhớ đệm; chi tiết ở D-042 trong `.github/memory-bank/decisions.md`. Đã chạy: `test:env:unit` 35/35, `TEST_REAL_GPU=1 test:env` 173 kiểm đạt; SwiftShader, `test:mobile`, `test:drawcalls` chưa chạy theo lời người dùng_
 
 ## 1. Ý định
 

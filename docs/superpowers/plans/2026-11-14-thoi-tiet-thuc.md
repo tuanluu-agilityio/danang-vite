@@ -12,6 +12,8 @@
 
 **Prototype đã duyệt (nguồn CSS / DOM / SVG, không thiết kế lại):** `D:/2026 - Tuan/danang-vite/prototypes/thoi-tiet-thuc/index.html` (thư mục làm việc chính, ngoài worktree; chỉ đọc). Ảnh: `…/prototypes/thoi-tiet-thuc/shots/`.
 
+**Trạng thái (2026-11-15):** Task 1–3 xong (`17ad67e`, `ec9847c` + `561e359`, `9eb40ef`), review toàn nhánh xong, sửa ở `19658a3`. Đã chạy: `typecheck`, `test:env:unit` 35/35, `build`, `TEST_REAL_GPU=1 npm run test:env` 173 kiểm đạt (GPU thật). Chưa chạy theo lời người dùng: `test:env` SwiftShader, `test:mobile` (bước trong Task 3), mọi test nặng. Chưa push / PR.
+
 ## Global Constraints
 
 - Làm trong worktree `D:/2026 - Tuan/danang-vite/.worktrees/thoi-tiet-thuc`, nhánh `feature/thoi-tiet-thuc`. Không `cd` ra thư mục chính, không `npm ci` / `npm install` (dùng `node_modules` của thư mục cha), không `git stash`.
