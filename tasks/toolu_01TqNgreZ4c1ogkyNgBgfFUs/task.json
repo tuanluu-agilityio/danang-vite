@@ -1,0 +1,18 @@
+{
+  "tool_use_id": "toolu_01TqNgreZ4c1ogkyNgBgfFUs",
+  "agent_id": "a5c89996a1d71eeac",
+  "subagent_type": "web-fetch",
+  "task_description": "Kiểm nguồn xe tay ga CC0",
+  "files": [
+    "src/config.ts"
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 66548,
+    "cache_read_tokens": 103169,
+    "output_tokens": 8422,
+    "api_call_count": 4
+  },
+  "started_at": "2026-11-14T14:23:28.3658267+07:00",
+  "completed_at": "2026-11-14T14:23:28.3663507+07:00"
+}
