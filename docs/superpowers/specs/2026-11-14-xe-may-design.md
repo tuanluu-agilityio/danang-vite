@@ -1,6 +1,6 @@
 # Chế độ lái xe máy (xe tay ga) — thiết kế
 
-_Ngày: 2026-11-14 · Quyết định: D-040 · Nhánh: `feature/xe-may` (từ `main` `a66989b`) · Trạng thái: người dùng bảo tự quyết và làm tới demo cuối (2026-11-14); §17 thay các mục tương ứng ở trên_
+_Ngày: 2026-11-14 · Quyết định: D-040 · Nhánh: `feature/xe-may` (từ `main` `a66989b`) · Trạng thái: người dùng bảo tự quyết và làm tới demo cuối (2026-11-14); §17 thay các mục tương ứng ở trên. **Đã triển khai Task 1–10 trên `feature/xe-may` (HEAD mã `54dd2cb`), test trình duyệt `test:bike` viết xong nhưng chưa chạy trọn, chưa chạy test nặng nào, chưa review toàn nhánh (dừng theo lời người dùng: "không cần chạy test, tôi tự test", 2026-11-14); chưa PR / merge, Worker chưa deploy.** Lệch so với spec khi làm: xem §18_
 
 Ghi chú về nguồn gốc từng điều: **(ND)** = người dùng nói / đã duyệt trong buổi brainstorming; **(Claude)** = lựa chọn của Claude, người dùng chưa phản đối nhưng cũng chưa duyệt riêng; không ghi gì = suy ra trực tiếp từ mã hiện có.
 
@@ -77,7 +77,7 @@ Giữ khung của `drStep`: bước con ≤ `sim.dt`, dời thân bằng `drMove
 - Lùi: xe tay ga không có số lùi. Giữ S khi đã đứng: dắt lùi ≤ 1 m/s (cần để thoát góc kẹt). **(Claude)**
 - Vòng tua (cho âm thanh và kim đồng hồ): mô hình hộp số vô cấp — cầm chừng khi đứng; dưới ≈ 12 km/h ly tâm trượt (tua lên theo ga, xe mới nhích); vặn ga thì tua nhảy lên vùng công suất rồi giữ gần đó trong khi tốc độ tăng; nhả ga tua rơi về mức tỉ lệ tốc độ.
 - Giảm xóc (chỉ hình + camera, không đổi quỹ đạo): mỗi đầu xe một lò xo giảm chấn; đầu vào là gia tốc dọc (phanh ⇒ chúi đầu, ga ⇒ nhún đuôi), đổi độ dốc tại mối nối ô mặt đường (lên / xuống dốc cầu), và nhiễu mặt đường biên độ nhỏ theo tốc độ từ `rng(seed)` riêng.
-- Mưa (`weatherU` / preset thời tiết hiện có): nghiêng tối đa 35° → 27°, phanh 7 → 5,5 m/s² (ước lượng), chuyển mượt theo cường độ mưa. Gió bão đẩy nhẹ độ nghiêng (≤ 2°), không làm mất lái.
+- Mưa (`weatherU` / preset thời tiết hiện có): nghiêng tối đa 35° → 27°, phanh 7 → 5,0 m/s² (ước lượng; ban đầu ghi 5,5, hạ ở Task 1 vì cộng hãm nhả ga 1,2 m/s² thì 5,5 không thể cho quãng phanh ướt dài hơn khô ≥ 20 %: trần 1,224, đo 1,194), chuyển mượt theo cường độ mưa. Gió bão đẩy nhẹ độ nghiêng (≤ 2°), không làm mất lái.
 - Thân va chạm: chữ nhật dài × rộng của xe máy (không nới theo độ nghiêng **(Claude)**), chiều cao tính cả người lái (≈ 1,7 m) cho vật cản theo cao độ. `collide.ts` và `drEvacStep` nhận kích thước thân qua tham số, mặc định là VF 3; **`test:drive:unit` phải giữ 124/124 không sửa kỳ vọng**.
 - Hồi phục: phím R (và nút trên HUD) đặt xe về tim làn gần nhất của ô mặt đường gần nhất, hướng theo chiều làn bên phải, đứng yên. Gợi ý "bấm R" hiện khi xe bị chặn mà vẫn vặn ga quá 3 s. Rơi khỏi mọi ô (dữ liệu sai) ⇒ tự về chỗ xuất phát như ô tô.
 - Xuất phát: chỗ của slot như ô tô (`drSpawnPose`), trên Cầu Rồng chiều đi Đông, đi bên phải.
@@ -191,10 +191,16 @@ Người dùng bảo Claude tự quyết và làm tới bản demo cuối, ghi v
 11. **Âm thanh máy (sửa §8):** Freesound và các kho CC0 tương tự cần đăng nhập để tải, nên bản này làm **máy tổng hợp nhiều lớp** làm chính (chuỗi hài theo tần số nổ của máy một xi lanh bốn kỳ qua `PeriodicWave`, điều biên theo nhịp nổ, nhiễu nạp / xả qua lọc theo ga, tiếng dây đai vô cấp), không có tệp âm thanh. Đường nạp đoạn thu (`decodeAudioData`, mp3 với `loopStart` / `loopEnd` nằm trong đoạn để tránh khoảng lặng đầu cuối) để lại làm nâng cấp khi có tệp. Khác với điều người dùng đã duyệt (đoạn thu thật): ghi ở §18.
 12. **Phím (chốt §10):** V và R chưa dùng ở đâu; Q / E chỉ là ga dù lượn và bộ nghe đó bỏ qua khi ở chế độ lái ⇒ giữ nguyên bảng phím.
 
-## 18. Cần hỏi người dùng ở bản demo cuối
-1. Mô hình cách điệu của Grab3D có chấp nhận không, hay người dùng tải SH 125 / PCX (cần tài khoản Sketchfab) để thay (đường `gen:bike` phải sửa cho mô hình mới).
-2. Tiếng máy tổng hợp có đủ không, hay người dùng cung cấp đoạn thu CC0.
-3. Deploy Worker `danang-sky` (chưa deploy thì xe máy chỉ chạy một mình).
-4. Hạt nhựa + vệt đèn khi ướt có nên bật cả ở các chế độ khác.
-5. Các số `(ước lượng)` của `CONFIG.bike` sau khi lái thử; `near` 0,2 có gây nhấp nháy trên máy người dùng không.
-6. Bản dịch khóa `bk*` ở 8 ngôn ngữ cần người bản ngữ duyệt.
+## 18. Cần hỏi người dùng ở bản demo cuối (cập nhật theo thực tế, 2026-11-14, Task 12)
+1. Mô hình cách điệu của Grab3D có chấp nhận không, hay người dùng tải SH 125 / PCX (cần tài khoản Sketchfab, CC BY ⇒ phải thêm dòng ghi công) để thay (đường `gen:bike` phải sửa cho mô hình mới).
+2. Tiếng máy tổng hợp có đủ không, hay người dùng cung cấp đoạn thu CC0. **Chưa ai nghe** tiếng máy / còi / các lớp khác.
+3. Mức trộn các lớp âm thanh (`CONFIG.bike.sound`): toàn ước lượng, cần nghe để chỉnh.
+4. Deploy Worker `danang-sky` (chưa deploy thì xe máy chỉ chạy một mình: máy chủ cũ không vọng `veh` ⇒ khách trả chỗ, lái một mình).
+5. Hạt nhựa + vệt đèn khi ướt có nên bật cả ở các chế độ khác (hiện chỉ khi lái xe máy, `shared.uRoadNear`).
+6. Các số `(ước lượng)` của `CONFIG.bike` sau khi lái thử.
+7. Mặt cắt gần góc thứ nhất là **0,55** (không phải 0,2 như §17.5): cắt bỏ thân trên người lái khỏi khung (vai / cổ áo ở độ sâu < 0,5 m; gương ≥ 0,67, đồng hồ ≥ 0,69, tay nắm ≥ 0,72 m), không nhấp nháy trên ảnh SwiftShader; đổi lại **tay trái bị cắt** khi bẻ hết lái trái ở tốc độ đi bộ. Mắt đo từ xương mắt nhân vật (cao 1,72 m nam / 1,63 m nữ, không phải ≈ 1,45 m của §7 vì yên mô hình cao 0,85 m), `back` 0,41, `tilt` −0,26.
+8. Lệnh vẽ: xe của mình ≈ 15 (mô hình 10 primitive + bóng 1 + người lái 4) thay cho ≤ 6 + 2 của §5.1 (chỉ trong chế độ xe máy). Xe máy người khác là **hình tạm dựng bằng code** (xe + người khối đội mũ) + bóng = 2 lệnh vẽ trên mọi máy, thay cho "glb + người lái có xương" của §11, để giữ trần ≤ 4; phương án đẹp hơn: một glb low-poly gộp không người có xương.
+9. Bản dịch khóa `bk*` + `exBikeDesc` ở 8 ngôn ngữ cần người bản ngữ duyệt.
+10. Chạy bộ test nặng (`test:drive`, `test:mobile` có mục 8 xe máy mới, `test:explore`, `test:stroll`, `test:multi`, `test:drawcalls`, `test:perf -- --strict`, `test:gpu`) và cho `test:bike` chạy trọn: lượt dở duy nhất có mục 4 LỖI (sơ tán nhịp quay xong sau 4,7 s mô phỏng so với ≤ 1 s mong đợi; lái 90 km/h vào barie còn v 2,81 m/s so với < 0,5), chưa phân tích lỗi test hay lỗi sản phẩm (`drEvacStep` vẫn dùng cỡ ô tô, §5.3 "với thân xe máy" chưa làm).
+
+Lệch khác so với phần trên, đã làm khi triển khai (chi tiết ở `decisions.md` D-040 và nhật ký plan): tiếng máy hoàn toàn tổng hợp, không đường nạp đoạn thu; giọng xe gần không đổi cao độ theo tốc độ tương đối, chưa có "tăng gió trên cầu" (§8); người lái 4 lệnh vẽ (Rocketbox 3 primitive + mũ); mặt đường: 6 vật liệu được vá (`MAT.road`, `MAT.road2`, `road` ba cầu, `roadOut`), `roadIn` không vá, mặt cầu + `roadOut` dùng chung hook / khóa program của `MAT.road2` (+0 program); vệt ướt là hoa văn theo góc quanh camera, không bám vị trí đèn thật, hiện cả dưới gầm cầu; gương dùng nguyên vật liệu `mirror` của glb, không có mã đổi màu theo trời như §9 ghi (ảnh từ yên: mặt gương xanh xám ban ngày, tối ban đêm); không có dòng ghi công `#bkCredit` (CC0).

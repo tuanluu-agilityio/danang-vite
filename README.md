@@ -30,6 +30,8 @@ npm run test:sunwheel                         # Vòng quay Mặt Trời: kích t
 npm run test:perf     -- [--strict]           # độ mượt: khung dài nhất và số shader biên dịch thêm khi đổi đêm/mặt cắt/bóng/mưa
 npm run test:explore                          # tự khám phá (dù lượn): mô hình bay, camera, màn chọn, giao diện khi bay, i18n, đo draw call các tư thế, người treo có xương (mục 7)
 npm run test:mobile                           # điện thoại: bố cục gọn dọc/ngang, sheet, tràn chữ 9 ngôn ngữ, RTL
+npm run test:bike:unit                        # lái xe máy: chuyển động, camera, mô hình, người lái, âm thanh, HUD, i18n (Node, nhanh)
+npm run test:bike                             # lái xe máy trong trình duyệt: lái qua 4 cầu + hầm, va chạm, sơ tán, đèn, mưa, đường lùi mô hình, HUD 9 ngôn ngữ
 ```
 
 `tests/original/index.html` là file gốc chỉ sửa hai chỗ: link three từ CDN đổi sang `/three/…` (server kiểm tra lấy từ `node_modules/three`) và thêm móc `?test`. Truyền `tests/original` làm tham số để so sánh hai bản với nhau. Trình duyệt kiểm tra dựng hình bằng CPU (SwiftShader) nên mỗi script chạy khoảng 10–20 phút.
@@ -61,6 +63,7 @@ src/
     stroll/          đi dạo (camera sau lưng): bản đồ va chạm 2D thuần, vùng đi được, chuyển động, nhân vật, camera, cần gạt cảm ứng, chụp ảnh
     multi/           dù lượn nhiều người (5 chỗ): giao thức + thông số dùng chung với máy chủ, phiên, sảnh, dù người khác, nhãn, chế độ xem, rời máy
     drive/           lái xe VF 3 (camera sau xe): mạng đường nhiều tầng (`net`, `roadData`), vật cản, va chạm, chuyển động theo số liệu thật, xe + bánh + đèn, xe tự động chặn / sơ tán nhịp quay, HUD, bàn đạp cảm ứng, tiếng xe
+    bike/            lái xe máy tay ga (góc nhìn thứ nhất / thứ ba, dùng chung mạng đường + va chạm của `drive/`): chuyển động có nghiêng, mô hình + đèn, người lái có xương (nhân vật Đi dạo + IK + mũ), camera, mặt đồng hồ canvas, âm thanh tổng hợp, vệt đèn pha / bụi nước, hạt nhựa + vệt ướt trên mặt đường, HUD xe máy; test đơn vị ở `tests/bike-unit/` (`npm run test:bike:unit`), test trình duyệt `tests/bike-check.mjs` (`npm run test:bike`)
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
   audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
   ui/                bảng điều khiển, nút quay cầu, âm thanh, chất lượng hình, chế độ gọn cho điện thoại (compactUI.ts)
@@ -83,7 +86,7 @@ Nhân vật trong chế độ Đi dạo, đám đông người đi bộ trên ba
 
 Xe trong chế độ Lái xe dùng mô hình [Vinfast Vf3](https://sketchfab.com/3d-models/vinfast-vf3-6a2caea4505347d18c47ef4d47840859) của Hoàng Huy (giấy phép CC-BY-4.0), đã xoá biển số, tách bánh và thu ảnh; xem `public/car/LICENSE-VF3.txt`.
 
-Xe trong chế độ Lái xe máy dùng mô hình [Motor Scooter](https://grab3d.com/models/vehicles/scooter/) của Grab3D (giấy phép CC0 1.0), sinh thành `public/bike/scooter.glb` bằng `npm run gen:bike` (đổi hướng, tách cổ lái và bánh, thêm đèn hậu / xi nhan / mặt đồng hồ, thu ảnh); xem `public/bike/LICENSE-Scooter.txt`.
+Xe trong chế độ Lái xe máy dùng mô hình [Motor Scooter](https://grab3d.com/models/vehicles/scooter/) của Grab3D (giấy phép CC0 1.0), sinh thành `public/bike/scooter.glb` bằng `npm run gen:bike` (đổi hướng, tách cổ lái và bánh, thêm đèn hậu / xi nhan / mặt đồng hồ, thu ảnh); xem `public/bike/LICENSE-Scooter.txt`. Theo gói nguồn, mô hình dựng bằng script Blender (procedural), không có hình học / texture do AI sinh; tệp gốc, `LICENSE.txt` và `manifest.json` của gói ở `scripts/bike/src/`. Người lái xe máy dùng lại nhân vật Rocketbox của chế độ Đi dạo; tiếng xe máy tổng hợp bằng Web Audio, không dùng tệp âm thanh ngoài.
 
 ## Hầm vượt sông Hàn
 
