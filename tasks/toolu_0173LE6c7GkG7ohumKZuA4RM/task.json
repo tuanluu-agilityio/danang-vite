@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_0173LE6c7GkG7ohumKZuA4RM",
+  "agent_id": "a92353f1c8d2d0b46",
+  "task_description": "Builder check chat spec",
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 134606,
+    "cache_read_tokens": 539735,
+    "output_tokens": 9502,
+    "api_call_count": 6
+  },
+  "started_at": "2026-11-14T21:20:32.1297278+07:00",
+  "completed_at": "2026-11-14T21:22:03.937057+07:00"
+}
