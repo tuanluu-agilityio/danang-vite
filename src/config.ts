@@ -589,7 +589,8 @@ const envBase = {
   dawnMin: [-30, 75] as [number, number],   // phút — khoảng quanh giờ mọc coi là bình minh (ước lượng, theo bản mẫu)
   duskMin: [-75, 35] as [number, number],   // phút — khoảng quanh giờ lặn coi là hoàng hôn (ước lượng, theo bản mẫu)
   sunFallback: [345, 1050] as [number, number],   // phút trong ngày — mọc 05:45, lặn 17:30, dùng khi chưa có số liệu (ước lượng)
-  storeKey: 'cauRong.env'     // khóa localStorage của bộ nhớ đệm số liệu
+  storeKey: 'cauRong.env',    // khóa localStorage của bộ nhớ đệm số liệu
+  driveGap: 8                 // px — khe giữa đáy chú thích bản đồ nhỏ (#drMapNote) và chỉ báo khi lái ô tô / xe máy trên cảm ứng (ước lượng)
 };
 
 /* ------------------------- Tự khám phá bằng dù lượn -------------------------

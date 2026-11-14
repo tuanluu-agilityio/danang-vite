@@ -73,17 +73,23 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
   const setIcon = (k: EnvIcon | 'off') => { if (k === icoKey) return; icoKey = k; for (const e of icoEls) e.innerHTML = ICO[k]; };
 
   /* Bộ định dạng theo ngôn ngữ (chữ số Latin ở mọi ngôn ngữ), tạo lại khi đổi ngôn ngữ */
-  let fmtLang = '', fmtDate: Intl.DateTimeFormat, fmtH: Intl.NumberFormat, fmtM: Intl.NumberFormat;
+  let fmtLang = '', fmtDate: Intl.DateTimeFormat, fmtH: (n: number) => string, fmtM: (n: number) => string;
+  /* style:'unit' ném RangeError ở trình duyệt cũ (Safari < 14.1): lùi về số + 'h' / 'min' */
+  const unitFmt = (loc: string, unit: string, fb: string) => {
+    try { const f = new Intl.NumberFormat(loc, { style: 'unit', unit, unitDisplay: 'short' }); return (n: number) => f.format(n); }
+    catch { return (n: number) => n + ' ' + fb; }
+  };
   const fmts = () => {
     const lang = getLang();
     if (lang === fmtLang) return;
     fmtLang = lang;
     const loc = lang + '-u-nu-latn';
     fmtDate = new Intl.DateTimeFormat(loc, { timeZone: cfg.tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    fmtH = new Intl.NumberFormat(loc, { style: 'unit', unit: 'hour', unitDisplay: 'short' });
-    fmtM = new Intl.NumberFormat(loc, { style: 'unit', unit: 'minute', unitDisplay: 'short' });
+    fmtH = unitFmt(loc, 'hour', 'h');
+    fmtM = unitFmt(loc, 'minute', 'min');
   };
-  const dur = (min: number): string => { const h = Math.floor(min / 60), m = min % 60; return (h ? fmtH.format(h) + ' ' : '') + fmtM.format(m); };
+  const dur = (min: number): string => { const h = Math.floor(min / 60), m = min % 60; return (h ? fmtH(h) + ' ' : '') + fmtM(m); };
+  const setAria = (e: HTMLElement, s: string) => { if (e.getAttribute('aria-label') !== s) e.setAttribute('aria-label', s); };
 
   /* ----- Vẽ mọi thứ trừ chữ số đồng hồ (gọi khi phút đổi, số liệu / trạng thái đổi, đổi ngôn ngữ) ----- */
   const paint = () => {
@@ -108,6 +114,8 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
       : st === 'stale' ? t('envStale', { t: envHHMM(data.obsMin) })
       : t('envObs', { t: envHHMM(data.obsMin), n: Math.round(cfg.refreshMs / 60000) }));
     el.foot.classList.toggle('warn', st === 'stale' || st === 'offline');
+    // Nhãn đọc màn hình của chỉ báo: kèm nhiệt độ + giờ (vẽ lại mỗi phút; đổi ngôn ngữ: i18n ghi data-i18n-aria trước rồi mới gọi listener nên nhãn này thắng)
+    setAria(pill, t('envAria') + ': ' + (data ? Math.round(data.temp) + '°, ' : st === 'offline' ? t('envOffline') + ', ' : '') + envHHMM(min));
     const dash = '—';
     if (!data) {
       if (st === 'offline') {
@@ -181,6 +189,18 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
   pill.addEventListener('click', () => { openSheet(ui.sheet === 'env' ? 'none' : 'env'); blurInExplore(); });
   btnX.addEventListener('click', () => { openSheet('none'); blurInExplore(); });
   scrim.addEventListener('pointerdown', (e) => { e.preventDefault(); openSheet('none'); });
+
+  /* ----- Ô tô / xe máy trên cảm ứng: chỉ báo đứng dưới chú thích bản đồ nhỏ (#drMapNote). Chiều cao bản đồ (--dr-map-h) chỉ đặt trên #drHud, chú thích
+     xuống dòng theo ngôn ngữ, nên đo đáy chú thích khi nó đổi cỡ (hiện ra, đổi ngôn ngữ, xoay máy) hoặc bản đồ đổi cỡ, ghi --env-dr-top cho CSS ----- */
+  const note = document.getElementById('drMapNote'), drHud = document.getElementById('drHud');
+  if (note && drHud && typeof ResizeObserver !== 'undefined') {
+    const syncDr = () => {
+      const b = note.getBoundingClientRect();
+      if (b.height > 0) setStyle(root, '--env-dr-top', Math.round(b.bottom + cfg.driveGap) + 'px');
+    };
+    new ResizeObserver(syncDr).observe(note);
+    new MutationObserver(syncDr).observe(drHud, { attributes: true, attributeFilter: ['style'] });
+  }
 
   /* ----- Tab ẩn: dừng đồng hồ và nhịp lấy số liệu; hiện lại: chạy tiếp (store tự lấy nếu đã quá hạn) ----- */
   document.addEventListener('visibilitychange', () => {

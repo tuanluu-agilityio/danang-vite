@@ -514,12 +514,12 @@ html[dir=rtl] #env .env-glass{background:radial-gradient(130% 90% at 0% 0%,rgba(
 body.sheet-env #env #envPill{border-color:rgba(var(--acc),.38);}
 body.sheet-env #envPill .chev{transform:rotate(180deg);}
 /* Bảng Cài đặt mở (máy tính, tham quan) phủ lên chỗ chỉ báo: chỉ báo nhường chỗ */
-body:not(.compact):not(.explore).sheet-settings #env #envPill{opacity:0;pointer-events:none;transform:translateY(-4px);}
+body:not(.compact):not(.explore).sheet-settings #env #envPill{opacity:0;pointer-events:none;transform:translateY(-4px);visibility:hidden;transition:background .9s,border-color .25s,box-shadow .25s,transform .25s,opacity .2s,visibility 0s .2s;}   /* visibility: Tab không tới nút đã ẩn; trễ .2 s cho kịp mờ đi */
 /* --- Thẻ chi tiết: máy tính, rơi xuống dưới chỉ báo --- */
 #envCard{position:fixed;z-index:9;top:calc(70px + env(safe-area-inset-top,0px));inset-inline-start:calc(72px + env(safe-area-inset-left,0px));
   width:312px;max-height:calc(100vh - 84px - env(safe-area-inset-top,0px));overflow-y:auto;box-sizing:border-box;border-radius:16px;padding:16px 18px 14px;display:flex;flex-direction:column;
-  transform-origin:20px 0;opacity:0;visibility:hidden;transform:translateY(-8px) scale(.975);
-  transition:opacity .22s,transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s,background .9s;}
+  transform-origin:20px 0;opacity:0;visibility:hidden;transform:translateY(-8px) scale(.975);}
+#env #envCard{transition:opacity .22s,transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s,background .9s;}   /* #env #envCard: thắng transition chung của #env .env-glass, nếu không visibility tắt ngay và thẻ biến mất không mờ / trượt khi đóng */
 html[dir=rtl] #envCard{transform-origin:calc(100% - 20px) 0;}
 body.sheet-env #env #envCard{opacity:1;visibility:visible;transform:none;transition:opacity .22s,transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s,background .9s;}
 #env .env-eyebrow{display:flex;align-items:center;gap:8px;font:400 10px/1.2 var(--font-mono);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);}
@@ -589,15 +589,29 @@ html[dir=rtl] body.explore:not(.compact) #envCard{transform-origin:20px 0;}
 /* --- Điện thoại (body.compact): chỉ báo bản gọn cao 44 px; không blur (D-019), nền đục hơn --- */
 body.compact #env .env-glass{backdrop-filter:none;-webkit-backdrop-filter:none;--glass:.86;box-shadow:0 8px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.1);}
 body.compact #envPill{top:calc(13px + env(safe-area-inset-top,0px));inset-inline:auto calc(8px + env(safe-area-inset-right,0px));height:44px;gap:8px;padding-inline:10px 12px;}
-body.compact.explore #envPill{inset-inline:calc(72px + env(safe-area-inset-left,0px)) auto;}   /* dù lượn / đi dạo: cạnh ⚙ (góc cuối dòng là nút Thoát) */
-body.compact.drive #envPill{inset-inline:auto;left:calc(8px + env(safe-area-inset-left,0px));top:calc(60px + var(--dr-map-h,128px) + 40px + env(safe-area-inset-top,0px));height:34px;gap:7px;padding-inline:9px 10px;border-radius:10px;}   /* ô tô / xe máy: cột trái vật lý dưới chú thích bản đồ nhỏ (#drHud dir=ltr không lật) */
+body.compact.explore #envPill{inset-inline:calc(72px + env(safe-area-inset-left,0px)) auto;}   /* dù lượn: cạnh ⚙ (góc cuối dòng là nút Thoát) */
+/* Đi dạo, ô tô / xe máy: cột trái vật lý dưới hàng ⚙ / Thoát (top 60 px, như 📷 bên phải). Đi dạo: cạnh ⚙ đè thông báo chụp ảnh #stToast (giữa trên, top 8 px);
+   left vật lý: ar đổi ⚙ / Thoát nhưng 📷 vẫn ở phải vật lý */
+body.compact.stroll #envPill,body.compact.drive #envPill{inset-inline:auto;left:calc(8px + env(safe-area-inset-left,0px));top:calc(60px + env(safe-area-inset-top,0px));}
+body.compact.drive #envPill{height:34px;gap:7px;padding-inline:9px 10px;border-radius:10px;}
+@media (hover:none){
+  /* Cảm ứng: bản đồ nhỏ ở top 56 px dưới ⚙, chú thích ngay dưới: chỉ báo dưới chú thích. --env-dr-top = đáy #drMapNote + khe (envUI.ts đo, vì --dr-map-h chỉ đặt trên #drHud
+     và chú thích xuống dòng theo ngôn ngữ); giá trị lùi: 60 + 128 (CONFIG.drive.hud.mapTouch) + 40 */
+  body.compact.drive #envPill{top:var(--env-dr-top,calc(228px + env(safe-area-inset-top,0px)));}
+}
+@media (hover:hover){
+  /* Cửa sổ máy tính hẹp (compact + chuột), xe máy: 🔊 cạnh ⚙, 🎥 dưới ⚙, ◄ ► dưới 🎥 (bản đồ nhỏ ở đáy trái): chỉ báo bên phải hàng ◄ ►; ar lật theo nhóm nút */
+  body.compact.bike #envPill{left:calc(118px + env(safe-area-inset-left,0px));top:calc(134px + env(safe-area-inset-top,0px));}
+  html[dir=rtl] body.compact.bike #envPill{left:auto;right:calc(118px + env(safe-area-inset-right,0px));}
+}
 body.compact.drive #envPill .env-ico{font-size:17px;}
 body.compact.drive #envPill .t{font-size:20px;}
 body.compact.drive #envPill .hm{font-size:12.5px;}
 /* Tờ đáy: như tờ Cài đặt / Góc nhìn; nút × 40 px; lớp mờ phía sau */
 body.compact #envCard{top:auto;bottom:0;inset-inline:0;width:auto;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;z-index:10;border-radius:18px 18px 0 0;border-bottom:0;
   padding:10px calc(20px + env(safe-area-inset-right,0px)) calc(26px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px));
-  opacity:1;transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.85,.2,1),visibility 0s .34s;}
+  opacity:1;transform:translateY(100%);}
+body.compact #env #envCard{transition:transform .34s cubic-bezier(.2,.85,.2,1),visibility 0s .34s;}   /* cùng độ ưu tiên với #env #envCard ở trên */
 body.compact.sheet-env #env #envCard{transform:none;transition:transform .34s cubic-bezier(.2,.85,.2,1),visibility 0s;}
 body.compact #envCard::before{content:"";align-self:center;flex:none;width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin-bottom:12px;}
 body.compact #envX{display:inline-flex;align-items:center;justify-content:center;position:absolute;top:14px;inset-inline-end:12px;width:40px;height:40px;margin:0;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;}

@@ -59,7 +59,7 @@ import { narration } from './audio/narration';
 import { setupUI } from './ui/setupUI';
 import { setupQualityUI } from './ui/qualityUI';
 import { setupCompactUI, ui as compactState, openSheet, closeSheets, reveal } from './ui/compactUI';
-import { setupEnvUI } from './ui/envUI';
+import { setupEnvUI, type EnvUI } from './ui/envUI';
 import { updateHrUI } from './ui/hrUI';
 
 initI18n();
@@ -116,7 +116,10 @@ setupQualityUI();
 setupCompactUI();
 /* ?test&perf: bật đo thời gian CPU từng bước trong vòng animate (tests/perf-check.mjs) */
 const query = new URLSearchParams(location.search);
-const envUi = setupEnvUI({ live: !query.has('test') || query.get('env') === 'live' });   // giờ + thời tiết thực tế (D-042); ?test không gọi Open-Meteo trừ khi có env=live
+// Giờ + thời tiết thực tế (D-042); ?test không gọi Open-Meteo trừ khi có env=live. Chỉ là phần thông tin: lỗi ở đây không được chặn khám phá / vòng vẽ bên dưới
+let envUi: EnvUI | undefined;
+try { envUi = setupEnvUI({ live: !query.has('test') || query.get('env') === 'live' }); }
+catch (e) { console.warn('env: không dựng được chỉ báo giờ / thời tiết', e); const envEl = document.getElementById('env'); if (envEl) envEl.style.display = 'none'; }
 setupExplore(songHan.ctrl);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
