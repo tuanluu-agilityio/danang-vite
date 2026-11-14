@@ -58,6 +58,7 @@ export const multiParams = {
     nearTickMs: 500,     // ms — chu kỳ khách tính lại danh sách người ở gần (setInterval) (ước lượng)
     bubbleMs: 5000,      // ms — bong bóng chữ trên đầu người gửi hiện trong chừng này (ước lượng)
     bubbleChars: 60,     // ký tự tối đa hiện trong bong bóng trên đầu (ước lượng)
+    feedMs: 12000,       // ms — tin hiện thẳng trên màn hình chừng này rồi mờ đi; mở ô nhập thì xem lại được (ước lượng)
     historyMax: 60       // số tin tối đa giữ trong lịch sử của phiên (chỉ trong bộ nhớ) (ước lượng)
   },
   clockSlewMs: 4        // ms tối đa độ lệch giờ người gửi → giờ khách được giảm mỗi mẫu (gói nhanh hơn tới), giữ dù không vọt (ước lượng)

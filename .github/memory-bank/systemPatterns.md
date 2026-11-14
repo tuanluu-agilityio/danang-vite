@@ -157,6 +157,7 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Esc nghe ở `window` pha nổi bọt sẽ thoát chế độ khám phá (tải lại trang bỏ tham số URL): mọi ô nhập mới trong chế độ khám phá phải `stopPropagation` ở `keydown` (ô chat làm vậy, kể cả khi đang gõ bộ gõ `isComposing`); phím điều khiển WASD trong ô cũng không được đi xuống.
 - Tin nhận từ mạng **không** gọi `session.onChange` (tránh vẽ lại sảnh / danh sách mỗi tin); `chatCore` tự báo giao diện qua móc riêng.
 - Worktree đặt trong `.worktrees/` dùng `node_modules` của thư mục cha qua cơ chế tìm ngược của Node: không cần junction, không `npm ci` / `npm install` ở gốc worktree; chỉ `server/multi` cần `npm --prefix server/multi ci` riêng để có `wrangler`.
+- Giao diện từ PR #37: `#exChat` không nền, luôn hiện khi `body.explore.ex-chat`, `pointer-events:none` tới khi có lớp `.open` (không dùng `hidden`); ô nhập / dòng trạng thái ẩn bằng `visibility` để giữ chỗ (mở không làm dòng tin nhảy); danh sách dồn đáy bằng `:first-child{margin-top:auto}` (không `justify-content:flex-end`, vì vậy mới cuộn lên được); tin cũ gắn lớp `.old` trong `tick()` (500 ms), CSS chỉ ẩn khi chưa mở. Thêm dòng tin vẫn chỉ bằng `textContent`.
 
 ## Mẫu kiểm thử
 - `?test` → `window.__app` (renderer, scene, camera, cam, songHan, hr, tours, narration…). Thêm đối tượng mới vào `__app` khi cần kiểm.
