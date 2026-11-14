@@ -2,21 +2,23 @@ import { CONFIG } from '../config';
 import { onChange } from '../i18n';
 
 /* ===== Chế độ gọn (điện thoại): body.compact + hai tờ Cài đặt / Góc nhìn (body.sheet-*) =====
-   Máy tính dùng chung trạng thái tờ (bảng thu gọn thành nút ⚙ / ☰, D-025). */
-export type Sheet = 'none' | 'settings' | 'views';
+   Máy tính dùng chung trạng thái tờ (bảng thu gọn thành nút ⚙ / ☰, D-025). Tờ thứ ba 'env': thẻ giờ + thời tiết thực tế (D-042, envUI.ts) */
+export type Sheet = 'none' | 'settings' | 'views' | 'env';
 
 export const ui: { compact: boolean; sheet: Sheet } = { compact: false, sheet: 'none' };
 
 /* Mỗi lúc chỉ một tờ mở; 'none' = đóng hết. aria-expanded của hai nút mở tờ theo trạng thái */
 export function openSheet(s: Sheet) {
   // Đóng một tờ khi focus còn bên trong: đưa focus về nút mở tờ đó, không để kẹt trên ô chọn đã ẩn (mũi tên sẽ đổi cài đặt thay vì lái dù)
-  const SHEET: Record<Sheet, [string, string] | null> = { none: null, settings: ['.brand', 'btnSettings'], views: ['.views', 'btnViewsSheet'] };   // [khung tờ, nút mở]
+  const SHEET: Record<Sheet, [string, string] | null> = { none: null, settings: ['.brand', 'btnSettings'], views: ['.views', 'btnViewsSheet'], env: ['#env', 'envPill'] };   // [khung tờ, nút mở]
   const prev = SHEET[ui.sheet], back = ui.sheet !== s && prev && document.activeElement?.closest(prev[0]) ? prev[1] : '';
   ui.sheet = s;
   document.body.classList.toggle('sheet-settings', s === 'settings');
   document.body.classList.toggle('sheet-views', s === 'views');
+  document.body.classList.toggle('sheet-env', s === 'env');
   document.getElementById('btnSettings')?.setAttribute('aria-expanded', String(s === 'settings'));
   document.getElementById('btnViewsSheet')?.setAttribute('aria-expanded', String(s === 'views'));
+  document.getElementById('envPill')?.setAttribute('aria-expanded', String(s === 'env'));
   if (back) document.getElementById(back)?.focus({ preventScroll: true });
 }
 
@@ -27,6 +29,7 @@ export function closeSheets() { openSheet('none'); }
 export function reveal(el: Element | null) {
   if (!el) return;
   if (el.closest('.brand')) openSheet('settings');
+  else if (el.closest('#env')) openSheet('env');
   else if (el.closest('.view-list') || (!ui.compact && el.closest('.views'))) openSheet('views');
   else closeSheets();
 }

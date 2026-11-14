@@ -65,8 +65,9 @@ src/
     drive/           lái xe VF 3 (camera sau xe): mạng đường nhiều tầng (`net`, `roadData`), vật cản, va chạm, chuyển động theo số liệu thật, xe + bánh + đèn, xe tự động chặn / sơ tán nhịp quay, HUD, bàn đạp cảm ứng, tiếng xe
     bike/            lái xe máy tay ga (góc nhìn thứ nhất / thứ ba, dùng chung mạng đường + va chạm của `drive/`): chuyển động có nghiêng, mô hình + đèn, người lái có xương (nhân vật Đi dạo + IK + mũ), camera, mặt đồng hồ canvas, âm thanh tổng hợp, vệt đèn pha / bụi nước, hạt nhựa + vệt ướt trên mặt đường, HUD xe máy; test đơn vị ở `tests/bike-unit/` (`npm run test:bike:unit`), test trình duyệt `tests/bike-check.mjs` (`npm run test:bike`)
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
+  realtime/          giờ + thời tiết thực tế tại Đà Nẵng (D-042): đồng hồ theo múi giờ, đọc Open-Meteo, kho trạng thái (nhịp lấy, thử lại, bộ nhớ đệm); chỉ hiển thị, không điều khiển cảnh; giao diện ở `ui/envUI.ts`, test đơn vị ở `tests/env-unit/` (`npm run test:env:unit`)
   audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
-  ui/                bảng điều khiển, nút quay cầu, âm thanh, chất lượng hình, chế độ gọn cho điện thoại (compactUI.ts)
+  ui/                bảng điều khiển, nút quay cầu, âm thanh, chất lượng hình, chế độ gọn cho điện thoại (compactUI.ts), chỉ báo giờ + thời tiết thực tế (envUI.ts)
   i18n/              index.ts + locales/{vi,en,ko,ja,zh,th,ar,hi,ru}.json
   styles/main.css
 server/
@@ -87,6 +88,8 @@ Nhân vật trong chế độ Đi dạo, đám đông người đi bộ trên ba
 Xe trong chế độ Lái xe dùng mô hình [Vinfast Vf3](https://sketchfab.com/3d-models/vinfast-vf3-6a2caea4505347d18c47ef4d47840859) của Hoàng Huy (giấy phép CC-BY-4.0), đã xoá biển số, tách bánh và thu ảnh; xem `public/car/LICENSE-VF3.txt`.
 
 Xe trong chế độ Lái xe máy dùng mô hình [Motor Scooter](https://grab3d.com/models/vehicles/scooter/) của Grab3D (giấy phép CC0 1.0), sinh thành `public/bike/scooter.glb` bằng `npm run gen:bike` (đổi hướng, tách cổ lái và bánh, thêm đèn hậu / xi nhan / mặt đồng hồ, thu ảnh); xem `public/bike/LICENSE-Scooter.txt`. Theo gói nguồn, mô hình dựng bằng script Blender (procedural), không có hình học / texture do AI sinh; tệp gốc, `LICENSE.txt` và `manifest.json` của gói ở `scripts/bike/src/`. Người lái xe máy dùng lại nhân vật Rocketbox của chế độ Đi dạo; tiếng xe máy tổng hợp bằng Web Audio, không dùng tệp âm thanh ngoài.
+
+Số liệu thời tiết thực tế tại Đà Nẵng (chỉ báo ở góc trên, D-042) lấy từ [Open-Meteo](https://open-meteo.com/) (dữ liệu giấy phép CC BY 4.0), gọi thẳng từ trình duyệt của người xem, không khóa API; chỉ để hiển thị, không đổi thời tiết mô phỏng của cảnh.
 
 ## Hầm vượt sông Hàn
 

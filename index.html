@@ -74,6 +74,41 @@
   </div>
 </header>
 
+<!-- Giờ + thời tiết thực tế tại Đà Nẵng (D-042, ui/envUI.ts): chỉ báo luôn hiện + thẻ chi tiết (máy tính: thẻ rơi xuống; điện thoại: tờ đáy). Không điều khiển cảnh 3D -->
+<div id="env" data-phase="day" data-state="loading">
+  <button id="envPill" class="env-pill env-glass" aria-expanded="false" aria-controls="envCard" data-i18n-aria="envAria" aria-label="Giờ và thời tiết thực tế tại Đà Nẵng">
+    <svg class="env-ico" data-ico viewBox="0 0 24 24" aria-hidden="true"></svg>
+    <span class="t v" data-temp dir="ltr"></span>
+    <i class="sep"></i>
+    <span class="clk" dir="ltr"><span class="hm" data-hm></span><span class="ss" data-ss></span></span>
+    <span class="d" data-desc-short></span>
+    <svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg>
+  </button>
+  <div id="envScrim"></div>
+  <div id="envCard" class="env-card env-glass" role="group" data-i18n-aria="envAria" aria-label="Giờ và thời tiết thực tế tại Đà Nẵng">
+    <button id="envX" class="env-x" data-i18n-aria="close" aria-label="Đóng"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9"/></svg></button>
+    <div class="env-eyebrow"><i class="live"></i><span class="place" data-i18n="envPlace">Đà Nẵng, Việt Nam</span><span class="tz" dir="ltr">ICT · UTC+7</span></div>
+    <div class="env-clock" dir="ltr"><span class="hm" data-hm></span><span class="ss" data-ss></span></div>
+    <div class="env-date" data-date></div>
+    <div class="env-sun"><div class="track"><i class="dot" data-sundot></i></div><div class="ends"><span data-sunrise></span><span data-sunnote></span><span data-sunset></span></div></div>
+    <div class="env-rule"></div>
+    <div class="env-now env-swap">
+      <svg class="env-ico" data-ico viewBox="0 0 24 24" aria-hidden="true"></svg>
+      <div class="temp v" dir="ltr"><span data-temp-n></span><sup>°</sup></div>
+      <div class="desc"><b class="v" data-desc></b><span class="v" data-feels></span></div>
+    </div>
+    <dl class="env-grid env-swap">
+      <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 3.6 5.5 6.5 5.5 9.6a5.5 5.5 0 0 1-11 0c0-3.1 2.5-6 5.5-9.6z"/></svg><span data-i18n="envHum">Độ ẩm</span></dt><dd class="v" data-hum dir="ltr"></dd></div>
+      <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h10.5a2.5 2.5 0 1 0-2.5-2.5M3 13h15a2.5 2.5 0 1 1-2.5 2.5M3 17h6"/></svg><span data-i18n="envWind">Gió</span></dt><dd class="v" data-wind dir="ltr"></dd></div>
+      <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v5M12 3v6M16 6v5M8 15v4M12 14v6M16 16v3"/></svg><span data-i18n="envRain">Lượng mưa</span></dt><dd class="v" data-rain dir="ltr"></dd></div>
+      <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.5l2.4 7.9L12 13l-2.4 1.4z"/></svg><span data-i18n="envDir">Hướng gió</span></dt><dd class="v" data-dir><svg class="arrow env-ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5v9M2.8 4.7L6 1.5l3.2 3.2"/></svg><span></span></dd></div>
+      <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.2 4.4 4.4 0 0 0 7 18z"/></svg><span data-i18n="envCloud">Mây che phủ</span></dt><dd class="v" data-cloud dir="ltr"></dd></div>
+      <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17a7 7 0 0 1 14 0M3 20h18M12 4v2.5M4.2 9.2l1.8 1.5M19.8 9.2L18 10.7"/></svg><span data-i18n="envUv">Chỉ số UV</span></dt><dd class="v" data-uv dir="ltr"></dd></div>
+    </dl>
+    <div class="env-foot"><span data-foot></span><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></div>
+  </div>
+</div>
+
 <nav class="panel views" data-i18n-aria="views" aria-label="Góc nhìn">
   <div class="label" data-i18n="views">Góc nhìn</div>
   <div class="seg" role="group">

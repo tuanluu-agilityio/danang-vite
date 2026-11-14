@@ -108,6 +108,41 @@ test('(f) ẩn tab: không lấy; hiện lại: đúng 1 lời gọi', async () 
   r.store.setVisible(true); await r.flush();
   assert.equal(r.calls, 1);
 });
+test('(f2) đã lấy xong rồi ẩn tab 1 giờ: không lấy; hiện lại: đúng 1 lời gọi', async () => {
+  const r = rig();
+  r.store.start(); await r.flush();
+  assert.equal(r.calls, 1);
+  r.store.setVisible(false);
+  await r.advance(3600000);
+  assert.equal(r.calls, 1);
+  r.store.setVisible(true); await r.flush();
+  assert.equal(r.calls, 2);
+});
+test('(f3) ẩn 1 phút rồi hiện: chưa lấy; lần kế tiếp đúng hạn refreshMs cũ', async () => {
+  const r = rig();
+  r.store.start(); await r.flush();
+  assert.equal(r.calls, 1);
+  r.store.setVisible(false);
+  await r.advance(60000);
+  r.store.setVisible(true); await r.flush();
+  assert.equal(r.calls, 1);
+  await r.advance(CONFIG.env.refreshMs - 60000 - 1);
+  assert.equal(r.calls, 1);
+  await r.advance(1);
+  assert.equal(r.calls, 2);
+});
+test('(f4) listener onChange ném không chặn listener khác', async () => {
+  const r = rig();
+  let n = 0;
+  const orig = console.error; console.error = () => {};
+  try {
+    r.store.onChange(() => { throw new Error('hỏng'); });
+    r.store.onChange(() => { n++; });
+    r.store.start(); await r.flush();
+  } finally { console.error = orig; }
+  assert.ok(n >= 1);
+  assert.equal(r.store.status(), 'ok');
+});
 test('(g) hai refresh liền nhau chỉ một fetch', async () => {
   const r = rig();
   const a = r.store.refresh(), b = r.store.refresh();

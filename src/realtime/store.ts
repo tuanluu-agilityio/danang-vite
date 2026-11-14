@@ -27,7 +27,7 @@ export function createEnvStore(d: EnvDeps): EnvStore {
   let timer: unknown = null, nextAt = 0;   // hẹn lấy kế tiếp; nextAt = 0: chưa từng hẹn
   const subs: Array<() => void> = [];
 
-  const emit = () => { for (const f of subs) f(); };
+  const emit = () => { for (const f of subs) { try { f(); } catch (e) { console.error(e); } } };   // một listener ném không chặn listener khác, không thành lời hứa bị từ chối chưa xử lý
   const clear = () => { if (timer !== null) { d.clearTimer(timer); timer = null; } };
   const arm = (ms: number) => {
     clear();
