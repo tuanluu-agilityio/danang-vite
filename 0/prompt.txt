@@ -1,0 +1,409 @@
+<pasted_content id="79df">
+# TASK: DESIGN A REAL-TIME WEATHER & LOCAL TIME SYSTEM FOR DA NANG 3D
+
+## 1. PROJECT CONTEXT
+
+I have an existing interactive 3D website:
+
+https://danangbridges.netlify.app/
+
+The project allows visitors to explore famous bridges in Da Nang, Vietnam, through an interactive 3D environment.
+
+The website currently includes:
+- Interactive 3D city and river environments.
+- Multiple bridges and exploration viewpoints.
+- Day/night environment controls.
+- Weather simulation controls.
+- Weather intensity settings.
+- Storm simulation scenarios.
+- Multiple exploration modes, including paragliding, walking, and driving.
+
+Your task is to design and eventually implement a premium Real-time Weather & Local Time feature.
+
+**IMPORTANT: This task must follow a DESIGN-FIRST workflow. Do not start implementation immediately.**
+
+## 2. PRODUCT VISION
+
+Create a beautiful environmental information interface that makes visitors feel they are exploring a living, real-world version of Da Nang.
+
+The interface should communicate two things:
+
+1. What time is it currently in Da Nang?
+2. What is the actual weather condition in Da Nang right now?
+
+The feature should feel like a sophisticated environmental monitoring system integrated into a 3D exploration experience.
+
+It must not look like a conventional weather application.
+
+## 3. DESIGN REQUIREMENTS
+
+### A. Real-time Local Clock
+
+Display:
+- Current local time in HH:mm:ss format.
+- Day of the week.
+- Full date.
+- Location: Da Nang, Vietnam.
+- Timezone: ICT (UTC+7).
+
+Requirements:
+- Update the clock every second.
+- Use the IANA timezone Asia/Ho_Chi_Minh.
+- Ensure correct time independently of the visitor's device timezone.
+- Use elegant typography with clear visual hierarchy.
+- Make the seconds display visually subtle.
+
+### B. Real-time Weather Information
+
+Display the following information:
+
+**Primary information**
+- Current temperature in Celsius.
+- Weather condition with a corresponding icon.
+- Weather description in Vietnamese.
+- Feels-like temperature.
+
+**Additional information**
+- Relative humidity.
+- Wind speed.
+- Wind direction.
+- Precipitation.
+- Cloud cover.
+- UV index, if available.
+
+Use meaningful weather icons and concise labels.
+
+The temperature should be the most visually prominent weather element.
+
+### C. Visual Design Direction
+
+Design language:
+
+- Premium dark glassmorphism.
+- Translucent panels.
+- Subtle background blur.
+- Elegant typography.
+- Soft lighting and atmospheric gradients.
+- Minimal borders.
+- Carefully controlled shadows.
+- Smooth micro-interactions.
+- High-quality iconography.
+
+The interface should complement the existing 3D environment without competing with the actual scenery.
+
+Avoid:
+- Large opaque dashboard panels.
+- Excessive information.
+- Bright and distracting colors.
+- Conventional weather app layouts.
+- Unnecessary charts and graphs.
+
+### D. Day/Night Awareness
+
+The interface should visually adapt to the actual local time.
+
+Examples:
+- Morning: subtle warm sunrise accents.
+- Daytime: clean blue atmospheric accents.
+- Sunset: warm orange accents.
+- Night: deep navy and cool blue accents.
+
+The visual adaptation must not automatically change the existing 3D environment settings.
+
+## 4. DESIGN PLACEMENT OPTIONS
+
+Explore at least two UI placement concepts before choosing the final design.
+
+**Concept A: Floating Weather HUD**
+
+A compact floating panel positioned in a suitable corner of the 3D viewport.
+
+**Concept B: Expandable Environmental Panel**
+
+A small persistent time/weather indicator that expands into a more detailed environmental information panel when clicked.
+
+Evaluate both concepts based on:
+- Visual harmony with the existing website.
+- Visibility without obstructing the 3D scene.
+- Desktop usability.
+- Mobile responsiveness.
+- Compatibility with existing UI elements.
+
+You may propose a better third concept if justified.
+
+## 5. TECHNICAL CONSIDERATIONS
+
+Do not implement anything during the design phase.
+
+However, the prototype must consider the following technical constraints:
+
+- The project already has existing weather simulation functionality.
+- Actual weather data and simulated weather must remain independent.
+- Real-world weather data must never overwrite user-controlled simulation settings.
+- Existing day/night controls must continue working.
+- The feature must not interfere with existing 3D camera controls, navigation or multiplayer interactions.
+- Minimize performance overhead.
+
+For the eventual implementation, investigate Open-Meteo:
+
+https://open-meteo.com/en/docs
+
+Suggested location:
+- Latitude: 16.061
+- Longitude: 108.227
+- Timezone: Asia/Ho_Chi_Minh
+- Temperature: Celsius
+- Wind speed: km/h
+
+Use the current weather endpoint and appropriate variables.
+
+Weather refresh should be periodic (approximately 10–15 minutes), not every second.
+
+The clock should update locally without repeated API requests.
+
+Display the actual weather observation/update timestamp so visitors understand that weather data is not necessarily refreshed continuously.
+
+## 6. WORKFLOW — STRICTLY DESIGN FIRST
+
+### PHASE 1: REVIEW EXISTING PROJECT
+
+Before designing:
+
+1. Review the entire project structure.
+2. Identify the existing UI architecture and design conventions.
+3. Inspect current weather simulation and day/night controls.
+4. Identify available UI components that could be reused.
+5. Determine suitable placement for the new feature.
+6. Identify potential conflicts with existing functionality.
+
+Do not modify any source files.
+
+### PHASE 2: DESIGN PROTOTYPE
+
+Create a visual and interactive prototype for review.
+
+Requirements:
+
+- Implement only a standalone design prototype or isolated preview.
+- Do not integrate it into the production application.
+- Do not modify existing production functionality.
+- Use realistic mock weather data for the prototype.
+- Include representative sunny, cloudy, rainy and nighttime states.
+- Demonstrate both compact and expanded states.
+- Demonstrate hover, click and expand/collapse interactions.
+- Show responsive desktop and mobile layouts.
+
+The prototype must be sufficiently polished to evaluate the actual visual quality, not merely a wireframe.
+
+### PHASE 3: DESIGN REVIEW CHECKPOINT
+
+Stop after completing the prototype.
+
+Present:
+
+1. Screenshots or a live preview of each proposed design.
+2. Comparison of the placement concepts.
+3. Explanation of the recommended design.
+4. Desktop and mobile previews.
+5. Interaction behavior.
+6. Proposed integration location within the existing website.
+7. Any technical concerns discovered during project review.
+
+**WAIT FOR MY EXPLICIT APPROVAL.**
+
+Do not proceed to implementation until I approve the prototype.
+
+If I request design changes, update the prototype and present it again for review.
+
+### PHASE 4: IMPLEMENTATION — ONLY AFTER APPROVAL
+
+After receiving approval:
+
+1. Review the final approved prototype.
+2. Create an implementation plan based on the actual project architecture.
+3. Identify the files and components that need modification.
+4. Implement the approved design.
+5. Integrate the real weather API.
+6. Implement the live local clock.
+7. Add loading, error, stale-data and offline states.
+8. Ensure the existing weather simulation remains independent.
+9. Test all existing exploration modes and controls.
+10. Verify responsive behavior and performance.
+
+Do not redesign the approved interface without permission.
+
+## 7. QUALITY EXPECTATIONS
+
+The final result should feel like a premium feature of a sophisticated 3D digital tourism platform.
+
+Prioritize:
+- Visual quality.
+- Excellent typography.
+- Information hierarchy.
+- Minimalism.
+- Smooth interactions.
+- Performance.
+- Compatibility with the existing application.
+
+Do not introduce unnecessary dependencies.
+
+Do not refactor unrelated project code.
+
+Do not invent an entirely new UI architecture if the existing project already provides suitable patterns.
+
+## 8. FIRST ACTION
+
+Start with PHASE 1 and PHASE 2 only.
+
+Review the existing project, then create the design prototype.
+
+Do not implement the real API or modify production source code yet.
+
+Your first deliverable is a beautiful, interactive prototype that I can review and approve.
+</pasted_content id="79df">
+
+---
+
+1. B, 2. Có hiện chỉ báo
+
+---
+
+<agent-message from="a1b8ba87b248e06bc">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  - **Status:** DONE_WITH_CONCERNS
+  - Commit: 17ad67e feat(realtime): lõi giờ + thời tiết thực tế Đà Nẵng (đồng hồ theo múi giờ, đọc Open-Meteo, kho trạng thái), CONFIG.env, khóa env* 9 ngôn ngữ (D-042 Task 1)
+  - Tests: `npm run test:env:unit` 31/31 đạt (RED trước: ERR_MODULE_NOT_FOUND); `npm run typecheck` sạch.
+  - Concerns:
+    - Brief ghi "46 khóa" nhưng liệt kê đúng 45 (khớp spec §4.6: 9+13+8+5+4+6). Đã làm 45, test khẳng định 45; nếu Task 2 cần khóa thứ 46 thì báo.
+    - Bản dịch 8 ngôn ngữ do tôi viết, cần người bản ngữ duyệt (nhất là ar, hi, th).
+    - Thêm export phụ `envIsWeather` ở weatherApi.ts (kiểm bộ nhớ đệm). Sự kiện `online` chưa nằm trong store: Task 2 nối `store.refresh()`.
+    - Hẹn giờ hủy theo timeoutMs đi qua `setTimer` (test giả loại nó khỏi nhật ký hẹn lấy lại).
+  - Report: D:/2026 - Tuan/danang-vite/.worktrees/thoi-tiet-thuc/.superpowers/sdd/2026-11-14-thoi-tiet-thuc/task-1-report.md
+</agent-message>
+
+---
+
+<agent-message from="aa7468c94f2050052">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  - ✅ Spec compliant. I checked the exported names and signatures against the brief's Interfaces block (clock.ts, weatherApi.ts, store.ts) and they match, including `EnvDeps` and `EnvStore`. The WMO table is correct, including the unknown-code fallback. `envPhase` follows the brief's order (dawn and dusk first, then day, then night).
+  - `status()` follows the brief (store.ts:838-839).
+  - `CONFIG.env` values and comments match spec §4.5 (config.ts:72-86), and `env: envBase` is added to `CONFIG`.
+  - `envUrl` matches the §4.4 query string.
+  - All 45 i18n keys are present in 9 locales. The `vi` values are verbatim from the brief, and `{t}` / `{n}` are preserved. The diff only appends keys and adds the trailing comma, so nothing existing is reordered.
+  - No forbidden directories are touched. `test:env:unit` is added to package.json.
+  - Every brief assertion for clock, weatherApi and locales is present. Store cases (a) through (j) are all present.
+  - ⚠️ Cannot verify from the diff: the implementer's claim that tests and typecheck pass. I did not re-run them. Whether `tests/**` falls under the tsconfig include is also not visible.
+  
+  ### Strengths
+  - The store is cleanly dependency-injected and runs under Node. Fetch, timers, now and storage are all injected.
+  - The in-flight guard is correct: `refresh()` returns the same promise while one is pending (store.ts:829).
+  - The timeout is a race with an `AbortController`, and its timer is cleared in `finally` (store.ts:806-810). `work.catch` avoids an unhandled rejection when the timeout wins (store.ts:804).
+  - `arm()` only sets a timer when `visible && started`, and keeps `nextAt`. As a result, `setVisible(false)` followed by `setVisible(true)` during an in-flight fetch behaves correctly. After stop, an in-flight completion does not re-arm.
+  - Cache load and save are wrapped in try/catch, and a `storage: null` case is handled.
+  - `envIsWeather` checks types with the same number test that `envParse` uses.
+  - The tests use a fake clock and a fake timer queue that fires timers in order, so the backoff sequence and the stale boundary at exactly `staleMs` are tested properly.
+  - `envCompass` handles negative and over-360 degrees.
+  - `envClockParts` uses `% 24` against the `24:00` quirk.
+  - The translations I could judge look natural, and I found no lost placeholders.
+  
+  ### Issues
+  #### Critical (Must Fix)
+  None.
+  
+  #### Important (Should Fix)
+  None.
+  
+  #### Minor (Nice to Have)
+  1. tests/env-unit/store.test.ts:1142-1151, case (f), is weak. It hides before `start()`, when no timer exists, so "no calls after 1 hour" is trivially true. It does not cover hiding while a refresh timer is armed. It also does not cover the two `setVisible(true)` branches of store.ts:856-857: re-arming for the remaining time before `nextAt`, and fetching immediately when overdue. A test that hides after a success, advances 1 h and shows again (expecting 1 call), plus one that shows before `nextAt` (expecting 0 calls), would pin the logic.
+  2. store.ts:768 `emit` has no guard. A throwing `onChange` subscriber makes `run()` reject, which becomes an unhandled rejection through `void refresh()` (store.ts:773, 846). `arm()` runs before `emit`, so scheduling survives. Wrapping each subscriber call in try/catch would be safer.
+  3. tests/env-unit/clock.test.ts:2 and 977. The `process.env.TZ` assignment runs after the hoisted imports, and `Intl.DateTimeFormat` with an explicit `timeZone` ignores `TZ` anyway. So the "independent of client timezone" check is weak, although it matches the brief. The comment at line 2 overstates it.
+  4. weatherApi.ts:947 `envCompass(NaN)` returns undefined, and clock.ts:723 `envHHMM` gives odd output for negative minutes. Both are outside the stated domain.
+  5. i18n: `ja` `envWxRainM` "並の雨" is slightly unidiomatic. "やや強い雨" or "雨" would be more natural, and a native speaker should review it. `hi` `envFeels` "महसूस {t}°" is terse.
+  6. The cache is accepted regardless of the obs date, so `sunrise` and `sunset` may be from yesterday. The status becomes `stale` after 45 min, so this is a consumer concern for Task 2.
+</agent-message>
+
+---
+
+lưu ý không chạy bất kỳ test nặng nào. Cứ làm cho đến khi hoàn thành, không cần hỏi lại
+
+---
+
+<agent-message from="a0508e21c14c9490d">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Trạng thái:** DONE_WITH_CONCERNS
+  **Commit:** `ec9847c` feat(ui): chỉ báo giờ + thời tiết thực tế Đà Nẵng, thẻ chi tiết kính tối, tờ 'env' (D-042 Task 2). Commit này gồm cả hai việc chuyển từ review Task 1: `emit()` bọc try/catch, và thêm ca (f2) (f3) (f4) vào `store.test.ts`. Dòng ghi công cuối commit là Claude Opus 5.5 theo nhắc nhở ghi công của hệ thống, không phải Fable 5.2 như brief ghi.
+  **Kiểm tra:** `typecheck` sạch, `test:env:unit` đạt 34/34, `build` đạt. Chunk `index` từ 790,51 lên 801,77 kB, css từ 41,60 lên 53,31 kB. Đã chụp ảnh GPU thật và so với prototype: máy tính 1440×900 (đóng, mở, 13:20, 21:10, đang tải, ngoại tuyến, `ar`, mở ⚙), điện thoại 390×844 (đóng, mở, chạm lớp mờ để đóng), đi dạo / ô tô / xe máy / dù lượn ở 1280×720 và điện thoại. Các ảnh khớp prototype; ở 1280×720 chỉ báo không chồng nút nào; sau khi bấm trong chế độ khám phá, focus về BODY.
+  **Lo ngại:**
+  - Máy tính hẹp (khoảng 761–1000 px) khi đang khám phá: các dòng gợi ý phím giữa trên (`#drHint`, `#bkHint`, `#exHint`) khi dài hết cỡ có thể chạm chỉ báo.
+  - Điện thoại đi dạo: thông báo chụp ảnh `#stToast` có thể chồng chỉ báo cạnh ⚙.
+  - Dù lượn trên điện thoại không có trong bảng spec; tôi đặt chỉ báo cạnh ⚙ giống đi dạo.
+  - Chưa chạy `test:mobile` và `test:env`; hai việc này thuộc Task 3.
+  **Báo cáo:** `D:/2026 - Tuan/danang-vite/.worktrees/thoi-tiet-thuc/.superpowers/sdd/2026-11-14-thoi-tiet-thuc/task-2-report.md`
+</agent-message>
+
+---
+
+<agent-message from="ad524e0fc5b3451fc">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  ### Spec Compliance
+  - ❌ Issues found (two; the rest of the brief is met):
+    - **The desktop card closes with no animation, which departs from the prototype.** In the prototype the card rule `#env[data-concept="B"] .env-card` (1,2,0) beat `.glass` (0,1,0). In the port the card's own `#envCard{…transition:…visibility 0s .28s…}` (`src/styles/main.css:519-522`) has specificity (1,0,0). It loses to `#env .env-glass{transition:background .9s,…,opacity .2s}` (`main.css:492`, specificity 1,1,0), so the `visibility … .28s` delay is dropped. When the card closes on desktop (tour and explore), `visibility` flips to hidden at once and it disappears without the fade and slide. Opening still animates, because `body.sheet-env #env #envCard` (2,1,1) wins. Phone is fine because `body.compact #envCard` is (1,1,1). Fix: raise the selector to `#env #envCard`, or move the base transition onto it.
+    - **Phone drive / bike placement depends on a variable the pill never receives** (`main.css:593`). `top:calc(60px + var(--dr-map-h,128px) + 40px)`, but `--dr-map-h` is only set on `#drHud` (`src/explore/drive/hud.ts:82`). `#env` sits beside it, not inside it, so it always gets the fallback 128 px.
+      - On phones (`mapTouch` = 128) the map is at most 128 px, so the only effect is a larger gap when the map is shorter.
+      - `body.compact` also applies to narrow desktop windows (`compactQuery` = `max-width:760px`, `config.ts:570`). There, with `hover:hover`, the map uses `mapDesk` = 200, so the map spans 60–260 px and `#drMapNote` starts at 260. The pill (228–262) then covers the bottom of the minimap and the top of the map note.
+      - The spec gives this formula, but it only works by accident. A cheap fix that stays out of `src/explore/**`: an `@media (hover:hover)` override using 200 px, or have `envUI.ts` copy the value.
+  - ⚠️ Cannot verify from the diff:
+    - Pixel fidelity to `shots/B-*.png` and `M-B-*.png`. The report claims a match; values I spot-checked against the prototype CSS match: 312 px, radii, phase accents, 64 / 52 px type, shimmer, offline 44 px.
+    - Collisions in phone tour mode at the top-right (hint bars).
+    - On narrow desktop windows in explore, `#drHint` / `#bkHint` / `#exHint` wrapping under the pill (the implementer flagged this).
+    - On phone stroll, `#stToast` overlaps the pill. On a 390 px screen the toast spans about x 100–290 at top 8 and z 5, while the pill spans about 72–209 at top 13 and z 6. Long photo toasts would be partly hidden. The placement follows the spec; this belongs to Task 3's overlap test.
+    - The GPU cost of an always-visible `backdrop-filter: blur(22px) saturate(150%)` over the WebGL canvas on desktop (`main.css:490`). The spec chose it; it has not been measured with `test:gpu`.
+  
+  ### Strengths
+  - **Brief coverage:**
+    - The `Sheet` type has `'env'`, with the `SHEET` entry, `aria-expanded` and the `reveal()` branch (`compactUI.ts:388-416`).
+    - `envPill` has `aria-expanded` / `aria-controls="envCard"`.
+    - Clicks in explore mode end with `blur()`.
+    - `live` is computed from `?test` / `env=live` exactly as required (`main.ts:119`).
+    - Concept A is fully gone: no `.env-more`, `[data-concept]` or `.glass` remains.
+  - **DOM writes are XSS-safe.** Data from the API only reaches the page through `textContent` and `replaceChildren`. `innerHTML` is used only for the constant `ICO` table (`envUI.ts:505`).
+  - **The clock is done properly:**
+    - Its timer aligns to the next second edge (`envUI.ts:592-595`).
+    - It writes only when a string changes (`setText`, `setVal`, `setStyle`, icon key).
+    - Every other repaint happens once per minute or on a data, state or language change.
+    - It stops when the tab is hidden and resumes with `tick(true)`; `store.setVisible` is wired up.
+    - Phase and the day / night icon come from the clock plus sunrise / sunset, with no `is_day`.
+  - **The 180 ms data swap is correct.** It coalesces repeated changes, skips under `prefers-reduced-motion`, and repaints with the newest data once the fade ends.
+  - **The four states, footer keys and number rules match the brief.** That covers UV at night = 0 with no level, null UV → "—", rain to one decimal, the arrow rotated `dir + 180`, and `Intl` unit durations. Formatting uses `-u-nu-latn`, so digits stay Latin in `ar`.
+  - **RTL is handled carefully.** The clock is wrapped in one `dir="ltr"` group, the glow and rule gradients flip, `transform-origin` flips, and the drive row is physically anchored with `inset-inline:auto; left:…`.
+  - **No `display:none!important` explore rule hits `#env`.** I checked `main.css:325-326`: only `.eyebrow`, `h1`, `.views` and similar are targeted, and the card uses `.env-eyebrow`.
+  - **Class and sheet interactions work:**
+    - Bike mode adds `drive` (`bike/index.ts:314`), and `ex-watching` keeps `explore`, so all five placement contexts resolve.
+    - The `.compact.drive` rule comes after `.compact.explore` at equal specificity.
+    - No existing `body.sheet-*` CSS rule or `ui.sheet` consumer misreads `'env'`.
+    - Global `button{}` styles are overridden by ID selectors.
+  - **Carry-over items:**
+    - `emit()` wraps each listener in try/catch (`store.ts:217`).
+    - (f2) and (f3) assert exactly the requested visibility cases, including the off-by-one before the `refreshMs` deadline.
+    - (f4) covers a listener that throws.
+  
+  ### Issues
+  #### Critical (Must Fix)
+  - None.
+  
+  #### Important (Should Fix)
+  1. The desktop card loses its close transition (specificity). See Spec Compliance; `main.css:492` vs `main.css:519-522`. This is a one-selector fix.
+  2. Phone drive / bike pill placement relies on `--dr-map-h`, which is never in scope (`main.css:593`, with the variable set on `#drHud` at `src/explore/drive/hud.ts:82`). On narrow desktop windows in compact drive mode, the pill overlaps the minimap and `#drMapNote`. Phones are only affected cosmetically.
+  
+  #### Minor (Nice to Have)
+  3. `setupEnvUI` runs at the top level of `main.ts` (line 119), before `setupExplore` and the render loop. Any exception there stops the whole app from starting. Examples: `Intl.NumberFormat` with `style:'unit'` throws on Safari < 14.1 (`envUI.ts:515-516`), and `el.dir.querySelector` throws if an inner node is missing (`envUI.ts:488`). A purely informational widget should not be able to do that: wrap the call in try/catch, or degrade inside `fmts()`.
+  4. The pill's accessible name is the static `aria-label` "Giờ và thời tiết thực tế tại Đà Nẵng" (`index.html:79`). It overrides the visible temperature and time, so screen-reader users only get the values by opening the card. Consider updating the label with the temperature and HH:mm on each minute repaint.
+  5. When the desktop Settings panel is open, the pill is hidden with `opacity:0; pointer-events:none` (`main.css:517`) but can still be reached with Tab. Add `visibility:hidden` (with a transition delay) to keep it out of the tab order.
+  6. On phones, opening the bottom sheet leaves focus on the pill underneath the scrim (`envUI.ts:181`). This matches the existing sheets; noted only for consistency.
+  7. `schedule()` aligns to `Date.now()` while the display reads `nowFn()` (`envUI.ts:594`). This is harmless, and only matters under `setNow`.
+  
+  ### Assessment
+  **Task quality:** Needs fixes
+  **Reasoning:** The implementation is clean and safe and covers the brief. Two CSS defects need fixing: the closing transition the prototype has is lost on desktop, and the phone drive / bike position relies on a CSS variable the pill never receives. Both are small, local fixes.
+</agent-message>
