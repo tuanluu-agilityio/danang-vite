@@ -8,10 +8,11 @@
    - Phím (theo e.code, chỉ khi đang lái, bỏ ô nhập và tổ hợp Ctrl / Meta / Alt; blur / ẩn tab nhả hết): R về làn (bkRecover), Q / E xi nhan trái / phải (bkSignal),
      V đổi góc nhìn (góc thứ nhất ở Task 5, giờ chỉ có góc thứ ba). Còi H: âm thanh ở Task 8.
    - Lớp body 'explore drive bike': khung HUD #drHud và các quy tắc CSS của body.drive áp nguyên; 'bike' cho phần riêng về sau.
-   - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10), cảm ứng (Task 9), mô hình thật (Task 3).
+   - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10), cảm ứng (Task 9). Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
    Mỗi khung không cấp phát (D-018). */
-import { scene, camera, controls, canvas } from '../../core/renderer';
-import { onResize } from '../../core/postprocessing';
+import type * as THREE from 'three';
+import { scene, camera, controls, canvas, renderer } from '../../core/renderer';
+import { composer, onResize } from '../../core/postprocessing';
 import { cam } from '../../views/state';
 import { CONFIG } from '../../config';
 import { driveView } from '../../environment/driveRoads';
@@ -26,8 +27,22 @@ import { trNearby } from '../../common/trafficQuery';
 import { exNightStep } from '../nightShows';
 import { bkCreate, bkStep, bkRecover, bkSignal, bkPitch, BK_BODY, type BkState, type BkInput } from './motion';
 import { bkInputFromKeys, BK_KEYS } from './keys';
-import { BkBike } from './model';
+import { BkBike, bkModelLoad, bkModelSetWarm } from './model';
 import type { SwingController } from '../../bridges/song-han/SwingController';
+
+/* Làm nóng shader của xe máy (D-018), như drive/index.ts drCarSetWarm: hai biến thể (vẽ thẳng ra canvas ban ngày, vào render target của composer ban đêm),
+   đèn / sương / bóng lấy từ cảnh chính, camera chính. Nhóm làm nóng (mô hình, mặt đồng hồ, hình tạm, tấm bóng) do model.ts dựng, không thêm vào scene */
+bkModelSetWarm(async (o: THREE.Object3D) => {
+  const rt = renderer.getRenderTarget();
+  renderer.setRenderTarget(null);
+  const a = renderer.compileAsync(o, camera, scene);
+  renderer.setRenderTarget(rt);
+  await a;
+  renderer.setRenderTarget(composer.readBuffer);
+  const b = renderer.compileAsync(o, camera, scene);
+  renderer.setRenderTarget(rt);
+  await b;
+});
 
 const BK_SOLO_SLOT = -1;   // bkCreate / drSpawnPose: lái một mình xuất phát ở giữa các chỗ của slot (trên Cầu Rồng, đi Đông, bên phải)
 const K3 = CONFIG.bike.cam3;
@@ -83,6 +98,7 @@ export const bike = {
   inMode,
   get state(): BkState | null { return state; },
   get net(): DrNet | null { return net; },
+  get model(): BkBike | null { return model; },   // hình xe của mình (test: real, anchors)
   get view(): 1 | 3 { return view; },
   /* Đổi góc nhìn: góc thứ nhất làm ở Task 5, giờ luôn góc thứ ba */
   setView(v: 1 | 3): void { view = v === 1 ? 3 : v; },
@@ -133,8 +149,8 @@ export const bike = {
   /* Cho test: như update nhưng nhận đầu vào trực tiếp; đặt xe tại chỗ */
   step(dt: number, inp: BkInput): void { if (active()) advance(dt, inp); },
   placeAt: bkPlaceAt,
-  /* Mô hình thật nạp ở Task 3 */
-  preload(): void { /* chưa có mô hình */ }
+  /* Nạp mô hình thật (scooter.glb) sớm, khi chọn thẻ Xe máy */
+  preload(): void { void bkModelLoad(); }
 };
 
 /* onExit: thoát chung (explore.exit), dùng khi mất kết nối lúc đang xem (Task 10) */

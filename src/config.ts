@@ -934,6 +934,19 @@ const bikeBase = {
     fov: 62            // độ — góc nhìn dọc góc thứ ba, như ô tô (drive.cam.fov) (ước lượng)
   },
   model: {             // hình xe máy trong cảnh (explore/bike/model.ts)
+    url: 'bike/scooter.glb',   // mô hình xe tay ga (npm run gen:bike từ scripts/bike/src/scooter.glb, Grab3D, CC0), đường dẫn tương đối BASE_URL
+    timeoutMs: 8000,   // ms — quá thời gian này mà chưa nạp + làm nóng xong thì bkModelLoad trả null (vẫn đổi sang mô hình thật khi xong muộn) (ước lượng)
+    warmMs: 4000,      // ms — chờ làm nóng shader tối đa (compileAsync), quá thì bỏ chờ (ước lượng)
+    steerLock: 0.52,   // rad — góc bẻ cổ lái lớn nhất trên hình (manifest.json: khóa lái ≈ ±30°)
+    headDay: 1,        // hệ số phát sáng đèn pha ban ngày: xe đời mới luôn bật đèn (ước lượng)
+    headNight: 2.5,    // hệ số phát sáng đèn pha khi uNight = 1 (ước lượng)
+    tailNight: 1.2,    // hệ số phát sáng đèn hậu khi uNight = 1; ban ngày tắt (ước lượng)
+    tailBrake: 3,      // hệ số phát sáng đèn hậu khi phanh, ngày lẫn đêm (ước lượng)
+    sigOn: 3,          // hệ số phát sáng xi nhan ở nửa chu kỳ sáng (ước lượng)
+    sigHz: 1.5,        // Hz — nhịp nháy xi nhan, 90 lần/phút (ước lượng)
+    dashColor: 0x0d1116,   // màu mặt đồng hồ khi chưa có texture canvas (MeshBasicMaterial, không chịu ánh sáng) (ước lượng)
+    maxBytes: 1_000_000,   // byte — trần dung lượng scooter.glb (tests/bike-unit/glb.test.ts; spec §17.1)
+    maxTris: 22_000,   // tam giác — trần tam giác scooter.glb (như trên; nguồn 19 290)
     shadow: { pad: 0.3, opacity: 0.5, lift: 0.03 },   // tấm bóng mờ dưới gầm: m — phần nhô ra mỗi chiều so với thân; độ đục tối đa; m — nâng khỏi mặt đường (ước lượng)
     temp: { paint: 0x8fd3c1, shirt: 0x2f5d8a, helmet: 0xd8d8d8 }   // màu hình tạm (hình 'bike' của common/vehicles/shapes.ts): sơn thân bạc hà như mô hình Grab3D, áo, mũ bảo hiểm (ước lượng)
   }
