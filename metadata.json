@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M7CDYJSJHFRGKG7N3Z2W8A47",
+  "strategy": "manual-commit",
+  "branch": "feature/chon-nhan-vat-di-dao",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/memory-bank/activeContext.md",
+    ".github/memory-bank/decisions.md",
+    ".github/memory-bank/progress.md",
+    "docs/superpowers/specs/2026-11-14-chon-nhan-vat-di-dao-design.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2,
+    "cache_creation_tokens": 3680,
+    "cache_read_tokens": 267020,
+    "output_tokens": 427,
+    "api_call_count": 1
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
