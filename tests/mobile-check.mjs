@@ -601,6 +601,10 @@ try {
   check(`xe máy máy tính: 🎥 ◄ ► gợi ý, chữ kẹt, 🔊, Thoát, bản đồ, đồng hồ đều hiện (${bk.length}/10) và không chồng nhau`, bk.length === 10 && noOverlap(bk));
   check('xe máy máy tính: 🔊 không ở giữa đáy (mặt đồng hồ góc thứ nhất)', bk.filter((b) => b.sel === '#drSoundBtn').every((b) => b.top < 720 / 2));
   await BK.page.keyboard.up('KeyW');
+  /* ar (RTL): ⚙ sang phải, Thoát sang trái; nhóm 🔊 🎥 ◄ ► phải lật theo để không đè Thoát (lỗi review Task 9) */
+  await pick(BK.page, '#langSelect', 'ar'); await BK.page.evaluate(() => window.__app.ui.closeSheets()); await frames(BK.page, 2);
+  const bkAr = await rects(BK.page, ['#btnSettings', '#bkView', '#bkSigL', '#bkSigR', '#bkHint', '#drSoundBtn', '#btnExExit', '#drMap', '#drSpeed']);
+  check(`xe máy ar máy tính: ⚙ 🎥 ◄ ► gợi ý 🔊 Thoát bản đồ đồng hồ đều hiện (${bkAr.length}/9) và không chồng nhau`, bkAr.length === 9 && noOverlap(bkAr));
   allErrors.push(...BK.errors); await BK.page.close();
 
   check('console sạch', allErrors.length === 0);

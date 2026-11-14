@@ -419,6 +419,12 @@ body.bike:not(.ex-watching) #bkView{left:calc(14px + env(safe-area-inset-left,0p
 body.bike:not(.ex-watching) #bkSigL{left:calc(14px + env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));}
 body.bike:not(.ex-watching) #bkSigR{left:calc(66px + env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));}
 body.bike #bkHorn,body.bike #bkReset{display:none !important;}
+/* RTL (ar): ⚙ lên góc trên phải, Thoát sang góc trên trái (inset-inline), nên 🔊 🎥 ◄ ► của xe máy (left vật lý) đè lên Thoát: lật nhóm góc trên sang phải, cùng khoảng cách như bên trái.
+   Cần gạt / GA / PHANH và hàng nút cảm ứng dưới đáy giữ nguyên (#drHud dir=ltr) */
+html[dir=rtl] body.bike:not(.ex-watching) #drSoundBtn{left:auto;right:calc(72px + env(safe-area-inset-right,0px));}
+html[dir=rtl] body.bike:not(.ex-watching) #bkView{left:auto;right:calc(14px + env(safe-area-inset-right,0px));}
+html[dir=rtl] body.bike:not(.ex-watching) #bkSigL{left:auto;right:calc(66px + env(safe-area-inset-right,0px));}
+html[dir=rtl] body.bike:not(.ex-watching) #bkSigR{left:auto;right:calc(14px + env(safe-area-inset-right,0px));}
 body.bike.ex-watching #bkHint,body.bike.ex-watching #bkStuck{display:none !important;}   /* xem xe người khác (hết chỗ lái): không gợi ý phím / nhắc kẹt của xe mình */
 @media (hover:none){
   body.bike:not(.ex-watching) #drSoundBtn{left:calc(76px + env(safe-area-inset-left,0px));top:calc(8px + env(safe-area-inset-top,0px));}
@@ -431,6 +437,10 @@ body.bike.ex-watching #bkHint,body.bike.ex-watching #bkStuck{display:none !impor
   body.bike:not(.ex-watching) #bkView{left:auto;right:calc(76px + env(safe-area-inset-right,0px));top:auto;bottom:calc(36px + var(--dr-gas-h,124px) + env(safe-area-inset-bottom,0px));}
   body.bike:not(.ex-watching) #bkReset{left:auto;right:calc(136px + env(safe-area-inset-right,0px));top:auto;bottom:calc(36px + var(--dr-gas-h,124px) + env(safe-area-inset-bottom,0px));}
   body.bike #bkStuck.show{display:none;}   /* chữ nói phím R; cảm ứng chỉ cho nút ↺ sáng lên */
+  html[dir=rtl] body.bike:not(.ex-watching) #drSoundBtn{left:auto;right:calc(76px + env(safe-area-inset-right,0px));}
+  html[dir=rtl] body.bike:not(.ex-watching) #bkSigL{left:calc(16px + env(safe-area-inset-left,0px));right:auto;}
+  html[dir=rtl] body.bike:not(.ex-watching) #bkSigR{left:calc(76px + env(safe-area-inset-left,0px));right:auto;}
+  html[dir=rtl] body.bike:not(.ex-watching) #bkView{left:auto;right:calc(76px + env(safe-area-inset-right,0px));}
 }
 /* Dòng hướng dẫn phím của đi dạo (#stHint): cùng chỗ và kiểu với #exHint, chỉ khi có chuột (hover:hover) và không ở chế độ xem; cảm ứng đã có cần gạt */
 #stHint{display:none;}

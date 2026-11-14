@@ -352,6 +352,7 @@ export const bike = {
   stop(): void {
     if (state === null && !watching) return;
     state = null; bkKeys.clear(); touch?.reset(); hornTouch = false; riderGen++;
+    document.getElementById('bkHorn')?.classList.remove('on');   // thoát khi đang giữ 📢: tắt sáng nút ngay, không chờ ngón nhả
     if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
     exDrivers.clear(); drCars.clear(); drCars.group.removeFromParent(); exDrivers.bikes.removeFromParent();   // xe người khác (ô tô, xe máy)
     bkSound.stop();
