@@ -3,7 +3,7 @@
   "checkpoint_id": "01M7CDNK4WZ7P3NX3PKRYF21PC",
   "strategy": "manual-commit",
   "branch": "feature/chon-nhan-vat-di-dao",
-  "checkpoints_count": 8,
+  "checkpoints_count": 12,
   "files_touched": [
     ".github/copilot-instructions.md",
     ".github/memory-bank/decisions.md",
@@ -72,14 +72,21 @@
       "compact_transcript": "/3/transcript.jsonl",
       "content_hash": "/3/content_hash.txt",
       "prompt": "/3/prompt.txt"
+    },
+    {
+      "metadata": "/4/metadata.json",
+      "transcript": "/4/full.jsonl",
+      "compact_transcript": "/4/transcript.jsonl",
+      "content_hash": "/4/content_hash.txt",
+      "prompt": "/4/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 104,
-    "cache_creation_tokens": 254918,
-    "cache_read_tokens": 9233713,
-    "output_tokens": 59493,
-    "api_call_count": 47
+    "input_tokens": 140,
+    "cache_creation_tokens": 702055,
+    "cache_read_tokens": 12771683,
+    "output_tokens": 70425,
+    "api_call_count": 63
   },
   "redaction": {
     "replacements": 5,

@@ -1,0 +1,13 @@
+làm như bạn khuyên. Tìm cách tốt nhất mà bạn nghĩ có thể và không cần hỏi lại. Note lại issue nếu có để review sau
+
+---
+
+gửi demo
+
+---
+
+bản cập nhật trên branch này không tốt hơn bản tôi đã deploy. Nhiệm vụ không hoàn thành, không cần cập nhật gì nữa
+
+---
+
+push tất cả commit lên branch hiện tại và không làm gì thêm
