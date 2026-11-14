@@ -8,7 +8,7 @@
      console.warn một lần, null; promise không bao giờ bị từ chối; nạp xong muộn thì xe đang có vẫn đổi sang mô hình thật (`late`, như drive/car.ts).
      Cây nút: scooter → body (4 lưới: body, lamp_tail, lamp_sig_l, lamp_sig_r; neo foot_l / foot_r / seat / eye), front (gốc trên trục cổ lái, userData.axis;
      4 lưới: trim, lamp_head, mirror, dash; neo grip_l / grip_r; wheel_f), wheel_r. Mỗi xe một bản sao (dùng chung hình học / vật liệu nguồn), lớp 1, không bóng.
-     Lệnh vẽ mô hình thật: 8 thân + 2 bánh + 1 bóng = 11 (hình tạm: 2).
+     Lệnh vẽ mô hình thật: 8 thân + 2 bánh + 1 bóng = 11 (hình tạm: 2). Xe máy người khác cũng dùng mô hình thật (+ người lái 4 lệnh) khi đã nạp (D-040, 2026-11-14).
    - Đèn: vá phát sáng bằng onBeforeCompile đọc shared.uNight (không PointLight): hệ số = max(uNight · night, uOn). Đèn pha luôn sáng (uOn = headDay);
      đèn hậu chỉ sáng đêm, phanh thì uOn = tailBrake; xi nhan uOn = sigOn ở nửa chu kỳ sáng. Bản "sáng" là vật liệu thứ hai cùng customProgramCacheKey,
      chỉ khác uniform: đổi tham chiếu vật liệu của lưới, không biên dịch lại. Xi nhan nháy theo shared.uTime (thời gian khung, main.ts), không setInterval.
@@ -159,6 +159,8 @@ async function bkModelDefaultLoader(): Promise<THREE.Object3D> {
 let loader: () => Promise<THREE.Object3D> = bkModelDefaultLoader;
 let cache: Promise<BkSource | null> | null = null;
 let late: Promise<BkSource | null> | null = null;   // nạp không giới hạn giờ: BkBike đổi sang mô hình thật cả khi xong sau timeoutMs
+let ready: BkSource | null = null;                   // nguồn đã nạp + làm nóng xong (kể cả xong sau timeoutMs); null: chưa xong hoặc lỗi
+let loadGen = 0;                                     // tăng khi đổi bộ nạp (test): kết quả của bộ nạp cũ không ghi vào ready
 
 /* Nạp mô hình xe máy. Không bao giờ ném / từ chối: lỗi hoặc quá model.timeoutMs → warn một lần, null.
    Quá giờ chỉ là câu trả lời của bkModelLoad: việc nạp vẫn chạy tiếp, xe đang có (BkBike) đổi sang mô hình thật khi nó xong (late) */
@@ -176,19 +178,30 @@ export function bkModelLoad(): Promise<BkSource | null> {
       (e) => { console.warn('Lái xe máy: không nạp được mô hình xe, dùng hình tạm', e); return null; })
     .finally(() => clearTimeout(timer));
   late = work.catch(() => null);   // lỗi đã báo ở nhánh race
+  const g = loadGen;
+  void late.then((s) => { if (g === loadGen) ready = s; });
   cache = p;
   return p;
 }
 
+/* Nguồn mô hình nếu đã nạp + làm nóng xong (kể cả xong muộn sau timeoutMs), không thì null; lần gọi đầu bắt đầu nạp. Không ném.
+   Cho xe máy người khác (multi/remoteDrive.ts): hỏi mỗi khung, có nguồn thì dựng xe thật ngay (BkBike opts.src), không chờ promise */
+export function bkModelReady(): BkSource | null {
+  if (!cache) void bkModelLoad();
+  return ready;
+}
+
 /* Cho test: thay bộ nạp (null: mặc định), xóa đệm */
 export function bkModelSetLoader(fn: (() => Promise<THREE.Object3D>) | null): void {
-  loader = fn || bkModelDefaultLoader; cache = null; late = null;
+  loader = fn || bkModelDefaultLoader; cache = null; late = null; ready = null; loadGen++;
 }
 
 /* ===== Một xe máy =====
-   opts.lite (xe máy người chơi khác, multi/remoteDrive.ts): chỉ hình tạm (xe + người khối đội mũ, 1 lưới) + tấm bóng = 2 lệnh vẽ, không bao giờ đổi sang mô hình thật,
-   không nạp glb; opts.shirt: màu áo người khối (màu slot, để phân biệt người chơi). Xe của mình: mặc định (hình tạm rồi mô hình thật) */
-export interface BkBikeOpts { lite?: boolean; shirt?: THREE.ColorRepresentation }
+   Xe của mình: mặc định (hình tạm rồi tự đổi sang mô hình thật khi nạp xong).
+   opts.lite: chỉ hình tạm (xe + người khối đội mũ, 1 lưới) + tấm bóng = 2 lệnh vẽ, không tự đổi, không nạp glb; opts.shirt: màu áo người khối (màu slot).
+   Xe máy người chơi khác (multi/remoteDrive.ts) dùng bản lite làm hình tạm tới khi có cả mô hình lẫn nhân vật, rồi dựng xe mới với opts.src.
+   opts.src: nguồn đã nạp (bkModelReady): đổi sang mô hình thật ngay trong constructor (không hình tạm, không chờ promise) */
+export interface BkBikeOpts { lite?: boolean; shirt?: THREE.ColorRepresentation; src?: BkSource }
 export class BkBike {
   readonly group = new THREE.Group();
   private readonly roll = new THREE.Group();                         // nút cuộn lean quanh đường chạm đất
@@ -227,6 +240,7 @@ export class BkBike {
     const a = {} as BkAnchors;
     for (const [k, n] of ANCHORS) { const o = new THREE.Object3D(); o.name = 'bike-temp-' + n; this.roll.add(o); a[k] = o; }
     this.anchors = a;
+    if (opts.src) { this.swap(opts.src); return; }
     if (opts.lite) return;
     void bkModelLoad();
     late!.then((src) => { if (src && !this.disposed) this.swap(src); });   // không bao giờ từ chối
