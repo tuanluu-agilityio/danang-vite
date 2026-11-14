@@ -185,7 +185,7 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
   onLangChange(() => tick(true));
 
   /* ----- Mở / đóng (tờ 'env'); khám phá: bỏ focus để Space / mũi tên không bấm lại nút ----- */
-  const blurInExplore = () => { if (document.body.classList.contains('explore')) (document.activeElement as HTMLElement | null)?.blur(); };
+  const blurInExplore = () => { const a = document.activeElement as HTMLElement | null; if (a && root.contains(a) && document.body.classList.contains('explore')) a.blur(); };
   pill.addEventListener('click', () => { openSheet(ui.sheet === 'env' ? 'none' : 'env'); blurInExplore(); });
   btnX.addEventListener('click', () => { openSheet('none'); blurInExplore(); });
   scrim.addEventListener('pointerdown', (e) => { e.preventDefault(); openSheet('none'); });
@@ -194,13 +194,23 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
      xuống dòng theo ngôn ngữ, nên đo đáy chú thích khi nó đổi cỡ (hiện ra, đổi ngôn ngữ, xoay máy) hoặc bản đồ đổi cỡ, ghi --env-dr-top cho CSS ----- */
   const note = document.getElementById('drMapNote'), drHud = document.getElementById('drHud');
   if (note && drHud && typeof ResizeObserver !== 'undefined') {
+    // Ghi trên <html> (không phải #env): #exMpNotice / #exMpIdle nằm ngoài #env cũng đọc được để đứng dưới chỉ báo
     const syncDr = () => {
       const b = note.getBoundingClientRect();
-      if (b.height > 0) setStyle(root, '--env-dr-top', Math.round(b.bottom + cfg.driveGap) + 'px');
+      if (b.height > 0) setStyle(document.documentElement, '--env-dr-top', Math.round(b.bottom + cfg.driveGap) + 'px');
     };
     new ResizeObserver(syncDr).observe(note);
     new MutationObserver(syncDr).observe(drHud, { attributes: true, attributeFilter: ['style'] });
+    // Xoay máy / đổi cỡ cửa sổ: chú thích có thể đổi chỗ mà không đổi cỡ; đo lại sau khung kế (gộp nhiều sự kiện)
+    let syncRaf = 0;
+    const syncSoon = () => { if (syncRaf) return; syncRaf = requestAnimationFrame(() => { syncRaf = 0; syncDr(); }); };
+    window.addEventListener('resize', syncSoon);
+    window.addEventListener('orientationchange', syncSoon);
   }
+
+  /* ----- Khám phá: tờ 'env' đóng bằng đường nào (Esc, bấm cảnh, đổi chế độ) mà focus còn trong #env (vd. liên kết Open-Meteo) thì bỏ focus:
+     openSheet() trả focus về chỉ báo, còn Space / mũi tên phải lái xe / dù ----- */
+  new MutationObserver(() => { if (!document.body.classList.contains('sheet-env')) blurInExplore(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
   /* ----- Tab ẩn: dừng đồng hồ và nhịp lấy số liệu; hiện lại: chạy tiếp (store tự lấy nếu đã quá hạn) ----- */
   document.addEventListener('visibilitychange', () => {

@@ -103,7 +103,7 @@ export function createEnvStore(d: EnvDeps): EnvStore {
     start() {
       if (started) return;
       started = true;
-      loadCache();
+      if (d.live) loadCache();   // ?test: không đọc bộ nhớ đệm, luôn 'loading' (số liệu cũ làm lệch test)
       if (data) emit();
       if (d.live && visible) void refresh();
     },

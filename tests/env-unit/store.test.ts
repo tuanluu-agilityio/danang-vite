@@ -175,6 +175,15 @@ test('(i) live=false không bao giờ fetch', async () => {
   assert.equal(r.calls, 0);
   assert.equal(r.store.status(), 'loading');
 });
+test('(i2) live=false không đọc bộ nhớ đệm: data null, loading, 0 fetch', async () => {
+  const seed = rig(); seed.store.start(); await seed.flush();
+  const r = rig({ live: false }); r.mem[CONFIG.env.storeKey] = seed.mem[CONFIG.env.storeKey];
+  assert.ok(r.mem[CONFIG.env.storeKey]);
+  r.store.start(); await r.flush();
+  assert.equal(r.store.data, null);
+  assert.equal(r.store.status(), 'loading');
+  assert.equal(r.calls, 0);
+});
 test('(j) onChange và inject', async () => {
   const r = rig();
   let n = 0; r.store.onChange(() => { n++; });

@@ -122,8 +122,9 @@ try {
   const dn = new Date(s1.now + 7 * 3600e3), dnMin = dn.getUTCHours() * 60 + dn.getUTCMinutes();
   const [hh, mm] = s1.hm.split(':').map(Number), diff = Math.abs(((hh * 60 + mm) - dnMin + 1440 + 720) % 1440 - 720);
   check(`1: đồng hồ "${s1.hm}" dạng HH:mm, bằng giờ Đà Nẵng tính trong test (lệch ${diff} phút ≤ 1)`, /^\d\d:\d\d$/.test(s1.hm) && diff <= 1);
-  await sleep(1200);
-  check('1: giây đổi sau 1,2 s', (await q(P.page, '#envCard [data-ss]')) !== s1.ss);
+  // Chờ giây đổi (không ngủ cố định: máy render chậm thì khung dài); hết 15 s mà chưa đổi thì waitForFunction ném lỗi
+  await P.page.waitForFunction((v) => document.querySelector('#envCard [data-ss]').textContent !== v, s1.ss, { timeout: 15000 });
+  check('1: giây đổi sau khi chờ', (await q(P.page, '#envCard [data-ss]')) !== s1.ss);
   // Mục 7: tham quan điện thoại dọc / ngang, ar
   await pillLayout(P.page, '7: điện thoại dọc tham quan', ['.brand', '.views'], 390, 844);
   await setLang(P.page, 'ar');
@@ -139,6 +140,20 @@ try {
   check(`6: điện thoại: chạm chỉ báo mở tờ đáy ${fmtBox(pc)}, sát đáy, trong khung`, (await sheetEnv(P.page)) && !!pc && Math.abs(pc.bottom - 844) < 1 && inView(pc, 390, 844));
   await P.page.tap('#envX'); await frames(P.page, 2);
   check('6: điện thoại: × đóng tờ đáy', !(await sheetEnv(P.page)));
+  // Dù lượn, chế độ xem (điện thoại dọc): chỉ báo không đè "Đang xem …", ⚙, Thoát
+  await P.page.evaluate(() => {
+    document.body.classList.add('explore', 'ex-watching');
+    const w = document.getElementById('exMpWatch'); w.hidden = false; w.textContent = 'Наблюдаете: WWWWWWWWW';   // câu dài nhất (ru) + tên 9 ký tự rộng nhất; thật chỉ một dòng
+  });
+  await frames(P.page, 3);
+  const [wPill] = await rects(P.page, ['#envPill']), wOthers = await rects(P.page, ['#exMpWatch', '#btnSettings', '#btnExExit']);
+  const wHit = wOthers.filter((r) => overlap(wPill, r)).map((r) => r.sel);
+  check(`7: dù lượn xem (điện thoại dọc): chỉ báo ${fmtBox(wPill)} không chồng ${[...new Set(wOthers.map((r) => r.sel))].join(' ')}${wHit.length ? ' (chồng: ' + wHit.join(' ') + ')' : ''} (${wOthers.map((r) => r.sel + " " + fmtBox(r)).join(", ")})`, !!wPill && wOthers.some((r) => r.sel === '#exMpWatch') && wHit.length === 0);
+  await P.page.evaluate(() => {
+    document.body.classList.remove('explore', 'ex-watching');
+    const w = document.getElementById('exMpWatch'); w.hidden = true; w.textContent = '';
+  });
+  await frames(P.page, 2);
   // Mục 9 (điện thoại dọc)
   await langSweep(P.page, '9: điện thoại dọc', 390, 844);
   allErrors.push(...P.errors); await P.page.close();

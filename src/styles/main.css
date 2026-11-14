@@ -605,6 +605,13 @@ body.compact.drive #envPill{height:34px;gap:7px;padding-inline:9px 10px;border-r
   body.compact.bike #envPill{left:calc(118px + env(safe-area-inset-left,0px));top:calc(134px + env(safe-area-inset-top,0px));}
   html[dir=rtl] body.compact.bike #envPill{left:auto;right:calc(118px + env(safe-area-inset-right,0px));}
 }
+/* Dù lượn, chế độ xem (Đang xem …, giữa trên top 14 px): chỉ báo xuống dưới dải "Đang xem" (đo 98,14 195×52 trên 390 px, đáy 66 px; 72 px = đáy + khe 6 px), mép đầu dòng vật lý như đi dạo; dưới đó (top 100 / 150 px, giữa) chỉ có #exMpNotice / #exMpIdle, đáy là lời mời */
+body.compact.ex-watching:not(.drive):not(.stroll) #envPill{inset-inline:auto;left:calc(8px + env(safe-area-inset-left,0px));top:calc(72px + env(safe-area-inset-top,0px));}
+/* Ô tô trên cảm ứng, dọc: thông báo nhiều người (#exMpNotice / #exMpIdle, quy tắc cũ ở khối lái xe nhiều người) xuống dưới chỉ báo thay vì dưới chú thích bản đồ nhỏ; 34 px = cao chỉ báo ô tô, 8 px = khe; cùng độ ưu tiên với quy tắc cũ, đứng sau nên thắng. Ngang giữ nguyên */
+@media (hover:none) and (orientation:portrait){
+  body.compact.drive #exMpNotice:not([hidden]){top:calc(var(--env-dr-top,calc(228px + env(safe-area-inset-top,0px))) + 34px + 8px);}
+  body.compact.drive #exMpIdle:not([hidden]){top:calc(var(--env-dr-top,calc(228px + env(safe-area-inset-top,0px))) + 34px + 8px + 70px);}
+}
 body.compact.drive #envPill .env-ico{font-size:17px;}
 body.compact.drive #envPill .t{font-size:20px;}
 body.compact.drive #envPill .hm{font-size:12.5px;}
