@@ -21,7 +21,7 @@ test('sáu người join: 5 joined, người thứ sáu rejected full', () => {
 test('connect nhận lobby; chỉ người gửi nhận joined; all nhận lobby mới', () => {
   const r = new SkyRoom();
   const c = r.connect('a', 0)!;
-  assert.deepEqual(c, [{ to: 'a', msg: { t: 'lobby', flyers: [], walkers: [], drivers: [] } }]);
+  assert.deepEqual(c, [{ to: 'a', msg: { t: 'lobby', flyers: [], walkers: [], drivers: [], chat: 1 } }]);   // D-041: lobby kèm chat 1
   const o = join(r, 'a', 'An');
   const j = has(o, x => x.msg.t === 'joined');
   assert.equal(j.length, 1); assert.equal(j[0].to, 'a'); assert.equal(j[0].msg.slot, 0);
@@ -234,7 +234,7 @@ test('năm người bay và năm người đi dạo cùng lúc: cả mười joi
 
 test('lobby: flyers chỉ gồm người bay, walkers chỉ gồm người đi dạo; lobby luôn có walkers', () => {
   const r = new SkyRoom();
-  assert.deepEqual(r.connect('a', 0), [{ to: 'a', msg: { t: 'lobby', flyers: [], walkers: [], drivers: [] } }]);
+  assert.deepEqual(r.connect('a', 0), [{ to: 'a', msg: { t: 'lobby', flyers: [], walkers: [], drivers: [], chat: 1 } }]);   // D-041: lobby kèm chat 1
   r.connect('b', 0);
   join(r, 'a', 'Bay');
   const l = has(joinW(r, 'b', 'Di'), x => x.msg.t === 'lobby')[0].msg;
@@ -377,7 +377,7 @@ test('5 bay + 5 đi dạo + 5 lái cùng lúc, người lái thứ 6 bị từ c
 
 test('lobby có drivers: flyers / walkers / drivers tách riêng; lobby luôn có drivers', () => {
   const r = new SkyRoom();
-  assert.deepEqual(r.connect('a', 0), [{ to: 'a', msg: { t: 'lobby', flyers: [], walkers: [], drivers: [] } }]);
+  assert.deepEqual(r.connect('a', 0), [{ to: 'a', msg: { t: 'lobby', flyers: [], walkers: [], drivers: [], chat: 1 } }]);   // D-041: lobby kèm chat 1
   r.connect('b', 0); r.connect('c', 0);
   join(r, 'a', 'Bay'); joinW(r, 'b', 'Di');
   const l = has(joinD(r, 'c', 'Lai'), x => x.msg.t === 'lobby')[0].msg as any;

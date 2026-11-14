@@ -446,3 +446,63 @@ test('khách cũ THẬT (session.ts của main) lái ô tô với máy chủ m�
   w.clock.now = 2000; bike.sendDrive({ x: 5, y: 2.6, z: 0, yaw: 0, v: 5, st: 0.4, ts: 1 });
   assert.equal(room.vehOf('c1'), 1);
 });
+
+/* ===== Chat (D-041 Task 2): chatOk theo lobby, sendChat, onChat / onChatAck không gọi onChange, gói sai kiểu bỏ ===== */
+const lobbyChat = (t: Fake, chat?: 1) => t.onMessage(chat ? { t: 'lobby', flyers: [], chat } : { t: 'lobby', flyers: [] });
+
+test('chat: lobby có chat 1 ⇒ chatOk; không có (máy chủ cũ) ⇒ sai; sau onClose ⇒ sai', async () => {
+  const a = await make(); lobbyChat(a.t, 1); assert.equal(a.s.chatOk, true);
+  lobbyChat(a.t); assert.equal(a.s.chatOk, false, 'lobby sau không có cờ thì tắt');
+  const b = await make(); lobbyChat(b.t); assert.equal(b.s.chatOk, false);
+  const c = await make(); lobbyChat(c.t, 1); c.t.onClose(); assert.equal(c.s.chatOk, false);
+});
+
+test('chat: máy chủ cũ không có walkers (offline) ⇒ chatOk sai', async () => {
+  const w = await makeKind('walk');
+  w.t.onMessage({ t: 'lobby', flyers: [], chat: 1 });
+  assert.equal(w.s.phase, 'solo'); assert.equal(w.s.chatOk, false);
+});
+
+test('chat: sendChat trước joined ⇒ false, không gửi; sau joined + chatOk ⇒ true; chatOk sai ⇒ false', async () => {
+  const { t, s } = await make(); lobbyChat(t, 1);
+  const n = t.sent.length;
+  assert.equal(s.sendChat('hi', 1), false); assert.equal(t.sent.length, n);
+  s.join('An'); t.onMessage({ t: 'joined', slot: 0 });
+  assert.equal(s.sendChat('hi', 1), true); assert.deepEqual(t.sent.at(-1), { t: 'chat', text: 'hi', id: 1 });
+  lobbyChat(t); const m = t.sent.length;
+  assert.equal(s.sendChat('hi', 2), false); assert.equal(t.sent.length, m);
+});
+
+test('chat: nhận chat ⇒ onChat đúng một lần, onChange không tăng; chatAck ⇒ onChatAck', async () => {
+  const { t, s, changes } = await make(); lobbyChat(t, 1);
+  const got: any[] = [], acks: any[] = [];
+  s.onChat = m => got.push(m); s.onChatAck = m => acks.push(m);
+  const c0 = changes();
+  t.onMessage({ t: 'chat', k: 'walk', slot: 1, name: 'B', text: 'yo' });
+  assert.deepEqual(got, [{ k: 'walk', slot: 1, name: 'B', text: 'yo' }]);
+  t.onMessage({ t: 'chatAck', id: 3, n: 2 });
+  t.onMessage({ t: 'chatAck', id: 4, why: 'rate' });
+  assert.deepEqual(acks, [{ id: 3, n: 2, why: undefined }, { id: 4, n: undefined, why: 'rate' }]);
+  assert.equal(changes(), c0, 'chat không gọi onChange');
+});
+
+test('chat: gói sai kiểu không gọi móc, không ném lỗi', async () => {
+  const { t, s } = await make(); lobbyChat(t, 1);
+  let calls = 0; s.onChat = () => { calls++; }; s.onChatAck = () => { calls++; };
+  const bad = [
+    { t: 'chat', k: 'walk', slot: 1, name: 'B', text: 5 }, { t: 'chat', k: 'x', slot: 1, name: 'B', text: 'a' },
+    { t: 'chat', k: 'walk', slot: 'a', name: 'B', text: 'a' }, { t: 'chat', k: 'walk', slot: 1, text: 'a' },
+    { t: 'chat', k: 'walk', slot: NaN, name: 'B', text: 'a' },
+    { t: 'chatAck', id: 'q', n: 1 }, { t: 'chatAck', id: 1, n: 'x' }, { t: 'chatAck', id: 1, why: 5 }, { t: 'chatAck' }
+  ];
+  for (const m of bad) assert.doesNotThrow(() => t.onMessage(m));
+  assert.equal(calls, 0);
+});
+
+test('chat: phiên đã dispose nhận chat ⇒ không gọi móc', async () => {
+  const { t, s } = await make(); lobbyChat(t, 1);
+  let calls = 0; s.onChat = () => { calls++; }; s.onChatAck = () => { calls++; };
+  s.dispose();
+  t.onMessage({ t: 'chat', k: 'walk', slot: 1, name: 'B', text: 'yo' }); t.onMessage({ t: 'chatAck', id: 1, n: 1 });
+  assert.equal(calls, 0);
+});

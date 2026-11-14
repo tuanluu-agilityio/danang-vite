@@ -1,24 +1,29 @@
 /* ===== Dù lượn, đi dạo và lái xe nhiều người: nhãn tên nổi cạnh người chơi khác =====
    Một div cho mỗi slot bay, mỗi slot đi dạo và mỗi slot lái xe trong #exMpLabels (theo thứ tự đó). Dù: điểm đặt nhãn thấp hơn dù labelBelow m (tên nằm dưới cánh, không che dù);
    người đi dạo: cao hơn chân CONFIG.stroll.labelAbove m (trên đầu); xe: trên nóc, cao hơn mặt đường car.height + drive.remote.labelAbove m (xe máy: bike.body.height + bike.remote.labelAbove, trên mũ người lái). Ẩn khi sau camera hoặc slot chưa hiện; nhân vật của mình không có nhãn.
-   Chỉ ghi DOM khi chữ đổi (tên + khoảng cách, làm tươi ≤ 5 lần/s) hoặc vị trí lệch quá 1 px. Không cấp phát mỗi khung (D-018). */
+   Chỉ ghi DOM khi chữ đổi (tên + khoảng cách, làm tươi ≤ 5 lần/s) hoặc vị trí lệch quá 1 px. Không cấp phát mỗi khung (D-018).
+   Bong bóng chat (D-041): exLabelsSay tạo lười một div.ex-mp-bubble cho nhãn của người gửi, hiện chat.bubbleMs ngay trên nhãn (cùng phép chiếu, dời cùng lúc nhãn dời);
+   nhãn không có bong bóng chỉ tốn một phép so số mỗi khung. Chữ ghi bằng textContent. */
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
 import type { exRemotes } from './remote';
 import type { stAvatars } from '../stroll/avatars';
 import type { exDrivers } from './remoteDrive';
+import type { Kind } from './protocol';
 
 const M = CONFIG.explore.multi, NW = M.stroll.slots, ND = M.drive.slots, CAR_TOP = CONFIG.drive.car.height + CONFIG.drive.remote.labelAbove, BIKE_TOP = CONFIG.bike.body.height + CONFIG.bike.remote.labelAbove;
-interface Lab { el: HTMLElement; txt: string; x: number; y: number; shown: boolean; tMs: number }
+// bub: bong bóng chat (null tới lần nói đầu); bTxt: chữ đang ghi; bUntil: mốc hết hạn (ms, 0 = không có bong bóng); bShown: đang hiện
+interface Lab { el: HTMLElement; txt: string; x: number; y: number; shown: boolean; tMs: number; bub: HTMLElement | null; bTxt: string; bUntil: number; bShown: boolean }
 let labs: Lab[] | null = null;   // M.slots nhãn dù, NW nhãn người đi dạo rồi ND nhãn xe
+let box: HTMLElement | null = null;   // #exMpLabels: cha của nhãn và bong bóng
 const _v = new THREE.Vector3();
 
 function init(): Lab[] | null {
-  const box = document.getElementById('exMpLabels');
+  box = document.getElementById('exMpLabels');
   if (!box) return null;
   return Array.from({ length: M.slots + NW + ND }, () => {
     const el = document.createElement('div'); el.className = 'ex-mp-label'; el.hidden = true; box.appendChild(el);
-    return { el, txt: '', x: -1e9, y: -1e9, shown: false, tMs: -1e9 };
+    return { el, txt: '', x: -1e9, y: -1e9, shown: false, tMs: -1e9, bub: null, bTxt: '', bUntil: 0, bShown: false };
   });
 }
 
@@ -37,8 +42,33 @@ function place(L: Lab, camera: THREE.Camera, x: number, y: number, z: number, na
     const txt = `${name} · ${dist(Math.hypot(x - camera.position.x, y - camera.position.y, z - camera.position.z))}`;
     if (txt !== L.txt) { L.txt = txt; L.el.textContent = txt; }
   }
-  if (Math.abs(px - L.x) > 1 || Math.abs(py - L.y) > 1) { L.x = px; L.y = py; L.el.style.transform = `translate(${px.toFixed(0)}px,${py.toFixed(0)}px) translateX(-50%)`; }
+  if (Math.abs(px - L.x) > 1 || Math.abs(py - L.y) > 1) {
+    L.x = px; L.y = py; L.el.style.transform = `translate(${px.toFixed(0)}px,${py.toFixed(0)}px) translateX(-50%)`;
+    if (L.bShown) bubPos(L);   // bong bóng dời cùng lúc nhãn dời
+  }
   return true;
+}
+
+/* Bong bóng: đáy cách đỉnh nhãn 4 px, giữa theo nhãn */
+const bubPos = (L: Lab): void => { L.bub!.style.transform = `translate(${L.x.toFixed(0)}px,${(L.y - 4).toFixed(0)}px) translate(-50%,-100%)`; };
+
+/* Mỗi khung, chỉ khi nhãn có bong bóng (bUntil > 0): hiện khi nhãn hiện và còn hạn; hết hạn thì ẩn và bỏ hạn */
+function bubStep(L: Lab, vis: boolean, nowMs: number): void {
+  const on = vis && nowMs < L.bUntil;
+  if (nowMs >= L.bUntil) L.bUntil = 0;
+  if (on !== L.bShown) { L.bShown = on; L.bub!.hidden = !on; if (on) bubPos(L); }
+}
+
+/* Tin chat của người ở slot (loại k): bong bóng trên nhãn người đó trong chat.bubbleMs, chữ cắt chat.bubbleChars code point (dài hơn thêm "…"). Slot ngoài khoảng: bỏ qua */
+export function exLabelsSay(k: Kind, slot: number, text: string, nowMs: number): void {
+  const n = k === 'fly' ? M.slots : k === 'walk' ? NW : ND, base = k === 'fly' ? 0 : k === 'walk' ? M.slots : M.slots + NW;
+  if (!Number.isInteger(slot) || slot < 0 || slot >= n) return;
+  if (!labs && !(labs = init())) return;
+  const L = labs[base + slot];
+  if (!L.bub) { const b = document.createElement('div'); b.className = 'ex-mp-bubble'; b.dir = 'auto'; b.hidden = true; box!.appendChild(b); L.bub = b; }
+  const cp = Array.from(text), txt = cp.length > M.chat.bubbleChars ? cp.slice(0, M.chat.bubbleChars).join('') + '…' : text;
+  if (txt !== L.bTxt) { L.bTxt = txt; L.bub.textContent = txt; }
+  L.bUntil = nowMs + M.chat.bubbleMs;
 }
 
 export function exLabelsUpdate(camera: THREE.Camera, remotes: typeof exRemotes, nowMs: number, walkers?: typeof stAvatars, drivers?: typeof exDrivers): void {
@@ -48,21 +78,24 @@ export function exLabelsUpdate(camera: THREE.Camera, remotes: typeof exRemotes, 
     const L = labs[i], st = remotes.slotState(i);
     const vis = !!st && place(L, camera, st.pos.x, st.pos.y - M.labelBelow, st.pos.z, remotes.name(i), nowMs, w, h);
     if (vis !== L.shown) { L.shown = vis; L.el.hidden = !vis; }
+    if (L.bUntil > 0) bubStep(L, vis, nowMs);
   }
   for (let i = 0; i < NW; i++) {
     const L = labs[M.slots + i], st = walkers && i !== walkers.self ? walkers.slotState(i) : null, nm = st ? walkers!.name(i) : null;
     const vis = !!st && nm !== null && place(L, camera, st.x, st.y + CONFIG.stroll.labelAbove, st.z, nm, nowMs, w, h);
     if (vis !== L.shown) { L.shown = vis; L.el.hidden = !vis; }
+    if (L.bUntil > 0) bubStep(L, vis, nowMs);
   }
   for (let i = 0; i < ND; i++) {
     const L = labs[M.slots + NW + i], st = drivers ? drivers.slotState(i) : null, nm = st ? drivers!.name(i) : null;   // xe của mình không có trong exDrivers (slotState null)
     const vis = !!st && nm !== null && place(L, camera, st.x, st.y + (drivers!.vehOf?.(i) === 1 ? BIKE_TOP : CAR_TOP), st.z, nm, nowMs, w, h);
     if (vis !== L.shown) { L.shown = vis; L.el.hidden = !vis; }
+    if (L.bUntil > 0) bubStep(L, vis, nowMs);
   }
 }
 
-/* Ẩn hết nhãn (rời phòng) */
+/* Ẩn hết nhãn và bong bóng (rời phòng) */
 export function exLabelsClear(): void {
   if (!labs) return;
-  for (const L of labs) { L.shown = false; L.el.hidden = true; L.x = L.y = -1e9; }
+  for (const L of labs) { L.shown = false; L.el.hidden = true; L.x = L.y = -1e9; L.bUntil = 0; L.bShown = false; if (L.bub) L.bub.hidden = true; }
 }

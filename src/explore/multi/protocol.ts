@@ -7,7 +7,11 @@ export type ClientMsg =
   | { t: 'pos'; x: number; y: number; z: number; yaw: number; pose: number; ts?: number }   // người đi dạo: pose (0 đứng, 1 đi, 2 chạy, 3 rơi (bản cũ: nhảy), 4 chụp ảnh), không có bank
   | { t: 'pos'; x: number; y: number; z: number; yaw: number; v: number; st: number; ts?: number }   // người lái: v tốc độ có dấu (m/s), st góc lái (rad; xe máy: bkLeanToWire(độ nghiêng)); không có bank / pose
   | { t: 'hb' }
-  | { t: 'leave' };
+  | { t: 'leave' }
+  | { t: 'chat'; text: string; id: number };   // D-041: tin chat; id do khách đếm để ghép với chatAck. Người nhận do máy chủ tính theo khoảng cách, không có trường "gửi cho ai"
+
+/* Lý do máy chủ từ chối tin chat: không giữ chỗ / gửi quá nhanh / rỗng sau khi làm sạch / có từ tục */
+export type ChatWhy = 'slot' | 'rate' | 'empty' | 'bad';
 
 export interface Flyer { slot: number; name: string; ch?: number; veh?: number }   // ch: nhân vật của người đi dạo / người đi xe máy (walkers, drivers; máy chủ cũ không gửi = nam); veh: loại xe (chỉ drivers; 1 xe máy, máy chủ cũ không gửi = ô tô)
 
@@ -33,8 +37,12 @@ export type Kind = 'fly' | 'walk' | 'drive';
 // Đi dạo: lobby thêm walkers (flyers chỉ có người bay; mỗi người đi dạo kèm ch = nhân vật họ chọn, nên máy vào sau cũng biết ngay từ lobby đầu), pos thêm w (mỗi phần tử [slot, x, y, z, yaw, pose, giờ gửi]; f luôn có, có thể rỗng); khách cũ bỏ qua trường lạ
 // Lái xe: lobby thêm drivers, pos thêm d (mỗi phần tử [slot, x, y, z, yaw, v, st, giờ gửi]); máy chủ cũ không gửi drivers, khách mới thấy vậy thì lái một mình
 // Xe máy (D-040): drivers kèm veh + ch, joined kind 'drive' luôn vọng veh; máy chủ cũ không vọng veh thì khách xe máy trả chỗ và lái một mình
+// Chat (D-041): lobby kèm chat 1 khi máy chủ biết chat (máy chủ cũ không có ⇒ khách ẩn chat); chat gửi riêng tới từng người nhận, k / slot / name lấy từ kết nối người gửi;
+// chatAck chỉ tới người gửi: n = số người đã nhận (có thể 0) hoặc why khi bị từ chối. Khách cũ bỏ qua trường lạ và tin lạ
 export type ServerMsg =
-  | { t: 'lobby'; flyers: Flyer[]; walkers?: Flyer[]; drivers?: Flyer[] }
+  | { t: 'lobby'; flyers: Flyer[]; walkers?: Flyer[]; drivers?: Flyer[]; chat?: 1 }
+  | { t: 'chat'; k: Kind; slot: number; name: string; text: string }
+  | { t: 'chatAck'; id: number; n?: number; why?: ChatWhy }
   | { t: 'joined'; slot: number; kind?: 'walk' | 'drive'; veh?: number }
   | { t: 'rejected'; why: 'full' | 'name'; kind?: 'walk' | 'drive' }
   | { t: 'pos'; f: number[][]; w?: number[][]; d?: number[][] }   // d: [slot, x, y, z, yaw, v, st, giờ gửi]
@@ -59,4 +67,22 @@ export function exSanitizeName(raw: string): string | null {
     if (++n > multiParams.nameMax || k > multiParams.graphemeCpMax || cps > multiParams.nameCpMax) return null;
   }
   return s;
+}
+
+/* ===== Chat (D-041): làm sạch chữ tin nhắn, khách và máy chủ dùng chung ===== */
+const MARKS = new RegExp('(\\p{M}{' + multiParams.chat.marksMax + '})\\p{M}+', 'gu');   // dãy dấu chồng dài hơn marksMax
+
+/* Chỉ nhận chuỗi; \r\n → \n, tab → khoảng trắng; bỏ ký tự điều khiển (giữ \n), surrogate lẻ (JSON.stringify nở mỗi cái thành 6 ký tự) và định dạng / bidi (giữ ZWJ U+200D ghép emoji, ZWNJ U+200C của hi / fa);
+   dồn dấu chồng còn marksMax; giữ linesMax dòng (phần sau nối bằng khoảng trắng); cắt textMax code point; cắt khoảng trắng hai đầu. null nếu không còn ký tự thấy được */
+export function exSanitizeChat(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const C = multiParams.chat;
+  let s = raw.replace(/\r\n?/g, '\n').replace(/\t/g, ' ')
+    .replace(/[\p{Cc}\p{Cf}\p{Cs}]/gu, c => (c === '\n' || c === '\u200D' || c === '\u200C' ? c : ''))
+    .replace(MARKS, '$1')
+    .trim();
+  const lines = s.split('\n');
+  if (lines.length > C.linesMax) s = lines.slice(0, C.linesMax - 1).join('\n') + '\n' + lines.slice(C.linesMax - 1).join(' ');
+  s = Array.from(s).slice(0, C.textMax).join('').trim();
+  return s && VISIBLE.test(s.replace(BLANK, '')) ? s : null;
 }

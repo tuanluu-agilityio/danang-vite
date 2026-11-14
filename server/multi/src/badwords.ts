@@ -19,3 +19,13 @@ export function exIsBad(name: string): boolean {
   const words = spaced.split(' ');
   return WORD.some(b => words.includes(b) || tight === b) || SUB.some(b => tight.includes(b.replace(/ /g, '')));
 }
+
+/* ===== Lọc từ tục trong tin chat (D-041): so theo từ, không so chuỗi con ===== */
+// TONED so trên từ có dấu; WORD và SUB so như từ / dãy từ nguyên vẹn sau khi bỏ dấu và tách từ (giữ khoảng trắng: "cut the" không thành "cutt", "mishit" không chứa "shit");
+// không dùng PLAIN vì câu gõ không dấu đầy "cac", "buoi", "lon" thường (các, buổi, lớn)
+export function exIsBadText(text: string): boolean {
+  const low = text.toLowerCase().normalize('NFC');
+  if (low.split(/[^\p{L}\p{N}]+/u).some(w => TONED.includes(w))) return true;
+  const spaced = ' ' + low.replace(/đ/g, 'd').normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+  return WORD.some(b => spaced.includes(' ' + b + ' ')) || SUB.some(b => spaced.includes(' ' + b + ' '));
+}

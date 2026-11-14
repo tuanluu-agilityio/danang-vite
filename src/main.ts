@@ -52,6 +52,7 @@ import { stCamPlace } from './explore/stroll/camera';
 import { stAvatars } from './explore/stroll/avatars';
 import { exMulti } from './explore/multi';
 import { exRemotes } from './explore/multi/remote';
+import { exChat } from './explore/multi/chat';
 import { exDrivers } from './explore/multi/remoteDrive';
 import { CONFIG } from './config';
 import { audio } from './audio';
@@ -122,7 +123,7 @@ const TEST_THREE = { Vector3: THREE.Vector3, Quaternion: THREE.Quaternion, Matri
 const query = new URLSearchParams(location.search);
 /* Cho test nhiều người (Task 5; sảnh thật là Task 6): mở phiên, vào phòng bằng tên, bay khi được cấp slot */
 const multiTest = {
-  url: () => exMulti.url(), get session() { return exMulti.session; }, remotes: exRemotes, drivers: exDrivers,   // drivers: xe người khác (bike-multi: debug(slot) xe máy thật + nhân vật)
+  url: () => exMulti.url(), get session() { return exMulti.session; }, remotes: exRemotes, drivers: exDrivers, chat: exChat,   // drivers: xe người khác (bike-multi: debug(slot) xe máy thật + nhân vật)
   fly(name: string): boolean {
     return exMulti.begin(() => {
       exMulti.onChange = () => { if (exMulti.session!.phase === 'flying' && !explore.active()) explore.start(); };

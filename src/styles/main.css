@@ -320,6 +320,40 @@ body.ex-watching #exMpInvite:not([hidden]){display:flex;align-items:center;gap:1
 #exMpInvite input{font:500 14px/1.2 var(--font-body);color:var(--text);background:rgba(0,0,0,.35);border:1px solid var(--gold);border-radius:4px;padding:7px 10px;width:130px;box-sizing:border-box;}
 #exMpInvite input[hidden]{display:none;}
 #exMpInvite .ex-mp-btn{width:auto;padding:8px 16px;}
+/* Trò chuyện theo khoảng cách (D-041, explore/multi/chat.ts): nút 💬 ở mép trái vật lý, giữa chiều cao (left, không inset-inline-start: ar không lật, như #stHud / #drHud);
+   bảng #exChat mở cạnh nút. Chỉ hiện khi body.explore.ex-chat (phiên có máy chủ biết chat). z-index 6: trên lớp vuốt #stLook / #drLook (4) và danh sách (5) */
+#exChatBtn,#exChat{display:none;}
+body.explore.ex-chat #exChatBtn{display:flex;align-items:center;justify-content:center;position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(50% - 22px);width:44px;height:44px;padding:0;box-sizing:border-box;font-size:20px;line-height:1;z-index:6;pointer-events:auto;cursor:pointer;touch-action:manipulation;}
+#exChatNear{position:absolute;right:-6px;bottom:-6px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--gold);color:#1a1206;font:700 11px/18px var(--font-body);text-align:center;}   /* số người ở gần */
+#exChatDot{position:absolute;right:-3px;top:-3px;width:9px;height:9px;border-radius:50%;background:#e5484d;}   /* có tin chưa đọc khi bảng đóng */
+#exChatNear[hidden],#exChatDot[hidden]{display:none;}
+#exChatBtn.pulse{animation:exChatPulse .6s 1;}   /* nháy một lần khi có người mới vào tầm */
+@keyframes exChatPulse{0%{transform:scale(1);}40%{transform:scale(1.18);box-shadow:0 0 0 6px rgba(230,189,106,.35);}100%{transform:scale(1);}}
+@media (prefers-reduced-motion:reduce){#exChatBtn.pulse{animation:none;}}
+body.explore.ex-chat #exChat:not([hidden]){display:flex;flex-direction:column;gap:6px;position:fixed;left:calc(66px + env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);width:min(300px,calc(100vw - 80px));max-height:min(46vh,360px);padding:8px;box-sizing:border-box;font-size:13px;color:var(--text);z-index:6;pointer-events:auto;}
+body.compact.ex-chat #exChat:not([hidden]){top:calc(56px + env(safe-area-inset-top,0px));transform:none;max-height:40vh;}   /* điện thoại: lên trên, chừa chỗ bàn phím ảo */
+#exChatStatus{font-size:12px;line-height:1.35;color:var(--gold);}
+#exChatList{flex:1;min-height:60px;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:6px;}
+body.ex-chat #exChatList,body.ex-chat #exChatIn{user-select:text;-webkit-user-select:text;}   /* chép được chữ (đè body.compact .panel{user-select:none}) */
+.ex-chat-msg{display:flex;flex-direction:column;align-items:flex-start;align-self:flex-start;max-width:85%;gap:2px;}
+.ex-chat-msg.me{align-self:flex-end;align-items:flex-end;}   /* tin mình cuối dòng (flex-end; ar tự đảo) */
+.ex-chat-head{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.ex-chat-head i{width:8px;height:8px;border-radius:50%;flex:none;}
+.ex-chat-head b{font-weight:600;color:var(--text);overflow-wrap:anywhere;}
+.ex-chat-body{padding:5px 9px;border-radius:10px;background:rgba(255,255,255,.08);line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;}
+.ex-chat-msg.me .ex-chat-body{background:rgba(230,189,106,.2);}
+.ex-chat-st{font-size:10.5px;color:var(--muted);}
+.ex-chat-st.err{color:#e86a5e;}
+#exChatForm{display:flex;align-items:flex-end;gap:6px;margin:0;}
+#exChatIn{flex:1;min-width:0;resize:none;font:500 14px/1.35 var(--font-body);color:var(--text);background:rgba(0,0,0,.35);border:1px solid var(--panel-line);border-radius:4px;padding:6px 8px;box-sizing:border-box;max-height:calc(5.4em + 14px);overflow-y:auto;}   /* tự cao theo nội dung tới 4 dòng (chat.ts fit) */
+body.compact #exChatIn{font-size:16px;}   /* iOS không tự phóng to khi chạm ô < 16 px */
+#exChatIn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+#exChatIn:disabled{opacity:.5;}
+#exChatSend{flex:none;width:40px;height:34px;padding:0;font-size:15px;}
+#exChatSend:disabled{opacity:.45;cursor:default;}
+/* Bong bóng chat trên nhãn tên (labels.ts exLabelsSay): con của #exMpLabels, đặt bằng transform cùng phép chiếu với nhãn */
+.ex-mp-bubble{position:absolute;left:0;top:0;max-width:200px;padding:4px 8px;font:500 12px/1.3 var(--font-body);color:#10181c;background:rgba(255,255,255,.92);border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;overflow:hidden;max-height:4.2em;will-change:transform;}
+.ex-mp-bubble[hidden]{display:none;}
 .ex-mp-note{margin:0 0 12px;font-size:12.5px;line-height:1.45;color:var(--gold);}
 .ex-mp-note[hidden]{display:none;}
 body.explore .views,body.explore .specs,body.explore #tourCaption,body.explore #wxScenario,body.explore #hint,body.explore #swRideHint,body.explore #swStormNote,body.explore #hrLabels{display:none!important;}
@@ -391,6 +425,13 @@ body.drive #scene:active{cursor:grabbing;}
   body.drive #drMap{left:calc(8px + env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));bottom:auto;}   /* dưới hàng nút ⚙ / Thoát (hai góc trên; ar đổi chỗ hai nút) */
   body.drive #drMapNote{left:calc(8px + env(safe-area-inset-left,0px));top:calc(60px + var(--dr-map-h,128px) + env(safe-area-inset-top,0px));bottom:auto;font-size:10px;max-width:calc(50vw - 24px);}
   body.drive #drSpeed{right:auto;bottom:auto;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));}
+}
+/* Chat khi lái ô tô / xe máy trên điện thoại ngang: giữa mép trái đụng bản đồ nhỏ (trên trái, 56 → ≈ 186 px) nên nút sang cạnh phải bản đồ, ngang đáy bản đồ.
+   Bản đồ cảm ứng: cạnh dài CONFIG.drive.hud.mapTouch 128 px (dọc), ngang ≈ 87 px theo khung mạng đường + viền 1 px ⇒ mép phải 8 + 89 = 97 px; nút ở 97 + 8 = 105 px. Bảng mở cạnh nút.
+   --dr-map-h đặt trên #drHud nên ở đây luôn là giá trị lùi (như #exMpNotice) */
+@media (hover:none) and (orientation:landscape){
+  body.drive.ex-chat #exChatBtn{left:calc(105px + env(safe-area-inset-left,0px));top:calc(56px + var(--dr-map-h,128px) + 2px - 44px + env(safe-area-inset-top,0px));}
+  body.drive.ex-chat #exChat:not([hidden]){left:calc(157px + env(safe-area-inset-left,0px));width:min(300px,calc(100vw - 171px));}
 }
 /* Xe máy (body.explore.drive.bike, explore/bike/hudBike.ts): dùng nguyên khung #drHud của ô tô (đồng hồ, bản đồ nhỏ, cần gạt + GA + PHANH + vuốt nhìn của drive/touch.ts);
    #drHint của ô tô nhường chỗ cho #bkHint. Nút 🔊 #drSoundBtn dời lên góc trên trái cạnh ⚙ (giữa đáy là mặt đồng hồ góc nhìn thứ nhất; trên cần gạt là chỗ xi nhan).
