@@ -9,11 +9,13 @@
    - Mắt góc thứ nhất: đo MỘT lần khi người lái thật gắn vào mô hình thật (riderEye: giữa hai xương mắt ở tư thế ngồi nền, hệ thân xe), không theo xương mỗi khung;
      chưa có thì cam1.eye. Camera còn sát mắt (mix < cam1.headMix) thì ẩn đầu + mũ (rider.setFirstPerson). prefers-reduced-motion ⇒ cam1.motionReduced.
    - Phím (theo e.code, chỉ khi đang lái, bỏ ô nhập và tổ hợp Ctrl / Meta / Alt; blur / ẩn tab nhả hết): R về làn (bkRecover), Q / E xi nhan trái / phải (bkSignal),
-     V đổi góc nhìn thứ nhất ↔ thứ ba. Còi H: âm thanh ở Task 8. Kéo chuột trái / vuốt trên canvas: nhìn quanh (thứ nhất) hoặc quay quanh xe (thứ ba).
+     V đổi góc nhìn thứ nhất ↔ thứ ba, H còi (giữ; nhả khi blur / ẩn tab / focus vào ô nhập). Kéo chuột trái / vuốt trên canvas: nhìn quanh (thứ nhất) hoặc quay quanh xe (thứ ba).
    - Lớp body 'explore drive bike': khung HUD #drHud và các quy tắc CSS của body.drive áp nguyên; 'bike' cho phần riêng về sau.
    - Thoát: explore.exit() gọi bike.stop() rồi tải lại trang. Chưa có: nhiều người (Task 10), cảm ứng (Task 9). Mô hình thật: model.ts (làm nóng qua bkModelSetWarm bên dưới).
    - Người lái: rider.ts, nhân vật theo stChar (chung Đi dạo), nạp ở preload() / start() (làm nóng qua stRigSetWarm của stroll/index.ts); chưa về thì xe không người,
      về sau stop() thì bỏ. Người gắn vào neo yên của xe nên rời cảnh cùng model.group.
+   - Âm thanh (sound.ts bkSound): đề máy ở start(), tắt máy ở stop(); mỗi khung một BkSoundIn tái dùng (hộp xe gần dùng lại mảng trNearby của bkStep,
+     river từ |x| so với mép kè, tunnel từ ô mặt đường dưới xe, mưa = 0 trong hầm); nút 🔊 #drSoundBtn chung với ô tô, bkSound.bind chỉ toggle khi đang lái xe máy.
    Mỗi khung không cấp phát (D-018). */
 import * as THREE from 'three';
 import { scene, camera, controls, canvas, renderer } from '../../core/renderer';
@@ -29,12 +31,14 @@ import { drHudShow, drHudHide, drHudUpdate, type DrMapDot } from '../drive/hud';
 import { drEnsureNet } from '../drive';
 import { trNearby } from '../../common/trafficQuery';
 import { exNightStep } from '../nightShows';
+import { weatherU, shared } from '../../core/shared';
 import { bkCreate, bkStep, bkRecover, bkSignal, bkPitch, BK_BODY, type BkState, type BkInput } from './motion';
 import { bkInputFromKeys, BK_KEYS } from './keys';
 import { BkBike, bkModelLoad, bkModelSetWarm, type BkPlace } from './model';
 import { BkRider, bkRiderLoad, type BkRiderSig } from './rider';
 import { bkCamCreate, bkCamStep, bkCamPlace, bkCamDrag, bkCamSetEye, type BkCam } from './camera';
 import { BkDash } from './dash';
+import { bkSound, bkRiverK, type BkSoundIn } from './sound';
 import { stChar } from '../stroll/char';
 import type { SwingController } from '../../bridges/song-han/SwingController';
 
@@ -75,6 +79,7 @@ const _sig0: BkRiderSig = { lean: 0, acc: 0, susF: 0, susR: 0, steer: 0 };
 const _inp: BkInput = { gas: 0, brake: 0, steer: 0, hard: false, grip: 1 };   // đầu vào tái dùng mỗi khung
 const boxes: DrBox[] = [];          // hộp xe tự động gần xe, tái dùng mỗi khung
 let saved: { fov: number; near: number; explore: boolean } | null = null;   // thứ start() đổi, stop() trả lại
+const _snd: BkSoundIn = { v: 0, rpm: 0, throttle: 0, brakeK: 0, sus: 0, sig: 0, rain: 0, tunnel: false, river: 0, view: 1, near: boxes, nNear: 0, x: 0, z: 0, yaw: 0, t: 0 };   // đầu vào âm thanh tái dùng mỗi khung
 
 const active = () => cam.mode === 'bike' && state !== null;
 const inMode = () => active();     // chế độ xem (hết chỗ) ở Task 10
@@ -84,7 +89,8 @@ const isField = (t: EventTarget | null) => !!t && /^(SELECT|INPUT|TEXTAREA)$/.te
 function advance(dt: number, inp: BkInput): void {
   const s = state!, n = net!;
   if (ctrl) drSetGate(n, DR_GATE_SWING, ctrl.state !== 'CLOSED');
-  bkStep(s, inp, n, boxes, trNearby(s.x, s.z, CONFIG.drive.ai.radius, boxes), dt);
+  const nNear = trNearby(s.x, s.z, CONFIG.drive.ai.radius, boxes);
+  bkStep(s, inp, n, boxes, nNear, dt);
   model!.place(s);
   riderStep(s, dt);
   riderEye();
@@ -95,6 +101,30 @@ function advance(dt: number, inp: BkInput): void {
   controls.target.set(s.x, s.y, s.z);   // tâm vùng bóng đổ (main.ts shadowCenter) theo xe
   drHudUpdate(s, NO_DOTS);
   exNightStep(dt, false);
+  soundStep(s, n, nNear);
+}
+
+/* Âm thanh: điền BkSoundIn từ trạng thái xe (không cấp phát); bkSound tự giới hạn số lần ghi tham số (updateMs) */
+function soundStep(s: BkState, n: DrNet, nNear: number): void {
+  const tunnel = bkInTunnel(n, s);
+  _snd.v = s.v; _snd.rpm = s.rpm; _snd.throttle = s.throttle; _snd.brakeK = s.brakeK; _snd.sig = s.sig;
+  _snd.sus = Math.max(Math.abs(s.susF), Math.abs(s.susR));
+  _snd.rain = tunnel ? 0 : weatherU.uRain.value; _snd.tunnel = tunnel; _snd.river = bkRiverK(s.x);
+  _snd.view = camB.view; _snd.nNear = nNear; _snd.x = s.x; _snd.z = s.z; _snd.yaw = s.yaw; _snd.t = shared.uTime.value;
+  bkSound.update(_snd);
+}
+
+/* Xe đang ở ô hầm không: ô chứa (x, z) có cao độ gần y nhất trong ± stepMax (như drive/net.ts drPadAt), kiểu 'tunnel'. Duyệt tuyến tính, không cấp phát */
+function bkInTunnel(n: DrNet, s: BkState): boolean {
+  const step = CONFIG.drive.stepMax;
+  let best = -1, bestD = Infinity;
+  for (let i = 0; i < n.pads.length; i++) {
+    const p = n.pads[i];
+    if (s.x < p.x0 || s.x > p.x1 || s.z < p.z0 || s.z > p.z1 || (p.gate !== undefined && n.closed.has(p.gate))) continue;
+    const d = Math.abs(p.y(s.x, s.z) - s.y);
+    if (d <= step && d < bestD) { best = i; bestD = d; }
+  }
+  return best >= 0 && n.pads[best].kind === 'tunnel';
 }
 
 /* Người lái theo xe (sau model.place): tín hiệu từ trạng thái chuyển động */
@@ -174,6 +204,7 @@ export const bike = {
   get cam(): BkCam { return camB; },               // test: mix, roll, bob, surge, yaw / pitch nhìn quanh
   get dash(): BkDash | null { return dash; },
   get cfg(): typeof CONFIG.bike { return CONFIG.bike; },   // test / kiểm tay: chỉnh số camera lúc chạy
+  get sound(): typeof bkSound { return bkSound; },        // test: nodes(), on, graph
   /* Đổi góc nhìn: trộn vị trí + hướng + fov + near trong cam1.mixS, không dừng xe */
   setView(v: 1 | 3): void { camB.view = v === 3 ? 3 : 1; },
   /* Vào lái một mình */
@@ -192,7 +223,7 @@ export const bike = {
     riderStep(state, 0);
     driveView.far = CONFIG.drive.tunnelFar;   // mặt đường hầm hiện ở nút giao với hai đường dọc mới, như ô tô
     bkKeys.clear();
-    drHudShow(n);
+    drHudShow(n); bkSound.start();
     if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore') };
     cam.flight.then = null; cam.mode = 'bike'; controls.enabled = false;
     riderEye();
@@ -203,6 +234,7 @@ export const bike = {
   update(dt: number): void {
     if (!active()) return;
     bkInputFromKeys(bkKeys, _inp);
+    bkSound.horn(bkKeys.has('KeyH'));
     _inp.grip = 1;                            // Task 7: theo thời tiết (weatherU.uWet), khô trong hầm kín
     advance(dt, _inp);
   },
@@ -212,6 +244,7 @@ export const bike = {
   stop(): void {
     if (state === null) return;
     state = null; bkKeys.clear(); riderGen++;
+    bkSound.stop();
     rider?.setFirstPerson(false);
     drHudHide();
     model?.group.removeFromParent();
@@ -254,7 +287,10 @@ export function setupBike(c: SwingController, onExit: () => void): void {
     if (e.code === 'Space' && active() && !isField(e.target)) e.preventDefault();
   });
   const drop = drBindDrop(window, document, bkKeys);
-  window.addEventListener('focusin', (e) => { if (active() && isField(e.target)) drop(); });
+  window.addEventListener('focusin', (e) => { if (active() && isField(e.target)) { drop(); bkSound.horn(false); } });
+  window.addEventListener('blur', () => bkSound.horn(false));
+  document.addEventListener('visibilitychange', () => { if (document.hidden) bkSound.horn(false); });
+  bkSound.bind(document.getElementById('drSoundBtn'));   // nút 🔊 / 🔇 chung với ô tô: chỉ toggle tiếng xe máy khi đang lái xe máy
   /* Kéo chuột trái / vuốt (một ngón) trên canvas: nhìn quanh (góc thứ nhất) hoặc quay quanh xe (góc thứ ba) */
   let dragId = -1, lx = 0, ly = 0;
   canvas.addEventListener('pointerdown', (e) => {

@@ -1004,6 +1004,40 @@ const bikeBase = {
     legPole: [1.0, 0.3, 0.1] as [number, number, number],   // m — điểm cực của gối so với khớp hông [trước, lên, ra ngoài]: gối hướng về trước (ước lượng)
     arm: { pole: [-0.35, -1.0, 0.45], wrist: [0.15, -0.15, 0.0], palm: [0.35, -1.0, 0.0], twist: 0.5, grip: [0.75, 0.03] },   // tay (pilot/bones.ts ik với bộ số này): pole m — điểm cực khuỷu so với vai [sau, xuống, ra ngoài]; wrist — hướng ngón = hướng cẳng tay cộng [trước, lên, vào trong]; palm — hướng lòng bàn tay [trước, lên, vào trong] (úp xuống tay nắm); twist 0..1 phần xoay cổ tay chia sang cẳng tay; grip — điểm nắm: tỉ lệ quãng cổ tay → gốc ngón giữa, m lệch về phía lòng bàn tay (ước lượng)
     finger: { curl: [1.2, 1.4, 1.0], thumb: [0.3, 0.5, 0.4], thumbRoll: 0.6 }   // rad — ngón co nắm tay nắm (đốt gốc, giữa, ngọn); ngón cái co từng đốt; ngón cái xoay quanh hướng ngón (ước lượng)
+  },
+  sound: {             // âm thanh nhiều lớp tổng hợp bằng Web Audio, không tệp (explore/bike/sound.ts, spec §8 + §17.11). Gain là hệ số trước nút âm lượng chung; chưa ai nghe thử
+    updateMs: 60,      // ms — ghi tham số tối đa mỗi chừng này (mỗi lần là một sự kiện tự động hoá, D-018), như ô tô (ước lượng)
+    smooth: 0.08,      // s — hằng số thời gian làm mượt tham số (setTargetAtTime), như ô tô (ước lượng)
+    maxGain: 0.2,      // trần gain của mọi lớp: mô tơ ô tô drive.sound.gainMax 0,1 + 6 dB (spec §8)
+    seed: 4129,        // hạt giống rng() riêng cho hai bộ đệm nhiễu (không dùng rand())
+    noiseS: 2,         // s — độ dài bộ đệm nhiễu trắng / nâu, phát lặp (ước lượng)
+    comp: { threshold: -16, knee: 8, ratio: 4, attack: 0.005, release: 0.2 },   // nén chung ở đầu ra của chế độ: dB, dB, tỉ số, s, s (ước lượng)
+    engine: {          // máy một xi lanh bốn kỳ: PeriodicWave hài theo tần số nổ + nhiễu nạp / xả điều biên theo nhịp nổ, qua thông thấp mở theo ga
+      harm: 12,        // số hài của PeriodicWave (spec §17.11)
+      rolloff: 0.9,    // biên độ hài thứ n ∝ 1 / n^rolloff, không đơn vị (ước lượng)
+      evenK: 0.45,     // hài chẵn yếu hơn: nhân biên độ chừng này, không đơn vị (ước lượng)
+      cents: 7,        // cent — hai dao động lệch ± chừng này cho dày tiếng (ước lượng)
+      harmMix: 0.7,    // mức chuỗi hài vào lọc, không đơn vị (ước lượng)
+      noiseBand: [800, 1.1] as [number, number],   // dải thông nhiễu nạp / xả: Hz, Q (ước lượng)
+      amBase: 0.3, amDepth: 0.3,   // gain nhiễu = amBase ± amDepth theo dao động sin ở tần số nổ, không đơn vị (ước lượng)
+      lpIdle: 320,     // Hz — lọc thông thấp khi nhả ga, ở vòng tua cầm chừng (ước lượng)
+      lpOpen: 2200,    // Hz — mở thêm khi vặn hết ga (ước lượng)
+      lpRpm: 900,      // Hz — mở thêm ở vòng tua lớn nhất (ước lượng)
+      gIdle: 0.05, gThrottle: 0.06, gRpm: 0.05   // gain máy = gIdle + gThrottle·ga + gRpm·(tua − cầm chừng)/(max − cầm chừng); tổng ≤ maxGain (ước lượng)
+    },
+    crank: { rpm: [0, 2500, 1700], at: [0, 0.35, 0.8] },   // đề máy khi start(): vòng/phút giả ở các mốc s (spec §17.11: 0 → 2500 → 1700 trong 0,8 s; mốc giữa ước lượng)
+    off: { s: 0.3, rpm: 600 },   // tắt máy khi stop(): s nhỏ dần rồi mới dừng nút; vòng/phút giả tụt về (ước lượng)
+    belt: { base: 1400, perMs: 45, gain: 0.02 },   // dây đai vô cấp: sin Hz ở 0 m/s, Hz mỗi m/s, gain ở vMax (ước lượng)
+    tyre: { lp: 450, gain: 0.07 },   // lốp: nhiễu nâu qua thông thấp Hz, gain ở vMax (∝ |v|) (ước lượng)
+    wind: { f0: 250, f1: 1300, q: 0.8, gain: 0.09, view1: 1.6 },   // gió: tần số tâm = f0 + f1·(v/vMax)² Hz, Q, gain ở vMax (∝ v²), nhân view1 ở góc thứ nhất (spec §17.11; còn lại ước lượng)
+    brake: { band: [2000, 4000] as [number, number], q: 18, gain: 0.03, k: 0.6, v: 8, tau: 0.05 },   // phanh rít: dải hẹp Hz (theo tốc độ), Q, gain; chỉ khi lực phanh > k và v > v m/s; s hằng số thời gian (dải, k, v: spec §17.11; còn lại ước lượng)
+    thump: { lp: 140, gain: 0.15, k: 0.7, maxHz: 4, s: 0.12 },   // giảm xóc: xung nhiễu nâu qua thông thấp Hz, gain; khi |lún| > k × hành trình; tối đa maxHz lần/s; dài s (k, maxHz: spec §17.11; còn lại ước lượng)
+    tick: { hz: 2000, s: 0.008, gain: 0.05, offK: 0.6, ahead: 0.2 },   // xi nhan: sin Hz, dài s (spec §17.11), gain lúc đèn sáng, nhân offK lúc đèn tắt (tích – tắc), lên lịch trước ahead s (ước lượng); nhịp = bike.model.sigHz
+    horn: { hz: [420, 525] as [number, number], gain: 0.1 },   // còi: hai sóng vuông Hz, cao hơn còi ô tô (spec §17.11); gain (ước lượng)
+    rain: { hp: 3500, gain: 0.08 },   // mưa trên mũ: nhiễu trắng qua thông cao Hz, gain khi mưa 1 (ước lượng)
+    near: { hz: [70, 88, 104] as [number, number, number], lp: 650, gain: 0.06, ref: 5, far: 45 },   // 3 giọng xe gần: răng cưa Hz mỗi giọng, thông thấp Hz, gain ở ≤ ref m, ∝ ref / khoảng cách, về 0 ở far m (ước lượng)
+    amb: { cityLp: 300, cityGain: 0.03, riverBand: [500, 0.7] as [number, number], riverGain: 0.03, riverR: 80, tunnelK: 0.3 },   // nền: "thành phố" nhiễu nâu qua thông thấp Hz, gain; "sông" nhiễu trắng qua dải thông Hz, Q, gain; mức sông về 0 khi vào bờ riverR m từ mép kè; trong hầm nền còn tunnelK (ước lượng)
+    verb: { delay: 0.09, fb: 0.35, lp: 2500, gain: 0.5, s: 0.5 }   // vọng trong hầm: trễ s, hồi tiếp, thông thấp Hz (ước lượng), gain nhánh gửi, chuyển trong s (spec §17.11)
   }
 };
 
