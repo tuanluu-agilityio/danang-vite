@@ -57,6 +57,7 @@ Hệ quả của cách 1: chỉ báo "ai ở gần" trên máy khách là **gợ
 - Chỉ báo phía khách dùng trễ hai ngưỡng để không nhấp nháy ở biên: vào danh sách gần khi `d ≤ nearIn` (140 m), ra khi `d > radius` (150 m). Khách vì vậy thận trọng hơn máy chủ: đã báo "gần" thì gần như chắc máy chủ giao.
 - Khoảng cách phía khách: từ **vị trí mình vừa gửi lên** (đúng cái máy chủ biết) tới vị trí nội suy của người khác. Không dùng camera hay tọa độ màn hình.
 - Tính mỗi `nearTickMs` 500 ms bằng `setInterval`, ngoài vòng vẽ; chỉ ghi DOM khi danh sách đổi.
+- Người gửi chưa có `pos` trên máy chủ (vừa vào chỗ, hoặc Durable Object vừa thức sau hibernation mà tab đang ẩn nên chỉ gửi `hb`): tin không tới ai, hồi âm `n: 0`.
 - Đủ điều kiện nhận (máy chủ): đang giữ slot bất kỳ loại nào, đã có `pos`, `now − seen ≤ slotTimeoutMs`, không phải người gửi, `d ≤ radius`. Slot vừa dựng lại sau hibernation (`pos = null`) chưa đủ điều kiện tới khi gửi `pos` kế tiếp (≤ 0,2 s với khách đang vẽ).
 - Đổi chế độ (đi dạo → xe máy) là đóng phiên cũ, mở phiên mới: slot cũ được trả ngay khi socket đóng, lịch sử chat của phiên cũ xóa. Không có trạng thái "còn ở gần" sót lại.
 
@@ -74,12 +75,12 @@ Giới hạn kích thước: tin `chat` được dài tới `chat.msgBytes` 1024
 
 ## 7. Làm sạch và chống lạm dụng
 
-`exSanitizeChat(raw)` trong `protocol.ts` (khách và máy chủ dùng chung): chỉ nhận chuỗi; `\r\n` → `\n`; bỏ ký tự điều khiển (giữ `\n`) và ký tự định dạng / bidi (giữ U+200D); dồn dấu chồng quá `chat.marksMax` 4 liên tiếp; giữ tối đa `chat.linesMax` 4 dòng (phần sau nối bằng khoảng trắng); cắt còn `chat.textMax` 200 code point; cắt khoảng trắng; `null` nếu không còn ký tự thấy được.
+`exSanitizeChat(raw)` trong `protocol.ts` (khách và máy chủ dùng chung): chỉ nhận chuỗi; `\r\n` → `\n`; bỏ ký tự điều khiển (giữ `\n`), surrogate lẻ (để `JSON.stringify` không nở mỗi ký tự thành 6) và ký tự định dạng / bidi (giữ U+200D và U+200C: tiếng Hindi, Ba Tư cần ZWNJ); dồn dấu chồng quá `chat.marksMax` 4 liên tiếp; giữ tối đa `chat.linesMax` 4 dòng (phần sau nối bằng khoảng trắng); cắt còn `chat.textMax` 200 code point; cắt khoảng trắng; `null` nếu không còn ký tự thấy được.
 
 Máy chủ:
 - Danh tính theo kết nối (mục 6) ⇒ không giả danh được.
 - Giới hạn tần suất: `chat.ratePerWin` 5 tin mỗi `chat.rateWinMs` 10 s cho một kết nối; quá thì `why: 'rate'`, không giao.
-- Lọc từ tục: `exIsBadText` mới ở `badwords.ts`, so **theo từ** (danh sách sẵn có), không so chuỗi con dính liền như lọc tên (tránh chặn nhầm "cut the", "mishit"); trúng thì `why: 'bad'`.
+- Lọc từ tục: `exIsBadText` mới ở `badwords.ts`, chỉ tiếng Việt + Anh, so **theo từ**: danh sách `TONED`, `WORD` và `SUB` (so cả cụm như từ / dãy từ nguyên vẹn, không so chuỗi con dính liền như lọc tên, tránh chặn nhầm "cut the", "mishit"); **không** dùng `PLAIN` (`cac`, `buoi`, `lon` gõ không dấu trùng "các", "buổi", "lớn"). Trúng thì `why: 'bad'`.
 - Gói hỏng (không phải JSON, sai kiểu, quá dài) bị bỏ như các tin khác.
 
 Khách: mọi chữ nhận được hiện bằng `textContent` (không `innerHTML`); `<script>` hiện thành chữ. Ô nhập `maxlength`, tự chặn gửi rỗng và gửi quá `ratePerWin` (hiện lý do), nhưng máy chủ mới là nơi quyết.
@@ -105,8 +106,8 @@ chưa  │           │ Chào Minh     │ │
       └─────────────────────────────┘
 ```
 
-- Nút `#exChatBtn` (💬, 44 × 44 px) ở mép trái, giữa chiều cao màn hình: chỗ duy nhất trống ở cả bốn chế độ trên máy tính lẫn điện thoại (đáy trái là bản đồ nhỏ / cần gạt, đáy phải là danh sách / bàn đạp, trên là gợi ý phím và nút Thoát). **(Claude)** Số người ở gần hiện thành huy hiệu; chấm đỏ khi có tin chưa đọc lúc bảng đóng; nút nháy một lần khi có người mới vào tầm.
-- Bảng `#exChat` mở cạnh nút, rộng ≤ 300 px, cao ≤ 46 % màn hình, kiểu `.panel` sẵn có. Mở / đóng: bấm nút, phím **Enter** (khi không ở trong ô nhập), **Esc** trong ô nhập chỉ đóng bảng (không thoát chế độ).
+- Nút `#exChatBtn` (💬, 44 × 44 px) ở mép trái vật lý (`left`, không lật theo RTL, như `#stHud` / `#drHud`), giữa chiều cao màn hình: trống ở cả bốn chế độ trên máy tính và điện thoại dọc (đáy trái là bản đồ nhỏ / cần gạt, đáy phải là danh sách / bàn đạp, trên là gợi ý phím và nút Thoát). Ngoại lệ: lái ô tô / xe máy trên máy cảm ứng, bản đồ nhỏ nằm trên trái (56 → ≈ 184 px) nên ở điện thoại ngang (cao ≈ 390 px) nút dời sang cạnh phải bản đồ, ngang đáy bản đồ. `z-index` 6, trên lớp vuốt `#stLook` / `#drLook` (4) và danh sách (5). Test đo chồng lấn khung bao ở 4 chế độ × (máy tính, điện thoại dọc, điện thoại ngang). Bảng đang mở được phép che bản đồ nhỏ. Thân tin và bong bóng đặt `dir="auto"`; tin của mình nằm cuối dòng (`flex-end`, tiếng Ả Rập tự đảo). **(Claude)** Số người ở gần hiện thành huy hiệu; chấm đỏ khi có tin chưa đọc lúc bảng đóng; nút nháy một lần khi có người mới vào tầm.
+- Bảng `#exChat` mở cạnh nút, rộng ≤ 300 px, cao ≤ 46 % màn hình, kiểu `.panel` sẵn có. Mở / đóng: bấm nút, phím **Enter** (khi không ở trong ô nhập), **Esc** trong ô nhập chỉ đóng bảng (không thoát chế độ): trình nghe `keydown` trên chính ô nhập gọi `stopPropagation()` trước khi sự kiện nổi bọt tới `window`, nơi `explore/index.ts` thoát chế độ. Đóng bảng bằng cách nào cũng `blur()` ô nhập, nếu không WASD tiếp tục bị `isField` nuốt. Enter toàn cục bỏ qua khi đích là nút / ô nhập.
 - Dòng trạng thái: không ai ở gần ("Chưa có ai ở gần để trò chuyện.", khóa gửi) · một người ("Bạn đang ở gần Minh.") · nhiều người ("3 người ở gần.") · mất kết nối ("Mất kết nối. Không gửi được tin nhắn.", khóa gửi) · đang xem ("Vào chỗ để trò chuyện.", khóa gửi).
 - Tin của mình bên phải, của người khác bên trái có tên (chấm màu theo slot như danh sách) và giờ `HH:MM`. Tin của mình có trạng thái: đang gửi → ✓ (đã tới `n` người) / "Không ai ở gần nhận được" (`n = 0`) / "Chưa gửi được" (quá `ackMs` 4 s không hồi âm, hoặc mất kết nối) / "Bạn gửi nhanh quá" / "Tin nhắn không phù hợp".
 - Tự cuộn xuống cuối khi mình gửi hoặc khi đang ở gần cuối; đang đọc lại phía trên thì không giật.

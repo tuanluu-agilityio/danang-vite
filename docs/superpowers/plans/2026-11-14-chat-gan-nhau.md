@@ -76,6 +76,11 @@ test('exSanitizeChat: bỏ điều khiển và bidi, giữ xuống dòng và ZWJ
   assert.equal(exSanitizeChat('a\u0000b\u202Ec\r\nd'), 'abc\nd');
   assert.equal(exSanitizeChat('👨\u200D👩\u200D👧'), '👨\u200D👩\u200D👧');
 });
+test('exSanitizeChat: giữ ZWNJ (hi / fa), bỏ surrogate lẻ', () => {
+  assert.equal(exSanitizeChat('a‌b'), 'a‌b');
+  assert.equal(exSanitizeChat('a\uD83Db'), 'ab');
+  assert.ok(JSON.stringify({ t: 'chat', id: 1, text: exSanitizeChat('\uD83D'.repeat(300) + 'x') }).length < 1024);
+});
 test('exSanitizeChat: tối đa 4 dòng, phần sau nối bằng khoảng trắng', () => { assert.equal(exSanitizeChat('1\n2\n3\n4\n5\n6'), '1\n2\n3\n4 5 6'); });
 test('exSanitizeChat: cắt 200 code point (emoji tính 1)', () => {
   assert.equal([...exSanitizeChat('x'.repeat(500))!].length, 200);
@@ -85,7 +90,7 @@ test('exSanitizeChat: dấu chồng quá 4 liên tiếp bị dồn còn 4', () =
 test('exSanitizeChat: HTML giữ nguyên là chữ', () => { assert.equal(exSanitizeChat('<img src=x onerror=alert(1)>'), '<img src=x onerror=alert(1)>'); });
 test('exIsBadText: chặn theo từ, không chặn chuỗi con', () => {
   for (const s of ['fuck you', 'đồ lồn', 'du ma may', 'what a BITCH']) assert.equal(exIsBadText(s), true, s);
-  for (const s of ['cut the rope', 'mishit', 'Dickson ơi', 'lớn quá', 'buổi sáng đẹp', 'các bạn', 'hello <b>']) assert.equal(exIsBadText(s), false, s);
+  for (const s of ['cut the rope', 'mishit', 'Dickson ơi', 'lớn quá', 'buổi sáng đẹp', 'các bạn', 'cac ban oi', 'lon nuoc', 'hello <b>']) assert.equal(exIsBadText(s), false, s);
 });
 ```
 
@@ -114,7 +119,7 @@ test('exIsBadText: chặn theo từ, không chặn chuỗi con', () => {
 
 - [ ] **Step 4:** Chạy `npm run test:multi:unit`. Mong đợi: các ca mới FAIL (hàm chưa có), 98 ca cũ đạt.
 
-- [ ] **Step 5:** Hiện thực `params.chat`, kiểu + `exSanitizeChat` (`protocol.ts`), `exIsBadText` (`badwords.ts`, dùng lại bốn danh sách sẵn có; `SUB` so theo cụm từ nguyên vẹn trong chuỗi đã tách từ, không bỏ khoảng trắng), `onChat` + giới hạn kích thước + `lobby.chat` + `Conn.chat: number[]` (`room.ts`; `connect` và `restore` tạo `Conn` có cả hai mảng). Sửa ca `connect nhận lobby…` trong `room.test.ts` thành kỳ vọng có `chat: 1`; tìm và sửa mọi ca khác so nguyên `lobby` (`session.test.ts`, `workerAtt.test.ts` nếu có).
+- [ ] **Step 5:** Hiện thực `params.chat`, kiểu + `exSanitizeChat` (`protocol.ts`), `exIsBadText` (`badwords.ts`, dùng `TONED`, `WORD`, `SUB`, **không** dùng `PLAIN`; `SUB` so theo từ / dãy từ nguyên vẹn trong chuỗi đã tách từ, không bỏ khoảng trắng), `onChat` + giới hạn kích thước + `lobby.chat` + `Conn.chat: number[]` (`room.ts`; `connect` và `restore` tạo `Conn` có cả hai mảng). Sửa ca `connect nhận lobby…` trong `room.test.ts` thành kỳ vọng có `chat: 1`; tìm và sửa mọi ca khác so nguyên `lobby` (`session.test.ts`, `workerAtt.test.ts` nếu có).
 
 - [ ] **Step 6:** `npm run typecheck && npm --prefix server/multi run typecheck && npm run test:multi:unit`. Mong đợi: sạch; mọi ca đạt (98 cũ + mới).
 
@@ -237,6 +242,7 @@ Thuộc tính placeholder: xem `src/i18n` hỗ trợ `data-i18n-ph` chưa; chưa
 - Cuộn: trước khi thêm, nếu `scrollHeight − scrollTop − clientHeight < 40` hoặc là tin mình thì sau khi thêm cuộn xuống cuối.
 - Phím trong `#exChatIn`: `Enter` không Shift và `!e.isComposing && e.keyCode !== 229` → `preventDefault` + gửi; `Shift+Enter` để mặc định; `Escape` → `stopPropagation()` + `close()` + `blur()`; mọi `keydown` gọi `exChat.onActivity()`. Ô tự cao theo nội dung tới 4 dòng.
 - Phím toàn cục (một trình nghe `window` `keydown` gắn lúc nạp module): `Enter`, không phím bổ trợ, đích không phải `INPUT|TEXTAREA|SELECT|BUTTON`, `body` có `explore` và `ex-chat` → `preventDefault`, `open()`, focus ô nhập (nếu ô không khóa).
+- `close()` luôn `blur()` ô nhập nếu đang focus (không thì WASD vẫn bị `isField` nuốt). Thân tin và bong bóng đặt `dir="auto"`.
 - `open()`: bỏ `hidden`, `aria-expanded="true"`, `log.read()`, ẩn chấm, cuộn cuối. `close()`: ngược lại. Bấm `#exChatBtn` đổi qua lại. Trình nghe gắn **một lần** lúc nạp module trên phần tử cố định.
 - Đổi ngôn ngữ (`onChange` của i18n): vẽ lại dòng trạng thái, placeholder, các dòng trạng thái tin của mình.
 - `detach()`: `clearInterval`, `log.clear()`, xóa con của `#exChatList`, `close()`, bỏ lớp `ex-chat`, quên `self` và `prev`.
@@ -248,6 +254,7 @@ Thuộc tính placeholder: xem `src/i18n` hỗ trợ `data-i18n-ph` chưa; chưa
 **CSS (`main.css`, biến và kiểu `.panel` sẵn có):**
 - `#exChatBtn, #exChat{display:none;}`; `body.explore.ex-chat #exChatBtn{display:flex;…position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(50% - 22px);width:44px;height:44px;z-index:6;pointer-events:auto;cursor:pointer;touch-action:manipulation;}` (dùng `left`, không `inset-inline-start`: ar không lật, như `#stHud` / `#drHud`).
 - `body.explore.ex-chat #exChat:not([hidden]){display:flex;flex-direction:column;position:fixed;left:calc(66px + env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);width:min(300px,calc(100vw - 80px));max-height:min(46vh,360px);z-index:6;pointer-events:auto;}`; `body.compact.ex-chat #exChat:not([hidden])`: `top:calc(56px + env(safe-area-inset-top,0px));transform:none;max-height:40vh` (chừa bàn phím ảo).
+- Máy cảm ứng khi lái (`@media (hover:none) and (orientation:landscape)` + `body.drive`, gồm xe máy): bản đồ nhỏ ở trên trái nên đặt nút cạnh phải bản đồ, ngang đáy bản đồ (`left` = mép phải bản đồ + 8 px, `top` = `56px + var(--dr-map-h,128px) − 44px`; đọc kích thước / biến thật của `#drMap` trong `main.css` và `drive/hud.ts`). Task 4 mục 10 đo chồng lấn; chồng thì chỉnh ở đây.
 - `#exChatList{flex:1;min-height:60px;overflow-y:auto;overscroll-behavior:contain;}`; tin mình căn phải (`align-self:flex-end`), tin người khác căn trái; thân tin `max-width:85%`.
 - `#exChatNear` huy hiệu số góc dưới phải của nút (nền `var(--gold)`, chữ tối); `#exChatDot` chấm đỏ 9 px góc trên phải; `#exChatBtn.pulse{animation:exChatPulse .6s 1;}`; `@media (prefers-reduced-motion:reduce)` tắt animation.
 - `.ex-mp-bubble{position:absolute;left:0;top:0;max-width:200px;padding:4px 8px;font:500 12px/1.3 var(--font-body);color:#10181c;background:rgba(255,255,255,.92);border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;overflow:hidden;max-height:4.2em;will-change:transform;}` + `[hidden]{display:none}`.
@@ -284,7 +291,7 @@ Mục (trang chính vào **Đi dạo**):
 7. Tần suất: gửi 6 tin liền → tin thứ sáu có chữ `chatRate`; `Minh` nhận đúng 5.
 8. Rò rỉ: đếm `document.querySelectorAll('#exChat *').length` và `renderer.info.render.calls` (một khung) trước; mở / đóng 50 lần; sau: số nút DOM bằng trước, lệnh vẽ bằng trước (±0).
 9. Ra khỏi tầm thật: `Minh` rời (đóng socket) → trạng thái về `chatNone` trong 5 s, ô khóa.
-10. Ba chế độ còn lại, mỗi chế độ một trang mới (đóng trang trước): **Dù lượn** (`data-pick="glider"`), **Ô tô** (`"drive"`), **Xe máy** (`"bike"`): vào bằng màn chọn như `bike-multi.mjs`; đặt bot đi dạo `Gan` cách `debug().self` 30 m (cập nhật theo `self` mỗi 0,5 s vì dù và xe tự trôi) → trạng thái "Bạn đang ở gần Gan."; trang gửi "hi" → `Gan` nhận với `k` = `'fly'` / `'drive'` / `'drive'`; `Gan` gửi → trang hiện; `document.elementFromPoint` tại tâm `#exChatBtn` là chính nút (hoặc con của nó). Riêng trang xe máy: lặp phép `elementFromPoint` ở khung 390 × 844 có cảm ứng (`hasTouch`, `isMobile`) và với `#lang=ar` (dir rtl).
+10. Ba chế độ còn lại, mỗi chế độ một trang mới (đóng trang trước): **Dù lượn** (`data-pick="glider"`), **Ô tô** (`"drive"`), **Xe máy** (`"bike"`): vào bằng màn chọn như `bike-multi.mjs`; đặt bot đi dạo `Gan` cách `debug().self` 30 m (cập nhật theo `self` mỗi 0,5 s vì dù và xe tự trôi) → trạng thái "Bạn đang ở gần Gan."; trang gửi "hi" → `Gan` nhận với `k` = `'fly'` / `'drive'` / `'drive'`; `Gan` gửi → trang hiện; `document.elementFromPoint` tại tâm `#exChatBtn` là chính nút (hoặc con của nó). Ở mỗi chế độ (kể cả Đi dạo, làm ở mục 1): khung bao của `#exChatBtn` không giao khung bao của phần tử HUD đang hiện nào (`#drMap`, `#drMapNote`, `#drSteer`, `#drGas`, `#drBrake`, `#drSpeed`, `#drSoundBtn`, `.bk-btn`, `#stPad`, `#stPhoto`, `#btnExExit`, `#exMpRoster`, `#exHint`, `#stHint`, `#drHint`, `#bkHint`, `#exSpeed`). Riêng xe máy và đi dạo: lặp `elementFromPoint` + chồng lấn ở ngữ cảnh cảm ứng (`hasTouch`, `isMobile`) 390 × 844 và 844 × 390, và với tiếng Ả Rập (dir rtl).
 11. Mất máy chủ (cuối cùng): kill `wrangler` → trong 10 s trạng thái = `chatLost`, ô khóa; tin đang gửi dở (gửi ngay trước khi kill) thành `chatFail`.
 12. Không có lỗi console / pageerror nào trong cả lượt (trừ lỗi WebSocket đóng do mục 11).
 
