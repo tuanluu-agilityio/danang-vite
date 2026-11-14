@@ -1,0 +1,13 @@
+vì sao nhân vật 1 vẫn thấy nhân vật 2 là nam mặc dù họ chọn nữ?
+
+---
+
+đã reviewed. ĐỒng ý merge
+
+---
+
+deploy worker danang-sky
+
+---
+
+làm ngay
