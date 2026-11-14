@@ -87,8 +87,8 @@ export function bkSignal(s: BkState, dir: -1 | 0 | 1): void {
 
 const bkToward0 = (v: number, d: number): number => v > 0 ? (v > d ? v - d : 0) : (v < -d ? v + d : 0);
 
-/* Dốc dọc từ cao độ mặt đường tại trục trước / sau; giữ giá trị cũ nếu một trục không có mặt đường cùng tầng */
-function bkPitch(s: BkState, net: DrNet): void {
+/* Dốc dọc từ cao độ mặt đường tại trục trước / sau (dương = mũi cao hơn đuôi, như ô tô); giữ giá trị cũ nếu một trục không có mặt đường cùng tầng */
+export function bkPitch(s: BkState, net: DrNet): void {
   const fx = Math.cos(s.yaw) * L / 2, fz = -Math.sin(s.yaw) * L / 2;
   const yf = drGround(net, s.x + fx, s.z + fz, s.y), yr = drGround(net, s.x - fx, s.z - fz, s.y);
   if (!Number.isNaN(yf) && !Number.isNaN(yr)) s.pitch = Math.atan2(yf - yr, L);
@@ -139,7 +139,7 @@ const MOVED: DrPose = { x: 0, y: 0, z: 0, yaw: 0 };
 /* Một bước h ≤ sim.dt */
 function bkStep1(s: BkState, inp: BkInput, net: DrNet, boxes: DrBox[], nBoxes: number, h: number): void {
   const gas = inp.gas > 0 ? (inp.gas < 1 ? inp.gas : 1) : 0, bIn = inp.hard ? 1 : inp.brake > 0 ? (inp.brake < 1 ? inp.brake : 1) : 0;
-  const grip = inp.grip > 1 ? 1 : inp.grip < 0 ? 0 : inp.grip;
+  const grip = inp.grip > 1 ? 1 : inp.grip < 0 ? 0 : inp.grip === inp.grip ? inp.grip : 1;   // NaN ⇒ khô
   /* ga, phanh làm mượt; trung bình trong bước */
   const t0 = s.throttle, b0 = s.brakeK;
   s.throttle = gas + (t0 - gas) * Math.exp(-h / P.throttleTau);
@@ -162,7 +162,7 @@ function bkStep1(s: BkState, inp: BkInput, net: DrNet, boxes: DrBox[], nBoxes: n
   s.acc = (v - v0) / h;
   const vm = (v0 + v) / 2, av = vm > 0 ? vm : 0, w = av < P.vBlend ? av / P.vBlend : 1;
   /* ghi đông (lái động học khi chậm) */
-  const want = inp.steer > 1 ? 1 : inp.steer < -1 ? -1 : inp.steer;
+  const want = inp.steer > 1 ? 1 : inp.steer < -1 ? -1 : inp.steer === inp.steer ? inp.steer : 0;   // NaN ⇒ thẳng
   let st = s.steer;
   if (want === 0) st = bkToward0(st, P.steerReturn * STEER_MAX * h);
   else {

@@ -223,3 +223,10 @@ test('thân va chạm: bkStep không tự đổi thân đang dùng', () => {
   assert.ok(drFits(net, { x: 11, y: 2.6, z: 0, yaw: 0 }, [], 0, new Uint8Array(1)), 'vẫn là BK_BODY: lọt khe 1,2 m');
   assert.ok(s.x > 11, `xe máy chạy qua khe (x = ${s.x})`);
 });
+
+test('đầu vào NaN: steer NaN coi như 0, grip NaN coi như 1, trạng thái luôn hữu hạn', () => {
+  const net = square(), s = state(0, 0, 0, 10), ref = state(0, 0, 0, 10);
+  for (let i = 0; i < 60; i++) { bkStep(s, inp(1, 0, NaN, false, NaN), net, [], 0, DT); bkStep(ref, inp(1, 0, 0, false, 1), net, [], 0, DT); }
+  for (const [k, v] of Object.entries(s)) if (typeof v === 'number') assert.ok(Number.isFinite(v), `${k} = ${v}`);
+  assert.ok(Math.abs(s.x - ref.x) < 1e-9 && Math.abs(s.lean - ref.lean) < 1e-9, `như steer 0, grip 1: x ${s.x} / ${ref.x}`);
+});

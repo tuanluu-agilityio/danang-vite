@@ -913,7 +913,30 @@ const bikeBase = {
     cancelYaw: 0.6,    // rad — đã rẽ quá chừng này theo hướng xi nhan rồi trả thẳng thì tắt (ước lượng)
     cancelS: 12        // s — đi thẳng quá chừng này thì tắt (ước lượng)
   },
-  stuckS: 3            // s — bị chặn mà vẫn vặn ga quá chừng này thì gợi ý "bấm R" (ước lượng)
+  stuckS: 3,           // s — bị chặn mà vẫn vặn ga quá chừng này thì gợi ý "bấm R" (ước lượng)
+  cam3: {              // camera góc thứ ba sau xe máy: drCamPlace (explore/drive/camera.ts) với bộ số này; cùng tên trường với drive.cam, gần và thấp hơn ô tô
+    dist: 4.2,         // m — camera lùi sau tâm xe theo mặt bằng (ước lượng)
+    height: 1.9,       // m — camera cao hơn mặt đường dưới xe (ước lượng)
+    lookAhead: 3,      // m — điểm nhìn ở trước tâm xe chừng này theo hướng xe (ước lượng)
+    look: 1.0,         // m — điểm nhìn và gốc đoạn kiểm vật cản cao hơn mặt đường dưới xe (ước lượng)
+    lag: 6,            // 1/s — tốc độ hướng camera bám theo hướng xe khi rẽ, cũng là tốc độ nở lại khoảng cách / độ cao, như ô tô (ước lượng)
+    returnAfter: 2.5,  // s — thôi kéo chuột chừng này thì góc lệch tự về sau xe, như ô tô (ước lượng)
+    returnRate: 2,     // 1/s — tốc độ góc lệch về 0, như ô tô (ước lượng)
+    tunnelDist: 3.2,   // m — khoảng lùi khi xe trong ô hầm (ước lượng)
+    tunnelHeight: 1.5, // m — độ cao camera khi xe trong ô hầm hoặc khi vướng vật cản (ước lượng)
+    minDist: 1.8,      // m — vướng vật cản thì kéo gần nhưng không dưới số này: vẫn sau người lái (thân dài 1,98 m) (ước lượng)
+    gap: 0.3,          // m — lùi khỏi chỗ đoạn xe → camera chạm vật cản, như ô tô (ước lượng)
+    roof: 0.5,         // m — camera thấp hơn trần ống hầm ít nhất chừng này, như ô tô (ước lượng)
+    floor: 0.3,        // m — camera cao hơn mặt đường tại chỗ nó ít nhất chừng này, như ô tô (ước lượng)
+    pitchMin: -0.2,    // rad — kéo chuột lên: góc hạ camera nhỏ nhất, như ô tô (ước lượng)
+    pitchMax: 0.9,     // rad — kéo chuột xuống: góc nâng camera lớn nhất, như ô tô (ước lượng)
+    mouse: 0.005,      // rad/px — độ nhạy kéo chuột, như ô tô (ước lượng)
+    fov: 62            // độ — góc nhìn dọc góc thứ ba, như ô tô (drive.cam.fov) (ước lượng)
+  },
+  model: {             // hình xe máy trong cảnh (explore/bike/model.ts)
+    shadow: { pad: 0.3, opacity: 0.5, lift: 0.03 },   // tấm bóng mờ dưới gầm: m — phần nhô ra mỗi chiều so với thân; độ đục tối đa; m — nâng khỏi mặt đường (ước lượng)
+    temp: { paint: 0x8fd3c1, shirt: 0x2f5d8a, helmet: 0xd8d8d8 }   // màu hình tạm (hình 'bike' của common/vehicles/shapes.ts): sơn thân bạc hà như mô hình Grab3D, áo, mũ bảo hiểm (ước lượng)
+  }
 };
 
 /* ------------------------- Tàu thuyền sông Hàn ------------------------- */

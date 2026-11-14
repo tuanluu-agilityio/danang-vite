@@ -111,7 +111,8 @@ try {
         const out = {};
         const g = exBuildGlider();
         let meshes = 0; g.traverse((o) => { if (o.isMesh) { meshes++; out.cast = o.castShadow; } });
-        const bb = new THREE.Box3().setFromObject(g); out.meshes = meshes; out.width = bb.max.x - bb.min.x; out.wz = bb.max.z - bb.min.z; out.wy = bb.max.y - bb.min.y;        out.notInScene = !scene.getObjectByName('ex-glider');
+        const bb = new THREE.Box3().setFromObject(g); out.meshes = meshes; out.width = bb.max.x - bb.min.x; out.wz = bb.max.z - bb.min.z; out.wy = bb.max.y - bb.min.y;
+        out.notInScene = !scene.getObjectByName('ex-glider');
         // 2j người treo: thấp nhất vẫn trên mặt đất khi ở sàn, số đỉnh có giới hạn
         out.vHuman = g.children[0].geometry.attributes.position.count; out.lowHuman = new THREE.Box3().setFromObject(g).min.y;
         // 2i cờ: sao vàng giữa cánh, nền đỏ; uv mặt cánh trải đủ 0..1 theo sải
@@ -146,7 +147,8 @@ try {
       check('2b chưa bay: scene không có ex-glider', r2.notInScene);
       check(`2c ngày: thêm dù +${r2.dCalls} draw call`, r2.dCalls >= 1 && r2.dCalls <= 2);
       check(`2d bank 0.45 → góc cuộn ${r2.roll.toFixed(4)}, yaw giữ ${r2.gyaw === r2.syaw}`, Math.abs(r2.roll - 0.45) < 1e-3 && Math.abs(r2.gyaw - r2.syaw) < 1e-6);
-      check(`2e snap: cách ${r2.dist.toFixed(3)}, cao ${r2.dh.toFixed(3)}, sau ${r2.behind.toFixed(1)}, target lệch ${r2.tgt.toExponential(1)}`, Math.abs(r2.dist - Math.hypot(18, 9)) < 0.01 && Math.abs(r2.dh - 9) < 0.01 && r2.behind > 0 && r2.tgt < 1e-6);      check(`2j người ${r2.vHuman} đỉnh, thấp nhất ${r2.lowHuman.toFixed(2)} m`, r2.vHuman < 30000 && 7 + r2.lowHuman > 2.5);
+      check(`2e snap: cách ${r2.dist.toFixed(3)}, cao ${r2.dh.toFixed(3)}, sau ${r2.behind.toFixed(1)}, target lệch ${r2.tgt.toExponential(1)}`, Math.abs(r2.dist - Math.hypot(18, 9)) < 0.01 && Math.abs(r2.dh - 9) < 0.01 && r2.behind > 0 && r2.tgt < 1e-6);
+      check(`2j người ${r2.vHuman} đỉnh, thấp nhất ${r2.lowHuman.toFixed(2)} m`, r2.vHuman < 30000 && 7 + r2.lowHuman > 2.5);
       check(`2i cờ: sao ${r2.flagStar}, nền ${r2.flagRed}, u ${r2.uMin.toFixed(2)}..${r2.uMax.toFixed(2)}`, r2.flagStar[0] > 200 && r2.flagStar[1] > 150 && r2.flagStar[2] < 90 && r2.flagRed[0] > 150 && r2.flagRed[1] < 70 && r2.uMin < 0.01 && r2.uMax > 0.99);
       check(`2f trễ: sau 1 bước còn ${r2.lag1.toFixed(2)} m, sau 3 s còn ${r2.lag3.toFixed(4)} m`, r2.lag1 > 0 && r2.lag3 < 0.05);
       await setNight(1);
@@ -242,11 +244,11 @@ try {
   {
     const CARDS = ['glider', 'car', 'bike', 'walk', 'guided'];
     const vis = (page, sel) => page.evaluate((s) => { window.__app.ui?.reveal(document.querySelector(s)); const e = document.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden'; }, sel);
-    // 4a ?chooser: màn chọn hiện, 5 thẻ, thẻ chưa có disabled (thẻ Đi dạo, Ô tô đã mở)
+    // 4a ?chooser: màn chọn hiện, 5 thẻ, không thẻ nào disabled trên máy tính (thẻ Đi dạo, Ô tô, Xe máy đã mở)
     const C = await openApp(browser, srv.url + '?chooser');
     await C.page.waitForSelector('#chooser', { state: 'visible', timeout: 240000 });
     const a4 = await C.page.evaluate(() => [...document.querySelectorAll('#chooser button[data-pick]')].map((b) => [b.dataset.pick, b.disabled]));
-    check(`4a #chooser hiện, thẻ: ${JSON.stringify(a4)}`, a4.length === 5 && CARDS.every((k) => a4.some(([n]) => n === k)) && a4.filter(([, d]) => d).map(([n]) => n).sort().join() === 'bike');
+    check(`4a #chooser hiện, thẻ: ${JSON.stringify(a4)}`, a4.length === 5 && CARDS.every((k) => a4.some(([n]) => n === k)) && a4.filter(([, d]) => d).length === 0);
     const l4 = await C.page.evaluate(() => { const s = document.getElementById('exLang'); const r = s.getBoundingClientRect(); const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return { n: s.options.length, v: s.value, onTop: top === s }; });
     check(`4a chooser có ô ngôn ngữ riêng: ${l4.n} ngôn ngữ, giá trị ${l4.v}, không bị panel che ${l4.onTop}`, l4.n === 9 && l4.v === 'vi' && l4.onTop);
     const inertOn = await C.page.evaluate(() => { const o = document.querySelector('[data-bridge="tp"]'); return !!o.closest('[inert]') && !document.getElementById('chooser').closest('[inert]') && !document.getElementById('exLang').closest('[inert]'); });
@@ -335,7 +337,7 @@ try {
     const miss = [];
     for (const c of langs) for (const k of exKeys) if (typeof L[c][k] !== 'string' || !L[c][k].trim()) miss.push(`${c}.${k}`);
     check(`4h ${exKeys.length} khóa ex* (${exKeys.join(',')}) đủ 9 ngôn ngữ (thiếu: ${miss.join(',') || '-'})`, exKeys.length >= 9 && miss.length === 0);
-    check('4h vi exSoon / exDesktopOnly / exHint đúng chữ', L.vi.exSoon === 'Sắp có' && L.vi.exDesktopOnly === 'Chỉ dùng trên máy tính' && L.vi.exHint === 'W/S hoặc ↑/↓ để lên/xuống · A/D hoặc ←/→ để rẽ · Q/E để giảm/tăng tốc · Esc để thoát');
+    check('4h vi exBikeDesc / exDesktopOnly / exHint đúng chữ', L.vi.exBikeDesc === 'Chạy xe tay ga qua các cầu sông Hàn' && L.vi.exDesktopOnly === 'Chỉ dùng trên máy tính' && L.vi.exHint === 'W/S hoặc ↑/↓ để lên/xuống · A/D hoặc ←/→ để rẽ · Q/E để giảm/tăng tốc · Esc để thoát');
   }
   // Mục 5 — đo draw call và thời gian khung ở các tư thế bay (không fail, trừ phần dù ngày ≠ đêm)
   //   Tư thế gán trực tiếp state.pos/yaw; gốc nhóm dù nằm giữa cánh và người lái (originAt) nên pos là điểm giữa dù, không phải mũi người.

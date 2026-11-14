@@ -6,7 +6,7 @@ import { getLang, onChange, t } from '../i18n';
 import { exMulti } from './multi';
 import { exShowLobby } from './multi/lobby';
 
-export type ExChoice = 'glider' | 'guided' | 'walk' | 'car';   // car: lái xe (có máy chủ thì qua sảnh 5 chỗ lái, không thì lái một mình)
+export type ExChoice = 'glider' | 'guided' | 'walk' | 'car' | 'bike';   // car: lái xe (có máy chủ thì qua sảnh 5 chỗ lái, không thì lái một mình); bike: xe máy (giờ luôn lái một mình, sảnh ở Task 10)
 
 const el = () => document.getElementById('chooser');
 
