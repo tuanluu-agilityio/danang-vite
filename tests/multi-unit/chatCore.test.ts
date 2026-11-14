@@ -92,6 +92,16 @@ test('ChLog: canSend sai sau 5 addMine trong 10 s, đúng lại sau 10 s', () =>
   assert.equal(g.canSend(C.rateWinMs), true);
 });
 
+test('ChLog: addMine(…, true) ghi tin trạng thái rate, không tính vào hạn mức (như máy chủ: tin bị từ chối vì quá nhanh không ghi giờ)', () => {
+  const g = log();
+  for (let i = 0; i < C.ratePerWin; i++) g.addMine('x' + i, 0);
+  const r = g.addMine('dồn', 5000, true);
+  assert.equal(r.state, 'rate');
+  assert.equal(g.list.length, C.ratePerWin + 1);
+  assert.equal(g.canSend(C.rateWinMs), true, 'tin rate lúc 5 s không kéo dài thời gian khóa');
+  assert.equal(g.ack(r.id, 1, undefined), null, 'tin rate không chờ hồi âm');
+});
+
 test('ChLog: quá historyMax thì trim() trả tin cũ nhất, list.length === historyMax', () => {
   const g = log();
   const first = g.addMine('0', 0);
@@ -110,8 +120,8 @@ test('ChLog: key duy nhất tăng dần cho cả tin mình lẫn tin người kh
   assert.equal(g.addMine('e', 0).key > l[3].key, true, 'key không lặp lại sau clear');
 });
 
-/* ----- i18n: khóa chat đủ 9 ngôn ngữ (Task 3 thêm khóa) ----- */
-test('i18n: 9 ngôn ngữ có đủ khóa chat*, chuỗi không rỗng, có {name} / {n}', { todo: 'Task 3' }, () => {
+/* ----- i18n: khóa chat đủ 9 ngôn ngữ ----- */
+test('i18n: 9 ngôn ngữ có đủ khóa chat*, chuỗi không rỗng, có {name} / {n}', () => {
   const dir = join(dirname(fileURLToPath(import.meta.url)), '../../src/i18n/locales');
   const need = ['chatBtn', 'chatNone', 'chatOne', 'chatMany', 'chatLost', 'chatWatch', 'chatPlaceholder', 'chatSend', 'chatSending', 'chatSent', 'chatAlone', 'chatFail', 'chatRate', 'chatBad'];
   for (const lang of ['vi', 'en', 'ko', 'ja', 'zh', 'th', 'ar', 'hi', 'ru']) {

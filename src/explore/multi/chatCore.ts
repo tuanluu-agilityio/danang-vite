@@ -41,9 +41,11 @@ export class ChLog {
     return this.sent.length < this.ratePerWin;
   }
 
-  addMine(text: string, now: number): ChMsg {
-    const m: ChMsg = { key: this.nextKey++, id: this.nextId++, mine: true, k: 'fly', slot: -1, name: '', text, at: now, state: 'pending', n: 0 };
-    this.list.push(m); this.sent.push(now);
+  /* rateLimited: canSend vừa trả false, tin chỉ hiện với trạng thái rate, không gửi và không ghi giờ (máy chủ cũng không ghi tin bị từ chối vì quá nhanh) */
+  addMine(text: string, now: number, rateLimited = false): ChMsg {
+    const m: ChMsg = { key: this.nextKey++, id: this.nextId++, mine: true, k: 'fly', slot: -1, name: '', text, at: now, state: rateLimited ? 'rate' : 'pending', n: 0 };
+    this.list.push(m);
+    if (!rateLimited) this.sent.push(now);
     return m;
   }
 

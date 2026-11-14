@@ -15,7 +15,7 @@ const made: FakeEl[] = [];
   getElementById: (id: string) => id === 'exMpLabels' ? { appendChild: (e: FakeEl) => { made.push(e); } } : null,
   createElement: (): FakeEl => ({ className: '', hidden: false, textContent: '', style: { transform: '' } })
 };
-const { exLabelsUpdate, exLabelsClear } = await import('../../src/explore/multi/labels.ts');
+const { exLabelsUpdate, exLabelsClear, exLabelsSay } = await import('../../src/explore/multi/labels.ts');
 
 const cam = new THREE.PerspectiveCamera(60, 1000 / 600, 0.1, 5000);
 cam.position.set(0, 5, 0); cam.lookAt(0, 5, -100); cam.updateMatrixWorld(true);
@@ -80,4 +80,47 @@ test('bộ chữ theo loại: các khóa của ba loại khác nhau đúng chỗ
   assert.equal(exMpKeys('drive').go, 'drGo');
   assert.equal(exMpKeys('walk').full, 'stFull');
   assert.equal(exMpKeys('fly').full, null);
+});
+
+/* ----- Bong bóng chat trên nhãn tên (D-041) ----- */
+const bubbles = () => made.filter((e) => e.className === 'ex-mp-bubble');
+const noOne: any = { slotState: () => null, name: () => null };
+const walk1: any = { self: -1, slotState: (i: number) => i === 1 ? { x: 0, y: 2.5, z: -20 } : null, name: (i: number) => i === 1 ? 'Một' : null };
+const walk1Behind: any = { self: -1, slotState: (i: number) => i === 1 ? { x: 0, y: 2.5, z: 50 } : null, name: (i: number) => i === 1 ? 'Một' : null };
+
+test('bong bóng: hiện chữ trên nhãn người đi dạo trong bubbleMs, ngay trên nhãn, rồi ẩn', () => {
+  exLabelsSay('walk', 1, 'chào', 1000);
+  exLabelsUpdate(cam, noOne, 1000, walk1, noOne);
+  const b = bubbles();
+  assert.equal(b.length, 1, 'đúng một bong bóng (tạo lười)');
+  assert.equal(b[0].hidden, false);
+  assert.equal(b[0].textContent, 'chào');
+  const lab = at(made[P.slots + 1]);
+  assert.deepEqual(at(b[0]), [lab[0], lab[1] - 4], 'bong bóng đặt ngay trên nhãn, nhích lên 4 px');
+  assert.ok(b[0].style.transform.includes('translate(-50%,-100%)'));
+  exLabelsUpdate(cam, noOne, 1000 + P.chat.bubbleMs + 1, walk1, noOne);
+  assert.equal(b[0].hidden, true, 'hết bubbleMs thì ẩn');
+});
+
+test('bong bóng: chữ dài cắt bubbleChars code point + "…"; slot ngoài khoảng không ném lỗi', () => {
+  exLabelsSay('walk', 1, 'x'.repeat(100), 20000);
+  const b = bubbles()[0];
+  assert.equal(Array.from(b.textContent).length, P.chat.bubbleChars + 1);
+  assert.ok(b.textContent.endsWith('…'));
+  exLabelsSay('walk', 1, '😀'.repeat(100), 20000);
+  assert.equal(Array.from(b.textContent).length, P.chat.bubbleChars + 1, 'cắt theo code point, không cắt đôi surrogate');
+  assert.doesNotThrow(() => { exLabelsSay('drive', 9, 'a', 0); exLabelsSay('fly', -1, 'a', 0); exLabelsSay('walk', 99, 'a', 0); });
+  assert.equal(bubbles().length, 1, 'slot ngoài khoảng không tạo bong bóng');
+});
+
+test('bong bóng: nhãn đang ẩn (sau camera) thì bong bóng ẩn; exLabelsClear ẩn bong bóng', () => {
+  exLabelsSay('walk', 1, 'sau', 30000);
+  exLabelsUpdate(cam, noOne, 30000, walk1Behind, noOne);
+  assert.equal(bubbles()[0].hidden, true, 'nhãn sau camera: bong bóng ẩn');
+  exLabelsUpdate(cam, noOne, 30010, walk1, noOne);
+  assert.equal(bubbles()[0].hidden, false, 'nhãn hiện lại trong hạn: bong bóng hiện');
+  exLabelsClear();
+  assert.equal(bubbles()[0].hidden, true);
+  exLabelsUpdate(cam, noOne, 30020, walk1, noOne);
+  assert.equal(bubbles()[0].hidden, true, 'clear xóa hạn: không hiện lại');
 });

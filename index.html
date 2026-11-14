@@ -268,6 +268,12 @@
   <input id="exMpInviteName" type="text" autocomplete="off" spellcheck="false" dir="auto" hidden>
   <button type="button" id="exMpInviteFly" class="ex-mp-btn" data-i18n="exMpInviteFly">Vào bay</button>
 </div>
+<button id="exChatBtn" class="panel" type="button" data-i18n-aria="chatBtn" aria-label="Trò chuyện (Enter)" aria-expanded="false" aria-controls="exChat"><span aria-hidden="true">💬</span><b id="exChatNear" hidden></b><i id="exChatDot" hidden></i></button>
+<section id="exChat" class="panel" hidden>
+  <div id="exChatStatus" role="status" dir="auto"></div>
+  <div id="exChatList" role="log" aria-live="polite"></div>
+  <form id="exChatForm"><textarea id="exChatIn" rows="1" maxlength="200" dir="auto" autocomplete="off" placeholder="Nhập tin nhắn…" disabled></textarea><button id="exChatSend" type="submit" data-i18n-aria="chatSend" aria-label="Gửi" disabled>➤</button></form>
+</section>
 <button id="btnExExit" class="panel" type="button" data-i18n="exExit">Thoát</button>
 <div id="stHud" dir="ltr">
   <div id="stLook"></div>
