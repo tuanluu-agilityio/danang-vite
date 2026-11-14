@@ -1,6 +1,6 @@
 # Chọn nhân vật nam / nữ ở chế độ Đi dạo, đồng bộ giữa các máy (D-039)
 
-_2026-11-14 · nhánh `feature/chon-nhan-vat-di-dao` (từ `main`) · trạng thái: đã triển khai (PR #32), chờ deploy Worker `danang-sky`_
+_2026-11-14 · nhánh `feature/chon-nhan-vat-di-dao` (từ `main`) · trạng thái: đã triển khai (PR #32), Worker `danang-sky` đã deploy 2026-11-14_
 
 Bản yêu cầu của người dùng ("Implement Male / Female Character Selection & Multiplayer Synchronization", 2026-11-14) bảo làm tự chủ, không hỏi lại thiết kế; các lựa chọn dưới đây là của agent.
 
