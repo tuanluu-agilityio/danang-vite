@@ -64,8 +64,12 @@ Dùng thuộc tính logic (`inset-inline-*`) trừ khi ghi "vật lý".
 | Máy tính, tham quan | Cạnh ⚙: `top 17px`, `inset-inline-start 72px`, cao 44 px, đủ: biểu tượng, nhiệt độ, vạch, HH:mm, giây, (rê chuột: mô tả), mũi tên | Rơi xuống dưới chỉ báo, rộng 312 px |
 | Máy tính, khám phá (`body.explore`) | Góc trên phía Thoát: `top 14px`, `inset-inline-end 14px`, cao 36 px, bản gọn: biểu tượng, nhiệt độ, vạch, HH:mm (không giây, không mô tả, không mũi tên) | Dưới chỉ báo, canh mép phía Thoát; khi mở che nút Thoát, đóng bằng bấm cảnh / Esc / bấm lại |
 | Điện thoại (`body.compact`), tham quan | Góc trên phía cuối dòng: `top 13px`, `inset-inline-end 8px`, cao 44 px, bản gọn | Tờ đáy `z-index:10`, bo 18 px, có nút × 40 px, lớp mờ phía sau |
-| Điện thoại, đi dạo (`body.compact.stroll`) | Cạnh ⚙: `top 13px`, `inset-inline-start 72px`, bản gọn | Tờ đáy |
-| Điện thoại, ô tô / xe máy (`body.compact.drive`) | Cột trái **vật lý** dưới chú thích bản đồ nhỏ: `left 8px`, `top calc(60px + var(--dr-map-h,128px) + 40px)`, cao 34 px, bản gọn | Tờ đáy |
+| Điện thoại, dù lượn (`body.compact.explore`) | Cạnh ⚙: `top 13px`, `inset-inline-start 72px`, bản gọn | Tờ đáy |
+| Điện thoại, xem dù lượn (`body.compact.ex-watching`, không `drive` / `stroll`) | Trái **vật lý**, dưới hàng ⚙ / Thoát và dải "Đang xem" (`#exMpWatch`): `left 8px`, `top 72px`, bản gọn | Tờ đáy |
+| Điện thoại, đi dạo (`body.compact.stroll`) | Trái **vật lý**, dưới hàng ⚙ / Thoát: `left 8px`, `top 60px`, bản gọn (như đã xây; bản thiết kế ban đầu `top 13px`, `inset-inline-start 72px` đè `#stToast` ở giữa trên) | Tờ đáy |
+| Điện thoại cảm ứng (`hover:none`), ô tô / xe máy (`body.compact.drive`) | Cột trái **vật lý** ngay dưới chú thích bản đồ nhỏ: `left 8px`, `top var(--env-dr-top)` = đáy `#drMapNote` + `CONFIG.env.driveGap` do `envUI.ts` đo (chú thích xuống dòng theo ngôn ngữ; đo lại khi chú thích đổi cỡ, `#drHud` đổi style, đổi cỡ cửa sổ / xoay máy) và ghi lên `<html>`; lùi về `228px` khi chưa đo; cao 34 px, bản gọn. `#exMpNotice` / `#exMpIdle` (dọc) đứng dưới chỉ báo nhờ cùng biến đó | Tờ đáy |
+| Cửa sổ hẹp có chuột (`body.compact` + `hover:hover`), ô tô | `left 8px`, `top 60px` (như đi dạo; bản đồ nhỏ 200 px ở đáy trái) | Tờ đáy |
+| Cửa sổ hẹp có chuột, xe máy (`body.compact.bike`) | Bên phải hàng ◄ ►: `left 118px`, `top 134px` (`ar`: `right 118px`), vì 🔊 cạnh ⚙ và 🎥 ◄ ► ở cột trái | Tờ đáy |
 
 Lý do vị trí khám phá trên máy tính: ở `main`, xe máy đặt 🔊 đúng chỗ cạnh ⚙ (`left 72px`) và 🎥 ◄ ► ngay dưới; góc trên phía Thoát trống ở mọi chế độ khám phá (bảng ☰ ẩn, nút Thoát ở `top 56px`).
 
@@ -97,7 +101,7 @@ https://api.open-meteo.com/v1/forecast?latitude=16.061&longitude=108.227
 - **Trạng thái:** chưa có số liệu và đang chờ → `loading`; chưa có số liệu và đã lỗi → `offline`; có số liệu và tuổi quan trắc ≤ `staleMs` → `ok`; có số liệu nhưng già hơn → `stale` (vẫn hiện số, mờ hơn, chấm vàng, chân thẻ ghi "Số liệu cũ · quan trắc HH:mm").
 - **Bộ nhớ đệm:** lần lấy thành công ghi `localStorage` khóa `cauRong.env`; mở trang đọc lại để hiện ngay (trạng thái theo tuổi), lỗi đọc / ghi thì bỏ qua.
 - **Giờ mọc / lặn:** từ `daily`; chưa có thì dùng `CONFIG.env.sunFallback`.
-- **`?test`:** không lấy số liệu, trạng thái `loading`, đồng hồ vẫn chạy; trừ khi URL có `env=live` (test của tính năng này chặn URL bằng `page.route`). `__app.env` lộ `store` và `ui` cho test.
+- **`?test`:** không lấy số liệu và không đọc bộ nhớ đệm (số liệu cũ trong hồ sơ trình duyệt làm lệch test), trạng thái `loading`, đồng hồ vẫn chạy; trừ khi URL có `env=live` (test của tính năng này chặn URL bằng `page.route`). `__app.env` lộ `{store, render, setNow}` cho test.
 - **Mã WMO → nhóm:** 0 quang (ngày / đêm), 1 ít mây (ngày / đêm), 2 có mây, 3 nhiều mây, 45 / 48 sương mù, 51–57 mưa phùn, 61 / 66 / 80 mưa nhẹ, 63 / 81 mưa vừa, 65 / 67 / 82 mưa to, 71–77 / 85 / 86 tuyết, 95–99 dông; mã lạ → có mây. Biểu tượng: 5 hình của prototype (quang ngày / đêm, mây ngày / đêm, mưa) + sương mù, dông, tuyết vẽ cùng nét.
 
 ### 4.5 `CONFIG.env`
@@ -115,6 +119,7 @@ https://api.open-meteo.com/v1/forecast?latitude=16.061&longitude=108.227
 | `duskMin` | `[-75, 35]` | phút quanh giờ lặn coi là hoàng hôn (ước lượng, theo prototype) |
 | `sunFallback` | `[345, 1050]` | 05:45 và 17:30, phút trong ngày, dùng khi chưa có số liệu (ước lượng) |
 | `storeKey` | `'cauRong.env'` | |
+| `driveGap` | 8 | px, khe giữa đáy chú thích bản đồ nhỏ (`#drMapNote`) và chỉ báo khi lái trên cảm ứng (ước lượng; thêm lúc làm, xem §4.2) |
 
 ### 4.6 Chữ và 9 ngôn ngữ
 
