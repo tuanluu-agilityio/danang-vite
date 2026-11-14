@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01MM6tBpBbae3Cdt6MHUrNBi",
+  "agent_id": "a7cfdc643760b20af",
+  "subagent_type": "general-purpose",
+  "task_description": "Review toàn nhánh D-042",
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 214713,
+    "cache_read_tokens": 3426623,
+    "output_tokens": 23182,
+    "api_call_count": 21
+  },
+  "started_at": "2026-11-15T00:01:17.6705707+07:00",
+  "completed_at": "2026-11-15T00:06:07.0794118+07:00"
+}
