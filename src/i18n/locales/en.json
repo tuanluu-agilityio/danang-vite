@@ -447,7 +447,6 @@
   "exWalk": "Stroll",
   "exGuided": "Guided tour",
   "exGuidedDesc": "Tours, viewpoints and narration",
-  "exSoon": "Coming soon",
   "exDesktopOnly": "Desktop only",
   "exHint": "W/S or ↑/↓ to climb/descend · A/D or ←/→ to turn · Q/E to slow down/speed up · Esc to exit",
   "exExit": "Exit",
@@ -470,6 +469,7 @@
   "exMpBack": "Back",
   "exMpLostChooser": "Connection to the shared sky was lost. Choose Paraglider to reconnect.",
   "exWalkDesc": "Walk the bridges and both riverbanks",
+  "exBikeDesc": "Ride a scooter across the Han River bridges",
   "stSky": "Han River, Da Nang",
   "stSeats": "{n} of 5 walking spots free",
   "stFull": "All 5 walking spots are taken",
@@ -512,5 +512,14 @@
   "drCreditLabel": "Car model",
   "drCreditMod": "modified",
   "drCreditTm": "VinFast and VF 3 are trademarks of their owner; illustrative model, not an official product.",
-  "drSound": "Car sound"
+  "drSound": "Car sound",
+  "bkHint": "W A S D or arrows: ride · Space: hard brake · V: switch view · Q / E: indicators · H: horn · R: back to lane · drag mouse: look around · Esc: exit",
+  "bkView": "Switch view",
+  "bkHorn": "Horn",
+  "bkReset": "Back to lane",
+  "bkStuck": "Stuck? Press R to return to the lane",
+  "bkSigL": "Left indicator",
+  "bkSigR": "Right indicator",
+  "bkLost": "Connection lost. You can still ride, but alone.",
+  "bkLostChooser": "Connection lost. Choose Motorbike to reconnect."
 }

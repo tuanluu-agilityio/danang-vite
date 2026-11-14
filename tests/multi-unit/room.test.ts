@@ -364,7 +364,7 @@ test('5 bay + 5 đi dạo + 5 lái cùng lúc, người lái thứ 6 bị từ c
   for (let i = 0; i < 5; i++) {
     assert.deepEqual(has(fly[i], o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: i });
     assert.deepEqual(has(walk[i], o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: i, kind: 'walk' });
-    assert.deepEqual(has(drive[i], o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: i, kind: 'drive' });
+    assert.deepEqual(has(drive[i], o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: i, kind: 'drive', veh: 0 });   // D-040: joined của drive vọng veh
     assert.equal(r.kindOf('d' + i), 'drive'); assert.equal(r.driveSlotOf('d' + i), i);
     assert.equal(r.slotOf('d' + i), -1); assert.equal(r.walkSlotOf('d' + i), -1);
   }
@@ -383,7 +383,7 @@ test('lobby có drivers: flyers / walkers / drivers tách riêng; lobby luôn c�
   const l = has(joinD(r, 'c', 'Lai'), x => x.msg.t === 'lobby')[0].msg as any;
   assert.deepEqual(l.flyers, [{ slot: 0, name: 'Bay' }]);
   assert.deepEqual(l.walkers, [{ slot: 0, name: 'Di', ch: 0 }]);
-  assert.deepEqual(l.drivers, [{ slot: 0, name: 'Lai' }]);
+  assert.deepEqual(l.drivers, [{ slot: 0, name: 'Lai', ch: 0, veh: 0 }]);   // D-040: drivers kèm ch + veh
 });
 
 test('pos của người lái bị kẹp vào khung, v và st bị kẹp', () => {
@@ -450,7 +450,7 @@ test('leave / disconnect / sweep trả đúng chỗ lái; hasFlyers tính cả n
   assert.equal(r.seenOf('d2'), 9000);
   const s = r.sweep(P.slotTimeoutMs + 1);
   assert.equal(has(s, x => x.msg.t === 'released' && x.to === 'd1').length, 1);
-  assert.deepEqual((has(s, x => x.msg.t === 'lobby')[0].msg as any).drivers, [{ slot: 2, name: 'D2' }]);
+  assert.deepEqual((has(s, x => x.msg.t === 'lobby')[0].msg as any).drivers, [{ slot: 2, name: 'D2', ch: 0, veh: 0 }]);   // D-040: drivers kèm ch + veh
   assert.equal(r.hasFlyers(), true);
   r.disconnect('d2');
   assert.equal(r.hasFlyers(), false);
@@ -510,7 +510,7 @@ test('nhân vật: khách cũ không gửi ch và giá trị lạ → 0 (nam), k
   r2.connect('d', 0); r2.message('d', J({ t: 'join', name: 'Lai', kind: 'drive', ch: 1 }), 0);
   const m = r2.connect('y', 0)![0].msg as any;
   assert.deepEqual(m.walkers.map((w: any) => w.ch), [0, 0, 0, 0, 0]);
-  assert.deepEqual(m.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(m.drivers, [{ slot: 0, name: 'Lai' }]);
+  assert.deepEqual(m.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(m.drivers, [{ slot: 0, name: 'Lai', ch: 0, veh: 0 }]);   // D-040: drivers kèm ch + veh; ô tô vẫn ch 0
   assert.equal(r2.chOf('f'), 0); assert.equal(r2.chOf('d'), 0);
 });
 
@@ -527,4 +527,45 @@ test('nhân vật: người rời đi rồi người khác vào đúng slot đó
   const m = r2.connect('z', 0)![0].msg as any;
   assert.deepEqual(m.walkers, [{ slot: 1, name: 'P', ch: 1 }, { slot: 2, name: 'Q', ch: 0 }]);
   assert.deepEqual(m.flyers, [{ slot: 0, name: 'F' }]);
+});
+
+/* ===== Xe máy (D-040 Task 10): chỗ lái mang veh (0 ô tô, 1 xe máy) + ch (nhân vật người lái xe máy) ===== */
+const joinV = (r: SkyRoom, id: string, name: string, o: any) => r.message(id, J({ t: 'join', name, kind: 'drive', ...o }), 0);
+
+test('xe máy: join drive veh 1, ch 1 ⇒ drivers có veh 1, ch 1, joined vọng veh 1; không veh ⇒ veh 0 (khách cũ); veh lạ ⇒ 0; walkers không có veh', () => {
+  const r = new SkyRoom();
+  r.connect('b', 0); r.connect('c', 0); r.connect('x', 0); r.connect('w', 0);
+  const ob = joinV(r, 'b', 'Xe', { veh: 1, ch: 1 });
+  assert.deepEqual(has(ob, o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: 0, kind: 'drive', veh: 1 });
+  assert.deepEqual((has(ob, o => o.msg.t === 'lobby')[0].msg as any).drivers, [{ slot: 0, name: 'Xe', ch: 1, veh: 1 }]);
+  const oc = joinV(r, 'c', 'Oto', {});
+  assert.deepEqual(has(oc, o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: 1, kind: 'drive', veh: 0 });
+  assert.deepEqual((has(oc, o => o.msg.t === 'lobby')[0].msg as any).drivers[1], { slot: 1, name: 'Oto', ch: 0, veh: 0 });
+  const ox = joinV(r, 'x', 'La', { veh: 7, ch: 1 });
+  assert.deepEqual(has(ox, o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: 2, kind: 'drive', veh: 0 });
+  assert.deepEqual((has(ox, o => o.msg.t === 'lobby')[0].msg as any).drivers[2], { slot: 2, name: 'La', ch: 0, veh: 0 }, 'ô tô: ch bỏ qua');
+  const ow = r.message('w', J({ t: 'join', name: 'Di', kind: 'walk', ch: 1, veh: 1 }), 0);
+  assert.deepEqual(has(ow, o => o.msg.t === 'joined')[0].msg, { t: 'joined', slot: 0, kind: 'walk' });
+  assert.deepEqual((has(ow, o => o.msg.t === 'lobby')[0].msg as any).walkers, [{ slot: 0, name: 'Di', ch: 1 }]);
+  assert.equal(r.vehOf('b'), 1); assert.equal(r.vehOf('c'), 0); assert.equal(r.vehOf('w'), 0);
+  assert.equal(r.chOf('b'), 1); assert.equal(r.chOf('x'), 0);
+  for (const v of [undefined, null, '1', 1.5, true, -1, 0]) { const q = new SkyRoom(); q.connect('a', 0); joinV(q, 'a', 'A', { veh: v }); assert.equal(q.vehOf('a'), 0, String(v)); }
+});
+
+test('xe máy: pos xe máy dùng chung nhóm d; st kẹp ±steerMax; người rời rồi ô tô vào đúng slot ⇒ veh 0', () => {
+  const r = new SkyRoom(); r.connect('b', 0); r.connect('c', 0);
+  joinV(r, 'b', 'Xe', { veh: 1, ch: 1 });
+  const e = (posD(r, 'b', { st: 0.9 }, 1000)[0].msg as any).d[0];
+  assert.equal(e.length, 8); assert.equal(e[6], P.drive.steerMax);
+  r.message('b', J({ t: 'leave' }), 1100);
+  assert.deepEqual((has(joinV(r, 'c', 'Oto', {}), o => o.msg.t === 'lobby')[0].msg as any).drivers, [{ slot: 0, name: 'Oto', ch: 0, veh: 0 }]);
+});
+
+test('xe máy: restore sau hibernation giữ veh + ch của người lái; attachment cũ không có veh ⇒ ô tô', () => {
+  const r = new SkyRoom();
+  r.restore([{ id: 'b', slot: 1, name: 'Xe', kind: 'drive', ch: 1, veh: 1 }, { id: 'c', slot: 2, name: 'Oto', kind: 'drive' }, { id: 'w', slot: 0, name: 'Di', kind: 'walk', ch: 1, veh: 1 }], 0);
+  const m = r.connect('z', 0)![0].msg as any;
+  assert.deepEqual(m.drivers, [{ slot: 1, name: 'Xe', ch: 1, veh: 1 }, { slot: 2, name: 'Oto', ch: 0, veh: 0 }]);
+  assert.deepEqual(m.walkers, [{ slot: 0, name: 'Di', ch: 1 }]);
+  assert.equal(r.vehOf('b'), 1); assert.equal(r.chOf('b'), 1); assert.equal(r.vehOf('w'), 0);
 });

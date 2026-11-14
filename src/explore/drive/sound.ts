@@ -62,10 +62,11 @@ function drSndSync(force = false): void {
 }
 
 export const drSound = {
-  /* Gắn nút bật / tắt (#drSoundBtn); bấm = toggle (trong thao tác của người xem nên tạo / resume được ngữ cảnh) */
-  bind(el: HTMLElement | null): void {
+  /* Gắn nút bật / tắt (#drSoundBtn); bấm = toggle (trong thao tác của người xem nên tạo / resume được ngữ cảnh).
+     when: chỉ toggle khi điều kiện đúng (nút dùng chung với xe máy: lúc lái xe máy bấm nút không đổi lựa chọn của ô tô) */
+  bind(el: HTMLElement | null, when: () => boolean = () => true): void {
     btn = el;
-    if (el) el.addEventListener('click', () => { drSound.toggle(); });
+    if (el) el.addEventListener('click', () => { if (when()) drSound.toggle(); });
     drSndSync(true);
   },
   /* Vào chế độ lái: bật mô tơ nếu có đường ra (nếu chưa, update thử lại khi âm thanh chung bật sau) */

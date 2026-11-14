@@ -19,4 +19,5 @@ Theo đúng mẫu `song-han/`, `thuan-phuoc/`, `tran-thi-ly/`, `han-tunnel/` (C�
 - `update(dt, elapsed, cam)` luôn gọi `this.updateLod(cam)` trước.
 - Dọn nhà/cây trên tuyến: sau khi dựng, scale 0 instance (mẫu `han-tunnel/corridor.ts`); **không** sửa `environment/city.ts`.
 - Trạng thái mô phỏng (quay cầu, dìm hầm) làm thành máy trạng thái riêng (`SwingController`, `immersion.ts`) có trạng thái tên rõ ràng, và trả mọi thứ về nguyên trạng khi kết thúc.
+- Vật liệu `road` của `song-han/`, `thuan-phuoc/`, `tran-thi-ly/` và `roadOut` của `han-tunnel/` bọc `roadSharePatch(registerWet(...))` (D-040): dùng chung program với `MAT.road2`, nên giữ đúng tham số (`MeshStandardMaterial` có `map`, không thêm `envMap` / `emissiveMap` / `vertexColors`, không gắn `onBeforeCompile` riêng), nếu không số program tăng (`test:perf -- --strict`).
 - Thay đổi hình học có ràng buộc kỹ thuật (độ dốc, tĩnh không, độ sâu) → thêm kiểm tra vào test của công trình.

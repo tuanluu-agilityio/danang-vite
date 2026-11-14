@@ -14,6 +14,7 @@
     "gen:crowd": "node scripts/people/blender.mjs scripts/people/crowd.py",
     "gen:car": "node scripts/people/blender.mjs scripts/car/convert.py",
     "gen:pilot": "node scripts/people/blender.mjs scripts/people/pilot.py",
+    "gen:bike": "node scripts/people/blender.mjs scripts/bike/convert.py",
     "test:tour": "node tests/tour-check.mjs",
     "test:voice": "node tests/voice-check.mjs",
     "test:drawcalls": "node tests/drawcalls.mjs",
@@ -42,6 +43,8 @@
     "test:char": "node tests/char-check.mjs",
     "test:drive": "node tests/drive-check.mjs",
     "test:drive:unit": "tsx --test tests/drive-unit/*.test.ts",
+    "test:bike": "node tests/bike-check.mjs",
+    "test:bike:unit": "tsx --test tests/bike-unit/*.test.ts",
     "test:pilot:unit": "tsx --test tests/pilot-unit/*.test.ts"
   },
   "dependencies": {

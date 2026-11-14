@@ -856,6 +856,247 @@ const driveBase = {
   }
 };
 
+/* ------------------------- Lái xe máy (xe tay ga) ------------------------- */
+/* docs/superpowers/specs/2026-11-14-xe-may-design.md (D-040). Kích thước thân theo mô hình "Motor Scooter" của Grab3D (CC0, scripts/bike/src/manifest.json,
+   spec §17.1); hiệu năng là ước lượng cho xe tay ga 110–125 cc. Dùng chung CONFIG.drive.sim, stepMax, spawn, evac với ô tô. */
+const bikeBase = {
+  body: {
+    length: 1.98,      // m — chiều dài thân (manifest.json: bao 0,737 × 1,978 × 1,377 m)
+    width: 0.74,       // m — chiều rộng thân, cả gương (như trên)
+    height: 1.7,       // m — chiều cao tính cả người lái ngồi, cho vật cản theo cao độ (ước lượng)
+    wheelbase: 1.32,   // m — chiều dài cơ sở (spec §17.1, đo trên mô hình)
+    wheelDia: 0.44     // m — đường kính ngoài bánh (bán kính 0,22 m trên mô hình, spec §17.1)
+  },
+  perf: {
+    vMax: 25,          // m/s — tốc độ tối đa 90 km/h (ước lượng)
+    t50: 5.0,          // s — 0–50 km/h khi vặn hết ga, không tính trễ tay ga (ước lượng)
+    t80: 14,           // s — 0–80 km/h khi vặn hết ga, không tính trễ tay ga (ước lượng)
+    brake: 7,          // m/s² — phanh thường cả hai bánh, đường khô (ước lượng)
+    brakeWet: 5.0,     // m/s² — phanh thường, đường ướt hẳn; spec §5.3 ghi 5,5 nhưng cộng hãm nhả ga coast thì quãng phanh ướt chỉ dài hơn khô ≈ 19 %, hạ để đạt ≥ 20 % (ước lượng)
+    hardBrake: 9,      // m/s² — phanh gấp (Space), đường khô, không trượt (ước lượng)
+    hardBrakeWet: 6.5, // m/s² — phanh gấp, đường ướt hẳn (ước lượng)
+    coast: 1.2,        // m/s² — giảm tốc khi nhả ga: hãm động cơ + ly tâm nhả (ước lượng)
+    walkBack: 1.0,     // m/s — tốc độ dắt lùi lớn nhất khi giữ phanh lúc đứng; cũng là m/s² tăng / giảm tốc khi dắt (ước lượng)
+    leanMax: 0.611,    // rad — độ nghiêng lớn nhất, đường khô (35°) (ước lượng)
+    leanMaxWet: 0.471, // rad — độ nghiêng lớn nhất, đường ướt hẳn (27°) (ước lượng)
+    turnRadius: 2.0,   // m — bán kính quay vòng nhỏ nhất của trục sau khi chạy chậm (ước lượng)
+    vBlend: 4,         // m/s — từ tốc độ này trở lên lái hoàn toàn bằng độ nghiêng; dưới thì trộn dần sang lái bằng góc lái (ước lượng)
+    leanHz: 2.4,       // Hz — tần số lò xo nghiêng khi đứng / chạy chậm (ước lượng)
+    leanHzFast: 1.1,   // Hz — tần số lò xo nghiêng ở vMax: nặng tay khi nhanh (ước lượng)
+    latG: 9.81,        // m/s² — gia tốc trọng trường trong cân bằng nghiêng tan(lean) = v²κ / g
+    steerRate: 3,      // 1/s — tốc độ bẻ ghi đông khi chạy chậm, phần góc lái tối đa mỗi giây (ước lượng)
+    steerReturn: 4,    // 1/s — tốc độ tự trả ghi đông khi nhả phím, phần góc lái tối đa mỗi giây (ước lượng)
+    scrape: 3,         // m/s² — hãm thêm khi thân xe cọ dọc vật cản (ước lượng)
+    throttleTau: 0.15, // s — hằng số thời gian làm mượt tay ga (lọc bậc một) (ước lượng)
+    brakeTau: 0.15,    // s — hằng số thời gian lực phanh tăng / nhả (lọc bậc một) (ước lượng)
+    windLean: 0.035    // rad — độ nghiêng thêm lớn nhất do gió bão (2°) (ước lượng)
+  },
+  cvt: {               // vòng tua hộp số vô cấp, cho âm thanh và kim đồng hồ (explore/bike/motion.ts bkRpm)
+    idle: 1700,        // vòng/phút — cầm chừng (ước lượng)
+    engage: 3200,      // vòng/phút — ly tâm bắt đầu ăn (ước lượng)
+    power: 6500,       // vòng/phút — vùng công suất giữ khi vặn hết ga (ước lượng)
+    max: 8500,         // vòng/phút — tua lớn nhất, ở vMax (ước lượng)
+    engageV: 3.3,      // m/s — dưới tốc độ này ly tâm còn trượt (≈ 12 km/h) (ước lượng)
+    tauUp: 0.25,       // s — hằng số thời gian tua lên (ước lượng)
+    tauDown: 0.6       // s — hằng số thời gian tua xuống (ước lượng)
+  },
+  sus: {               // giảm xóc trước / sau: chỉ hình và camera, không đổi quỹ đạo
+    hz: 2.2,           // Hz — tần số riêng (ước lượng)
+    damp: 0.55,        // tỉ số giảm chấn (ước lượng)
+    travel: 0.06,      // m — hành trình lớn nhất mỗi chiều (ước lượng)
+    diveK: 0.006,      // m mỗi m/s² — lún do gia tốc dọc: phanh chúi đầu, ga nhún đuôi (ước lượng)
+    bumpK: 0.5,        // hệ số — cú hích vận tốc giảm xóc (m/s) = bumpK · độ dốc đổi (rad) · tốc độ (m/s), ở mối nối ô mặt đường (ước lượng)
+    noise: 0.004,      // m — biên độ nhiễu mặt đường ở vMax, giảm theo tốc độ (ước lượng)
+    seed: 4107         // hạt giống rng() riêng cho nhiễu mặt đường (không dùng rand())
+  },
+  signal: {            // xi nhan tự tắt
+    cancelYaw: 0.6,    // rad — đã rẽ quá chừng này theo hướng xi nhan rồi trả thẳng thì tắt (ước lượng)
+    cancelS: 12        // s — đi thẳng quá chừng này thì tắt (ước lượng)
+  },
+  stuckS: 3,           // s — bị chặn mà vẫn vặn ga quá chừng này thì gợi ý "bấm R" (ước lượng)
+  cam3: {              // camera góc thứ ba sau xe máy: drCamPlace (explore/drive/camera.ts) với bộ số này; cùng tên trường với drive.cam, gần và thấp hơn ô tô
+    dist: 4.2,         // m — camera lùi sau tâm xe theo mặt bằng (ước lượng)
+    height: 1.9,       // m — camera cao hơn mặt đường dưới xe (ước lượng)
+    lookAhead: 3,      // m — điểm nhìn ở trước tâm xe chừng này theo hướng xe (ước lượng)
+    look: 1.0,         // m — điểm nhìn và gốc đoạn kiểm vật cản cao hơn mặt đường dưới xe (ước lượng)
+    lag: 6,            // 1/s — tốc độ hướng camera bám theo hướng xe khi rẽ, cũng là tốc độ nở lại khoảng cách / độ cao, như ô tô (ước lượng)
+    returnAfter: 2.5,  // s — thôi kéo chuột chừng này thì góc lệch tự về sau xe, như ô tô (ước lượng)
+    returnRate: 2,     // 1/s — tốc độ góc lệch về 0, như ô tô (ước lượng)
+    tunnelDist: 3.2,   // m — khoảng lùi khi xe trong ô hầm (ước lượng)
+    tunnelHeight: 1.5, // m — độ cao camera khi xe trong ô hầm hoặc khi vướng vật cản (ước lượng)
+    minDist: 1.8,      // m — vướng vật cản thì kéo gần nhưng không dưới số này: vẫn sau người lái (thân dài 1,98 m) (ước lượng)
+    gap: 0.3,          // m — lùi khỏi chỗ đoạn xe → camera chạm vật cản, như ô tô (ước lượng)
+    roof: 0.5,         // m — camera thấp hơn trần ống hầm ít nhất chừng này, như ô tô (ước lượng)
+    floor: 0.3,        // m — camera cao hơn mặt đường tại chỗ nó ít nhất chừng này, như ô tô (ước lượng)
+    pitchMin: -0.2,    // rad — kéo chuột lên: góc hạ camera nhỏ nhất, như ô tô (ước lượng)
+    pitchMax: 0.9,     // rad — kéo chuột xuống: góc nâng camera lớn nhất, như ô tô (ước lượng)
+    mouse: 0.005,      // rad/px — độ nhạy kéo chuột, như ô tô (ước lượng)
+    fov: 62,           // độ — góc nhìn dọc góc thứ ba, như ô tô (drive.cam.fov) (ước lượng)
+    near: 0.5          // m — mặt cắt gần góc thứ ba, như camera chính (core/renderer.ts) (spec §17.5)
+  },
+  cam1: {              // camera góc thứ nhất (mặc định) trên yên (explore/bike/camera.ts), spec §7 + §17.5
+    fov: 75,           // độ — góc nhìn dọc góc thứ nhất (ước lượng)
+    near: 0.55,        // m — mặt cắt gần góc thứ nhất: CẮT BỎ phần thân trên người lái (vai, cổ áo, lưng ở độ sâu < 0,5 m trước camera, đo cả nam lẫn nữ) mà vẫn giữ gương (≥ 0,67 m), đồng hồ (≥ 0,69 m), tay nắm (≥ 0,72 m) khi lái thẳng; spec §17.5 ghi 0,2 khi camera còn ở mắt (Task 7 đổi, kiểm ảnh) (ước lượng)
+    eye: { fore: -0.22, up: 1.7 },   // m — mắt khi chưa có người lái thật, hệ thân xe (tâm giữa hai vệt bánh trên mặt đường): ra trước, cao lên. Đo nhân vật (Task 4): mắt ở yên + (0,17; 0,87) nam, (0,10; 0,78) nữ, yên ở (−0,42; 0,85) (ước lượng)
+    eyeFore: 0.02,     // m — điểm nhìn ra trước điểm giữa hai xương mắt (Bip01_LEye / REye ở tâm nhãn cầu) tới mặt mắt (ước lượng)
+    headEye: { fore: 0.1, up: 0.09 },  // m — mắt so với xương đầu (Bip01_Head) khi nhân vật không có xương mắt, hệ thân xe: ra trước, cao lên (ước lượng)
+    back: 0.41,        // m — dời điểm nhìn ra sau mắt thật để tay nắm còn trong mép dưới khung khi cúi ít (tilt); thân trên người lái lọt vào tầm nhìn thì near cắt bỏ (kiểm ảnh Task 7, nam + nữ) (ước lượng)
+    tilt: -0.26,       // rad — camera cúi sẵn so với phương ngang của xe: đường chân trời ≈ 33 % từ mép trên (còn bầu trời, vòm cầu), vẫn thấy gương, đồng hồ, hai tay ở mép dưới (kiểm ảnh Task 7; −0,5 của Task 5 đưa chân trời lên 15 %) (ước lượng)
+    rollK: 0.6,        // camera cuộn theo chừng này phần độ nghiêng xe (đầu người giữ thăng bằng), không đơn vị (spec §7)
+    roll3K: 0.2,       // như trên, góc thứ ba (spec §7)
+    pitchK: 0.5,       // camera chúi / ngửa theo chừng này phần góc chúi do giảm xóc, không đơn vị (spec §7: < 1)
+    bobMax: 0.01,      // m — biên độ nhún lên xuống lớn nhất do mặt đường (spec §7: ≤ 1 cm)
+    bobK: 2,           // m mỗi m — nhún đích = bobK × độ lún trung bình hai giảm xóc (đã gồm nhiễu mặt đường tăng theo tốc độ), kẹp ±bobMax; là đường DUY NHẤT độ lún vào mắt (ước lượng)
+    surgeMax: 0.04,    // m — dồn trước khi phanh / lùi khi tăng tốc lớn nhất (spec §7: ≤ 4 cm)
+    hz: 3,             // Hz — tần số lò xo cuộn / nhún / dồn (ước lượng)
+    damp: 0.8,         // tỉ số giảm chấn lò xo (ước lượng)
+    dtMax: 0.1,        // s — kẹp bước thời gian của lò xo (tab ẩn rồi quay lại không văng) (ước lượng)
+    yawMax: 2.09,      // rad — kéo chuột nhìn quanh ngang tối đa ±120° (spec §7)
+    pitchMin: -0.7,    // rad — kéo nhìn xuống tối đa 40° (spec §7)
+    pitchMax: 0.52,    // rad — kéo nhìn lên tối đa 30° (spec §7)
+    mouse: 0.004,      // rad/px — độ nhạy kéo chuột / vuốt nhìn quanh (ước lượng)
+    returnAfter: 1.5,  // s — thôi kéo chừng này thì góc nhìn quanh tự về (ước lượng)
+    returnRate: 3,     // 1/s — tốc độ góc nhìn quanh về 0 (ước lượng)
+    mixS: 0.4,         // s — thời gian trộn thứ nhất ↔ thứ ba khi bấm V (spec §7)
+    headMix: 0.15,     // phần trộn đã làm mượt (smoothstep): dưới mức này (camera còn sát mắt) thì ẩn đầu + mũ người lái (ước lượng)
+    motion: 1,         // hệ số nhân mọi chuyển động phụ (nhún, dồn, chúi do giảm xóc), 0..1; cuộn theo độ nghiêng không nhân (spec §7)
+    motionReduced: 0.3 // như trên khi trình duyệt báo prefers-reduced-motion (spec §7)
+  },
+  dash: {              // mặt đồng hồ texture canvas (explore/bike/dash.ts)
+    px: 256,           // px — cạnh canvas vuông
+    hz: 10,            // lần/giây — vẽ lại tối đa (spec §9), chỉ khi số hiển thị đổi
+    vMax: 120,         // km/h — vạch cuối thang tốc độ (ước lượng)
+    rpmMax: 9000,      // vòng/phút — cuối thang vòng tua (ước lượng)
+    day: 0.8,          // hệ số sáng MeshBasicMaterial ban ngày (ước lượng)
+    night: 1.0         // hệ số sáng khi uNight = 1: đèn nền tự sáng (ước lượng)
+  },
+  hud: {               // phần HUD riêng của xe máy (explore/bike/hudBike.ts): đèn xi nhan, nút góc nhìn / còi / về làn, gợi ý phím, nhắc khi kẹt; đồng hồ + bản đồ nhỏ dùng của ô tô
+    hintMs: 8000,      // ms — gợi ý phím #bkHint tự ẩn sau chừng này kể từ lúc vào chế độ (dài hơn ô tô 6 000 vì nhiều phím hơn) (ước lượng)
+    stuckS: 3          // s — xe bị chặn mà vẫn vặn ga quá chừng này thì nhắc "bấm R" và nút Về làn sáng lên (spec §5.3)
+  },
+  fx: {                // đêm + mưa (explore/bike/fx.ts, spec §9): vệt đèn pha trên mặt đường, bụi nước bánh xe; không PointLight / SpotLight, không đụng vật liệu đường
+    beam: {            // vệt đèn pha: một tấm cộng màu, texture hình quạt, bám mặt đường trước xe; lớp 1 (không vào phản chiếu mặt nước); +1 lệnh vẽ ban đêm
+      len: 14,         // m — chiều dài vệt trên mặt đường, đường khô (ước lượng)
+      width: 5,        // m — bề ngang tấm ở đầu xa (quạt trong texture hẹp dần về phía xe) (ước lượng)
+      ahead: 1.2,      // m — mép gần của vệt ra trước tâm xe (ước lượng)
+      opacity: 0.55,   // độ sáng cộng lớn nhất khi uNight = 1, đường khô, không đơn vị (ước lượng)
+      nightMin: 0.3,   // uNight từ mức này trở xuống thì không vẽ vệt (ước lượng)
+      wetGain: 1.4,    // đường ướt hẳn (uWet = 1): vệt sáng hơn và dài hơn chừng này lần (mặt ướt phản xạ như gương) (ước lượng)
+      rows: 8,         // số đoạn dọc của tấm: mỗi hàng đỉnh đặt theo cao độ mặt đường (drGround) để bám dốc cầu / dốc hầm (spec §9)
+      lift: 0.04,      // m — nâng khỏi mặt đường (cùng polygonOffset) để không nhấp nháy với nhựa đường (ước lượng)
+      px: 64,          // px — cạnh texture quạt (DataTexture dựng bằng code)
+      color: 0xfff0d2  // màu ánh đèn pha LED hơi ấm (ước lượng)
+    },
+    spray: {           // bụi nước sau hai bánh khi mưa: một THREE.Points, +1 lệnh vẽ khi mưa và đang chạy
+      max: 120,        // số hạt lớn nhất (spec §9)
+      vMin: 4,         // m/s — dưới tốc độ này không tung nước (ước lượng)
+      life: 0.5,       // s — đời một hạt (ước lượng)
+      seed: 9113,      // hạt giống rng() riêng (không dùng rand() / Math.random())
+      vFull: 15,       // m/s — từ tốc độ này tung nước đủ mức (ước lượng)
+      rearK: 0.7,      // phần hạt sinh ở bánh sau (còn lại bánh trước), không đơn vị (ước lượng)
+      carry: 0.5,      // hạt bay tới trước với chừng này phần tốc độ xe nên tụt lại sau bánh, không đơn vị (ước lượng)
+      up: [1.0, 2.4] as [number, number],   // m/s — vận tốc bắn lên nhỏ nhất, lớn nhất (ước lượng)
+      side: 0.8,       // m/s — vận tốc bắn ngang lớn nhất mỗi bên (ước lượng)
+      gravity: 9.81,   // m/s² — trọng trường kéo hạt xuống
+      size: 0.3,       // m — cỡ hạt (PointsMaterial, sizeAttenuation); 0,22 vẫn gần như không thấy khi mưa (review Task 7, kiểm ảnh Task 9) (ước lượng)
+      opacity: 0.75,   // độ đục hạt mới sinh, mờ dần theo đời; 0,55 quá nhạt trên nền mưa xám (ước lượng)
+      soft: 1.2,       // mũ làm mềm alpha của chấm tròn (1 − r²)^soft; 2 làm lõi chấm quá nhỏ (ước lượng)
+      color: 0xe4ebf0, // màu bụi nước ban ngày, sáng hơn mặt đường ướt một chút (ước lượng)
+      nightDim: 0.35   // màu nhân chừng này khi uNight = 1 (hạt không tự sáng) (ước lượng)
+    },
+    gust: {            // gió giật đẩy nhẹ độ nghiêng: cộng vào steer (BkInput giữ nguyên), chỉ khi v > perf.vBlend
+      steer: 0.06,     // phần steer (−1..1) cộng thêm lớn nhất, gió giật thổi ngang thân xe hẳn (ước lượng)
+      ref: 10          // m/s — gió giật (weatherU.uGust) từ mức này thì cộng đủ steer; bão: gust 10 m/s (weather.presets.storm)
+    }
+  },
+  road: {              // mặt đường nhìn gần + vệt đèn khi ướt (explore/bike/roadFx.ts, spec §9 + §17.3, mốc bỏ được): vá shader 7 vật liệu đường, cường độ qua shared.uRoadNear (0 ngoài chế độ xe máy ⇒ góc cũ trùng từng điểm ảnh)
+    detail: true,      // false = không vá vật liệu nào (khóa program như cũ), bỏ hẳn mốc này
+    wet: true,         // false = chỉ hạt nhựa, không vệt đèn khi ướt
+    grain: 0.06,       // biên độ hạt nhựa nhân vào màu gốc (±), không đơn vị (ước lượng)
+    grainFar: 40,      // m — hạt mờ về 0 tại khoảng cách này tới camera (ước lượng)
+    grainNear: 0.4,    // phần của grainFar bắt đầu mờ, không đơn vị (ước lượng)
+    grainHz: [2.3, 9.0] as [number, number],   // 1/m — hai tần số nhiễu theo tọa độ thế giới XZ (sỏi lớn, hạt mịn) (ước lượng)
+    grainFineFar: 14,  // m — tần số mịn mờ hẳn ở khoảng cách này (tránh răng cưa / lấp lánh khi chạy) (ước lượng)
+    streak: 0.5,       // cường độ vệt đèn khi uWet = uNight = 1, nhìn sượt hẳn, không đơn vị (ước lượng)
+    streakN: 240,      // số dải theo góc quanh camera trên một vòng (vệt kéo dọc hướng nhìn); độ rộng một dải ≈ 360° / streakN (ước lượng)
+    streakNear: 4,     // m — vệt bắt đầu hiện từ khoảng cách này (dưới bánh xe không có) (ước lượng)
+    streakFar: 150,    // m — vệt mờ hết ở khoảng cách này (ước lượng)
+    streakColor: [1.0, 0.72, 0.42] as [number, number, number]   // màu vệt (đèn đường natri / LED ấm), RGB tuyến tính (ước lượng)
+  },
+  remote: {            // xe máy của người chơi khác (explore/multi/remoteDrive.ts, labels.ts); hình rẻ: hình tạm xe + người khối (model.ts BkBike lite) + tấm bóng = 2 lệnh vẽ mỗi xe
+    labelAbove: 0.4    // m — nhãn tên đặt cao hơn đỉnh mũ người lái chừng này (đỉnh = body.height) (ước lượng)
+  },
+  model: {             // hình xe máy trong cảnh (explore/bike/model.ts)
+    url: 'bike/scooter.glb',   // mô hình xe tay ga (npm run gen:bike từ scripts/bike/src/scooter.glb, Grab3D, CC0), đường dẫn tương đối BASE_URL
+    timeoutMs: 8000,   // ms — quá thời gian này mà chưa nạp + làm nóng xong thì bkModelLoad trả null (vẫn đổi sang mô hình thật khi xong muộn) (ước lượng)
+    warmMs: 4000,      // ms — chờ làm nóng shader tối đa (compileAsync), quá thì bỏ chờ (ước lượng)
+    steerLock: 0.52,   // rad — góc bẻ cổ lái lớn nhất trên hình (manifest.json: khóa lái ≈ ±30°)
+    headDay: 1,        // hệ số phát sáng đèn pha ban ngày: xe đời mới luôn bật đèn (ước lượng)
+    headNight: 2.5,    // hệ số phát sáng đèn pha khi uNight = 1 (ước lượng)
+    tailNight: 1.2,    // hệ số phát sáng đèn hậu khi uNight = 1; ban ngày tắt (ước lượng)
+    tailBrake: 3,      // hệ số phát sáng đèn hậu khi phanh, ngày lẫn đêm (ước lượng)
+    sigOn: 3,          // hệ số phát sáng xi nhan ở nửa chu kỳ sáng (ước lượng)
+    sigHz: 1.5,        // Hz — nhịp nháy xi nhan, 90 lần/phút (ước lượng)
+    dashColor: 0x0d1116,   // màu mặt đồng hồ khi chưa có texture canvas (MeshBasicMaterial, không chịu ánh sáng) (ước lượng)
+    maxBytes: 1_000_000,   // byte — trần dung lượng scooter.glb (tests/bike-unit/glb.test.ts; spec §17.1)
+    maxTris: 22_000,   // tam giác — trần tam giác scooter.glb (như trên; nguồn 19 290)
+    shadow: { len: 1.9, wid: 0.62, opacity: 0.42, soft: 1.8, lift: 0.03 },   // tấm bóng mờ dưới gầm, hình elip mép mềm: m — dài theo thân, m — ngang (hai bánh + chân người lái, không tính gương); độ đục ở tâm; mũ làm mềm alpha = (1 − r²)^soft; m — nâng khỏi mặt đường (ước lượng; bản cũ chép cỡ ô tô thành tấm chữ nhật tối)
+    temp: { paint: 0x8fd3c1, shirt: 0x2f5d8a, helmet: 0xd8d8d8 }   // màu hình tạm (hình 'bike' của common/vehicles/shapes.ts): sơn thân bạc hà như mô hình Grab3D, áo, mũ bảo hiểm (ước lượng)
+  },
+  rider: {             // người lái có xương (explore/bike/rider.ts): nhân vật đi dạo p0 / p3, tư thế ngồi = bảng góc khớp + IK hai tay / hai chân. Hệ C của nhân vật: +X trước mặt, +Y lên, +Z bên phải
+    headLean: 0.6,     // đầu nghiêng theo xe chừng này phần độ nghiêng (còn lại bù về phương đứng), không đơn vị (spec §6)
+    accLean: 0.06,     // rad — lưng ngả ra sau khi vặn hết ga (gia tốc dọc = 0 → 50 km/h trong perf.t50) (ước lượng)
+    brakeLean: 0.09,   // rad — lưng chúi trước khi phanh gấp (giảm tốc = perf.hardBrake) (ước lượng)
+    hz: 2,             // Hz — tần số lò xo phản ứng (lưng, đầu) (ước lượng)
+    damp: 0.7,         // tỉ số giảm chấn lò xo phản ứng (ước lượng)
+    steerLook: 0.4,    // đầu quay theo góc lái chừng này phần (nhìn vào hướng rẽ khi chạy chậm), không đơn vị (ước lượng)
+    dtMax: 0.1,        // s — kẹp bước thời gian của lò xo (tab ẩn rồi quay lại không văng) (ước lượng)
+    helmet: { r: 0.125, color: '#2a2f3a', up: 0.1, fore: -0.02, scale: [1.15, 1.25, 1.08] as [number, number, number], pitch: 0.3 },   // mũ bảo hiểm nửa đầu dựng bằng code: r m bán kính, màu vỏ; tâm cao hơn xương đầu up m, ra trước fore m (hệ C lúc đứng thẳng); scale hệ số kéo dài theo [trước–sau, cao, ngang]; pitch rad ngửa mũ (vành trước cao hơn vành sau, không che mắt) (ước lượng)
+    handTol: 0.02,     // m — sai số cho phép điểm nắm bàn tay – tay nắm (unit test, spec §6)
+    footTol: 0.03,     // m — sai số cho phép cổ chân – điểm đặt chân trên sàn (unit test, spec §6)
+    seat: { fore: 0.02, up: 0.09 },   // m — xương hông (Pelvis) so với neo `seat` (đỉnh yên): ra trước, cao lên (bề dày mông dưới khớp hông) (ước lượng)
+    ankle: { back: 0.04, up: 0.1 },   // m — đích cổ chân so với neo foot_l / foot_r (điểm giữa bàn chân trên sàn): lùi sau, cao lên (cổ chân Rocketbox cao ≈ 0,10 m khi đứng) (ước lượng)
+    pose: { spine: 0.12, neck: 0.0, head: -0.06, hip: 1.25, knee: 1.1, legSplit: 0.04, ankle: 0.0, clavicle: 0.04, clavicleFore: 0.08 },   // rad — bảng góc khớp tư thế ngồi nền (bkRiderPose), cộng lên tư thế đứng của mô hình: lưng cúi trước (tổng ba đốt), cổ, đầu cúi (âm = ngẩng), gập hông (nâng gối), gập gối, đùi xoay ra ngoài, bàn chân chúc (từ tư thế đứng phẳng), xương đòn nâng, xương đòn đưa trước; IK chỉnh đùi / cẳng chân / tay sau đó (ước lượng)
+    legPole: [1.0, 0.3, 0.1] as [number, number, number],   // m — điểm cực của gối so với khớp hông [trước, lên, ra ngoài]: gối hướng về trước (ước lượng)
+    arm: { pole: [-0.35, -1.0, 0.45], wrist: [0.15, -0.15, 0.0], palm: [0.35, -1.0, 0.0], twist: 0.5, grip: [0.75, 0.03] },   // tay (pilot/bones.ts ik với bộ số này): pole m — điểm cực khuỷu so với vai [sau, xuống, ra ngoài]; wrist — hướng ngón = hướng cẳng tay cộng [trước, lên, vào trong]; palm — hướng lòng bàn tay [trước, lên, vào trong] (úp xuống tay nắm); twist 0..1 phần xoay cổ tay chia sang cẳng tay; grip — điểm nắm: tỉ lệ quãng cổ tay → gốc ngón giữa, m lệch về phía lòng bàn tay (ước lượng)
+    finger: { curl: [1.2, 1.4, 1.0], thumb: [0.3, 0.5, 0.4], thumbRoll: 0.6 }   // rad — ngón co nắm tay nắm (đốt gốc, giữa, ngọn); ngón cái co từng đốt; ngón cái xoay quanh hướng ngón (ước lượng)
+  },
+  sound: {             // âm thanh nhiều lớp tổng hợp bằng Web Audio, không tệp (explore/bike/sound.ts, spec §8 + §17.11). Gain là hệ số trước nút âm lượng chung; chưa ai nghe thử
+    updateMs: 60,      // ms — ghi tham số tối đa mỗi chừng này (mỗi lần là một sự kiện tự động hoá, D-018), như ô tô (ước lượng)
+    smooth: 0.08,      // s — hằng số thời gian làm mượt tham số (setTargetAtTime), như ô tô (ước lượng)
+    maxGain: 0.2,      // trần gain của mọi lớp: mô tơ ô tô drive.sound.gainMax 0,1 + 6 dB (spec §8)
+    seed: 4129,        // hạt giống rng() riêng cho hai bộ đệm nhiễu (không dùng rand())
+    noiseS: 2,         // s — độ dài bộ đệm nhiễu trắng / nâu, phát lặp (ước lượng)
+    comp: { threshold: -16, knee: 8, ratio: 4, attack: 0.005, release: 0.2 },   // nén chung ở đầu ra của chế độ: dB, dB, tỉ số, s, s (ước lượng)
+    engine: {          // máy một xi lanh bốn kỳ: PeriodicWave hài theo tần số nổ + nhiễu nạp / xả điều biên theo nhịp nổ, qua thông thấp mở theo ga
+      harm: 12,        // số hài của PeriodicWave (spec §17.11)
+      rolloff: 0.9,    // biên độ hài thứ n ∝ 1 / n^rolloff, không đơn vị (ước lượng)
+      evenK: 0.45,     // hài chẵn yếu hơn: nhân biên độ chừng này, không đơn vị (ước lượng)
+      cents: 7,        // cent — hai dao động lệch ± chừng này cho dày tiếng (ước lượng)
+      harmMix: 0.7,    // mức chuỗi hài vào lọc, không đơn vị (ước lượng)
+      noiseBand: [800, 1.1] as [number, number],   // dải thông nhiễu nạp / xả: Hz, Q (ước lượng)
+      amBase: 0.3, amDepth: 0.3,   // gain nhiễu = amBase ± amDepth theo dao động sin ở tần số nổ, không đơn vị (ước lượng)
+      lpIdle: 320,     // Hz — lọc thông thấp khi nhả ga, ở vòng tua cầm chừng (ước lượng)
+      lpOpen: 2200,    // Hz — mở thêm khi vặn hết ga (ước lượng)
+      lpRpm: 900,      // Hz — mở thêm ở vòng tua lớn nhất (ước lượng)
+      gIdle: 0.05, gThrottle: 0.06, gRpm: 0.05   // gain máy = gIdle + gThrottle·ga + gRpm·(tua − cầm chừng)/(max − cầm chừng); tổng ≤ maxGain (ước lượng)
+    },
+    crank: { rpm: [0, 2500, 1700], at: [0, 0.35, 0.8] },   // đề máy khi start(): vòng/phút giả ở các mốc s (spec §17.11: 0 → 2500 → 1700 trong 0,8 s; mốc giữa ước lượng)
+    off: { s: 0.3, rpm: 600 },   // tắt máy khi stop(): s nhỏ dần rồi mới dừng nút; vòng/phút giả tụt về (ước lượng)
+    belt: { base: 1400, perMs: 45, gain: 0.02 },   // dây đai vô cấp: sin Hz ở 0 m/s, Hz mỗi m/s, gain ở vMax (ước lượng)
+    tyre: { lp: 450, gain: 0.07 },   // lốp: nhiễu nâu qua thông thấp Hz, gain ở vMax (∝ |v|) (ước lượng)
+    wind: { f0: 250, f1: 1300, q: 0.8, gain: 0.09, view1: 1.6 },   // gió: tần số tâm = f0 + f1·(v/vMax)² Hz, Q, gain ở vMax (∝ v²), nhân view1 ở góc thứ nhất (spec §17.11; còn lại ước lượng)
+    brake: { band: [2000, 4000] as [number, number], q: 18, gain: 0.03, k: 0.6, v: 8, tau: 0.05 },   // phanh rít: dải hẹp Hz (theo tốc độ), Q, gain; chỉ khi lực phanh > k và v > v m/s; s hằng số thời gian (dải, k, v: spec §17.11; còn lại ước lượng)
+    thump: { lp: 140, gain: 0.15, k: 0.7, maxHz: 4, s: 0.12 },   // giảm xóc: xung nhiễu nâu qua thông thấp Hz, gain; khi |lún| > k × hành trình; tối đa maxHz lần/s; dài s (k, maxHz: spec §17.11; còn lại ước lượng)
+    tick: { hz: 2000, s: 0.008, gain: 0.05, offK: 0.6, ahead: 0.2 },   // xi nhan: sin Hz, dài s (spec §17.11), gain lúc đèn sáng, nhân offK lúc đèn tắt (tích – tắc), lên lịch trước ahead s (ước lượng); nhịp = bike.model.sigHz
+    horn: { hz: [420, 525] as [number, number], gain: 0.1 },   // còi: hai sóng vuông Hz, cao hơn còi ô tô (spec §17.11); gain (ước lượng)
+    rain: { hp: 3500, gain: 0.08 },   // mưa trên mũ: nhiễu trắng qua thông cao Hz, gain khi mưa 1 (ước lượng)
+    near: { hz: [70, 88, 104] as [number, number, number], lp: 650, gain: 0.06, ref: 5, far: 45 },   // 3 giọng xe gần: răng cưa Hz mỗi giọng, thông thấp Hz, gain ở ≤ ref m, ∝ ref / khoảng cách, về 0 ở far m (ước lượng)
+    amb: { cityLp: 300, cityGain: 0.03, riverBand: [500, 0.7] as [number, number], riverGain: 0.03, riverR: 80, tunnelK: 0.3 },   // nền: "thành phố" nhiễu nâu qua thông thấp Hz, gain; "sông" nhiễu trắng qua dải thông Hz, Q, gain; mức sông về 0 khi vào bờ riverR m từ mép kè; trong hầm nền còn tunnelK (ước lượng)
+    verb: { delay: 0.09, fb: 0.35, lp: 2500, gain: 0.5, s: 0.5 }   // vọng trong hầm: trễ s, hồi tiếp, thông thấp Hz (ước lượng), gain nhánh gửi, chuyển trong s (spec §17.11)
+  }
+};
+
 /* ------------------------- Tàu thuyền sông Hàn ------------------------- */
 /* docs/superpowers/specs/2026-11-10-tau-thuyen-song-han-design.md — mọi số là ước lượng (không có số liệu công bố cho từng tàu) */
 export type BoatTypeId = 'A' | 'B' | 'C' | 'D' | 'E';
@@ -1038,6 +1279,7 @@ export const CONFIG = {
   explore: { ...exploreBase, multi: multiParams },
   stroll: strollBase,
   drive: driveBase,
+  bike: bikeBase,
   vehicles: vehiclesBase,
   trees: treesBase,
   people: peopleBase

@@ -28,6 +28,9 @@ const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vecto
 const _A = new THREE.Vector3(), _W = new THREE.Vector3(), _E = new THREE.Vector3(), _g = new THREE.Vector3(), _d1 = new THREE.Vector3(), _d2 = new THREE.Vector3(), _nn = new THREE.Vector3(), _f = new THREE.Vector3(), _n = new THREE.Vector3(), _ax = new THREE.Vector3();
 const _QU = new THREE.Quaternion(), _QF = new THREE.Quaternion(), _sh = [0, 0, 0], _wt = [0, 0, 0], _pole = [0, 0, 0];
 const AX = new THREE.Vector3(1, 0, 0), AY = new THREE.Vector3(0, 1, 0), AZ = new THREE.Vector3(0, 0, 1);
+/* Thông số tay / ngón cho IK (CONFIG.explore.pilot.arm / finger; người lái xe máy truyền bộ số riêng, bike/rider.ts) */
+export type PlArmCfg = { pole: number[]; wrist: number[]; palm: number[]; twist: number; grip: number[] };
+export type PlFingerCfg = { curl: number[]; thumb: number[]; thumbRoll: number };
 const fin3 = (v: THREE.Vector3): boolean => Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z);
 
 /* Hai trục (a, b) → cơ sở trực chuẩn [a, b⊥, a×b⊥] ghi vào ma trận m (cột) */
@@ -45,7 +48,7 @@ function mapAxes(out: THREE.Quaternion, a1: THREE.Vector3, b1: THREE.Vector3, a2
 }
 
 /* Một cánh tay: xương, số đo ở tư thế `sit`, trạng thái IK */
-interface PlArm {
+export interface PlArm {
   side: -1 | 1;                       // −1 trái (−Z), +1 phải
   clav: THREE.Object3D | null; up: THREE.Object3D; fore: THREE.Object3D; hand: THREE.Object3D;
   l1: number; l2: number;             // m dài cánh tay, cẳng tay
@@ -124,15 +127,14 @@ export class PlBones {
     this.qC(o.parent, _q);
     o.quaternion.copy(_q.invert().multiply(Q));
   }
-  private rotE(o: THREE.Object3D | null, x: number, y: number, z: number): void {
+  rotE(o: THREE.Object3D | null, x: number, y: number, z: number): void {
     if (!o || (x === 0 && y === 0 && z === 0)) return;
     this.rotC(o, _qr.setFromEuler(_e.set(x, y, z, 'YZX')));
   }
 
   /* Số đo cố định từ tư thế `sit` (rig.ts gọi một lần sau mixer.update(0), trước apply): độ dài tay, trục bản lề khuỷu, trục bàn tay, điểm nắm */
-  measure(): void {
+  measure(A: PlArmCfg = CONFIG.explore.pilot.arm): void {
     this.updateMatrices();
-    const A = CONFIG.explore.pilot.arm;
     const pa = new THREE.Vector3(), pf = new THREE.Vector3(), ph = new THREE.Vector3(), n = new THREE.Vector3(), Q = new THREE.Quaternion();
     for (const a of this.arms) {
       this.pC(a.up, pa); this.pC(a.fore, pf); this.pC(a.hand, ph);
@@ -189,22 +191,20 @@ export class PlBones {
   }
 
   /* Hướng bàn tay mong muốn D (hệ C) khi cẳng tay theo hướng d2: ngón theo cẳng tay nghiêng về trước / lên / vào trong (arm.wrist), lòng bàn tay theo arm.palm */
-  private handD(a: PlArm, d2: THREE.Vector3): void {
-    const W = CONFIG.explore.pilot.arm;
+  private handD(a: PlArm, d2: THREE.Vector3, W: PlArmCfg): void {
     _f.copy(d2).addScaledVector(AX, W.wrist[0]).addScaledVector(AY, W.wrist[1]).addScaledVector(AZ, -a.side * W.wrist[2]).normalize();
     _n.set(W.palm[0], W.palm[1], -a.side * W.palm[2]);
     mapAxes(a.D, a.fH, a.nH, _f, _n);
     a.hasD = true;
   }
 
-  /* IK một tay tới điểm nắm t (hệ C). Ba lượt: đích cổ tay = t − D·gH với D của lượt trước */
-  private ik(a: PlArm, t: THREE.Vector3): void {
-    const W = CONFIG.explore.pilot.arm, F = CONFIG.explore.pilot.finger;
+  /* IK một tay tới điểm nắm t (hệ C; cần updateMatrices() trước). Ba lượt: đích cổ tay = t − D·gH với D của lượt trước. W / F: bộ số tay / ngón (mặc định của người treo dù) */
+  ik(a: PlArm, t: THREE.Vector3, W: PlArmCfg = CONFIG.explore.pilot.arm, F: PlFingerCfg = CONFIG.explore.pilot.finger): void {
     a.target.copy(t);
     const A = this.pC(a.up, _A);
     _pole[0] = A.x + W.pole[0]; _pole[1] = A.y + W.pole[1]; _pole[2] = A.z + a.side * W.pole[2];
     _sh[0] = A.x; _sh[1] = A.y; _sh[2] = A.z;
-    if (!a.hasD) this.handD(a, _d2.copy(t).sub(A).normalize());
+    if (!a.hasD) this.handD(a, _d2.copy(t).sub(A).normalize(), W);
     for (let it = 0; it < 3; it++) {
       _g.copy(a.gH).applyQuaternion(a.D);
       _W.copy(t).sub(_g);
@@ -212,7 +212,7 @@ export class PlBones {
       plTwoBone(_sh, a.l1, a.l2, _wt, _pole, a.elbow, a.end);
       _E.fromArray(a.elbow); _W.fromArray(a.end);
       _d2.copy(_W).sub(_E).normalize();
-      if (fin3(_d2)) this.handD(a, _d2);
+      if (fin3(_d2)) this.handD(a, _d2, W);
     }
     _d1.copy(_E).sub(A).normalize();
     _nn.crossVectors(_d1, _d2);

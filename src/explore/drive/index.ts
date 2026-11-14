@@ -31,7 +31,7 @@ import { drBuildSolids } from './solids';
 import { drCollectRuntime, drSceneStats } from './sceneSolids';
 import { drCreate, drStep, drEvacStep, type DrState, type DrInput } from './motion';
 import { trNearby } from '../../common/trafficQuery';
-import type { DrBox } from './collide';
+import { drUseBody, DR_CAR_BODY, type DrBox } from './collide';
 import { drCarLoad, drCarSetWarm } from './car';
 import { drCars } from './cars';
 import { drCamPlace, drCamDrag, type DrCam } from './camera';
@@ -81,8 +81,9 @@ const active = () => cam.mode === 'car' && state !== null;
 const inMode = () => active() || watching;   // Esc và giao diện lái áp cho cả chế độ xem
 const isField = (t: EventTarget | null) => !!t && /^(SELECT|INPUT|TEXTAREA)$/.test((t as HTMLElement).tagName || '');
 
-/* Mạng đường dựng lần đầu vào chế độ, giữ lại cho các lần sau; cổng nhịp quay theo cầu hiện tại */
-function drEnsureNet(): DrNet {
+/* Mạng đường dựng lần đầu vào chế độ, giữ lại cho các lần sau; cổng nhịp quay theo cầu hiện tại.
+   Dùng chung cho cả trang: chế độ xe máy (explore/bike) cũng gọi hàm này, không dựng net thứ hai (drCollectRuntime chỉ push) */
+export function drEnsureNet(): DrNet {
   if (!net) {
     const n = drMakeNet(drBuildPads(), drBuildSolids());
     drCollectRuntime(n, (scene.getObjectByName('tp-houses') as THREE.InstancedMesh) || null);   // một lần cho mỗi net (chỉ push)
@@ -171,6 +172,7 @@ export const drive = {
   /* Vào lái: một mình (không phiên / ngoại tuyến) hoặc với slot lái vừa được cấp (xuất phát theo slot, màu xe theo slot) */
   start(): void {
     if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
+    drUseBody(DR_CAR_BODY);   // thân va chạm ô tô (chế độ xe máy có thể đã đổi sang thân xe máy trong cùng trang)
     const n = drEnsureNet(), s = exMulti.session;
     const slot = s && s.kind === 'drive' && s.mySlot >= 0 ? s.mySlot : DR_SOLO_SLOT;
     if (s) exMulti.onChange = drOnMultiChange;
@@ -193,6 +195,7 @@ export const drive = {
      carry = true khi vừa nhường chỗ (camera đang ở sau xe cũ, trượt dần sang xe được xem). Không có phiên thì không làm gì */
   startWatching(carry = false): void {
     const s = exMulti.session; if (!s) return;
+    drUseBody(DR_CAR_BODY);
     const n = drEnsureNet();
     state = null; watching = true; chased = carry;
     drKeys.clear(); touch?.reset(); drSound.stop();
@@ -260,7 +263,7 @@ export function setupDrive(c: SwingController, onExit: () => void): void {
   /* Tab ẩn hoặc mất tiêu điểm: vòng khung có thể dừng nên tắt còi ngay (phím đã nhả ở drBindDrop, cảm ứng tự reset trong touch.ts) */
   window.addEventListener('blur', () => drSound.horn(false));
   document.addEventListener('visibilitychange', () => { if (document.hidden) drSound.horn(false); });
-  drSound.bind(document.getElementById('drSoundBtn'));   // nút 🔊 / 🔇: cách duy nhất bật tiếng xe khi chưa bật âm thanh chung (nút nhạc ẩn trong chế độ khám phá)
+  drSound.bind(document.getElementById('drSoundBtn'), () => cam.mode !== 'bike');   // nút 🔊 / 🔇: cách duy nhất bật tiếng xe khi chưa bật âm thanh chung (nút nhạc ẩn trong chế độ khám phá)
   const hud = document.getElementById('drHud');
   if (hud) touch = drTouchBind(hud, {
     look: (dx, dy) => { if (active()) drCamDrag(camS, dx, dy); },

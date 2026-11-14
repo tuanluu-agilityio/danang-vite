@@ -9,6 +9,8 @@
 //          GA làm xe chạy, cần gạt bẻ lái, hai ngón độc lập (nhấc GA thì cần gạt giữ nguyên), vuốt vùng trống xoay camera, ar dọc không lật bàn đạp.
 //          Nhiều người (Task 11): danh sách người chơi (đủ ba loại) không chồng Thoát / bản đồ nhỏ / đồng hồ / bàn đạp, ở mọi bố cục và ar; máy tính ẩn cần gạt, GA, PHANH;
 //          đồng hồ, danh sách, ô FPS, bản đồ nhỏ không chồng nhau ở 1280×720.
+//   Mục 8: Xe máy (D-040 Task 9): 8 điều khiển cảm ứng (cần gạt, GA, PHANH, ◄, ►, 🎥, 📢, ↺) + 🔊 đủ lớn, trong khung, không chồng / bị che / che giữa màn hình,
+//          dọc, ngang, ar; GA chạy, cần gạt rẽ, xi nhan, đổi góc nhìn, còi giữ, về làn, nút ↺ sáng khi kẹt, vuốt nhìn quanh; máy tính: 🎥 ◄ ► gợi ý không chồng nhau.
 //
 //   npm run build && npm run test:mobile
 import fs from 'node:fs';
@@ -503,6 +505,107 @@ try {
   await pick(CK.page, '#langSelect', 'ar'); await CK.page.evaluate(() => window.__app.ui.closeSheets()); await frames(CK.page, 2);
   await deskLayout('ar máy tính');
   allErrors.push(...CK.errors); await CK.page.close();
+
+  // Mục 8 — Xe máy trên điện thoại (D-040 Task 9): ?explore=bike; cần gạt + GA + PHANH của ô tô (drive/touch.ts qua bkTouchMerge) + ◄ ► 🎥 📢 ↺ + 🔊 góc trên trái
+  const BH = ['#drSteer', '#drGas', '#drBrake', '#bkSigL', '#bkSigR', '#bkView', '#bkHorn', '#bkReset'];
+  const bikeLayout = async (page, W, H, tag) => {
+    await frames(page, 2);
+    const hud = await rects(page, BH), avoid = await rects(page, ['#btnExExit', '#drMap', '#drMapNote', '#drSpeed', '#drSoundBtn']);
+    const snd = avoid.find((b) => b.sel === '#drSoundBtn');
+    check(`xe máy ${tag}: đủ 8 điều khiển (cần gạt, GA, PHANH, ◄, ►, 🎥, 📢, ↺) và nút tiếng xe hiện`, hud.length === 8 && !!snd);
+    check(`xe máy ${tag}: mỗi nút ≥ 44 × 44 px`, [...hud, ...(snd ? [snd] : [])].every((b) => b.width >= 44 && b.height >= 44));
+    check(`xe máy ${tag}: nằm trọn trong khung nhìn`, [...hud, ...(snd ? [snd] : [])].every((b) => b.left >= 0 && b.top >= 0 && b.right <= W && b.bottom <= H));
+    check(`xe máy ${tag}: điều khiển không chồng nhau và không chồng Thoát / bản đồ nhỏ / chú thích Hầm / đồng hồ / nút tiếng xe`, avoid.length === 5 && noOverlap([...hud, ...avoid]));
+    check(`xe máy ${tag}: không bị lớp khác che`, (await Promise.all([...BH, '#drSoundBtn'].map((s) => topAtCenter(page, s)))).every(Boolean));
+    /* giữa màn hình (40 % mỗi chiều quanh tâm) để nhìn đường: không nút nào lấn vào */
+    check(`xe máy ${tag}: không che giữa màn hình`, [...hud, ...(snd ? [snd] : [])].every((b) => b.right <= W * 0.3 || b.left >= W * 0.7 || b.bottom <= H * 0.3 || b.top >= H * 0.7));
+    check(`xe máy ${tag}: cảm ứng ẩn gợi ý phím (#drHint, #bkHint) và chữ "bấm R" (#bkStuck)`, await hiddenAll(page, ['#drHint', '#bkHint', '#bkStuck']));
+    return hud;
+  };
+  const BP = await openApp(browser, srv.url + '?explore=bike', { width: 390, height: 844, mobile: true });
+  BP.page.setDefaultTimeout(180000);
+  await BP.page.waitForFunction(() => window.__app.bike.active());
+  await bikeLayout(BP.page, 390, 844, 'dọc 390×844');
+  const BV = (page) => page.evaluate(() => window.__app.bike.state.v);
+  const FB = await fingers(BP.page);
+  const [bpad] = await rects(BP.page, ['#drSteer']), [bgas] = await rects(BP.page, ['#drGas']);
+  const bgx = bgas.left + bgas.width / 2, bgy = bgas.top + bgas.height / 2, bpx = bpad.left + bpad.width / 2, bpy = bpad.top + bpad.height / 2;
+  await FB.down(1, bgx, bgy);
+  await BP.page.waitForFunction(() => window.__app.bike.state.v > 0.3, null, { polling: 'raf' });
+  check('xe máy: giữ GA thì xe chạy (v > 0,3 m/s), nút GA sáng', (await BV(BP.page)) > 0.3 && await BP.page.evaluate(() => document.getElementById('drGas').classList.contains('on')));
+  await FB.down(2, bpx, bpy); await FB.move(2, bpx - bpad.width / 2 + 4, bpy);
+  await BP.page.waitForFunction(() => window.__app.bike.state.steer > 0.02, null, { polling: 'raf' });
+  check('xe máy: cần gạt sang trái + GA: rẽ trái (steer > 0)', (await BP.page.evaluate(() => window.__app.bike.state.steer)) > 0.02);
+  await FB.up(2); await FB.up(1); await frames(BP.page, 3);
+  check('xe máy: nhả hết, ô tô không bị điều khiển (drive.state rỗng)', await BP.page.evaluate(() => !window.__app.drive.state));
+  // ◄ bật xi nhan trái, bấm lại tắt; ► bật phải
+  await BP.page.tap('#bkSigL'); await frames(BP.page, 2);
+  check('xe máy: chạm ◄ bật xi nhan trái, đèn #bkSigL sáng', await BP.page.evaluate(() => window.__app.bike.state.sig === 1 && document.getElementById('bkSigL').classList.contains('on')));
+  await BP.page.tap('#bkSigR'); await frames(BP.page, 2);
+  check('xe máy: chạm ► chuyển sang xi nhan phải', await BP.page.evaluate(() => window.__app.bike.state.sig === -1 && document.getElementById('bkSigR').classList.contains('on') && !document.getElementById('bkSigL').classList.contains('on')));
+  await BP.page.tap('#bkSigR'); await frames(BP.page, 2);
+  check('xe máy: chạm ► lần nữa tắt xi nhan', await BP.page.evaluate(() => window.__app.bike.state.sig === 0));
+  // 🎥 đổi góc nhìn, chạm lại về góc thứ nhất
+  await BP.page.tap('#bkView'); await frames(BP.page, 2);
+  check('xe máy: chạm 🎥 sang góc thứ ba', await BP.page.evaluate(() => window.__app.bike.view === 3));
+  await BP.page.tap('#bkView'); await frames(BP.page, 2);
+  check('xe máy: chạm 🎥 lần nữa về góc thứ nhất', await BP.page.evaluate(() => window.__app.bike.view === 1));
+  // 📢 giữ là còi, nhả là thôi
+  const [bhorn] = await rects(BP.page, ['#bkHorn']);
+  await FB.down(4, bhorn.left + bhorn.width / 2, bhorn.top + bhorn.height / 2); await frames(BP.page, 2);
+  check('xe máy: giữ 📢: nút sáng', await BP.page.evaluate(() => document.getElementById('bkHorn').classList.contains('on')));
+  await FB.up(4); await frames(BP.page, 2);
+  check('xe máy: nhả 📢: nút tắt', await BP.page.evaluate(() => !document.getElementById('bkHorn').classList.contains('on')));
+  // ↺ về làn: xe đứng yên
+  await BP.page.tap('#bkReset'); await frames(BP.page, 2);
+  check('xe máy: chạm ↺ về làn (xe đứng yên)', Math.abs(await BV(BP.page)) < 0.05);
+  // kẹt: nút ↺ sáng, chữ "bấm R" không hiện trên cảm ứng
+  /* kẹt thật: đặt xe trên Cầu Rồng quay mặt vào lan can (+Z), vặn ga 10 s bằng __app.bike.step (HUD ghi trong cùng bước, đọc ngay trước khung kế) */
+  const bStuck = await BP.page.evaluate(() => {
+    const b = window.__app.bike; b.placeAt(-150, 8.625, -Math.PI / 2);
+    for (let i = 0; i < 300; i++) b.step(1 / 30, { gas: 1, brake: 0, steer: 0, hard: false, grip: 1 });
+    return { stuck: b.state.stuck, hot: document.getElementById('bkReset').classList.contains('hot'), noText: document.getElementById('bkStuck').getClientRects().length === 0 };
+  });
+  check(`xe máy: kẹt lâu (${bStuck.stuck.toFixed(1)} s): nút ↺ sáng, chữ "bấm R" vẫn ẩn trên cảm ứng`, bStuck.hot && bStuck.noText);
+  await BP.page.evaluate(() => window.__app.bike.placeAt(-150, 8.625, 0)); await frames(BP.page, 2);
+  check('xe máy: hết kẹt thì nút ↺ thôi sáng', await BP.page.evaluate(() => !document.getElementById('bkReset').classList.contains('hot')));
+  // vuốt vùng trống nhìn quanh (góc thứ nhất)
+  await BP.page.evaluate(() => { window.__app.bike.cam.yaw = 0; });
+  await FB.down(3, 195, 420); for (let i = 1; i <= 5; i++) await FB.move(3, 195 - 15 * i, 420);
+  check('xe máy: vuốt vùng trống thì nhìn quanh (cam.yaw đổi)', Math.abs(await BP.page.evaluate(() => window.__app.bike.cam.yaw)) > 0.1);
+  await FB.up(3);
+  await pick(BP.page, '#langSelect', 'ar'); await BP.page.evaluate(() => window.__app.ui.closeSheets()); await frames(BP.page, 2);
+  const arB = await bikeLayout(BP.page, 390, 844, 'ar dọc');
+  const arBL = arB.find((b) => b.sel === '#bkSigL'), arBR = arB.find((b) => b.sel === '#bkSigR');
+  check('xe máy ar: ◄ vẫn bên trái ► (không lật)', !!arBL && !!arBR && arBL.right <= arBR.left);
+  const arL = JSON.parse(fs.readFileSync(new URL('../src/i18n/locales/ar.json', import.meta.url), 'utf8'));
+  check('xe máy ar: aria-label các nút đã dịch', await BP.page.evaluate((L) => ['bkSigL', 'bkSigR', 'bkView', 'bkHorn', 'bkReset'].every((k) => document.getElementById(k).getAttribute('aria-label') === L[k]), arL));
+  allErrors.push(...BP.errors); await BP.page.close();
+
+  const BL = await openApp(browser, srv.url + '?explore=bike', { width: 844, height: 390, mobile: true });
+  BL.page.setDefaultTimeout(180000);
+  await BL.page.waitForFunction(() => window.__app.bike.active());
+  await bikeLayout(BL.page, 844, 390, 'ngang 844×390');
+  allErrors.push(...BL.errors); await BL.page.close();
+
+  /* Máy tính: không cần gạt / bàn đạp / 📢 / ↺; có 🎥 ◄ ► dưới ⚙, gợi ý #bkHint thay #drHint, 🔊 góc trên trái; không chồng nhau */
+  const BK = await openApp(browser, srv.url + '?explore=bike', { width: 1280, height: 720 });
+  BK.page.setDefaultTimeout(180000);
+  await BK.page.waitForFunction(() => window.__app.bike.active());
+  await frames(BK.page, 2);
+  check('xe máy máy tính: ẩn cần gạt, GA, PHANH, 📢, ↺, #drHint', await hiddenAll(BK.page, ['#drSteer', '#drGas', '#drBrake', '#bkHorn', '#bkReset', '#drHint']));
+  /* kẹt thật (như trên) rồi giữ phím W để vẫn kẹt qua các khung tiếp: #bkStuck hiện */
+  await BK.page.evaluate(() => { const b = window.__app.bike; b.placeAt(-150, 8.625, -Math.PI / 2); for (let i = 0; i < 300; i++) b.step(1 / 30, { gas: 1, brake: 0, steer: 0, hard: false, grip: 1 }); });
+  await BK.page.keyboard.down('KeyW'); await frames(BK.page, 2);
+  const bk = await rects(BK.page, ['#bkView', '#bkSigL', '#bkSigR', '#bkHint', '#bkStuck', '#drSoundBtn', '#btnExExit', '#drMap', '#drMapNote', '#drSpeed']);
+  check(`xe máy máy tính: 🎥 ◄ ► gợi ý, chữ kẹt, 🔊, Thoát, bản đồ, đồng hồ đều hiện (${bk.length}/10) và không chồng nhau`, bk.length === 10 && noOverlap(bk));
+  check('xe máy máy tính: 🔊 không ở giữa đáy (mặt đồng hồ góc thứ nhất)', bk.filter((b) => b.sel === '#drSoundBtn').every((b) => b.top < 720 / 2));
+  await BK.page.keyboard.up('KeyW');
+  /* ar (RTL): ⚙ sang phải, Thoát sang trái; nhóm 🔊 🎥 ◄ ► phải lật theo để không đè Thoát (lỗi review Task 9) */
+  await pick(BK.page, '#langSelect', 'ar'); await BK.page.evaluate(() => window.__app.ui.closeSheets()); await frames(BK.page, 2);
+  const bkAr = await rects(BK.page, ['#btnSettings', '#bkView', '#bkSigL', '#bkSigR', '#bkHint', '#drSoundBtn', '#btnExExit', '#drMap', '#drSpeed']);
+  check(`xe máy ar máy tính: ⚙ 🎥 ◄ ► gợi ý 🔊 Thoát bản đồ đồng hồ đều hiện (${bkAr.length}/9) và không chồng nhau`, bkAr.length === 9 && noOverlap(bkAr));
+  allErrors.push(...BK.errors); await BK.page.close();
 
   check('console sạch', allErrors.length === 0);
   if (allErrors.length) console.log(allErrors.join('\n'));

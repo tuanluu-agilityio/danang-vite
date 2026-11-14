@@ -1,0 +1,22 @@
+scooter.glb — xe tay ga cho chế độ Lái xe máy
+
+Nguồn: "Motor Scooter" (bộ "Cozy Vehicles Kit") của Grab3D
+       https://grab3d.com/models/vehicles/scooter/
+Giấy phép: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+       https://creativecommons.org/publicdomain/zero/1.0/legalcode
+       Grab3D đã từ bỏ mọi quyền tác giả và quyền liên quan đối với mô hình, texture và hình ảnh trong gói (theo LICENSE.txt
+       của gói, chép ở scripts/bike/src/LICENSE.txt). CC0 không buộc ghi công; dự án vẫn ghi nguồn.
+Nguồn gốc (theo gói): dựng bằng script Blender (procedural); không có hình học / texture do mô hình AI sinh ra, script được viết
+       với sự trợ giúp của trợ lý lập trình AI.
+
+Thay đổi (scripts/bike/convert.py, npm run gen:bike):
+- đổi hướng (mũi +X, Y lên, gốc giữa hai trục, đáy lốp y = 0), tách nút body / front (cổ lái, gốc trên trục cổ lái) / wheel_f / wheel_r;
+- gộp các vật liệu màu phẳng của cổ lái và bánh thành màu đỉnh trên một vật liệu; hai bánh dùng chung lưới;
+- thêm lưới nhỏ: đèn hậu, bốn xi nhan, mặt đồng hồ; thêm các nút rỗng neo cho người lái;
+- thu ảnh texture về 1024 px, JPEG chất lượng 85.
+
+----
+
+Source: "Motor Scooter" ("Cozy Vehicles Kit") by Grab3D, https://grab3d.com/models/vehicles/scooter/
+License: CC0 1.0 Universal (public domain dedication). Modified: reoriented, split into body / steering / wheels, flat colours baked
+to vertex colours, small lamp / dashboard meshes and rider anchor nodes added, textures downscaled to 1024 px JPEG.

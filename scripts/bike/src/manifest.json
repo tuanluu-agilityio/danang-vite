@@ -1,0 +1,47 @@
+{
+ "slug": "scooter",
+ "triangles": 19290,
+ "texture_px": 2048,
+ "triangles_light": null,
+ "texture_px_light": null,
+ "files": {
+  "glb": {
+   "name": "scooter.glb",
+   "bytes": 1295380
+  },
+  "blend": {
+   "name": "scooter.blend",
+   "bytes": 1269611
+  },
+  "fbx": {
+   "name": "scooter.fbx",
+   "bytes": 2343980
+  },
+  "obj": {
+   "name": "scooter-obj.zip",
+   "bytes": 1371246
+  },
+  "usdz": {
+   "name": "scooter.usdz",
+   "bytes": 2113343
+  }
+ },
+ "extras": {
+  "license": "CC0-1.0",
+  "source": "grab3d.com",
+  "dimensions_m": "0.737 x 1.978 x 1.377",
+  "triangles": 19290,
+  "textures": "PBR 2048px: base color, roughness, metallic, normal (baked)",
+  "generator": "Created by grab3d",
+  "created": "2026-09-26",
+  "real_size": "classic motor scooter, approx. 1.85 x 0.7 x 1.2 m (L x W x H), 10 in wheels",
+  "notes": "front faces -Y; stands upright on its center stand; wheels are separate objects with origin on the axle (rotate around local X to roll); scooter_steering (handlebar with headlight and mirrors, steering column, front link, front fender) has its origin on the steering axis, tilted 22 deg: rotate around (0.000, 0.375, 0.927) in Blender Z-up coordinates = (0.000, 0.927, -0.375) in glTF Y-up, steering lock about +-30 deg (turn the front wheel about the same axis and pivot); no brand, no text, blank license plate",
+  "set": "Cozy Vehicles Kit"
+ },
+ "origin": {
+  "method": "procedural",
+  "detail": "Built procedurally with Blender scripts. The scripts were written with the help of an AI coding assistant. No generative AI model produced the geometry or textures directly.",
+  "ai_content": false,
+  "ai_assisted_code": true
+ }
+}

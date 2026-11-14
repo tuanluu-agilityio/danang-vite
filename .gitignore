@@ -11,3 +11,5 @@ docs/superpowers/specs/tham-chieu/
 scripts/people/.cache/
 # Ảnh xem trước và ảnh trung gian của scripts/car/convert.py
 scripts/car/.cache/
+# Ảnh xem trước và ảnh trung gian của scripts/bike/convert.py
+scripts/bike/.cache/

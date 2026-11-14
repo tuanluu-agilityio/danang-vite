@@ -1,6 +1,6 @@
 /* ===== Dù lượn, đi dạo và lái xe nhiều người: nhãn tên nổi cạnh người chơi khác =====
    Một div cho mỗi slot bay, mỗi slot đi dạo và mỗi slot lái xe trong #exMpLabels (theo thứ tự đó). Dù: điểm đặt nhãn thấp hơn dù labelBelow m (tên nằm dưới cánh, không che dù);
-   người đi dạo: cao hơn chân CONFIG.stroll.labelAbove m (trên đầu); xe: trên nóc, cao hơn mặt đường car.height + drive.remote.labelAbove m. Ẩn khi sau camera hoặc slot chưa hiện; nhân vật của mình không có nhãn.
+   người đi dạo: cao hơn chân CONFIG.stroll.labelAbove m (trên đầu); xe: trên nóc, cao hơn mặt đường car.height + drive.remote.labelAbove m (xe máy: bike.body.height + bike.remote.labelAbove, trên mũ người lái). Ẩn khi sau camera hoặc slot chưa hiện; nhân vật của mình không có nhãn.
    Chỉ ghi DOM khi chữ đổi (tên + khoảng cách, làm tươi ≤ 5 lần/s) hoặc vị trí lệch quá 1 px. Không cấp phát mỗi khung (D-018). */
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
@@ -8,7 +8,7 @@ import type { exRemotes } from './remote';
 import type { stAvatars } from '../stroll/avatars';
 import type { exDrivers } from './remoteDrive';
 
-const M = CONFIG.explore.multi, NW = M.stroll.slots, ND = M.drive.slots, CAR_TOP = CONFIG.drive.car.height + CONFIG.drive.remote.labelAbove;
+const M = CONFIG.explore.multi, NW = M.stroll.slots, ND = M.drive.slots, CAR_TOP = CONFIG.drive.car.height + CONFIG.drive.remote.labelAbove, BIKE_TOP = CONFIG.bike.body.height + CONFIG.bike.remote.labelAbove;
 interface Lab { el: HTMLElement; txt: string; x: number; y: number; shown: boolean; tMs: number }
 let labs: Lab[] | null = null;   // M.slots nhãn dù, NW nhãn người đi dạo rồi ND nhãn xe
 const _v = new THREE.Vector3();
@@ -56,7 +56,7 @@ export function exLabelsUpdate(camera: THREE.Camera, remotes: typeof exRemotes, 
   }
   for (let i = 0; i < ND; i++) {
     const L = labs[M.slots + NW + i], st = drivers ? drivers.slotState(i) : null, nm = st ? drivers!.name(i) : null;   // xe của mình không có trong exDrivers (slotState null)
-    const vis = !!st && nm !== null && place(L, camera, st.x, st.y + CAR_TOP, st.z, nm, nowMs, w, h);
+    const vis = !!st && nm !== null && place(L, camera, st.x, st.y + (drivers!.vehOf?.(i) === 1 ? BIKE_TOP : CAR_TOP), st.z, nm, nowMs, w, h);
     if (vis !== L.shown) { L.shown = vis; L.el.hidden = !vis; }
   }
 }

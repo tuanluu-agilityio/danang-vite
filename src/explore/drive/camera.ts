@@ -8,6 +8,7 @@
    - Đoạn từ điểm nhìn trên xe tới chỗ camera muốn đứng vướng vật cản (drSegClear < 1): kéo gần (lùi thêm `gap`, không dưới `minDist`)
      và hạ về `tunnelHeight`. Khoảng lùi co lại ngay, nở ra theo `lag` (không giật khi vừa thoát góc tường); độ cao đổi mượt theo `lag`.
    - Không thấp hơn mặt đường tại chỗ camera + `floor` (không có mặt đường cùng tầng thì so với mặt đường dưới xe).
+   - Bộ số K truyền vào ở tham số cuối, mặc định CONFIG.drive.cam (ô tô); xe máy góc thứ ba truyền CONFIG.bike.cam3. Trạng thái trễ cs dùng chung (mỗi lúc chỉ một chế độ lái).
    Gầm cầu (đường ven sông chui dưới dốc Trần Thị Lý) chưa kiểm: vật cản không có mặt cầu. Không cấp phát (D-018). */
 import type * as THREE from 'three';
 import { CONFIG } from '../../config';
@@ -34,8 +35,9 @@ function drInTunnel(net: DrNet, x: number, z: number, y: number): boolean {
   return false;
 }
 
-export function drCamPlace(camera: THREE.PerspectiveCamera, s: Pick<DrState, 'x' | 'y' | 'z' | 'yaw'>, c: DrCam, net: DrNet, dt: number, snap?: boolean): void {
-  const K = CONFIG.drive.cam;
+export type DrCamK = typeof CONFIG.drive.cam;   // bộ số camera: ô tô (mặc định) hoặc xe máy góc thứ ba (CONFIG.bike.cam3, cùng tên trường)
+
+export function drCamPlace(camera: THREE.PerspectiveCamera, s: Pick<DrState, 'x' | 'y' | 'z' | 'yaw'>, c: DrCam, net: DrNet, dt: number, snap?: boolean, K: DrCamK = CONFIG.drive.cam): void {
   /* 1) lệch do kéo tự về sau returnAfter giây */
   if (!snap && dt > 0) {
     c.idle += dt;
@@ -66,8 +68,7 @@ export function drCamPlace(camera: THREE.PerspectiveCamera, s: Pick<DrState, 'x'
 }
 
 /* Kéo chuột: sang phải quay camera sang phải (yaw giảm), kéo xuống nâng camera nhìn xuống (pitch tăng); đặt lại đồng hồ tự về */
-export function drCamDrag(c: DrCam, dxPx: number, dyPx: number): void {
-  const K = CONFIG.drive.cam;
+export function drCamDrag(c: DrCam, dxPx: number, dyPx: number, K: DrCamK = CONFIG.drive.cam): void {
   c.yaw = wrap(c.yaw - dxPx * K.mouse);   // trong ±π: tự về theo đường ngắn nhất
   c.pitch += dyPx * K.mouse;
   if (c.pitch < K.pitchMin) c.pitch = K.pitchMin; else if (c.pitch > K.pitchMax) c.pitch = K.pitchMax;

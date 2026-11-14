@@ -269,19 +269,24 @@ test("kind 'drive': join trước khi nhận lobby đầu không gửi gì (chư
 const repo = pjoin(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const MAIN_FILES = ['src/explore/multi/session.ts', 'src/explore/multi/protocol.ts', 'src/explore/multi/params.ts', 'src/explore/multi/client.ts',
   'server/multi/src/room.ts', 'server/multi/src/badwords.ts'];
-let mainDir = '';
-function mainCode(): string {
-  if (mainDir) return mainDir;
-  mainDir = mkdtempSync(pjoin(tmpdir(), 'danang-main-'));
+/* PRE_DRIVE: main trước D-034 (máy chủ / khách chưa biết lái xe). Từ khi D-034 đã merge, `main` biết lái xe nên hai test "máy chủ / khách trước lái xe" ghim commit này
+   (D-040 Task 10: test vốn đọc `main` và trượt sau khi main có D-034; kỳ vọng giữ nguyên). `main` hiện là máy chủ / khách trước xe máy (biết drive, chưa biết veh) */
+const PRE_DRIVE = '854db54';
+const mainDirs = new Map<string, string>();
+function mainCode(ref = 'main'): string {
+  const hit = mainDirs.get(ref);
+  if (hit) return hit;
+  const dir = mkdtempSync(pjoin(tmpdir(), 'danang-main-'));
   for (const f of MAIN_FILES) {
-    const src = execFileSync('git', ['show', 'main:' + f], { cwd: repo, encoding: 'utf8' });
-    mkdirSync(dirname(pjoin(mainDir, f)), { recursive: true });
-    writeFileSync(pjoin(mainDir, f), src);
+    const src = execFileSync('git', ['show', ref + ':' + f], { cwd: repo, encoding: 'utf8' });
+    mkdirSync(dirname(pjoin(dir, f)), { recursive: true });
+    writeFileSync(pjoin(dir, f), src);
   }
-  return mainDir;
+  mainDirs.set(ref, dir);
+  return dir;
 }
-after(() => { if (mainDir) rmSync(mainDir, { recursive: true, force: true }); });
-const mainImport = (f: string) => import(pathToFileURL(pjoin(mainCode(), f)).href);
+after(() => { for (const d of mainDirs.values()) rmSync(d, { recursive: true, force: true }); });
+const mainImport = (f: string, ref = 'main') => import(pathToFileURL(pjoin(mainCode(ref), f)).href);
 
 /* Nối một phiên (khách) với một SkyRoom (máy chủ) trong cùng tiến trình: tin đi qua JSON như thật; 'all' tới mọi khách đang nối */
 function wire(room: any) {
@@ -306,7 +311,7 @@ function wire(room: any) {
 const tick = () => new Promise(r => setTimeout(r, 0));
 
 test('máy chủ cũ thì lái một mình: phiên drive mới gặp room.ts của main → solo / offline, không chiếm slot bay nào', async () => {
-  const { SkyRoom: OldRoom } = await mainImport('server/multi/src/room.ts');
+  const { SkyRoom: OldRoom } = await mainImport('server/multi/src/room.ts', PRE_DRIVE);
   // Bằng chứng mối nguy: room.ts của main coi join kind 'drive' là join BAY (chỉ so m.kind === 'walk') → chiếm một chỗ bay
   const probe = new OldRoom(); probe.connect('x', 0);
   const pj = probe.message('x', JSON.stringify({ t: 'join', name: 'Lai', kind: 'drive' }), 0);
@@ -330,7 +335,7 @@ test('máy chủ cũ thì lái một mình: phiên drive mới gặp room.ts c�
 });
 
 test('khách cũ bỏ qua nhóm d: session.ts của main (bay và đi dạo) nhận lobby có drivers và pos có d từ máy chủ mới', async () => {
-  const { MultiSession: OldSession } = await mainImport('src/explore/multi/session.ts');
+  const { MultiSession: OldSession } = await mainImport('src/explore/multi/session.ts', PRE_DRIVE);
   const room = new SkyRoom();
   const w = wire(room);
   const oldFly = new OldSession(w.connect, () => 0, 'fly');
@@ -345,7 +350,7 @@ test('khách cũ bỏ qua nhóm d: session.ts của main (bay và đi dạo) nh�
   assert.equal(oldFly.phase, 'flying'); assert.equal(oldWalk.phase, 'flying'); assert.equal(drv.phase, 'flying');
   assert.deepEqual(oldFly.flyers, [{ slot: 0, name: 'Bay' }]); assert.deepEqual(oldFly.walkers, [{ slot: 0, name: 'Di', ch: 0 }]);
   assert.deepEqual(oldWalk.walkers, [{ slot: 0, name: 'Di', ch: 0 }]); assert.deepEqual(oldWalk.peers, [{ slot: 0, name: 'Di', ch: 0 }]);
-  assert.deepEqual(drv.drivers, [{ slot: 0, name: 'Lai' }]); assert.deepEqual(drv.flyers, [{ slot: 0, name: 'Bay' }]);
+  assert.deepEqual(drv.drivers, [{ slot: 0, name: 'Lai', ch: 0, veh: 0 }]); assert.deepEqual(drv.flyers, [{ slot: 0, name: 'Bay' }]);   // D-040: drivers kèm ch + veh
   // chỉ người lái cử động: khách cũ nhận gói có d (bỏ qua), f rỗng
   w.clock.now = 2000; drv.sendDrive({ x: 5, y: 2.6, z: 0, yaw: 0, v: 5, st: 0.1, ts: 42 });
   assert.deepEqual(fGot.at(-1), [], 'khách cũ bay: onPos nhận f rỗng như khi chỉ có người đi dạo');
@@ -381,4 +386,63 @@ test('nhân vật: walkers của lobby giữ nguyên ch từ máy chủ; máy ch
   const w = await makeKind('walk');
   w.t.onMessage({ t: 'lobby', flyers: [], walkers: [{ slot: 0, name: 'A', ch: 0 }, { slot: 1, name: 'B', ch: 1 }, { slot: 2, name: 'Cu' }], drivers: [] });
   assert.deepEqual(w.s.walkers.map(x => x.ch), [0, 1, undefined]);
+});
+
+/* ===== Xe máy (D-040 Task 10): phiên drive xin chỗ với veh 1 + ch; máy chủ cũ không vọng veh ⇒ rời chỗ, lái một mình ===== */
+test('xe máy: join gửi kind drive, veh 1, ch; ô tô giữ nguyên gói cũ; joined có veh 1 ⇒ giữ chỗ', async () => {
+  const b = await makeKind('drive');
+  lobby3(b.t, [], [], []);
+  b.s.veh = 1; b.s.ch = 1; b.s.join('Xe');
+  assert.deepEqual(b.t.sent.at(-1), { t: 'join', name: 'Xe', kind: 'drive', ch: 1, veh: 1 });
+  b.t.onMessage({ t: 'joined', slot: 2, kind: 'drive', veh: 1 });
+  assert.equal(b.s.phase, 'flying'); assert.equal(b.s.mySlot, 2); assert.equal(b.t.closed, false);
+  const c = await makeKind('drive');
+  lobby3(c.t, [], [], []); c.s.ch = 1; c.s.join('Oto');
+  assert.deepEqual(c.t.sent.at(-1), { t: 'join', name: 'Oto', kind: 'drive' }, 'ô tô: gói như khách cũ');
+  c.t.onMessage({ t: 'joined', slot: 0, kind: 'drive' });
+  assert.equal(c.s.phase, 'flying', 'ô tô không cần máy chủ vọng veh');
+});
+
+test('xe máy: joined kind drive KHÔNG có veh (máy chủ cũ) ⇒ gửi leave, solo / offline, đóng kết nối; ô tô thì không', async () => {
+  const { t, s } = await makeKind('drive');
+  let changes = 0; s.onChange = () => { changes++; };
+  lobby3(t, [], [], []);
+  s.veh = 1; s.join('Xe');
+  t.onMessage({ t: 'joined', slot: 0, kind: 'drive' });
+  assert.deepEqual(t.sent.at(-1), { t: 'leave' }, 'trả chỗ máy chủ cũ vừa cấp (nó coi là ô tô)');
+  assert.equal(s.phase, 'solo'); assert.equal(s.notice, 'offline'); assert.equal(s.mySlot, -1); assert.equal(t.closed, true);
+  assert.ok(changes >= 1);
+  const n = t.sent.length; s.sendDrive({ x: 0, y: 2.6, z: 0, yaw: 0, v: 1, st: 0 }); s.heartbeat();
+  assert.equal(t.sent.length, n, 'không gửi gì sau đó');
+});
+
+test('xe máy với máy chủ cũ THẬT (room.ts của main, có drivers nhưng không biết veh): lái một mình, chỗ lái được trả', async () => {
+  const { SkyRoom: OldRoom } = await mainImport('server/multi/src/room.ts');
+  const room = new OldRoom();
+  const w = wire(room);
+  const s = new MultiSession(w.connect, () => 0, 'drive');
+  s.veh = 1; s.ch = 1;
+  s.open(); await tick();
+  assert.equal(s.phase, 'lobby');
+  s.join('Xe'); await tick();
+  assert.equal(s.phase, 'solo'); assert.equal(s.notice, 'offline');
+  assert.equal(room.hasFlyers(), false, 'máy chủ cũ không còn giữ chỗ lái nào');
+});
+
+test('khách cũ THẬT (session.ts của main) lái ô tô với máy chủ mới: vào chỗ như cũ; người đi xe máy hiện trong drivers với veh 1', async () => {
+  const { MultiSession: OldSession } = await mainImport('src/explore/multi/session.ts');
+  const room = new SkyRoom();
+  const w = wire(room);
+  const car = new OldSession(w.connect, () => 0, 'drive');
+  car.open(); await tick();
+  const bike = new MultiSession(w.connect, () => 0, 'drive');
+  bike.veh = 1; bike.ch = 1;
+  bike.open(); await tick();
+  car.join('Oto'); await tick();
+  bike.join('Xe'); await tick();
+  assert.equal(car.phase, 'flying'); assert.equal(bike.phase, 'flying');
+  assert.deepEqual(car.drivers, [{ slot: 0, name: 'Oto', ch: 0, veh: 0 }, { slot: 1, name: 'Xe', ch: 1, veh: 1 }]);
+  assert.deepEqual(bike.drivers, car.drivers);
+  w.clock.now = 2000; bike.sendDrive({ x: 5, y: 2.6, z: 0, yaw: 0, v: 5, st: 0.4, ts: 1 });
+  assert.equal(room.vehOf('c1'), 1);
 });

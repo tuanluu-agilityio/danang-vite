@@ -3,6 +3,8 @@ import { scene } from '../../core/renderer';
 import { canvasTex } from '../../core/textures';
 import { lerp } from '../../common/math';
 import { HR } from './profile';
+import { registerWet } from '../../environment/weather/wetness';
+import { roadSharePatch } from '../../environment/weather/summer';
 
 /* [materials] Vật liệu hầm. Trong hầm không có nắng: vật liệu nội thất giảm phản xạ môi trường (scene.environment = RoomEnvironment
    sáng giả tạo) và bù bằng một chút tự phát sáng; độ sáng đèn vùng ngưỡng giảm khi trời tối (xem hrUpdateLamps). */
@@ -48,8 +50,8 @@ export function hrMaterials() {
     concrete: new THREE.MeshStandardMaterial({ color: 0xe4e1da, roughness: 0.9, vertexColors: true }),   // ngoài trời: máng hầm hở, cửa hầm
     steel: new THREE.MeshStandardMaterial({ color: 0x8d949a, roughness: 0.4, metalness: 0.8 }),
     bore: glowByVertex(indoor(new THREE.MeshStandardMaterial({ color: 0xb8b6ae, roughness: 0.85, vertexColors: true, side: THREE.DoubleSide, emissive: new THREE.Color(0.34, 0.33, 0.31) }))),
-    roadOut: new THREE.MeshStandardMaterial({ map: road, roughness: 0.9 }),
-    roadIn: indoor(new THREE.MeshStandardMaterial({ map: road, roughness: 0.8, color: 0xbdbdbd, emissive: new THREE.Color(0.55, 0.55, 0.52), emissiveMap: road })),
+    roadOut: roadSharePatch(registerWet(new THREE.MeshStandardMaterial({ map: road, roughness: 0.9 }))),   // dốc hở + đường nối: mặt ướt khi mưa (weather/wetness.ts, D-040); roadIn (trong ống) không đăng ký: luôn khô; hạt nhựa + vệt ướt khi lái xe máy, chung program MAT.road2 (weather/summer.ts)
+    roadIn: indoor(new THREE.MeshStandardMaterial({ map: road, roughness: 0.8, color: 0xbdbdbd, emissive: new THREE.Color(0.55, 0.55, 0.52), emissiveMap: road })),   // không vá hạt nhựa (D-040 Task 8): khóa riêng sẽ thêm program
     lampThr: new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.96, 0.86) }),   // đèn vùng ngưỡng (đầu hầm)
     lampIn: new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.94, 0.82) }),    // đèn vùng trong
     lampCorr: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.9, 1, 0.9) }),    // hành lang thoát nạn

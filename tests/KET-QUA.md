@@ -4,6 +4,26 @@ Chromium + SwiftShader, khung 480×270. Draw call = renderer.info.render.calls (
 
 Khung test mặc định 480×270 khớp `(max-height: 500px)` nên cả bộ test chạy ở chế độ gọn (không blur): draw call không đổi; số hitch của `test:perf` không so sát được với mốc D-018 (đo khi còn blur).
 
+## Lái xe máy tay ga (2026-11-14, nhánh `feature/xe-may`, D-040)
+
+Chế độ Lái xe máy (`src/explore/bike/`, `public/bike/scooter.glb`). **Không chạy test nặng nào trên nhánh này** theo lời người dùng (2026-11-14: "không cần chạy test, tôi tự test. Chỉ cần update documents cho AI model"): không có kết quả của `test:drive`, `test:mobile` (Mục 8 xe máy đã viết, **chưa từng chạy**), `test:explore`, `test:stroll`, `test:multi`, `test:drawcalls`, `test:perf -- --strict`, `test:gpu`. Bảng chuẩn ở các mục khác của tệp này chưa được sửa. Dưới đây chỉ có số đo thật lúc làm và các lệnh nhanh; test đơn vị chạy lần cuối tại `d934709` / `a6fe107`, **không chạy lại tại `54dd2cb`** (commit cuối chỉ thêm test trình duyệt + một getter test trong `bike/index.ts`).
+
+| Phép đo | Kết quả |
+|---|---|
+| `public/bike/scooter.glb` (Task 3) | 926 372 byte (trần 1 000 000), 19 828 tam giác (trần 22 000), 10 primitive, 11 nút; `gen:bike` tất định (hai lần cùng sha256) |
+| Lệnh vẽ khi lái (Task 7; dev server, SwiftShader, 960 × 540, `?test`, Cầu Rồng x = −150 đi Đông, 10 m/s, xe AI để nguyên, trung vị 5 khung), góc thứ ba / thứ nhất | ngày khô 239 / 241; đêm khô 256 / 258; mưa ngày 241 / 243; mưa đêm 258 / 260. Phần của vệt pha + bụi nước (mưa đêm, ẩn / hiện nhóm): +2. Xe của mình: mô hình 10 + bóng 1 + người lái 4 (đo ở Task 3 / 4) |
+| Program khi lái (Task 7) | 194 sau khi nạp; chuyển ngày khô → mưa đêm chỉ thêm biến thể đêm của `bikeDash`; vệt pha / bụi nước không thêm program |
+| Góc cũ sau vá shader mặt đường (Task 8; `dist` trước `4839663` / sau, `?test`, 640 × 360, đóng băng thời gian, `Math.random` có seed) | 9 góc (6 thường gồm mưa đêm + 3 preset `summer` ban ngày) **trùng từng byte PNG**; `renderer.info.programs` 176 → 176; console sạch. Chưa đo bằng `test:drawcalls` |
+| Xe máy người khác (Task 10) | 2 lưới hiện mỗi xe (hình tạm + bóng) ⇒ 2 lệnh vẽ, đếm trong test đơn vị `remoteBike.test.ts`; **chưa đo trong trình duyệt** |
+| `typecheck`, `build` (`a6fe107`) | đạt; chunk `index` 773,04 kB, `three` 636,51 kB, css 41,60 kB |
+| `test:bike:unit` | 109/109 (`d934709`, `a6fe107`) |
+| `test:drive:unit` | 124/124, không sửa kỳ vọng ô tô (`a6fe107`) |
+| `test:multi:unit` | 98/98 (`d934709`); hai test "trước lái xe" ghim `854db54` vì `main` đã có D-034 (ca `máy chủ cũ thì lái một mình` trượt từ trước) |
+| `test:stroll:unit` | 93/93 (`d934709`) |
+| `test:pilot:unit` | 40/40 (Task 4, `ad23a7a`; `pilot/bones.ts` mở `ik` / `rotE`) |
+| `test:multi:worker` | 23 kiểm đạt qua `wrangler dev` cục bộ (`d934709`; 4 kiểm mới về `veh`). Worker thật `danang-sky` **chưa deploy** |
+| `test:bike` (một lượt dở, `54dd2cb`) | mở trang A đạt; mục 1 (`?explore=bike`) 3/3, mục 2 (lái qua 4 cầu + 2 ống hầm) 7/7, mục 3 (đâm 90 km/h) 2/2, mục 5 (góc nhìn) 5/5, mục 6 (tay – tay nắm) 6/6 **đạt**; mục 4 (Cầu sông Hàn) **LỖI 0/2**: sơ tán xong sau 4,7 s mô phỏng (mong ≤ 1 s ở quay 30×), lái 90 km/h vào barie dừng ở x 62,61 nhưng v 2,81 m/s (mong < 0,5), chưa phân tích (lỗi test hay sản phẩm; `drEvacStep` dùng cỡ ô tô); cảnh báo mục 6: tay nắm trái cách camera 0,588 m, sát mặt cắt gần 0,55 m ⇒ tay trái bị cắt (đã biết). Mục 7–14 không có kết quả; mục 15 (`-- --multi`) chưa chạy. Dừng theo lời người dùng |
+
 ## Người treo dù lượn có xương (2026-11-13, nhánh `feature/nguoi-du-luon-that`, D-035)
 
 Người treo Rocketbox `Military_Male_01` (`public/people/pilot.glb`, `src/explore/pilot/`). Chromium + SwiftShader, khung 480×270, `?test`. Số dưới đây là lần chạy thật tại `e059626` (Task 5) trừ các dòng ghi `227527d` (sau review toàn nhánh); `test:perf -- --strict`, `test:drawcalls` (góc cũ phải +0) **chưa chạy**, `test:multi` chạy tới 7a.

@@ -18,7 +18,8 @@ export class MultiSession {
   invite = false;     // đang xem và còn chỗ trống
   notice: Notice = '';
   name = '';
-  ch = 0;             // nhân vật đi dạo mình chọn (0 nam, 1 nữ); gửi kèm join kind 'walk' (sảnh và lời mời đều qua join())
+  ch = 0;             // nhân vật mình chọn (0 nam, 1 nữ); gửi kèm join kind 'walk' và join xe máy (sảnh và lời mời đều qua join())
+  veh = 0;            // loại xe của phiên 'drive': 0 ô tô (gói join như khách cũ), 1 xe máy (join kèm veh + ch; máy chủ phải vọng veh trong joined)
   onChange: () => void = () => {};
   onPos: (f: number[][]) => void = () => {};
   onWalkPos: (w: number[][]) => void = () => {};
@@ -51,7 +52,8 @@ export class MultiSession {
   join(name: string): void {
     this.name = name; this.notice = '';
     if (this.kind === 'drive' && this.first) return;
-    this.t?.send(this.kind === 'fly' ? { t: 'join', name } : this.kind === 'walk' ? { t: 'join', name, kind: 'walk', ch: this.ch } : { t: 'join', name, kind: this.kind });
+    this.t?.send(this.kind === 'fly' ? { t: 'join', name } : this.kind === 'walk' ? { t: 'join', name, kind: 'walk', ch: this.ch }
+      : this.veh === 1 ? { t: 'join', name, kind: 'drive', ch: this.ch, veh: 1 } : { t: 'join', name, kind: this.kind });
   }
 
   // Rời chỗ (do rời máy): trả slot, chuyển sang xem, báo 'released' như khi máy chủ thu hồi chỗ
@@ -113,7 +115,7 @@ export class MultiSession {
     this.t = null; this.onChange();
   }
 
-  /* Máy chủ cũ (lobby đầu không có walkers / drivers) không biết chỗ đi dạo / lái xe: đóng kết nối, đi / lái một mình như khi không kết nối được */
+  /* Máy chủ cũ (lobby đầu không có walkers / drivers, hoặc joined xe máy không vọng veh) không biết chỗ đi dạo / lái xe / xe máy: đóng kết nối, đi / lái một mình như khi không kết nối được */
   private offline(): void {
     const t = this.t;
     this.t = null;
@@ -141,6 +143,8 @@ export class MultiSession {
         this.fixWatched();
         break;
       case 'joined':
+        /* Xe máy: máy chủ cũ (trước D-040) không vọng veh và coi mình là ô tô (khách khác thấy một chiếc ô tô): trả chỗ rồi lái một mình như máy chủ không hiểu lái xe */
+        if (this.kind === 'drive' && this.veh === 1 && typeof m.veh !== 'number') { this.t?.send({ t: 'leave' }); this.offline(); return; }
         this.phase = 'flying'; this.mySlot = m.slot; this.mySlotWas = m.slot; this.notice = '';
         this.fixWatched();
         break;

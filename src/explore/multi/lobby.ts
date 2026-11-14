@@ -2,6 +2,7 @@
    Hiện sau khi bấm thẻ Dù lượn (hoặc Đi dạo) lúc có máy chủ: 5 chấm + "Còn N trên 5 chỗ", tên những người cùng loại (session.peers), ô tên, nút Bay ngay / Đi dạo ngay / Lái ngay.
    Chữ chọn theo session.kind (multi/keys.ts: exMp* cho dù lượn, st* cho đi dạo, dr* cho lái xe); tên nhớ dùng chung cho ba loại.
    Sảnh đi dạo có thêm ô chọn nhân vật nam / nữ (#stCharPick, cả khi ngoại tuyến): nhớ ở stChar, ghi vào session.ch để join gửi kèm, nạp trước mô hình vừa chọn.
+   Sảnh lái dùng chung cho ô tô và xe máy (5 chỗ chung, D-040): danh sách ghi 🚗 / 🛵 theo veh; phiên xe máy (session.veh = 1) cũng có #stCharPick (người lái, chung stChar với Đi dạo).
    Cập nhật trực tiếp theo MultiSession; tên người khác chỉ ghi bằng textContent. Tên của mình nhớ ở localStorage.
    Pha lobby: cho nhập tên và giành chỗ. Pha solo (không kết nối được): báo ngoại tuyến. Nút Bay một mình hiện ở cả hai pha (đóng phiên rồi bay một mình).
    Pha flying: gọi onFly. Pha watching (hết chỗ): gọi onWatch (chế độ xem do Task 7 làm).
@@ -9,16 +10,18 @@
    Trình nghe gắn một lần cho cả trang và đọc sảnh đang mở (cur), nên vào sảnh nhiều lần không nhân đôi. */
 import { CONFIG } from '../../config';
 import { t, onChange as onLang } from '../../i18n';
-import { exMulti } from './index';
+import { exMulti, exVehIcon } from './index';
 import { exSanitizeName } from './protocol';
 import { exMpKeys, exMpSlots } from './keys';
 import type { MultiSession } from './session';
 import { stChar } from '../stroll/char';
 import { stAvatars } from '../stroll/avatars';
+import { bkRiderLoad } from '../bike/rider';
 
 export interface LobbyCallbacks { onFly: () => void; onWatch: () => void; onSolo: () => void; onBack: () => void }
 
 const M = CONFIG.explore.multi;
+const charPick = (s: MultiSession): boolean => s.kind === 'walk' || (s.kind === 'drive' && s.veh === 1);   // sảnh có chọn nhân vật: đi dạo, xe máy
 const NAME_KEY = 'exMpName';
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -77,9 +80,9 @@ function render(): void {
   setKey('exMpFly', K.go);
   setKey('exMpSolo', K.solo);
   setKey('exMpOffline', K.offline);
-  /* Chọn nhân vật: chỉ sảnh đi dạo; hiện cả khi ngoại tuyến (đi một mình vẫn theo nhân vật đã chọn) */
+  /* Chọn nhân vật: sảnh đi dạo và sảnh xe máy; hiện cả khi ngoại tuyến (đi / lái một mình vẫn theo nhân vật đã chọn) */
   const pick = $('stCharPick'), ch = stChar.get();
-  pick.hidden = session.kind !== 'walk';
+  pick.hidden = !charPick(session);
   pick.querySelectorAll<HTMLElement>('button[data-ch]').forEach((b) => {
     const on = Number(b.dataset.ch) === ch;
     if ((b.getAttribute('aria-checked') === 'true') !== on) b.setAttribute('aria-checked', String(on));
@@ -100,7 +103,8 @@ function render(): void {
     d.classList.toggle('on', taken.has(i));
     d.style.background = taken.has(i) ? M.colors[i % M.colors.length] : '';
   });
-  const key = session.kind + '#' + peers.map(f => f.slot + ':' + f.name).join('|');
+  const drive = session.kind === 'drive';
+  const key = session.kind + '#' + peers.map(f => f.slot + ':' + (drive ? exVehIcon(f.veh) : '') + f.name).join('|');
   if (key !== listKey) {
     listKey = key;
     const list = $('exMpList'); list.textContent = '';
@@ -108,18 +112,20 @@ function render(): void {
       const row = document.createElement('div'); row.className = 'ex-mp-row';
       const dot = document.createElement('i'); dot.style.background = M.colors[f.slot % M.colors.length];
       const nm = document.createElement('span'); nm.textContent = f.name; nm.dir = 'auto';
-      row.append(dot, nm); list.appendChild(row);
+      if (drive) { const ic = document.createElement('span'); ic.textContent = exVehIcon(f.veh); ic.setAttribute('aria-hidden', 'true'); row.append(dot, ic, nm); }   // biểu tượng tách khỏi tên (tên RTL không kéo lệch)
+      else row.append(dot, nm);
+      list.appendChild(row);
     }
   }
   $('exMpNameBad').hidden = session.notice !== 'nameBad';
   fly.disabled = !ready || exSanitizeName(input.value) === null;
 }
 
-/* Đổi nhân vật ở sảnh: nhớ, đưa vào phiên (join gửi kèm), nạp trước mô hình */
+/* Đổi nhân vật ở sảnh: nhớ, đưa vào phiên (join gửi kèm), nạp trước mô hình (người đi dạo, hoặc người lái xe máy) */
 function pickChar(ch: number): void {
-  if (!cur || cur.session.kind !== 'walk') return;
+  if (!cur || !charPick(cur.session)) return;
   stChar.set(ch); cur.session.ch = stChar.get();
-  stAvatars.preload();
+  if (cur.session.kind === 'walk') stAvatars.preload(); else void bkRiderLoad(cur.session.ch);
   render();
 }
 
@@ -172,7 +178,7 @@ export function exShowLobby(session: MultiSession, cb: LobbyCallbacks): void {
   if (!input.value) input.value = loadName();
   listKey = '';
   cur = { session, cb };
-  if (session.kind === 'walk') session.ch = stChar.get();
+  if (charPick(session)) session.ch = stChar.get();
   exMulti.onChange = render;
   render();
   input.focus({ preventScroll: true });
