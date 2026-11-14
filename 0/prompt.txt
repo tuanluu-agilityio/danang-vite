@@ -1,0 +1,1015 @@
+<pasted_content id="00a1">
+# MASTER PROMPT: BUILD AN ULTRA-REALISTIC MOTORCYCLE RIDING EXPERIENCE IN DA NANG 3D
+
+## 1. PROJECT CONTEXT
+
+You are working on an existing 3D web experience:
+
+https://danangbridges.netlify.app/
+
+Project name: **Da Nang 3D – Explore the Bridges of Da Nang, Vietnam.**
+
+The website allows visitors to explore Da Nang through an interactive 3D environment featuring famous landmarks and bridges, including:
+
+- Dragon Bridge (Cầu Rồng).
+- Han River Bridge (Cầu Sông Hàn).
+- Tran Thi Ly Bridge (Cầu Trần Thị Lý).
+- Thuan Phuoc Bridge (Cầu Thuận Phước).
+- Other surrounding roads, buildings, river landscapes and city environments.
+
+Existing experiences include:
+
+- Paragliding.
+- Car driving.
+- Walking exploration.
+- Guided tours and cinematic camera experiences.
+
+The current interface already has a **Motorcycle / Xe máy** option marked as coming soon.
+
+Your mission is to turn this placeholder into a fully functional, visually spectacular and immersive motorcycle riding experience.
+
+### Most important objective
+
+Do NOT create an independent motorcycle simulator or rebuild the existing website.
+
+Integrate motorcycle riding as a native transportation mode within the existing 3D world.
+
+The experience should make visitors feel as though they are genuinely riding a motorcycle through the streets and across the iconic bridges of Da Nang.
+
+The result must be significantly more immersive than simply attaching a motorcycle model to a moving camera.
+
+---
+
+## 2. MANDATORY SUPERPOWERS WORKFLOW
+
+This is an existing project with established architecture and multiple interactive experiences.
+
+You MUST use the installed Superpowers workflow.
+
+### Phase 0 – Project reconnaissance
+
+Before proposing an implementation:
+
+1. Read the existing project documentation and development instructions.
+2. Inspect the complete repository structure.
+3. Understand the rendering engine, scene management, camera systems, animation loops and existing player controls.
+4. Study the current paragliding, car and walking implementations.
+5. Identify how the existing application handles:
+   - Vehicle movement.
+   - Road and bridge geometry.
+   - Camera positioning and transitions.
+   - Collision detection.
+   - Player identity and character models.
+   - Multiplayer or shared-world synchronization, if available.
+   - Weather and day/night transitions.
+   - Sound effects and ambient audio.
+   - Input handling on desktop and mobile.
+   - UI and localization.
+6. Identify available vehicle models, environmental assets, materials, shaders and reusable effects.
+7. Run the existing application and establish a baseline for performance and functionality.
+
+Do not assume that the deployed website reveals the full underlying architecture.
+
+Base every technical decision on the actual source code.
+
+**Important:** Do not prescribe a new architecture, state-management solution, data structure, physics engine or project folder structure before understanding the current implementation.
+
+Prefer extending existing systems over introducing parallel implementations.
+
+### Phase 1 – Brainstorming and Design Specification
+
+Invoke the appropriate installed Superpowers brainstorming skill.
+
+Analyze the project and develop a design for the motorcycle experience.
+
+Present alternative approaches when there are meaningful architectural or gameplay trade-offs.
+
+Provide a recommended approach with clear reasoning.
+
+The design must cover:
+
+- Overall motorcycle riding experience.
+- Vehicle and rider presentation.
+- Driving physics and movement.
+- Camera system.
+- Desktop and mobile controls.
+- Environmental integration.
+- Traffic and interactions.
+- Audio design.
+- Multiplayer integration, if supported by the existing project.
+- Performance and compatibility.
+- Testing and acceptance criteria.
+
+Save the approved design document under the appropriate Superpowers specification directory.
+
+Do not write implementation code at this stage.
+
+Do not ask questions whose answers can be determined by inspecting the repository. Make reasonable technical decisions and clearly record assumptions. Ask only essential questions that materially change the experience.
+
+Wait for design approval before proceeding.
+
+### Phase 2 – Implementation Planning
+
+After the design is approved, invoke the installed Superpowers writing-plans skill.
+
+Produce a detailed, actionable implementation plan.
+
+Requirements:
+
+- Every task must reference actual files discovered during repository inspection.
+- Break the implementation into small, independently testable tasks.
+- Identify dependencies and implementation order.
+- Include testing and verification instructions.
+- Include performance validation.
+- Include integration and regression checks.
+- Avoid vague tasks such as "improve physics" or "make the graphics realistic".
+- Define precisely what constitutes completion.
+
+Save the plan under the appropriate Superpowers plans directory.
+
+Review the plan against the approved specification.
+
+Stop and request approval of the implementation plan before modifying application code.
+
+### Phase 3 – Implementation
+
+Once the plan is approved, execute it using the appropriate installed Superpowers implementation skills.
+
+Follow test-driven development where appropriate.
+
+Implement incrementally, verify every milestone and review the results before moving forward.
+
+Do not skip tasks, silently change the approved design or implement unrelated features.
+
+---
+
+## 3. EXPERIENCE DESIGN – MOTORCYCLE RIDING
+
+The motorcycle mode should feel like a real-world riding experience, not an arcade racing game.
+
+The primary experience is free exploration of Da Nang.
+
+Visitors should be able to ride through existing roads, explore the surroundings and cross the city's iconic bridges.
+
+### 3.1 Motorcycle model
+
+Create or integrate a highly realistic motorcycle model.
+
+The preferred initial vehicle is a modern Vietnamese-style automatic scooter.
+
+The motorcycle should have:
+
+- Realistic body proportions.
+- Detailed front and rear wheels.
+- Realistic tires and tire textures.
+- Functional-looking headlights and taillights.
+- Turn signals.
+- Mirrors.
+- Handlebars.
+- Brake components.
+- Suspension.
+- Seat and body panels.
+- Realistic surface materials and reflections.
+
+Avoid generic low-poly vehicle models.
+
+Avoid recognizable manufacturer logos unless the project already has properly usable assets.
+
+The motorcycle should look convincing from both first-person and third-person camera angles.
+
+The model must be optimized for real-time WebGL rendering.
+
+### 3.2 Rider and character animation
+
+The motorcycle must have a convincing rider.
+
+The rider should:
+
+- Sit naturally on the motorcycle.
+- Keep hands connected to the handlebars.
+- Position feet appropriately.
+- Lean naturally when turning.
+- React to acceleration and braking.
+- Maintain believable body posture while moving.
+
+Avoid floating hands, disconnected limbs, clipping through the motorcycle or unnatural poses.
+
+If the project already supports character selection or player identity, reuse the existing system.
+
+Do not create a conflicting character management system.
+
+If the experience supports multiplayer, other visitors must see a coherent motorcycle and rider rather than an invisible vehicle or an unrelated character.
+
+### 3.3 First-person camera – The primary experience
+
+The most important camera should create the feeling of sitting on the motorcycle.
+
+The visitor should feel physically connected to the vehicle.
+
+Include, where appropriate:
+
+- Visible handlebars.
+- Front motorcycle bodywork.
+- Dashboard or instrument panel.
+- Rear-view mirrors.
+- Natural road perspective.
+- Accurate sense of height above the road.
+- Realistic perspective and field of view.
+
+The camera must respond naturally to steering and acceleration.
+
+When turning, the motorcycle and camera should exhibit believable lean behavior.
+
+Add subtle physical feedback:
+
+- Suspension response.
+- Road vibration.
+- Slight movement when accelerating.
+- Natural camera inertia.
+- Small environmental vibrations at high speeds.
+
+Avoid excessive camera shake, unnatural movement or motion sickness.
+
+### 3.4 Third-person camera
+
+Provide an optional third-person follow camera.
+
+The camera should follow the motorcycle smoothly while maintaining a cinematic viewing angle.
+
+It should:
+
+- Track the motorcycle without excessive lag.
+- Avoid clipping through buildings and surrounding geometry.
+- Maintain a sensible distance.
+- React smoothly to turning.
+- Show the rider and motorcycle clearly.
+
+Allow switching between first-person and third-person views without interrupting the ride.
+
+---
+
+## 4. REALISTIC MOTORCYCLE PHYSICS
+
+This is one of the most important parts of the experience.
+
+The motorcycle must behave like an actual road vehicle.
+
+Implement realistic and responsive:
+
+- Acceleration.
+- Deceleration.
+- Steering.
+- Braking.
+- Turning radius.
+- Leaning when cornering.
+- Suspension movement.
+- Wheel rotation.
+- Tire-road interaction.
+- Weight and inertia.
+- Speed-dependent steering sensitivity.
+
+Avoid instantaneous changes in speed or direction.
+
+The motorcycle should feel heavier at higher speeds and more responsive at lower speeds.
+
+When accelerating, the vehicle should exhibit subtle weight transfer.
+
+When braking, the vehicle should decelerate progressively rather than stopping instantly.
+
+When turning, the motorcycle should lean naturally instead of rotating like a rigid object.
+
+The physics should be believable but still enjoyable for casual visitors.
+
+This is a sightseeing experience, not a demanding professional motorcycle simulator.
+
+### Road interaction
+
+The motorcycle must remain physically connected to the road surface.
+
+Pay particular attention to:
+
+- Road elevation changes.
+- Bridge ramps.
+- Slopes.
+- Uneven road geometry.
+- Road boundaries.
+- Curbs.
+- Bridge barriers.
+- Road intersections.
+- Different road surfaces.
+
+Prevent the motorcycle from accidentally driving across sidewalks, floating above roads or falling through bridge geometry.
+
+Implement appropriate collision and recovery behavior.
+
+If the motorcycle leaves a valid driving surface, provide a natural recovery mechanism rather than leaving the visitor stuck indefinitely.
+
+---
+
+## 5. DA NANG ENVIRONMENT INTEGRATION
+
+This feature must showcase the existing Da Nang environment.
+
+The motorcycle must travel within the same 3D world as the other transportation modes.
+
+### Important landmarks
+
+Ensure the experience integrates naturally with existing locations:
+
+- Cầu Rồng.
+- Cầu Sông Hàn.
+- Cầu Trần Thị Lý.
+- Cầu Thuận Phước.
+- Surrounding roads and riverfront areas.
+- Existing city buildings and landmarks.
+
+Do not create disconnected duplicate bridge environments.
+
+Reuse actual existing scene geometry and road infrastructure whenever possible.
+
+Inspect whether the road network currently connects these areas sufficiently for continuous motorcycle riding.
+
+If there are missing or incomplete road connections, identify them in the specification and propose the smallest viable improvements.
+
+Do not rebuild the entire city.
+
+### Road realism
+
+The road surface must look convincing from the rider's perspective.
+
+Improve or reuse:
+
+- Asphalt textures.
+- Road markings.
+- Lane separation.
+- Directional arrows.
+- Crosswalks.
+- Roadside curbs.
+- Streetlights.
+- Traffic signs.
+- Sidewalks.
+- Roadside barriers.
+- Drainage and environmental details where appropriate.
+
+Ensure the motorcycle follows the correct Vietnamese right-hand traffic orientation.
+
+Avoid placing road markings or street furniture arbitrarily.
+
+### Environmental realism
+
+Preserve the existing city atmosphere.
+
+The visitor should be able to appreciate:
+
+- The Han River.
+- Bridge architecture.
+- Riverfront buildings.
+- City skylines.
+- Street lighting.
+- Surrounding traffic.
+- Reflections from the water.
+
+The scenery should remain visually coherent when observed at motorcycle speed.
+
+---
+
+## 6. TRAFFIC AND LIVING CITY
+
+A realistic motorcycle experience needs a living environment.
+
+Reuse existing vehicle and traffic systems whenever possible.
+
+Other vehicles should:
+
+- Follow appropriate road directions.
+- Move at believable speeds.
+- Maintain reasonable spacing.
+- Respect road geometry.
+- Avoid unrealistic movement.
+- Avoid appearing suddenly in front of the player.
+
+Include realistic ambient city movement where supported by existing systems.
+
+However, traffic must not constantly block the visitor or make the experience frustrating.
+
+The objective is to create the feeling of riding through an active Vietnamese city.
+
+The motorcycle should coexist naturally with the existing cars, traffic and other visitors.
+
+Do not turn this feature into a full traffic simulation project.
+
+Prioritize the motorcycle experience itself.
+
+---
+
+## 7. AUDIO DESIGN – EXTREMELY IMPORTANT
+
+Audio must be designed as an integral part of the experience.
+
+The motorcycle should not sound like a single looping engine recording.
+
+Build a layered and responsive audio experience.
+
+### Motorcycle audio
+
+Include:
+
+- Engine idling.
+- Engine acceleration.
+- Engine sound changing with RPM and speed.
+- Engine deceleration.
+- Tire contact with asphalt.
+- Subtle suspension and road vibration sounds.
+- Brake sounds where appropriate.
+- Horn.
+- Turn signal indicators.
+- Starting and stopping sounds.
+
+The engine audio must dynamically respond to acceleration and deceleration.
+
+Avoid abrupt audio transitions, repetitive loops that are easy to recognize, distorted audio and sudden volume spikes.
+
+### Environmental audio
+
+Include spatial environmental sounds such as:
+
+- Wind that becomes stronger as the motorcycle accelerates.
+- Traffic passing nearby.
+- Other motorcycles.
+- Cars and horns.
+- City ambience.
+- River ambience.
+- Bridge-specific environmental atmosphere.
+
+Audio positioning should change naturally based on the motorcycle's location.
+
+When entering an enclosed environment such as an existing tunnel, reuse or implement appropriate acoustic transitions if feasible.
+
+Make audio transitions smooth and avoid overlapping or leaking sounds after switching modes.
+
+Provide independent sound controls following the existing website's audio conventions.
+
+---
+
+## 8. WEATHER AND TIME-OF-DAY INTEGRATION
+
+One of the project's existing strengths is its interactive weather and lighting system.
+
+The motorcycle mode must integrate with it.
+
+Do not build an entirely separate weather system.
+
+### Daytime
+
+- Natural sunlight.
+- Realistic road shading.
+- Proper reflections on motorcycle surfaces.
+- Realistic environmental lighting.
+
+### Nighttime
+
+- Functional motorcycle headlights.
+- Rear lights.
+- Instrument panel illumination.
+- Streetlight reflections.
+- Realistic nighttime city atmosphere.
+- Appropriate exposure and visibility.
+
+### Rain
+
+Rain should dramatically change the riding experience.
+
+Include where supported:
+
+- Wet asphalt.
+- Reflections of streetlights and buildings.
+- Reflections from motorcycle headlights.
+- Tire spray.
+- Rain particles.
+- Ambient rain sound.
+- Appropriate camera and environmental effects.
+- Subtle changes to road traction.
+
+Avoid unrealistic mirror-like reflections across every surface.
+
+The motorcycle must remain controllable in adverse weather.
+
+The existing storm and weather scenarios should remain compatible with this new mode where practical.
+
+---
+
+## 9. CONTROL SYSTEM
+
+Inspect the existing car and walking control implementations before defining the final motorcycle controls.
+
+Reuse established input conventions wherever practical.
+
+Suggested desktop controls:
+
+| Input | Action |
+|---|---|
+| W / Up Arrow | Accelerate |
+| S / Down Arrow | Brake |
+| A / Left Arrow | Steer left |
+| D / Right Arrow | Steer right |
+| H | Horn |
+| Mouse drag | Look around |
+| Esc | Exit motorcycle mode |
+
+The final control mapping should account for the existing vehicle control system and avoid conflicts with camera controls.
+
+### Mobile support
+
+Design an appropriate touch interface if the project's existing mobile capabilities allow it.
+
+Include:
+
+- Acceleration control.
+- Brake control.
+- Steering controls.
+- Camera view switching.
+- Exit button.
+- Optional horn control.
+
+Touch controls must be comfortable, responsive and visually integrated with the experience.
+
+Do not let the controls obscure too much of the 3D environment.
+
+Handle different screen sizes and mobile safe areas.
+
+---
+
+## 10. MOTORCYCLE UI / HUD
+
+Create a clean, immersive and unobtrusive interface.
+
+The HUD should support riding rather than distract from the environment.
+
+Consider:
+
+- Speedometer.
+- Gear or automatic transmission indication if appropriate.
+- Engine status.
+- Headlight status.
+- Camera switching.
+- Horn.
+- Brake and accelerator controls.
+- Exit experience.
+
+Use a visual style consistent with the existing Da Nang 3D website.
+
+The speedometer should respond to actual vehicle speed, not a decorative animation.
+
+The HUD should be available in the existing website languages using the established localization system.
+
+Do not introduce a completely different design language.
+
+---
+
+## 11. MULTIPLAYER AND SHARED-WORLD COMPATIBILITY
+
+Inspect the current shared-world architecture before designing this functionality.
+
+If the project supports multiple visitors in a shared environment:
+
+- Other visitors should see the motorcycle and its rider.
+- Motorcycle position and orientation should synchronize correctly.
+- Movement should appear smooth for remote visitors.
+- Rider identity should remain consistent with the existing system.
+- Vehicle transitions should not leave stale avatars or duplicate vehicles.
+- Exiting motorcycle mode should cleanly update the shared world.
+
+Reuse the current networking and synchronization mechanisms.
+
+Do not introduce an independent multiplayer implementation.
+
+If multiplayer synchronization is not currently supported for vehicle modes, identify the actual limitation and propose an implementation that fits the existing architecture.
+
+The single-player experience must still work when the shared-world server is unavailable, following the project's existing offline fallback behavior.
+
+---
+
+## 12. PERFORMANCE AND TECHNICAL QUALITY
+
+This is a browser-based real-time 3D application.
+
+Visual quality must not come at the cost of unusable performance.
+
+Pay particular attention to:
+
+- Draw calls.
+- Polygon count.
+- Texture memory.
+- Shadow rendering.
+- Dynamic lighting.
+- Reflection calculations.
+- Particle systems.
+- Audio processing.
+- Animation updates.
+- Physics calculations.
+- Network update frequency.
+
+Reuse existing rendering infrastructure.
+
+Use appropriate level of detail, frustum culling, instancing, resource reuse and optimized asset loading when supported by the existing architecture.
+
+Avoid unnecessary dependencies.
+
+Do not add expensive post-processing effects merely to make screenshots look impressive.
+
+Make sure that:
+
+- GPU resources are disposed correctly.
+- Event listeners are cleaned up.
+- Animation loops do not duplicate.
+- Audio is stopped or released when leaving the mode.
+- Switching between transportation modes does not cause memory leaks.
+- The motorcycle does not negatively affect the existing car, paragliding or walking modes.
+
+Establish and compare performance against the existing project baseline.
+
+Target smooth performance on capable desktop devices and stable performance on reasonably capable mobile devices.
+
+Provide graceful degradation when hardware cannot support the highest visual settings.
+
+---
+
+## 13. TESTING AND ACCEPTANCE CRITERIA
+
+The feature is not complete just because a motorcycle model appears on the screen.
+
+The following must be verified.
+
+### Functional tests
+
+1. The Xe máy option is no longer marked as coming soon.
+2. Selecting it correctly enters motorcycle mode.
+3. The motorcycle spawns at a valid road location.
+4. Acceleration and braking work correctly.
+5. Steering works at both low and high speeds.
+6. Leaning and suspension behave naturally.
+7. First-person camera works correctly.
+8. Third-person camera works correctly.
+9. Camera switching is smooth.
+10. The motorcycle can travel on the available bridge and road network.
+11. The player cannot easily drive through barriers or fall through the environment.
+12. Horn and other audio controls work.
+13. Day/night and weather systems integrate correctly.
+14. Desktop controls work.
+15. Mobile controls work where supported.
+16. Multiplayer works if supported.
+17. Exiting motorcycle mode restores the previous application state correctly.
+18. Re-entering motorcycle mode does not duplicate listeners, audio or rendering loops.
+
+### Visual quality tests
+
+Inspect the experience at:
+
+- Low speed.
+- High speed.
+- During turns.
+- While braking.
+- Crossing bridge ramps.
+- Daytime.
+- Nighttime.
+- Rain.
+- First-person camera.
+- Third-person camera.
+
+Look for:
+
+- Model clipping.
+- Unnatural rider posture.
+- Floating wheels.
+- Incorrect road alignment.
+- Camera jitter.
+- Unnatural shadows.
+- Poor reflections.
+- Low-quality road appearance.
+- Visual inconsistencies with existing city assets.
+
+### Regression tests
+
+Verify that existing experiences remain fully functional:
+
+- Paragliding.
+- Car driving.
+- Walking.
+- Guided tours.
+- Existing bridge camera experiences.
+- Existing weather and lighting controls.
+
+Do not sacrifice existing functionality to implement the motorcycle mode.
+
+---
+
+## 14. SCOPE MANAGEMENT
+
+Focus on delivering one excellent motorcycle experience.
+
+Do not expand the project into:
+
+- A motorcycle racing game.
+- A vehicle dealership.
+- A multi-vehicle purchasing system.
+- A complex motorcycle tuning simulator.
+- A complete traffic simulation engine.
+- An entirely new open-world map.
+- Unrelated website redesigns.
+
+One excellent, realistic motorcycle is preferable to several poorly implemented vehicles.
+
+Additional motorcycles and gameplay features can be considered in future iterations.
+
+---
+
+## 15. SESSION CONTINUITY AND RECOVERY
+
+This project may require multiple Claude sessions.
+
+The implementation must remain understandable after closing Claude, restarting the computer or starting a new session.
+
+Use the project's documentation and Superpowers workflow to preserve:
+
+- Approved specifications.
+- Approved implementation plan.
+- Important architectural discoveries.
+- Technical decisions and their reasoning.
+- Completed tasks.
+- Outstanding tasks.
+- Known issues.
+- Test results.
+- Exact next implementation step.
+
+Maintain an appropriate progress document in the repository.
+
+When resuming work:
+
+1. Read the project instructions.
+2. Read the approved specification.
+3. Read the implementation plan.
+4. Read the progress document.
+5. Inspect the current Git status and actual code.
+6. Verify which tasks have already been completed.
+7. Continue from the next incomplete task.
+
+Never assume that a previous session completed something merely because it appears in the plan.
+
+Do not repeat completed work or overwrite valid changes.
+
+---
+
+## 16. FINAL QUALITY BAR
+
+Think like a combination of:
+
+- Senior Three.js / WebGL Engineer.
+- Vehicle Physics Engineer.
+- Real-Time 3D Environment Artist.
+- Technical Game Designer.
+- Sound Designer.
+- Performance Optimization Engineer.
+- Software Architect.
+
+The final result should feel like a premium interactive 3D motorcycle sightseeing experience.
+
+Imagine a visitor starting the motorcycle, hearing the engine come alive, gently accelerating along the road, feeling the motorcycle lean through a turn, approaching Dragon Bridge, hearing the surrounding traffic and wind, and seeing the illuminated city reflected on the Han River at night.
+
+Every visual, physical and audio interaction should reinforce the feeling of actually being there.
+
+**Immersion, realism, responsiveness and environmental integration take priority over adding unnecessary features.**
+
+Do not settle for a basic implementation just because the motorcycle can move.
+
+---
+
+## YOUR FIRST ACTION
+
+Start by invoking the appropriate Superpowers workflow.
+
+Inspect the actual repository and existing vehicle modes.
+
+Then present your findings, recommended design approach, trade-offs and proposed scope.
+
+Create the design specification first. Obtain approval, then create the implementation plan.
+
+**Do not modify application source code until the design and implementation plan have been reviewed and approved.**
+</pasted_content id="00a1">
+
+---
+
+cách 1. Chưa có mô hình, bạn có thể chọn
+
+---
+
+<agent-message from="aafcaf22a5e349081">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  All six pages loaded (HTTP 200). Sketchfab pages were fetched via a model-extracted summary, so the figures below are as extracted from the page text, not verbatim source. Nothing in the pages states a NoAI marking, a modeling method, or whether wheels/handlebar are separate parts, so those are reported as "not shown."
+  
+  **Table 1: identity and stats**
+  
+  | # | Title | Author | License | Downloadable | Triangles | Vertices | Published |
+  |---|---|---|---|---|---|---|---|
+  | 1 | Honda SH 125 (steveconrad82) | steveconrad82 | CC Attribution | Yes ("Download 3D Model" button shown) | 92.3k | 46.1k | Oct 27, 2023 |
+  | 2 | Honda Spacy (RusikMDLR) | RusikMDLR (@RusikBBK) | CC Attribution | Yes (button shown) | 90.7k | 44.3k | Dec 26, 2022 |
+  | 3 | Honda PCX 2023 Scooter textured_mesh_medpoly_obj (parchin666) | parchin666 | CC Attribution | Yes (button shown) | 149.9k | 117.6k | Oct 9, 2023 |
+  | 4 | Scooter1 (tubuan) | tubuan | CC Attribution | Yes (button shown) | 159.7k | 160.6k | May 25, 2017 |
+  | 5 | Scooter (FrameTrails) | FrameTrails | CC Attribution | Yes (button shown) | 1.1M | 519.3k | Apr 6, 2026 |
+  | 6 | street scooter (JamesFowler) | JamesFowler | CC Attribution | Yes (button shown) | 1.6k | 800 | May 5, 2021 |
+  
+  **Table 2: content and description**
+  
+  | # | Description (paraphrased unless short) | Tags | NoAI | Mesh method | Wheels/bar separate | Textures/PBR | Rider |
+  |---|---|---|---|---|---|---|---|
+  | 1 | Only text is "Honda SH 125 Roller Scooter" under "More model information." | None ("No tags set.") | Not shown | Not shown | Not shown | Not shown | Not shown |
+  | 2 | "No description provided." | motor, motorbike, motorcycle, 1980, 80s, 1980s, honda, scooter, 80, spacy | Not shown | Not shown | Not shown | Not shown | Not shown |
+  | 3 | Marketing copy about a PCX 2023 with "lifelike textures"; says mesh and texture are optimized for real-time and 3D printing. Pure marketing, no method stated. | motorcycle, honda, scooter, pcx, hondapcx | Not shown | Not stated. Title "textured_mesh" hints at a mesh export, unconfirmed. | Not shown | Textures implied, PBR not stated | Not shown (seating described, no rider) |
+  | 4 | "scooter and rider" | bike, scooter, affinity, shade3d, affinityphoto | Not shown | Not stated. Tags suggest Shade3D/Affinity, not confirmed. | Not shown | Not shown | Yes, rider included |
+  | 5 | "simple 3d scooter" (stray markdown asterisks in the text) | bike, transportation, transport, scooter, vehicle | Not shown | Not shown | Not shown | Not shown | Not shown |
+  | 6 | "3D model of a 'street scooter'," a stunt/kick-style scooter | bike, skateboard, skate, scooter, stunts, street, skiat | Not shown | Not shown | Not shown | Not shown | Not shown |
+  
+  **Suitability for a realistic modern automatic scooter (Honda Vision/Air Blade style) in a first-person WebGL game**
+  
+  1. Honda SH 125: Best body-style match of the set (modern Honda automatic). At 92.3k triangles it needs decimation or LOD before real-time first-person use. Wheel/bar separation is unverified, which matters for steering animation.
+  2. Honda Spacy: Poor fit. Tags point to a 1980s model, not a modern automatic. 90.7k triangles.
+  3. Honda PCX 2023: Modern automatic, a good shape reference, but the heaviest of the Honda models at 149.9k triangles and 117.6k vertices. Needs significant decimation. Mesh origin unclear.
+  4. Scooter1: Unknown make, so it may not match Vision/Air Blade styling. At 159.7k triangles it is heavy. Includes a rider, which you would have to strip out. Low-moderate fit.
+  5. Scooter (FrameTrails): Poor fit as-is. At 1.1M triangles it is far too heavy despite the "simple" description, and the make is unknown. Usable only as a heavily reduced proxy.
+  6. street scooter: Not a suitable match. It is a low-poly stunt/kick scooter with no motor or automatic body shape. Its 1.6k triangles would only work as a placeholder.
+  
+  URLs read (all six, in the order above):
+  - https://sketchfab.com/3d-models/honda-sh-125-07e1bc00d26f44958c0fa8062ce94e36
+  - https://sketchfab.com/3d-models/honda-spacy-2225281a19c74c76a711c673c3b9b35e
+  - https://sketchfab.com/3d-models/REDACTED
+  - https://sketchfab.com/3d-models/scooter1-ca94ac7354044f5db4786ef676410675
+  - https://sketchfab.com/3d-models/scooter-596461caf1194ea58eeea7e896127911
+  - https://sketchfab.com/3d-models/street-scooter-94b873b7773f4028b4eccd8ebd04d86f
+  
+  Notes: "Downloadable" is inferred from the presence of the "Download 3D Model" button. The pages did not show file formats or whether a login is required to download. All six are CC Attribution (CC BY 4.0), so attribution is required for any use in the game. The pages do not show whether any model is hand-modeled, so the mesh-origin question for models 1, 2, 4, and 5 remains open and would need a look at the actual mesh.
+</agent-message>
+
+---
+
+đồng ý
+
+---
+
+bạn cứ quyết định và thực hiện. Không cần hỏi lại. Nếu có issue note lại và hỏi tôi sau. Không cần hỏi lại cho đến khi có bản demo cuối cùng
+
+---
+
+<agent-message from="a5c89996a1d71eeac">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Report on the three Grab3D models and the Get3DModels scooter. Nothing was downloaded. The "no login" and CC0 claims are the pages' own statements and I did not test them.
+  
+  Pages read (all HTTP 200):
+  - https://grab3d.com/kits/cozy-vehicles/
+  - https://grab3d.com/models/vehicles/
+  - https://grab3d.com/models/vehicles/scooter/
+  - https://grab3d.com/models/vehicles/moped/
+  - https://grab3d.com/models/vehicles/e-scooter/
+  - https://www.get3dmodels.com/vehicles/scooter/
+  
+  Grab3D kit context: "Cozy Vehicles Kit", 36 models, CC0. The kit says "Cars, trucks, buses, construction machines and bikes in a friendly toy-like style, most with wheels as separate objects."
+  
+  **1. Motor Scooter (Grab3D)**
+  - Model page: https://grab3d.com/models/vehicles/scooter/
+  - Direct GLB href: https://grab3d.com/dl/scooter/scooter.glb (page shows /dl/scooter/scooter.glb, "Download GLB 1.2 MB")
+  - Triangles: 19,290. Textures: 2K.
+  - File size: 1.2 MB GLB.
+  - Licence: "CC0 1.0 · public domain". Also "Free under CC0 for personal and commercial use, no attribution." Also "Download without login."
+  - Author/origin: not stated on the page. It says "Origin details are included in LICENSE.txt and manifest.json". I did not fetch those files, so origin is not shown.
+  - AI-generated or hand-modelled, and which tool: not shown.
+  - Style: "Lightweight Stylized". Described as "An Italian-style classic scooter" with "rounded side panels". It belongs to a "friendly toy-like style" kit. Not realistic.
+  - Parts: "Both wheels roll on their axles, and the whole steering unit with handlebar, column, front link and fender is one object pivoting on the tilted steering axis." So wheels are separate, but the handlebar is not separate from the steering unit.
+  - Shape: leg shield and flat footboard, i.e. step-through. Dimensions 0.74 x 1.98 x 1.38 m (W x D x H).
+  
+  **2. Moped (Grab3D)**
+  - Model page: https://grab3d.com/models/vehicles/moped/
+  - Direct GLB href: https://grab3d.com/dl/moped/moped.glb (full quality, 1.4 MB). Light version: https://grab3d.com/dl/moped/moped-light.glb (787 KB, 14,926 triangles, 1K textures).
+  - Triangles: 23,800 full. Textures: 2K.
+  - Licence: "CC0 1.0 · public domain", no login, no attribution.
+  - Author/origin, AI or hand-modelled, tool: not shown.
+  - Style: "Lightweight Stylized". "Retro 50 cc moped in peach". Toy-like, not realistic.
+  - Parts: "Wheels, steering and the pedal crank are separate objects with real pivots."
+  - Shape: teardrop tank, long bench seat, pedals. Not step-through. Dimensions 0.71 x 1.91 x 1.30 m.
+  
+  **3. Electric Scooter (Grab3D)**
+  - Model page: https://grab3d.com/models/vehicles/e-scooter/
+  - Direct GLB href: https://grab3d.com/dl/e-scooter/e-scooter.glb (756 KB)
+  - Triangles: 14,318. Textures: 2K.
+  - Licence: "CC0 1.0 · public domain", no login, no attribution.
+  - Author/origin, AI or hand-modelled, tool: not shown.
+  - Style: "Lightweight Stylized". Pink kick-style e-scooter with "10 inch air tires". Not a seated motor scooter.
+  - Parts: "Wheels, the steering assembly and the side stand are separate objects with clean pivots."
+  - Dimensions 0.52 x 1.25 x 1.12 m.
+  
+  **4. Scooter (Get3DModels)**
+  - Page: https://www.get3dmodels.com/vehicles/scooter/ (dated May 28, 2025)
+  - Licence: "CC-BY license" as listed. Attribution is required under CC BY.
+  - Author: "MInipoly", shown as plain text. No author or source link is shown.
+  - Direct .glb URL: not shown. The Download button's href is "#".
+  - File size: 193.54 KB.
+  - Vertices 2.7k, triangles 2.1k (text says 2,678 vertices and 2,058 triangles). Bounding box Width 1.34, Height 1.82, Depth 2.88. Units not stated. Nodes: 7.
+  - Login for download: not shown. The header has a "Login" link, but nothing says whether download needs it.
+  - Style: not stated. The page has only generic marketing text ("meticulously crafted"). The low triangle count suggests a simple model, but the page does not say so.
+  - AI or hand-modelled, tool, and separate wheel or handlebar parts: not shown.
+  
+  **Verdicts (one line each)**
+  - Motor Scooter (Grab3D): NOT suitable as a realistic first-person scooter. It is stylised and toy-like, with 19k triangles and 2K textures.
+  - Moped (Grab3D): NOT suitable. It is a stylised retro moped with pedals, not a step-through scooter.
+  - Electric Scooter (Grab3D): NOT suitable. It is a stylised kick-style e-scooter, not a motor scooter.
+  - Scooter (Get3DModels): UNVERIFIED. The page does not state the style, and it shows no direct .glb link or confirmed no-login download, so I cannot confirm it is realistic or downloadable without login. Check it visually and check its download flow in a browser before using it.
+</agent-message>
+
+---
+
+<agent-message from="ab052b8bd3dbf268d">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Builder check of `D:\2026 - Tuan\danang-vite-xe-may\docs\superpowers\specs\2026-11-14-xe-may-design.md` against the worktree at `a66989b`. Read-only: no files edited, no tests run (the "124/124" figure for `test:drive:unit` is not re-verified).
+  
+  The spec is plannable, but two of its claims contradict the code (wet road, `st` clamp) and four questions need the human. Paths below are relative to `D:\2026 - Tuan\danang-vite-xe-may\`.
+  
+  ## Your six checks
+  
+  | # | Check | Result | Where |
+  |---|---|---|---|
+  | 1 | `p0` / `p3` are the male / female stroll characters | Yes: `chars: [0, 3]` = p0 `Male_Adult_10`, p3 `Female_Adult_03` | `src/config.ts:711-712`, `src/explore/stroll/anim.ts:41` |
+  | 1 | How the choice is stored | `localStorage` key `'stChar'` (0 male, 1 female; anything else becomes 0) via `stChar.get()/set()` | `src/explore/stroll/char.ts:6-18` |
+  | 2 | Worker clamp on `st` | Clamped to ±`steerMax` = **±0.56 rad**; does not contain ±0.7, nor the spec's own 35° (0.611 rad) | `server/multi/src/room.ts:120`, `src/explore/multi/params.ts:46` |
+  | 3 | V / Q / E / R collisions | **V and R are free everywhere.** Q / E are glider throttle only, and that listener returns early in drive / stroll mode. No real collision | `src/explore/flight.ts:59`, `src/explore/index.ts:144-153`, `src/explore/drive/keys.ts:8`, `src/explore/stroll/keys.ts:7`, `src/ui/setupUI.ts:93-97` |
+  | 4 | Main camera near plane | **0.5 m** (far 30000, fov 50), set once in the constructor; nothing ever changes `near`; no `logarithmicDepthBuffer` | `src/core/renderer.ts:19` and `:8` |
+  | 5 | Rain intensity without three | Yes: `weatherU.uRain.value` (0..1) and `weatherU.uWet.value`; the module has zero imports | `src/core/shared.ts:9-13`, written at `src/environment/weather/index.ts:97` |
+  | 6 | Road materials a wet / detail patch touches | **7 distinct materials** (8 if the tunnel interior gets the grain); list under Q1 | see Q1 |
+  
+  Notes on these:
+  - **Character storage:** the server keeps `ch` only for kind `walk`; drive slots are forced to `ch: 0` (`server/multi/src/room.ts:72`, `:103`), `chOf()` returns 0 for non-walkers (`:46`), `lobby.drivers` carries no `ch` (`:30`), and the client sends `ch` only for walk (`src/explore/multi/session.ts:54`). So §11's `veh` + `ch` for drive is all new work, including the hibernation attachment (`server/multi/src/worker.ts:112-116`).
+  - **Keys:** drive only records codes in `DR_KEYS` (W/A/S/D, arrows, Space, H); stroll uses W/A/S/D, P, Shift, Space; the old walk camera uses W/A/S/D, Shift, arrows (`src/views/camera.ts:123-126`).
+  - **Near plane:** drive saves / restores only `fov` (`src/explore/drive/index.ts:185-187`, `:230`), so the bike needs its own save / restore of `near`.
+  - **Rain:** `getWeather()` is not usable from pure code (`environment/weather/index.ts` imports the renderer and water). Preset rain values are rain 0.7, monsoon 0.25, storm 1 (`src/config.ts:335-337`). `uWet` lags rain (tau 4 s rain, 40 s wet, `src/config.ts:303`).
+  
+  ## Questions a builder still needs answered, by importance
+  
+  **Q1. Wet road already exists — is §9 an extension of it or a replacement? (human, partly code)**
+  - §3 says "mặt đường ướt" exists nowhere. It does: `src/environment/weather/wetness.ts:14-34` darkens (×0.65) and lowers roughness (to 0.25) on registered road materials by `wet`, at 0 draw calls (`src/config.ts:307`).
+  - Registered today: `MAT.road`, `MAT.road2`, `MAT.paver`, `MAT.stone` (`wetness.ts:23`), plus the `road` material of Song Han, Thuan Phuoc and Tran Thi Ly (`materials.ts:32`, `:18`, `:20` of each bridge).
+  - So "tối màu, giảm nhám" is done; only the asphalt grain and the night streak under street lamps are new. Applying both would double-darken.
+  - The seven materials: `MAT.road` (streets + Dragon Bridge deck, `src/environment/streets.ts:11`, `:48`), `MAT.road2` (`streets.ts:49`, `thuan-phuoc/site.ts:42`, new drive roads merged in), the three bridge `M.road`, tunnel `roadOut` (`han-tunnel/materials.ts:51`, `outdoor.ts:99`), tunnel `roadIn` (`materials.ts:52`, `bore.ts:41`).
+  - Two traps for the patch:
+    - `MAT.road` / `MAT.road2` already have `onBeforeCompile` + `customProgramCacheKey` from the summer mirage (`src/environment/weather/summer.ts:16-41`). A material has one hook, so the new patch must compose with it or silently kill the mirage.
+    - Tunnel `roadOut` is **not** registered wet today, so the open-air tunnel ramps stay dry in rain.
+  - Human must decide: does the grain / streak show in every mode (Tour, glider, old views) or only while riding? "Old view unchanged, +0 programs" is achievable either way, but it changes the program-count and warm-up plan.
+  
+  **Q2. `st` cannot carry lean as specified. (human for the choice; code shows the constraint)**
+  - The clamp is ±0.56 rad; lean of 35° is clipped. Raising `steerMax` means a Worker deploy, which must be asked for separately; until then remote bikes cap at about 32°.
+  - Old clients feed `st` straight into front-wheel steer (`src/explore/multi/remoteDrive.ts:91`, `:119`), so a bike renders as a car with wheels at full lock. The spec accepts "appears as a car" but not this.
+  - `params.ts` values are pinned by `tests/drive-unit/params.test.ts` (`src/explore/multi/params.ts:40`).
+  - Options: raise `steerMax` to about 0.7, send lean scaled into ±0.56, or add a field.
+  
+  **Q3. First-person near plane of 0.1 m with far 30000. (human should accept the risk or pick the fallback)**
+  - Near drops from 0.5 to 0.1 with no logarithmic depth. Depth precision falls about 5× for the whole scene while in first person; distant water / bridge / lane-marking z-fighting is plausible.
+  - The spec gives no fallback (for example near 0.25 with the eye further back, or cockpit meshes nudged forward), and no acceptance check for distant flicker.
+  - Also unstated: fov is 50 globally, drive sets `CONFIG.drive.cam.fov`, and first person wants 75 while third person is unspecified. The 0.4 s view blend therefore has to animate fov and near, each needing `onResize()` for `pScale` (`src/core/postprocessing.ts:45`).
+  
+  **Q4. Does the rider character picker appear offline and on direct entry? (human)**
+  - `#stCharPick` exists only inside the stroll lobby (`index.html:236`, `src/explore/multi/lobby.ts:81`, `:175`).
+  - The spec says the bike lobby shows it and `?explore=bike` uses the saved value. It does not say whether changing it in the bike lobby also changes the stroll character (same `stChar` key implies yes), or whether a solo offline rider gets a picker at all.
+  
+  **Q5. Mixed car + bike lobby behaviour. (human)**
+  - 5 seats are shared, and `exMulti.begin(..., 'drive')` is keyed by kind (`src/explore/chooser.ts:64`). Unspecified: whether the lobby list shows the vehicle type per driver, what `joined` contains for `veh`, and whether a watcher who accepts an invite gets the vehicle of the card they originally picked.
+  - Car and bike `index.ts` both want `cam.mode` and the `drive` session, so the builder must know whether a watcher runs the bike module or the car module. The spec's "watch camera follows either" implies one module renders both; it should say which.
+  
+  **Q6. Where the body-size parameter must reach. (code answers; spec undercounts)**
+  - Spec names `collide.ts` and `drEvacStep`. Module-level constants from `CONFIG.drive.car` are in:
+    - `src/explore/drive/collide.ts:18-21` (`HL`, `HW`, `AX`, `REACH`; `REACH` depends on wheelbase, not just length × width);
+    - `src/explore/drive/motion.ts:28-31` and `:139`;
+    - `src/explore/drive/car.ts`, `src/explore/multi/labels.ts`, `src/explore/multi/remoteDrive.ts`.
+  - `drCamPlace` and `drCamDrag` read `CONFIG.drive.cam` internally (`src/explore/drive/camera.ts:38`, `:70`) and keep module state `cs` (`:22`), so they also need parameters; the spec mentions only `drCamPlace`.
+  - No height term was found in the collide constants. The "≈ 1.7 m incl. rider" body height needs a check of how `drFits` uses obstacle heights before planning.
+  
+  **Q7. Rain reaching `motion.ts`: imported or passed in? (builder can decide; flagging the trap)**
+  - `core/shared.ts` is import-free, so either works. Passing rain as an input keeps `__app.bike.step(dt, inp)` deterministic for tests.
+  - Spec says "hầm không ướt" for visuals but not for grip. If grip follows `uRain`, the tunnel becomes slippery. Which signal drives friction (`uRain` instant vs `uWet` lagging), and is it gated by tunnel pads?
+  
+  **Q8. Sit pose source. (code answers enough to choose)**
+  - `pilot.glb`'s `sit` comes from the Rocketbox clip `m_sit_chair_breathe_01` (`scripts/people/pilot.py:42`, `:306-327`). p0..p4 clips are idle / walk / jog / sprint / photo only (`scripts/people/convert.py:48-52`).
+  - The memory bank records that `gen:people` has not been re-run since it moved to `blender.mjs` and `convert.py` was edited. Determinism of a re-run is unproven, which by the spec's own criterion pushes toward option (b), the joint-angle table. A chair sit also has hands on thighs and feet forward, so IK does most of the work either way.
+  
+  **Q9. Audio assets are a new mechanism. (code answers; human approves the samples)**
+  - No `decodeAudioData` or fetched sound buffer exists anywhere; `src/audio/index.ts` is fully synthesised. `sfxPort()` and `extPort()` exist (`:274`, `:278`).
+  - The spec does not say the file format (mp3 loop points have encoder-padding gaps; ogg does not decode on older Safari). That decides whether "loop with loop points, ≤ 400 kB for 3 clips" is feasible. Worth a line in the spec.
+  
+  **Q10. Small items the code already settles.**
+  - `ExChoice` is `'glider' | 'guided' | 'walk' | 'car'` (`src/explore/chooser.ts:9`); the bike card is `disabled` with the `exSoon` note (`index.html:230`).
+  - `exSoon` is used only by that card (present in the 9 locale files, no other reference), so it can be deleted from all 9.
+  - `drSpawnPose` (`src/explore/drive/roadData.ts:180`), `exNightStep(dt, swing)` (`src/explore/nightShows.ts:16`), `trNearby` (`src/common/trafficQuery.ts:26`), `drCarSetWarm` (`src/explore/drive/car.ts:87`), `drCamDrag` (`src/explore/drive/camera.ts:69`) all exist as the spec assumes.
+  - The procedural scooter is vehicle type `'bike'` in `src/common/vehicles/shapes.ts:13`.
+  
+  ## Only the human can answer
+  - Q1: scope of the road patch (all modes or riding only) and whether to reuse `wetness.ts`.
+  - Q2: how lean travels in `st`.
+  - Q3: acceptable near plane and fallback.
+  - Q4: picker behaviour offline and shared with stroll.
+  - Q5: mixed-lobby presentation.
+  - Approval of engine samples and their format (Q9), and the Honda figures and model licence, which the spec already flags.
+</agent-message>
