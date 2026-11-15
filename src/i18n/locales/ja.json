@@ -580,5 +580,17 @@
   "envLoading": "観測データを取得中…",
   "envOffline": "接続なし · 再試行中",
   "envNoData": "データなし",
-  "envClockOk": "時計は正確に動作中"
+  "envClockOk": "時計は正確に動作中",
+  "liveBadge": "ライブ",
+  "simBadge": "シミュレーション",
+  "liveModeLive": "ライブ",
+  "liveModeManual": "シミュレーション",
+  "liveModeAria": "3Dシーンのモード",
+  "liveNoteLive": "3Dシーンは現在の実際の時刻と天気に合わせています。",
+  "liveNoteManual": "昼／夜と天気は設定で自由に選べます。",
+  "liveLock": "実際の天気に連動中",
+  "liveToManual": "シミュレーションに切替",
+  "liveToLive": "ライブに戻る",
+  "liveNotice": "夜景を表示するためシミュレーションに切り替えました。",
+  "liveNoData": "実際の時刻・天気データはまだありません。"
 }

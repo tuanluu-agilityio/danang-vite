@@ -14,6 +14,7 @@ export interface WeatherParams {
   level: number;     // m — mực nước sông dâng thêm
   lightning: number; // 0 → 1 — tần suất chớp
   closed: boolean;   // cấm lưu thông qua cầu (theo trạng thái preset / kịch bản, không theo ngưỡng gió)
+  fog: number;       // 0 → 1 — sương / giảm tầm nhìn (D-043, chỉ chế độ Trực tiếp đặt khác 0; preset mô phỏng: 0)
 }
 export type PresetName = 'now' | 'summer' | 'rain' | 'monsoon' | 'storm';
 export const PRESET_NAMES: PresetName[] = ['now', 'summer', 'rain', 'monsoon', 'storm'];
@@ -22,12 +23,13 @@ export interface WeatherState {
   current: WeatherParams; target: WeatherParams;
   wet: number;            // 0 → 1 — mặt ướt (dẫn xuất: lên nhanh theo mưa, khô chậm)
   preset: PresetName; intensity: number;   // 0 → 1 — thanh cường độ nhân lên rain/wind/gust/level
+  tauScale: number;       // hệ số nhân hằng số thời gian (D-043): 1 = mô phỏng (y như cũ); Trực tiếp đặt CONFIG.live.tauScale, khác 1 thì windDir quay dần theo cung ngắn
 }
 
 /* Giá trị trung tính (không mưa, không gió): đích của preset `now`. */
-export const neutralParams = (): WeatherParams => ({ temp: CONFIG.weather.thermal.refTemp, rain: 0, wind: 0, gust: 0, windDir: CONFIG.weather.windDir, cloud: 0, haze: 0, level: 0, lightning: 0, closed: false });
+export const neutralParams = (): WeatherParams => ({ temp: CONFIG.weather.thermal.refTemp, rain: 0, wind: 0, gust: 0, windDir: CONFIG.weather.windDir, cloud: 0, haze: 0, level: 0, lightning: 0, closed: false, fog: 0 });
 
-export const createWeatherState = (): WeatherState => ({ current: neutralParams(), target: neutralParams(), wet: 0, preset: 'now', intensity: 1 });
+export const createWeatherState = (): WeatherState => ({ current: neutralParams(), target: neutralParams(), wet: 0, preset: 'now', intensity: 1, tauScale: 1 });
 
 /* Đích của một preset sau khi nhân thanh cường độ k (0–1). `now` -> trung tính. */
 export function presetTarget(name: PresetName, k = 1): WeatherParams {
@@ -44,18 +46,27 @@ export function setPreset(s: WeatherState, name: PresetName, k = s.intensity) {
 
 const approach = (a: number, b: number, tau: number, dt: number) => b + (a - b) * Math.exp(-dt / Math.max(1e-3, tau));
 
-/* Tiến current về target theo hằng số thời gian riêng từng tham số (giống stepNight). */
+const TWO_PI = Math.PI * 2;
+
+/* Tiến current về target theo hằng số thời gian riêng từng tham số (giống stepNight).
+   tauScale ≠ 1 (Trực tiếp, D-043): mọi hằng số (trừ mặt ướt) nhân k; windDir quay dần theo cung ngắn (350° → 10° đi qua 0°). tauScale = 1: y như cũ. */
 export function stepWeather(s: WeatherState, dt: number) {
-  const T = CONFIG.weather.tau, c = s.current, t = s.target;
-  c.temp = approach(c.temp, t.temp, T.temp, dt);
-  c.rain = approach(c.rain, t.rain, T.rain, dt);
-  c.wind = approach(c.wind, t.wind, T.wind, dt);
-  c.gust = approach(c.gust, t.gust, T.wind, dt);
-  c.windDir = t.windDir;
-  c.cloud = approach(c.cloud, t.cloud, T.cloud, dt);
-  c.haze = approach(c.haze, t.haze, T.haze, dt);
-  c.level = approach(c.level, t.level, T.level, dt);
-  c.lightning = approach(c.lightning, t.lightning, T.lightning, dt);
+  const T = CONFIG.weather.tau, c = s.current, t = s.target, k = s.tauScale > 0 ? s.tauScale : 1;
+  c.temp = approach(c.temp, t.temp, T.temp * k, dt);
+  c.rain = approach(c.rain, t.rain, T.rain * k, dt);
+  c.wind = approach(c.wind, t.wind, T.wind * k, dt);
+  c.gust = approach(c.gust, t.gust, T.wind * k, dt);
+  if (k === 1) c.windDir = t.windDir;
+  else {
+    const d = Math.atan2(Math.sin(t.windDir - c.windDir), Math.cos(t.windDir - c.windDir));   // lệch theo cung ngắn, (−π, π]
+    const a = c.windDir + d * (1 - Math.exp(-dt / Math.max(1e-3, T.wind * k)));
+    c.windDir = ((a % TWO_PI) + TWO_PI) % TWO_PI;
+  }
+  c.cloud = approach(c.cloud, t.cloud, T.cloud * k, dt);
+  c.haze = approach(c.haze, t.haze, T.haze * k, dt);
+  c.level = approach(c.level, t.level, T.level * k, dt);
+  c.lightning = approach(c.lightning, t.lightning, T.lightning * k, dt);
+  c.fog = approach(c.fog, t.fog, T.fog * k, dt);
   c.closed = t.closed;
   s.wet = approach(s.wet, c.rain, c.rain > s.wet ? T.rain : T.wet, dt);   // ướt nhanh, khô chậm
 }

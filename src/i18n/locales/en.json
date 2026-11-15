@@ -580,5 +580,17 @@
   "envLoading": "Fetching observations…",
   "envOffline": "Offline · retrying",
   "envNoData": "No data yet",
-  "envClockOk": "The clock is still on time"
+  "envClockOk": "The clock is still on time",
+  "liveBadge": "LIVE",
+  "simBadge": "SIMULATED",
+  "liveModeLive": "Live",
+  "liveModeManual": "Simulation",
+  "liveModeAria": "3D scene mode",
+  "liveNoteLive": "The 3D scene follows the real time and weather right now.",
+  "liveNoteManual": "Choose day / night and weather yourself in Settings.",
+  "liveLock": "Following real weather",
+  "liveToManual": "Switch to Simulation",
+  "liveToLive": "Back to Live",
+  "liveNotice": "Switched to Simulation to show the night scene.",
+  "liveNoData": "Real time; no weather data yet."
 }

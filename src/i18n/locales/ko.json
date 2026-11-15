@@ -580,5 +580,17 @@
   "envLoading": "관측 자료를 가져오는 중…",
   "envOffline": "연결 끊김 · 재시도 중",
   "envNoData": "아직 자료 없음",
-  "envClockOk": "시계는 정확히 작동 중"
+  "envClockOk": "시계는 정확히 작동 중",
+  "liveBadge": "실시간",
+  "simBadge": "시뮬레이션",
+  "liveModeLive": "실시간",
+  "liveModeManual": "시뮬레이션",
+  "liveModeAria": "3D 장면 모드",
+  "liveNoteLive": "3D 장면이 지금의 실제 시간과 날씨를 따릅니다.",
+  "liveNoteManual": "설정에서 낮/밤과 날씨를 직접 고르세요.",
+  "liveLock": "실제 날씨를 따르는 중",
+  "liveToManual": "시뮬레이션으로 전환",
+  "liveToLive": "실시간으로 돌아가기",
+  "liveNotice": "야경을 보여 주기 위해 시뮬레이션으로 전환했습니다.",
+  "liveNoData": "실제 시간 · 아직 날씨 자료가 없습니다."
 }

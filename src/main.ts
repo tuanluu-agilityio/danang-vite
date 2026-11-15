@@ -61,6 +61,8 @@ import { setupUI } from './ui/setupUI';
 import { setupQualityUI } from './ui/qualityUI';
 import { setupCompactUI, ui as compactState, openSheet, closeSheets, reveal } from './ui/compactUI';
 import { setupEnvUI, type EnvUI } from './ui/envUI';
+import { bindLiveMode } from './ui/liveUI';
+import { createLiveEnv, liveNextDelay, type LiveEnv, type EnvMode } from './realtime/liveEnv';
 import { updateHrUI } from './ui/hrUI';
 
 initI18n();
@@ -119,8 +121,20 @@ setupCompactUI();
 const query = new URLSearchParams(location.search);
 // Giờ + thời tiết thực tế (D-042); ?test không gọi Open-Meteo trừ khi có env=live. Chỉ là phần thông tin: lỗi ở đây không được chặn khám phá / vòng vẽ bên dưới
 let envUi: EnvUI | undefined;
-try { envUi = setupEnvUI({ live: !query.has('test') || query.get('env') === 'live' }); }
+// nhiễu nhịp làm mới (D-043): Math.random để mỗi máy gọi Open-Meteo một giây khác (không phải ngẫu nhiên của cảnh, không đụng rand())
+try { envUi = setupEnvUI({ live: !query.has('test') || query.get('env') === 'live', nextDelay: (now) => liveNextDelay(now, CONFIG.live, Math.random), skew: { maxMs: CONFIG.live.skewMaxMs, stepMs: CONFIG.live.obsStepMs } }); }
 catch (e) { console.warn('env: không dựng được chỉ báo giờ / thời tiết', e); const envEl = document.getElementById('env'); if (envEl) envEl.style.display = 'none'; }
+// Môi trường theo thời tiết + giờ thật (D-043): Trực tiếp mặc định, ?test mặc định Mô phỏng (test cũ tất định), ?envmode=live|manual ép.
+// Dùng chính kho của envUi (không tạo kho thứ hai; ?test không gọi mạng trừ khi env=live). envUi hỏng ⇒ không có bộ điều khiển, cảnh chạy Mô phỏng như cũ
+const envModeQ = query.get('envmode');
+const envMode: EnvMode = envModeQ === 'live' || envModeQ === 'manual' ? envModeQ : query.has('test') ? 'manual' : 'live';
+let liveEnv: LiveEnv | null = null;
+if (envUi) {
+  try { liveEnv = createLiveEnv({ cfg: CONFIG.live, lat: CONFIG.env.lat, lon: CONFIG.env.lon, refreshMs: CONFIG.env.refreshMs, now: envUi.now, store: envUi.store, weather, dayNight, initial: envMode }); }
+  catch (e) { console.warn('live: không dựng được chế độ Trực tiếp, dùng Mô phỏng', e); liveEnv = null; }
+  // Giao diện hai chế độ (D-043 Task 6): chỉ khi có bộ điều khiển; liveEnv null ⇒ không công tắc, không khóa, như trước D-043
+  if (liveEnv) { const le = liveEnv, eu = envUi; try { bindLiveMode(le, { store: eu.store, syncSim: ui.syncSim, renderEnv: eu.render }); } catch (e) { console.warn('live: không gắn được giao diện chế độ', e); } }
+}
 setupExplore(songHan.ctrl);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
@@ -139,7 +153,7 @@ const multiTest = {
 if (query.has('test')) {
   perf.on = query.has('perf');
   (window as unknown as { __app: unknown }).__app = { reflectState, renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, lights: lightState, tours: TOURS, tour, narration, audio, perf, quality, ui: { ...ui, ui: compactState, openSheet, closeSheets, reveal }, explore, keys, multi: multiTest, exFlight: { exCreate, exStep, exInputFromKeys, exBuildGlider, exPlaceGlider, exChase, CONFIG_explore: CONFIG.explore }, boats: boatsTest, traffic: trafficTest, trees: treesTest, people: peopleTest,
-    stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive, bike, env: envUi };
+    stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive, bike, env: envUi, live: liveEnv };
 }
 
 /* ============================ Vòng lặp ============================ */
@@ -154,8 +168,9 @@ function animate() {
   let pt = perf.start();
   shared.uTime.value = time;
   shadowCenter.set(Math.round(controls.target.x / 8) * 8, 0, Math.round(controls.target.z / 8) * 8);
+  if (liveEnv) liveEnv.update(dt);                          // Trực tiếp (D-043): dayNight.target + mặt trời thật, trước stepNight; Mô phỏng: không làm gì
   stepNight(dt);
-  applyNight(dayNight.night, time); pt = perf.lap('night', pt);
+  applyNight(dayNight.night, time, liveEnv ? liveEnv.sun : null); pt = perf.lap('night', pt);   // sun null (Mô phỏng / ?test) ⇒ như cũ
   updateWeather(dt, time, dayNight.night, camera);         // điều biến sau applyNight (D-009); camera: mưa quanh camera, tắt trong hầm
   water.material.uniforms.time.value += dt * 0.6 * windFx.waveSpeed;   // sóng trôi nhanh hơn theo gió (mặc định ×1)
   pt = perf.lap('weather', pt);

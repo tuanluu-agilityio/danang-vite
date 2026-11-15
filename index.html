@@ -40,6 +40,8 @@
     <button class="sheet-close" data-i18n-aria="close" aria-label="Đóng"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M3.5 3.5l9 9m0-9l-9 9"/></svg></button>
   </div>
   <div id="brandBody">
+  <!-- Chế độ Trực tiếp / Mô phỏng (D-043, ui/liveUI.ts): Trực tiếp khóa ngày / đêm + thời tiết mô phỏng; hiện khi có bộ điều khiển (data-mode do liveUI.ts ghi) -->
+  <div id="liveLock" class="live-lock" hidden><span class="live-lock-txt"><i class="dot"></i><span data-i18n="liveLock">Đang theo thời tiết thực tế</span></span><button id="btnToManual" type="button" data-i18n="liveToManual">Chuyển sang Mô phỏng</button><button id="btnToLive" type="button" data-i18n="liveToLive" hidden>Về Trực tiếp</button></div>
   <div class="row">
     <button id="btnNight" aria-pressed="false">Chuyển sang đêm</button>
     <button id="btnShadow" aria-pressed="true" data-i18n="shadows">Bóng đổ</button>
@@ -82,6 +84,7 @@
     <i class="sep"></i>
     <span class="clk" dir="ltr"><span class="hm" data-hm></span><span class="ss" data-ss></span></span>
     <span class="d" data-desc-short></span>
+    <span id="envMode" class="env-mode" hidden><i class="dot"></i><span class="txt" data-mode-text></span></span>
     <svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg>
   </button>
   <div id="envScrim"></div>
@@ -105,6 +108,10 @@
       <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.2 4.4 4.4 0 0 0 7 18z"/></svg><span data-i18n="envCloud">Mây che phủ</span></dt><dd class="v" data-cloud dir="ltr"></dd></div>
       <div><dt><svg class="env-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17a7 7 0 0 1 14 0M3 20h18M12 4v2.5M4.2 9.2l1.8 1.5M19.8 9.2L18 10.7"/></svg><span data-i18n="envUv">Chỉ số UV</span></dt><dd class="v" data-uv dir="ltr"></dd></div>
     </dl>
+    <div id="envModes" class="env-modes" hidden>
+      <div id="envModeSw" class="env-sw" role="radiogroup" data-i18n-aria="liveModeAria" aria-label="Chế độ cảnh 3D"><button type="button" id="envModeLive" role="radio" aria-checked="true" data-mode-btn="live"><i class="dot"></i><span data-i18n="liveModeLive">Trực tiếp</span></button><button type="button" id="envModeManual" role="radio" aria-checked="false" tabindex="-1" data-mode-btn="manual"><span data-i18n="liveModeManual">Mô phỏng</span></button></div>
+      <p id="envModeNote" class="env-mode-note"></p>
+    </div>
     <div class="env-foot"><span data-foot></span><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></div>
   </div>
 </div>
@@ -251,6 +258,7 @@
 </div>
 <div id="hrLabels" hidden aria-hidden="true"></div>
 <div id="swRideHint" class="panel" hidden><span class="hint-mouse" data-i18n="swRideHint">Kéo chuột để nhìn quanh · Esc để xuống cabin</span><span class="hint-touch" data-i18n="swRideHintTouch">Kéo để nhìn quanh · bấm lại nút để xuống cabin</span></div>
+<div id="liveNotice" class="panel" role="status" hidden><span data-i18n="liveNotice">Đã chuyển sang Mô phỏng để xem cảnh đêm.</span><button id="btnNoticeLive" type="button" data-i18n="liveToLive">Về Trực tiếp</button></div>
 <div id="swStormNote" class="panel" hidden data-i18n="swStormNote">Vòng quay tạm dừng do thời tiết xấu. Cabin vẫn đung đưa theo gió.</div>
 <div id="hint" class="panel" hidden data-i18n="walkHint">W/S hoặc ↑/↓ để đi · A/D hoặc ←/→ để xoay · chọn góc nhìn khác để thoát</div>
 

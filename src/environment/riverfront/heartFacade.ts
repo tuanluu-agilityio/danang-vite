@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
-import { shared } from '../../core/shared';
+import { shared, weatherU, LIVE_FOG } from '../../core/shared';
 import { clamp, lerp } from '../../common/math';
 import type { Tower } from './landmarks';
 
@@ -38,7 +38,7 @@ function maskTexture(panelW: number, panelH: number) {
 }
 const frag = `
   uniform sampler2D uMask; uniform float uNight, uTime, uOn, uLevel; uniform vec2 uGrid, uSize, uHc;
-  varying vec2 vUv; varying float vPhase;
+  varying vec2 vUv; varying float vPhase; ${LIVE_FOG.FRAG_DECL}
   float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   void main(){
     vec2 g = vUv * uGrid, id = floor(g), f = fract(g) - 0.5, cuv = (id + 0.5) / uGrid;
@@ -68,11 +68,12 @@ const frag = `
     vec3 outC = vec3(0.018, 0.022, 0.03) + col * dotM * day * uLevel * uOn;
     gl_FragColor = vec4(outC, 1.0);
     #include <tonemapping_fragment>
+    ${LIVE_FOG.FRAG_MAIN}
     #include <colorspace_fragment>
   }`.replace('HC_LO', (HEART_C.y - 0.15).toFixed(3)).replace('HC_HI', (HEART_C.y + 0.15).toFixed(3));
 const vert = `
-  attribute float aPhase; varying vec2 vUv; varying float vPhase;
-  void main(){ vUv = uv; vPhase = aPhase; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+  attribute float aPhase; varying vec2 vUv; varying float vPhase; ${LIVE_FOG.VERT_DECL}
+  void main(){ vUv = uv; vPhase = aPhase; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); ${LIVE_FOG.VERT_MAIN} }`;
 
 export interface Hearts {
   mesh: THREE.Mesh; material: THREE.ShaderMaterial;
@@ -99,7 +100,8 @@ export function buildHearts(towers: Tower[]): Hearts {
   const mask = maskTexture(pw, Hh);
   const material = new THREE.ShaderMaterial({
     uniforms: { uMask: { value: mask }, uNight: shared.uNight, uTime: shared.uTime, uOn: { value: 1 }, uLevel: { value: HC.intensity },
-      uGrid: { value: new THREE.Vector2(Math.round(pw / HC.cell), Math.round(Hh / HC.cell)) }, uSize: { value: new THREE.Vector2(pw, Hh) }, uHc: { value: HEART_C } },
+      uGrid: { value: new THREE.Vector2(Math.round(pw / HC.cell), Math.round(Hh / HC.cell)) }, uSize: { value: new THREE.Vector2(pw, Hh) }, uHc: { value: HEART_C },
+      uFogLive: weatherU.uFogLive, uFogDensity: weatherU.uFogDensity, uFogColor: weatherU.uFogColor },   // sương Trực tiếp (D-043, LIVE_FOG): 0 ở Mô phỏng ⇒ như cũ
     vertexShader: vert, fragmentShader: frag, fog: false
   });
   const mesh = new THREE.Mesh(geo, material); mesh.name = 'rf-hearts';
