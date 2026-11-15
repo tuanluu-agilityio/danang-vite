@@ -2,7 +2,7 @@
    Toàn bộ âm thanh được tổng hợp bằng Web Audio, không dùng file ngoài.
    - Nhạc chủ đề "The Spirit of Da Nang" (D-046): bản tổng phổ ở score.ts, bộ phát nhiều lớp ở music.ts. File này giữ chuỗi tổng (âm lượng, lọc, hồi âm, nén),
      bật / tắt, hạ nhạc khi có giọng thuyết minh và chọn bản phối theo chế độ (setMode), ngày / đêm (update), mưa / bão (setWeather).
-   - Tiếng sông Hàn, tiếng dế về đêm, mưa / gió / sấm.
+   - Tiếng sông Hàn, mưa / gió / sấm.
    - Trình diễn: tiếng lửa phụt + trống, tiếng phun nước, to nhỏ theo khoảng cách camera.
    - Cầu sông Hàn: còi báo khi quay, tiếng động cơ mâm xoay.
    Một AudioContext, một bộ phát nhạc cho cả trang: đổi chế độ / góc nhìn không tạo bản nhạc thứ hai, không phát lại từ đầu. */
@@ -91,15 +91,6 @@ export function createAudio() {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
     o.connect(g).connect(pan).connect(A.sfx); o.start(t); o.stop(t + 0.04);
   }
-  function cricket(t) {
-    const ctx = A.ctx, o = ctx.createOscillator(), am = ctx.createOscillator(), amG = ctx.createGain(), g = ctx.createGain(), pan = ctx.createStereoPanner();
-    o.frequency.value = 4300 + R() * 600; am.frequency.value = 28 + R() * 10; amG.gain.value = 0.5;
-    g.gain.value = 0; pan.pan.value = R() * 1.6 - 0.8;
-    const n = 2 + Math.floor(R() * 3);
-    for (let i = 0; i < n; i++) { const s = t + i * 0.32; g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(0.012, s + 0.03); g.gain.linearRampToValueAtTime(0, s + 0.18); }
-    am.connect(amG).connect(g.gain);
-    o.connect(g).connect(pan).connect(A.sfx); o.start(t); am.start(t); o.stop(t + n * 0.32 + 0.2); am.stop(t + n * 0.32 + 0.2);
-  }
   function fireWhoosh(t) {
     const ctx = A.ctx, src = ctx.createBufferSource(); src.buffer = A.noise;
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.7;
@@ -111,11 +102,10 @@ export function createAudio() {
     drum(t, 0.6 + 0.4 * A.distGain);
   }
 
-  /* Nhịp lập lịch: nhạc nhìn trước lookahead giây; tiếng dế thưa về đêm (Math.random, không dùng rand() của cảnh) */
+  /* Nhịp lập lịch: nhạc nhìn trước lookahead giây */
   function tick() {
     const now = A.ctx.currentTime;
     A.player.schedule(now + CONFIG.music.lookahead);
-    if (A.night > 0.6 && R() < 0.013) cricket(now + R() * 0.3);
   }
   /* Bản phối = chế độ + đêm + mưa + bão, làm tròn để chỉ ghi tham số khi thật sự đổi (mỗi lần ghi là một loạt sự kiện tự động hoá, D-018) */
   function applyMix(now: number, snap = false) {

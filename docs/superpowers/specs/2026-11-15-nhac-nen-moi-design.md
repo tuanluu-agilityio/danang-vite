@@ -64,6 +64,8 @@ Mỗi vòng đổi kiểu rải và thêm bè quãng tám ở vòng lẻ để k
 
 ## 7. Hạn chế
 
+- Sau merge (PR #46): bỏ tiếng dế về đêm theo phản hồi "tiếng rít" của người dùng; chưa xác nhận đó đúng là tiếng họ nghe.
+
 - Agent không nghe được: hay / dở, có "muốn khám phá" không là việc của tai người. Mức từng lớp cân theo số đo RMS, không theo tai.
 - Tiếng synth, không có dây / kèn thật; muốn chất dàn nhạc thật thì phải thay bằng bản thu (stem cùng 112 nhịp / phút, Rê trưởng thì giữ được cách phối theo lớp).
 - Mỗi lần bật lại nhạc là vào từ đầu bài. Tải lại trang cũng vậy.
