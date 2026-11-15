@@ -5,6 +5,7 @@ import { sun, hemi } from '../../core/lights';
 import { sky, clouds, stars } from '../../core/sky';
 import { water } from '../../core/water';
 import { quality } from '../../core/quality';
+import { weatherU } from '../../core/shared';
 import type { WeatherState } from './state';
 
 /* ===== [weather] Khí quyển (mục 4.2): sương, trời, ánh sáng, mây, nước — 0 draw call mới =====
@@ -63,6 +64,7 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number, live = f
   const fogK = clamp01(c.fog || 0);                                  // sương / tầm nhìn kém (D-043): preset mô phỏng luôn 0
   if (sunny < 1e-3 && gray < 1e-3 && stormK < 1e-3 && Math.abs(lvl) < 1e-3 && windK < 1e-4 && fogK < 1e-3) {
     if (active) { restore(); active = false; }                      // về `now`: trả đúng giá trị gốc, rồi không đụng gì nữa
+    liveFogU(live);
     return;
   }
   active = true;
@@ -96,4 +98,14 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number, live = f
   wu.distortionScale.value = lerp(lerp(lerp(base.distortion, A.sunWave, sunny), A.grayWave, gray), A.stormWave, stormK) + CONFIG.weather.wind.windWave * Math.min(1, windK) * (1 - stormK);   // gió không mưa (gió mùa) cũng nổi sóng
   wu.size.value = lerp(base.size, A.stormSize, stormK);
   water.position.y = base.waterY + lvl;
+  liveFogU(live);
+}
+
+/* Sương cho ShaderMaterial tự viết (tấm LED trái tim, màn LED quảng cáo; core/shared.ts LIVE_FOG): chỉ Trực tiếp, chép mật độ + màu FogExp2 cuối khung.
+   Mô phỏng: 0 ⇒ hai tấm vẽ y như cũ (không sương, như trước D-043) */
+function liveFogU(live: boolean) {
+  weatherU.uFogLive.value = live ? 1 : 0;
+  if (!live) return;
+  const f = scene.fog as THREE.FogExp2;
+  weatherU.uFogDensity.value = f.density; (weatherU.uFogColor.value as THREE.Color).copy(f.color);
 }
