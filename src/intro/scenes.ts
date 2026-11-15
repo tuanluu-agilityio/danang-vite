@@ -29,7 +29,7 @@ let ctrl: SwingController | null = null;
 let st = 0;                                            // giây trong nhịp hiện tại (hàm auto đọc; update ghi trước khi chế độ chạy)
 
 /* Cờ tiễn Cầu sông Hàn: index.ts chạy mỗi khung (cả sau cleanup) tới khi cầu CLOSED */
-export const inSee = { off: false };
+export const inSee = { off: false, own: false };   // off: tiễn cầu về CLOSED; own: lúc intro bắt đầu cầu đang CLOSED nên intro được quay / đóng nó (index.ts đặt)
 
 export function inScenesInit(c: SwingController): void { ctrl = c; }
 
@@ -112,12 +112,12 @@ export const inScenes: Record<InSceneId, InSceneRun> = {
   swing: {
     enter() {
       introCam();
-      const c = ctrl; if (!c) return;
+      const c = ctrl; if (!c || !inSee.own) return;                             // cầu đang mở / quay từ trước intro: để nguyên
       if (c.state === 'CLOSED') { if (c.canStart()) c.start(I.swingSpeed); }   // bão: canStart sai thì thôi, nhịp vẫn chạy camera
       else { inSee.off = false; c.speed = I.swingSpeed; }                       // cầu chưa về CLOSED (vào lại nhịp): để cầu đi tiếp, OPEN thì giữ mở tới leave
     },
     update(t) { wide(I.shots.swing, t, durOf('swing')); },
-    leave() { if (ctrl && ctrl.state !== 'CLOSED') inSee.off = true; }
+    leave() { if (ctrl && inSee.own && ctrl.state !== 'CLOSED') inSee.off = true; }
   },
   finale: {
     enter() { introCam(); finAng = 0; },

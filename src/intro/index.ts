@@ -1,8 +1,9 @@
 /* ===== Đoạn giới thiệu điện ảnh: bộ điều khiển (D-045) =====
    Phát ≈ 57 s trên chính cảnh 3D đang chạy (spec docs/superpowers/specs/2026-11-15-intro-dien-anh-design.md): dòng thời gian thuần (timeline.ts),
    chín nhịp (scenes.ts), lớp DOM (ui.ts). main.ts gọi intro.update(dt) ngay sau updateCamera(dt) và bỏ bước của bốn chế độ khi intro.hold.
-   play() chụp trạng thái (camera, fov, near, controls, dayNight.target, chế độ Trực tiếp, show.on); cleanup() trả lại hết, gọi được nhiều lần
-   (xong, Bỏ qua, nút hành động, lỗi). Cầu sông Hàn chưa về CLOSED thì "tiễn" trong update() tới khi đóng, cả sau khi intro đã kết thúc.
+   begin() (sau khung đầu, do play() gọi) chụp trạng thái (camera, fov, near, controls, dayNight.target, chế độ Trực tiếp, show.on, tốc độ + trạng thái Cầu sông Hàn); cleanup() trả lại hết,
+   gọi được nhiều lần (xong, Bỏ qua, nút hành động, lỗi). Cầu sông Hàn: chỉ đụng tới khi lúc bắt đầu nó đang CLOSED; chưa về CLOSED thì "tiễn" trong update() tới khi đóng
+   (cả sau khi intro đã kết thúc) rồi trả tốc độ quay đã chụp.
    Phím (pha capture trên window) chặn mọi phím khi intro chạy để không lọt xuống phím lái / Esc thoát (explore.exit tải lại trang).
    Không thêm gì vào cảnh; mỗi khung không cấp phát. */
 import * as THREE from 'three';
@@ -33,7 +34,8 @@ let active = false;
 let cur = -1;                                  // nhịp đã enter() (−1: chưa / đã leave)
 let waitMo: MutationObserver | null = null;    // play() khi #loading chưa done: chờ khung đầu
 /* Trạng thái chụp lúc play(), trả ở cleanup() */
-const snap = { pos: new THREE.Vector3(), target: new THREE.Vector3(), fov: 50, near: 0.5, enabled: true, maxPolar: Math.PI * 0.495, night: 0, wasLive: false, showOn: false };
+const snap = { pos: new THREE.Vector3(), target: new THREE.Vector3(), fov: 50, near: 0.5, enabled: true, maxPolar: Math.PI * 0.495, night: 0, wasLive: false, showOn: false, speed: 1 };
+const eaten = new Set<string>();               // phím đã bị chặn keydown: keyup của chúng cũng chặn, keyup của phím khác để lọt
 
 /* Bộ nhớ trình duyệt có thể bị chặn: mọi lần đọc / ghi bọc try */
 const sget = (s: () => Storage, k: string): string | null => { try { return s().getItem(k); } catch { return null; } };
@@ -49,7 +51,7 @@ const syncSound = (): void => inUiSound(audio.on, !touched);
 /* Thao tác đầu tiên của người xem: chờ một nhịp (bản nhạc khác có thể tự bật trước ở cùng thao tác) rồi nếu vẫn tắt và người xem chưa chọn tắt thì bấm hộ */
 function musicNudge(): void {
   if (noAuto || audio.on || sget(LS, MUSIC_KEY) === 'off') return;
-  setTimeout(() => { if (!audio.on && sget(LS, MUSIC_KEY) !== 'off') clickMusic(); syncSound(); }, 0);
+  setTimeout(() => { if (active && !audio.on && sget(LS, MUSIC_KEY) !== 'off') clickMusic(); syncSound(); }, 0);
 }
 function onFirstInput(e: Event): void {
   if (!active || touched) return;
@@ -83,7 +85,8 @@ function cleanup(): void {
   if (!active) return;
   active = false;
   if (cur >= 0) { const old = inScenes[S[cur].id]; cur = -1; try { old.leave(); } catch (e) { console.warn('[intro] lỗi khi rời nhịp', e); } }
-  const c = deps?.ctrl; if (c && c.state !== 'CLOSED') inSee.off = true;        // cầu còn mở / đang quay: tiễn về CLOSED trong update()
+  const c = deps?.ctrl;
+  if (c && inSee.own) { if (c.state !== 'CLOSED') inSee.off = true; else c.speed = snap.speed; }   // cầu do intro quay mà chưa đóng: tiễn về CLOSED trong update() rồi trả tốc độ; cầu có sẵn từ trước thì không đụng
   if (show.on !== snap.showOn) { show.on = snap.showOn; show.t = 0; }
   const live = deps?.live;
   if (snap.wasLive && live) live.setMode('live', 'user');                         // Trực tiếp tự tính lại dayNight.target theo mặt trời thật
@@ -102,24 +105,28 @@ function cleanup(): void {
 function begin(): void {
   waitMo = null;
   if (active) return;
-  /* mô hình nạp trước (chưa về thì chế độ dùng hình tạm có sẵn). Sau khung đầu, không sớm hơn: nạp trong lúc prewarm() (main.ts) chạy thì phần làm nóng
-     shader của mô hình (compileAsync) chồng lên prewarm và three ném "reading 'isReady'" (thấy trên GPU thật, ?test&intro) */
-  plPreload(); drive.preload(); bike.preload(); stAvatars.preload();
   snap.pos.copy(camera.position); snap.target.copy(controls.target);
   snap.fov = camera.fov; snap.near = camera.near; snap.enabled = controls.enabled; snap.maxPolar = controls.maxPolarAngle;
   snap.night = dayNight.target; snap.showOn = show.on;
+  const c = deps?.ctrl;
+  if (c && !inSee.off) { snap.speed = c.speed; inSee.own = c.state === 'CLOSED'; }   // đang tiễn dở từ lượt trước thì giữ mốc cũ; cầu không đóng lúc bắt đầu thì intro không đụng tới
   const live = deps?.live;
   snap.wasLive = !!live && live.mode === 'live';
-  if (snap.wasLive) live!.setMode('manual', 'user');                              // trước: setMode ghi dayNight.target của Mô phỏng; intro ghi đè ngay sau
-  dayNight.target = 0;
-  cam.mode = 'intro'; controls.enabled = false; cam.flight.then = null;
-  exHideChooser();
-  document.body.classList.add('intro');
   active = true; touched = false;
-  inSeek(clock, S, 0); clock.paused = false; inUiPaused(false);
-  inUiNoMore(sget(LS, I.storeKey) === 'off');
-  inUiShow(true);
-  try { enterScene(0, true); } catch (e) { fail(e); }
+  try {
+    /* mô hình nạp trước (chưa về thì chế độ dùng hình tạm có sẵn). Sau khung đầu, không sớm hơn: nạp trong lúc prewarm() (main.ts) chạy thì phần làm nóng
+       shader của mô hình (compileAsync) chồng lên prewarm và three ném "reading 'isReady'" (thấy trên GPU thật, ?test&intro) */
+    plPreload(); drive.preload(); bike.preload(); stAvatars.preload();
+    if (snap.wasLive) live!.setMode('manual', 'user');                              // trước: setMode ghi dayNight.target của Mô phỏng; intro ghi đè ngay sau
+    dayNight.target = 0;
+    cam.mode = 'intro'; controls.enabled = false; cam.flight.then = null;
+    exHideChooser();
+    document.body.classList.add('intro');
+    inSeek(clock, S, 0); clock.paused = false; inUiPaused(false);
+    inUiNoMore(sget(LS, I.storeKey) === 'off');
+    inUiShow(true);
+    try { enterScene(0, true); } catch (e) { fail(e); }
+  } catch (e) { console.warn('[intro] lỗi khi khởi động, bỏ qua giới thiệu', e); cleanup(); exRevealChooser(); }   // không để trang kẹt không có màn chọn
 }
 
 function go(i: number): void {
@@ -136,7 +143,7 @@ function onKeyDown(e: KeyboardEvent): void {
   const tg = e.target as HTMLElement | null;
   const inSel = !!tg && tg.id === 'inLang';
   if (inSel && (e.key.startsWith('Arrow') || e.key === 'Home' || e.key === 'End')) return;   // ô ngôn ngữ: mũi tên đổi lựa chọn như thường
-  e.stopImmediatePropagation();
+  e.stopImmediatePropagation(); eaten.add(e.code);
   const rtl = document.documentElement.dir === 'rtl';
   if (e.key === 'Escape') { e.preventDefault(); intro.skip(); }
   else if (e.key === ' ') { e.preventDefault(); if (!e.repeat) intro.pause(); }
@@ -146,8 +153,7 @@ function onKeyDown(e: KeyboardEvent): void {
   else if (e.key === 'Enter' && S[clock.i].id === 'finale' && !(tg && /^(BUTTON|SELECT|INPUT)$/.test(tg.tagName))) { e.preventDefault(); intro.skip(); }
 }
 function onKeyUp(e: KeyboardEvent): void {
-  if (!active) return;
-  if (e.ctrlKey || e.metaKey || e.altKey || e.key === 'Tab') return;
+  if (!eaten.delete(e.code)) return;                                              // chỉ chặn keyup của phím intro đã chặn keydown (kể cả khi intro vừa kết thúc bằng chính phím đó)
   e.stopImmediatePropagation();
   if (e.key === ' ') e.preventDefault();                                          // Space không bấm nút đang focus (đã dùng để tạm dừng)
 }
@@ -167,7 +173,8 @@ export const intro = {
       noMore: (on) => sset(LS, I.storeKey, on ? 'off' : null)
     });
     noAuto = new URLSearchParams(location.search).has('test');
-    window.addEventListener('pointerdown', onFirstInput, true);                     // trước onKeyDown: nó chặn mọi trình nghe sau trên window
+    /* onFirstInput PHẢI đăng ký trước onKeyDown: cả hai ở pha capture trên window và onKeyDown gọi stopImmediatePropagation, nên đăng ký sau thì phím đầu tiên không bao giờ tới onFirstInput (không tự bật nhạc) */
+    window.addEventListener('pointerdown', onFirstInput, true);
     window.addEventListener('keydown', onFirstInput, true);
     document.getElementById('inSound')?.addEventListener('click', () => { clickMusic(); syncSound(); });
     window.addEventListener('keydown', onKeyDown, true);
@@ -206,7 +213,7 @@ export const intro = {
   update(dt: number): void {
     if (inSee.off) {
       const c = deps?.ctrl;
-      if (!c || c.state === 'CLOSED') inSee.off = false;
+      if (!c || c.state === 'CLOSED') { inSee.off = false; if (c && inSee.own) c.speed = snap.speed; }   // cầu đã đóng: trả tốc độ quay đã chụp
       else { c.speed = I.swingSpeed; if (c.state === 'OPEN') c.requestClose(); }
     }
     if (!active || clock.paused) return;
@@ -222,21 +229,21 @@ export const intro = {
     inUiFill(i, inFill(clock, S, i));
   },
   seek(i: number): void { go(i); },
-  next(): void { if (active) go(Math.min(LAST, clock.i + 1)); },
-  prev(): void { if (active) go(Math.max(0, clock.i - 1)); },
+  next(): void { if (active && clock.i < LAST) go(clock.i + 1); },
+  prev(): void { if (active && clock.i > 0) go(clock.i - 1); },
   pause(on?: boolean): void {
     if (!active) return;
     clock.paused = on === undefined ? !clock.paused : on;
     inUiPaused(clock.paused);
   },
   /* Kết thúc intro, hiện màn chọn */
-  skip(): void { cleanup(); exRevealChooser(); },
+  skip(): void { if (!active && !waitMo) return; cleanup(); exRevealChooser(); },
   /* Nút hành động (spec §5.2): kết thúc, hiện màn chọn rồi bấm hộ đúng phần tử có sẵn */
   act(kind: InActKind): void {
     const c = deps?.ctrl;
     const busy = kind === 'swing' && !!c && c.state !== 'CLOSED';
     cleanup();
-    if (busy) inSee.off = false;                                                   // "Xem cầu quay" khi cầu đang quay: để cầu quay tiếp, không tiễn
+    if (busy) { inSee.off = false; if (c && inSee.own) c.speed = snap.speed; }                                                  // "Xem cầu quay" khi cầu đang quay: để cầu quay tiếp, không tiễn
     exRevealChooser();
     const click = (sel: string) => (document.querySelector(sel) as HTMLElement | null)?.click();
     if (kind === 'glider' || kind === 'car' || kind === 'bike' || kind === 'walk') { click(`button[data-pick="${kind}"]`); return; }
