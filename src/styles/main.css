@@ -658,6 +658,8 @@ body.compact.drive #envPill{height:34px;gap:7px;padding-inline:9px 10px;border-r
 }
 /* Dù lượn, chế độ xem (Đang xem …, giữa trên top 14 px): chỉ báo xuống dưới dải "Đang xem" (đo 98,14 195×52 trên 390 px, đáy 66 px; 72 px = đáy + khe 6 px), mép đầu dòng vật lý như đi dạo; dưới đó (top 100 / 150 px, giữa) chỉ có #exMpNotice / #exMpIdle, đáy là lời mời */
 body.compact.ex-watching:not(.drive):not(.stroll) #envPill{inset-inline:auto;left:calc(8px + env(safe-area-inset-left,0px));top:calc(72px + env(safe-area-inset-top,0px));}
+/* Điện thoại, chat (D-041) đang mở ô nhập: #exChat ở left 66 / top 56 px trùng chỗ chỉ báo của đi dạo (top 60) và xem dù lượn (top 72) nên tạm ẩn chỉ báo khi đang gõ; lái xe (chat left 157 px) và bay dù (chỉ báo top 13 px) không trùng. Trình duyệt thiếu :has() thì chỉ báo nằm chồng mép trái ô nhập */
+body.compact.ex-chat.stroll:has(#exChat.open) #envPill,body.compact.ex-chat.ex-watching:not(.drive):has(#exChat.open) #envPill{visibility:hidden;}
 /* Ô tô trên cảm ứng, dọc: thông báo nhiều người (#exMpNotice / #exMpIdle, quy tắc cũ ở khối lái xe nhiều người) xuống dưới chỉ báo thay vì dưới chú thích bản đồ nhỏ; 34 px = cao chỉ báo ô tô, 8 px = khe; cùng độ ưu tiên với quy tắc cũ, đứng sau nên thắng. Ngang giữ nguyên */
 @media (hover:none) and (orientation:portrait){
   body.compact.drive #exMpNotice:not([hidden]){top:calc(var(--env-dr-top,calc(228px + env(safe-area-inset-top,0px))) + 34px + 8px);}
