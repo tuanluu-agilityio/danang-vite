@@ -11,8 +11,8 @@ const okRes = () => Promise.resolve({ ok: true, json: () => Promise.resolve(FIX)
 const fail = () => Promise.reject(new Error('mạng hỏng'));
 
 /* Môi trường giả: đồng hồ, hàng đợi hẹn giờ, fetch đếm lời gọi */
-function rig(opt: { live?: boolean; storage?: any; fetchImpl?: (url: string, init: any, n: number) => Promise<any> } = {}) {
-  let t = OBS + 60000, calls = 0, id = 0, inflight = 0, maxInflight = 0;
+function rig(opt: { live?: boolean; storage?: any; fetchImpl?: (url: string, init: any, n: number) => Promise<any>; extra?: Partial<EnvDeps>; t0?: number } = {}) {
+  let t = opt.t0 ?? OBS + 60000, calls = 0, id = 0, inflight = 0, maxInflight = 0;
   const timers = new Map<number, { at: number; fn: () => void }>();
   const log: number[] = [];   // ms của mỗi lần hẹn lấy lại (bỏ hẹn hủy theo timeoutMs)
   const mem: Record<string, string> = {};
@@ -26,7 +26,8 @@ function rig(opt: { live?: boolean; storage?: any; fetchImpl?: (url: string, ini
       calls++; inflight++; maxInflight = Math.max(maxInflight, inflight);
       const p = opt.fetchImpl ? opt.fetchImpl(url, init, calls) : okRes();
       return p.finally(() => { inflight--; });
-    }
+    },
+    ...opt.extra
   };
   const store = createEnvStore(d);
   const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); await new Promise((r) => setImmediate(r)); };
@@ -195,4 +196,45 @@ test('(j) onChange và inject', async () => {
   assert.equal(r.store.status(), 'offline');
   r.store.inject({ ...d0, obs: r.now });
   assert.equal(r.store.status(), 'ok');
+});
+
+/* ===== D-043 Task 5: nhịp căn mốc, hiệu chỉnh giờ máy, inject không ghi đệm ===== */
+const SKEW = { maxMs: CONFIG.live.skewMaxMs, stepMs: CONFIG.live.obsStepMs };
+test('(k) nextDelay dùng sau lần lấy thành công; lỗi vẫn theo retryMs', async () => {
+  let bad = false;
+  const seen: number[] = [];
+  const r = rig({ fetchImpl: () => (bad ? fail() : okRes()), extra: { nextDelay: (now) => { seen.push(now); return 123456; } } });
+  r.store.start(); await r.flush();
+  assert.equal(r.log[r.log.length - 1], 123456);
+  assert.equal(seen[0], r.now, 'nhận giờ hiện tại (skew 0)');
+  bad = true;
+  await r.advance(123456);
+  assert.equal(r.log[r.log.length - 1], CONFIG.env.retryMs);
+});
+test('(l) skew(): 0 khi giờ máy đúng, ≈ +5 giờ khi máy chậm 5 giờ; trạng thái theo giờ đã hiệu chỉnh', async () => {
+  const r = rig({ extra: { skew: SKEW } });
+  r.store.start(); await r.flush();
+  assert.equal(r.store.skew(), 0);
+  const slow = rig({ extra: { skew: SKEW }, t0: OBS - 5 * 3600e3 });
+  slow.store.start(); await slow.flush();
+  const k = slow.store.skew();
+  assert.ok(Math.abs(k - (5 * 3600e3 + SKEW.stepMs / 2)) < 1, 'skew = ' + k);
+  assert.equal(slow.store.status(), 'ok');
+  const fast = rig({ extra: { skew: SKEW }, t0: OBS + 5 * 3600e3 });
+  fast.store.start(); await fast.flush();
+  assert.ok(fast.store.skew() < -4 * 3600e3);
+  assert.equal(fast.store.status(), 'ok', 'máy nhanh 5 giờ: không coi số liệu mới là cũ');
+  const noCfg = rig({ t0: OBS + 5 * 3600e3 });
+  noCfg.store.start(); await noCfg.flush();
+  assert.equal(noCfg.store.skew(), 0, 'không có cấu hình skew: như D-042');
+});
+test('(m) inject không ghi bộ nhớ đệm; bổ sung gust / vis / rate cho đối tượng kiểu cũ', async () => {
+  let writes = 0;
+  const r = rig({ live: false, storage: { getItem: () => null, setItem: () => { writes++; } } });
+  r.store.start();
+  const old: any = { obs: OBS, obsMin: 1335, temp: 25, feels: 27, hum: 80, wind: 5, dir: 90, rain: 0.5, cloud: 50, uv: null, code: 61, isDay: false, sunrise: null, sunset: null };
+  r.store.inject(old);
+  assert.equal(writes, 0);
+  assert.equal(r.store.data!.gust, null); assert.equal(r.store.data!.vis, null);
+  assert.equal(r.store.data!.rate, 2);
 });

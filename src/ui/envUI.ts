@@ -9,7 +9,7 @@ import { createEnvStore, type EnvStore } from '../realtime/store';
    Chỉ báo #envPill luôn hiện + thẻ #envCard (tờ 'env' của compactUI.ts). Đồng hồ chạy mỗi giây theo CONFIG.env.tz, số liệu từ realtime/store.ts.
    Chỉ hiển thị: không đọc / ghi thời tiết mô phỏng, thanh Ngày / Đêm hay đèn. Chỉ ghi DOM khi chuỗi đổi (đồng hồ mỗi giây không gây bố trí lại thừa). */
 
-export type EnvUI = { store: EnvStore; render(): void; setNow(fn: (() => number) | null): void };
+export type EnvUI = { store: EnvStore; render(): void; setNow(fn: (() => number) | null): void; now(): number };   // now(): giờ đã hiệu chỉnh (giờ máy / setNow + store.skew(), D-043)
 
 /* Biểu tượng nét 24×24 (chép từ prototype; 'cloud', 'fog', 'storm', 'snow' vẽ thêm cùng nét); 'off' = mất kết nối */
 const RAIN_CLOUD = '<path d="M7 15.5h10a3.8 3.8 0 0 0 .5-7.56A5.2 5.2 0 0 0 7.6 7.3 4.2 4.2 0 0 0 7 15.5z"/>';
@@ -28,7 +28,8 @@ const ICO: Record<EnvIcon | 'off', string> = {
 
 const pad2 = (n: number): string => (n < 10 ? '0' : '') + n;
 
-export function setupEnvUI(opts: { live: boolean }): EnvUI {
+/* opts.nextDelay / opts.skew (D-043): chuyển thẳng cho kho (store.ts EnvDeps), căn nhịp làm mới theo mốc quan trắc và hiệu chỉnh giờ máy lệch */
+export function setupEnvUI(opts: { live: boolean; nextDelay?: (now: number) => number; skew?: { maxMs: number; stepMs: number } }): EnvUI {
   const cfg = CONFIG.env;
   let nowFn: () => number = () => Date.now();   // nguồn giờ của đồng hồ / buổi / trạng thái; test ép bằng setNow
   let storage: Storage | null = null;
@@ -39,11 +40,13 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
     now: () => nowFn(),   // cùng nguồn giờ với đồng hồ để trạng thái 'stale' khớp giờ đang hiện
     storage,
     setTimer: (fn, ms) => window.setTimeout(fn, ms),
-    clearTimer: (id) => window.clearTimeout(id as number)
+    clearTimer: (id) => window.clearTimeout(id as number),
+    nextDelay: opts.nextDelay, skew: opts.skew
   });
+  const nowC = () => nowFn() + store.skew();   // giờ hiển thị / mặt trời: đã hiệu chỉnh khi giờ máy lệch
 
   const root = document.getElementById('env');
-  if (!root) { store.start(); return { store, render() {}, setNow(fn) { nowFn = fn || (() => Date.now()); } }; }
+  if (!root) { store.start(); return { store, render() {}, setNow(fn) { nowFn = fn || (() => Date.now()); }, now: nowC }; }
   const q = <T extends Element = HTMLElement>(sel: string): T => root.querySelector<T>(sel);
   const qa = (sel: string): HTMLElement[] => Array.from(root.querySelectorAll<HTMLElement>(sel));
   const pill = q<HTMLButtonElement>('#envPill'), btnX = q<HTMLButtonElement>('#envX'), scrim = q('#envScrim');
@@ -94,7 +97,7 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
   /* ----- Vẽ mọi thứ trừ chữ số đồng hồ (gọi khi phút đổi, số liệu / trạng thái đổi, đổi ngôn ngữ) ----- */
   const paint = () => {
     fmts();
-    const now = nowFn(), c = envClockParts(new Date(now), cfg.tz), min = c.min;
+    const now = nowC(), c = envClockParts(new Date(now), cfg.tz), min = c.min;
     const data = store.data, st = store.status();
     const sr = data && data.sunrise != null ? data.sunrise : cfg.sunFallback[0];
     const ss = data && data.sunset != null ? data.sunset : cfg.sunFallback[1];
@@ -159,7 +162,7 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
   /* ----- Đồng hồ: căn mép giây kế tiếp; phút đổi thì vẽ lại phần còn lại ----- */
   let lastMin = -1, clockTimer = 0;
   const tick = (force: boolean) => {
-    const c = envClockParts(new Date(nowFn()), cfg.tz);
+    const c = envClockParts(new Date(nowC()), cfg.tz);
     const hm = envHHMM(c.min), s = pad2(c.s);
     for (const e of hmEls) setText(e, hm);
     for (const e of ssEls) setText(e, s);
@@ -228,6 +231,7 @@ export function setupEnvUI(opts: { live: boolean }): EnvUI {
   return {
     store,
     render: () => tick(true),
-    setNow(fn: (() => number) | null) { nowFn = fn || (() => Date.now()); tick(true); }
+    setNow(fn: (() => number) | null) { nowFn = fn || (() => Date.now()); tick(true); },
+    now: nowC
   };
 }

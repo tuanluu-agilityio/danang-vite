@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CONFIG } from '../../config';
 import { scene, renderer } from '../../core/renderer';
 import { sun, hemi } from '../../core/lights';
-import { sky, clouds } from '../../core/sky';
+import { sky, clouds, stars } from '../../core/sky';
 import { water } from '../../core/water';
 import { quality } from '../../core/quality';
 import type { WeatherState } from './state';
@@ -50,7 +50,10 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number, live = f
   const A = CONFIG.weather.atmosphere, c = s.current, night = clamp01(m);
   // Mật độ mây (0 lệnh vẽ thêm: InstancedMesh.count): cloudMin tấm khi quang → đủ số tấm của bậc chất lượng khi u ám
   const qMax = Math.min(quality.current().clouds, clouds.instanceMatrix.count);
-  if (live) { clouds.count = Math.min(qMax, Math.round(lerp(CONFIG.live.cloudMin, qMax, clamp01(c.cloud)))); liveClouds = true; }
+  if (live) {
+    clouds.count = Math.min(qMax, Math.round(lerp(CONFIG.live.cloudMin, qMax, clamp01(c.cloud)))); liveClouds = true;
+    stars.material.opacity *= 1 - clamp01(c.cloud);   // trời u ám thật không thấy sao (applyNight đặt lại opacity mỗi khung; Mô phỏng không đổi)
+  }
   else if (liveClouds) { clouds.count = qMax; liveClouds = false; }
   const sunny = clamp01(c.haze);                                     // nắng hè: trời gắt, mù nóng
   const stormK = clamp01(Math.min(c.rain, c.wind / A.stormWind));    // bão: mưa lớn VÀ gió mạnh (liên tục theo thanh cường độ)
@@ -66,13 +69,11 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number, live = f
   const dark = 1 - A.nightDim * night;                               // màu thời tiết là màu ban ngày: ban đêm tối đi cùng cảnh
   const fog = scene.fog as THREE.FogExp2;
   // Sương: dày theo mưa/bão, hơi dày khi nóng; màu be nóng → xám xanh → bão
-  fog.density = base.fogDensity * (1 + A.hazeFog * sunny + (A.rainFog - 1) * clamp01(c.rain) + (A.stormFog - A.rainFog) * stormK);
+  // Sương mù D-043 (fogK, từ tầm nhìn đo được) và sương do mưa / bão cùng mô tả tầm nhìn kém: lấy mức dày hơn, không nhân chồng (mưa to + tầm nhìn 3 km không thành ×50)
+  fog.density = base.fogDensity * Math.max(1 + A.hazeFog * sunny + (A.rainFog - 1) * clamp01(c.rain) + (A.stormFog - A.rainFog) * stormK, 1 + (CONFIG.live.fogMax - 1) * fogK);
   tmp.copy(C.gray).lerp(C.storm, stormK).multiplyScalar(dark);
   fog.color.lerp(fogCol.copy(C.haze).multiplyScalar(dark), sunny * A.hazeTint).lerp(tmp, gray);
-  if (fogK > 0) {   // sương mù (D-043): dày tới fogMax lần, màu về xám trắng (tối theo đêm); fogK = 0 thì không chạy (hình mô phỏng không đổi)
-    fog.density *= 1 + (CONFIG.live.fogMax - 1) * fogK;
-    fog.color.lerp(fogCol.copy(C.fog).multiplyScalar(dark), fogK);
-  }
+  if (fogK > 0) fog.color.lerp(fogCol.copy(C.fog).multiplyScalar(dark), fogK);   // sương mù (D-043): màu về xám trắng (tối theo đêm); fogK = 0 thì không chạy (hình mô phỏng không đổi)
   // Trời
   const u = sky.material.uniforms;
   u.turbidity.value = lerp(lerp(lerp(base.turbidity, A.sunSky[0], sunny), A.graySky[0], gray), A.stormSky[0], stormK);

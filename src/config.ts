@@ -633,6 +633,9 @@ const liveBase = {
   sunMinElev: 10,             // ° — độ cao tối thiểu của đèn định hướng (bóng không dài vô hạn); bầu trời vẫn nhận độ cao thật (ước lượng)
   obsStepMs: 900000,          // ms — kỳ quan trắc Open-Meteo 15 phút; làm mới căn theo mốc này
   obsDelayMs: 90000,          // ms — chờ sau mốc quan trắc rồi mới lấy số liệu (để nguồn kịp cập nhật) (ước lượng)
+  jitterMs: 20000,            // ms — nhiễu cộng thêm vào lần lấy kế tiếp (0–20 s, bộ sinh rng(jitterSeed)) để các máy không gọi đúng cùng một giây (ước lượng)
+  jitterSeed: 4301,           // hạt giống bộ sinh nhiễu ở trên (rng riêng, không dùng rand())
+  minDelayMs: 60000,          // ms — lần lấy kế tiếp không sớm hơn mức này (ước lượng)
   skewMaxMs: 7200000          // ms — giờ máy lệch khỏi giờ quan trắc quá 2 giờ thì hiệu chỉnh theo giờ quan trắc (ước lượng, spec §4.3)
 };
 
