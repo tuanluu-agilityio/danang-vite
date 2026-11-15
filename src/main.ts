@@ -60,6 +60,7 @@ import { narration } from './audio/narration';
 import { setupUI } from './ui/setupUI';
 import { setupQualityUI } from './ui/qualityUI';
 import { setupCompactUI, ui as compactState, openSheet, closeSheets, reveal } from './ui/compactUI';
+import { setupEnvUI, type EnvUI } from './ui/envUI';
 import { updateHrUI } from './ui/hrUI';
 
 initI18n();
@@ -114,13 +115,17 @@ applyNight(0, 0);
 quality.init(() => cam.mode === 'fly');   // bậc chất lượng ban đầu (theo thiết bị / lựa chọn đã lưu); không đổi bậc giữa chuyến bay camera
 setupQualityUI();
 setupCompactUI();
+/* ?test&perf: bật đo thời gian CPU từng bước trong vòng animate (tests/perf-check.mjs) */
+const query = new URLSearchParams(location.search);
+// Giờ + thời tiết thực tế (D-042); ?test không gọi Open-Meteo trừ khi có env=live. Chỉ là phần thông tin: lỗi ở đây không được chặn khám phá / vòng vẽ bên dưới
+let envUi: EnvUI | undefined;
+try { envUi = setupEnvUI({ live: !query.has('test') || query.get('env') === 'live' }); }
+catch (e) { console.warn('env: không dựng được chỉ báo giờ / thời tiết', e); const envEl = document.getElementById('env'); if (envEl) envEl.style.display = 'none'; }
 setupExplore(songHan.ctrl);
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 /* Chỉ các lớp three mà tests/*.mjs dùng: đưa cả namespace THREE vào một object làm Rollup giữ lại mọi export của three (D-018) */
 const TEST_THREE = { Vector3: THREE.Vector3, Quaternion: THREE.Quaternion, Matrix4: THREE.Matrix4, Euler: THREE.Euler, Box3: THREE.Box3, Raycaster: THREE.Raycaster };
-/* ?test&perf: bật đo thời gian CPU từng bước trong vòng animate (tests/perf-check.mjs) */
-const query = new URLSearchParams(location.search);
 /* Cho test nhiều người (Task 5; sảnh thật là Task 6): mở phiên, vào phòng bằng tên, bay khi được cấp slot */
 const multiTest = {
   url: () => exMulti.url(), get session() { return exMulti.session; }, remotes: exRemotes, drivers: exDrivers, chat: exChat,   // drivers: xe người khác (bike-multi: debug(slot) xe máy thật + nhân vật)
@@ -134,7 +139,7 @@ const multiTest = {
 if (query.has('test')) {
   perf.on = query.has('perf');
   (window as unknown as { __app: unknown }).__app = { reflectState, renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, lights: lightState, tours: TOURS, tour, narration, audio, perf, quality, ui: { ...ui, ui: compactState, openSheet, closeSheets, reveal }, explore, keys, multi: multiTest, exFlight: { exCreate, exStep, exInputFromKeys, exBuildGlider, exPlaceGlider, exChase, CONFIG_explore: CONFIG.explore }, boats: boatsTest, traffic: trafficTest, trees: treesTest, people: peopleTest,
-    stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive, bike };
+    stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive, bike, env: envUi };
 }
 
 /* ============================ Vòng lặp ============================ */

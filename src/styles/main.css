@@ -524,4 +524,160 @@ body.compact.stroll #stToast:not([hidden]){top:calc(8px + env(safe-area-inset-to
 }
 body.compact #exHint{top:calc(64px + env(safe-area-inset-top,0px));}
 body.compact #btnExExit{top:calc(8px + env(safe-area-inset-top,0px));inset-inline-end:calc(8px + env(safe-area-inset-right,0px));min-height:40px;}
+/* ===== Giờ và thời tiết thực tế (D-042) =====
+   #env (ui/envUI.ts): chỉ báo #envPill luôn hiện + thẻ chi tiết #envCard (tờ 'env' của compactUI.ts, body.sheet-env). Kiểu chép từ prototype đã duyệt (phương án B).
+   Kính tối: nền trong, blur lớn, viền sáng mảnh, một quầng màu theo buổi thật (--acc theo data-phase). #env không định vị: chỉ báo (6), thẻ máy tính (9), lớp mờ (9), tờ đáy điện thoại (10) xếp lớp riêng.
+   Ẩn / hiện bằng display chỉ ở quy tắc theo ngữ cảnh (body.compact …), không ở quy tắc chung #env … (bẫy độ ưu tiên, xem #stJump). */
+#env{--acc:140,200,240;--tint:10,18,24;--glass:.56;font-family:var(--font-body);color:var(--text);}
+#env[data-phase="dawn"]{--acc:244,178,138;--tint:22,16,20;}
+#env[data-phase="day"]{--acc:140,200,240;--tint:9,19,27;}
+#env[data-phase="dusk"]{--acc:242,150,86;--tint:24,15,13;}
+#env[data-phase="night"]{--acc:138,164,236;--tint:7,11,26;--glass:.62;}
+#env .env-glass{
+  background:
+    radial-gradient(130% 90% at 100% 0%,rgba(var(--acc),.20),transparent 62%),
+    linear-gradient(165deg,rgba(var(--tint),calc(var(--glass) + .1)),rgba(var(--tint),var(--glass)));
+  border:1px solid rgba(255,255,255,.11);
+  backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);
+  box-shadow:0 18px 48px rgba(0,0,0,.34),0 2px 6px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.12);
+  transition:background .9s,border-color .25s,box-shadow .25s,transform .25s,opacity .2s;
+}
+html[dir=rtl] #env .env-glass{background:radial-gradient(130% 90% at 0% 0%,rgba(var(--acc),.20),transparent 62%),linear-gradient(195deg,rgba(var(--tint),calc(var(--glass) + .1)),rgba(var(--tint),var(--glass)));}   /* quầng sáng ở góc cuối dòng */
+#env .env-ico{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;color:rgb(var(--acc));transition:color .9s;}
+/* --- Chỉ báo: máy tính, tham quan: cạnh ⚙ (bản đủ: biểu tượng, nhiệt độ, vạch, HH:mm, giây, mô tả khi rê chuột, mũi tên) --- */
+#envPill{position:fixed;z-index:6;top:calc(17px + env(safe-area-inset-top,0px));inset-inline-start:calc(72px + env(safe-area-inset-left,0px));
+  align-items:center;gap:9px;height:44px;margin:0;padding:0;padding-inline:12px 14px;box-sizing:border-box;border-radius:12px;color:var(--text);cursor:pointer;font:inherit;-webkit-tap-highlight-color:transparent;}
+#env #envPill{display:inline-flex;}
+#envPill .env-ico{font-size:20px;}
+#envPill .t{font:600 23px/1 var(--font-display);color:var(--gold);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.01em;}
+#envPill .sep{width:1px;height:16px;background:rgba(255,255,255,.16);}
+#envPill .clk{display:inline-flex;align-items:center;gap:4px;}   /* HH:mm + giây một khối dir="ltr": ar không đảo giây sang trước giờ */
+#envPill .hm{font:500 13.5px/1 var(--font-body);font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+#envPill .ss{font:400 10.5px/1 var(--font-mono);color:var(--muted);opacity:.75;font-variant-numeric:tabular-nums;}
+#envPill .d{max-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px;color:var(--muted);opacity:0;transition:max-width .35s cubic-bezier(.2,.7,.2,1),opacity .25s,margin .35s;margin-inline-start:-9px;}
+#envPill .chev{width:10px;height:10px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s;}
+@media (hover:hover){
+  #env #envPill:hover{border-color:rgba(255,255,255,.22);box-shadow:0 20px 50px rgba(0,0,0,.38),0 0 0 4px rgba(var(--acc),.08),inset 0 1px 0 rgba(255,255,255,.16);transform:translateY(-1px);}
+  body:not(.compact):not(.explore) #envPill:hover .d{max-width:180px;opacity:1;margin-inline-start:0;}
+}
+#env #envPill:active{transform:translateY(0) scale(.985);}
+#envPill:focus-visible,#envX:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+body.sheet-env #env #envPill{border-color:rgba(var(--acc),.38);}
+body.sheet-env #envPill .chev{transform:rotate(180deg);}
+/* Bảng Cài đặt mở (máy tính, tham quan) phủ lên chỗ chỉ báo: chỉ báo nhường chỗ */
+body:not(.compact):not(.explore).sheet-settings #env #envPill{opacity:0;pointer-events:none;transform:translateY(-4px);visibility:hidden;transition:background .9s,border-color .25s,box-shadow .25s,transform .25s,opacity .2s,visibility 0s .2s;}   /* visibility: Tab không tới nút đã ẩn; trễ .2 s cho kịp mờ đi */
+/* --- Thẻ chi tiết: máy tính, rơi xuống dưới chỉ báo --- */
+#envCard{position:fixed;z-index:9;top:calc(70px + env(safe-area-inset-top,0px));inset-inline-start:calc(72px + env(safe-area-inset-left,0px));
+  width:312px;max-height:calc(100vh - 84px - env(safe-area-inset-top,0px));overflow-y:auto;box-sizing:border-box;border-radius:16px;padding:16px 18px 14px;display:flex;flex-direction:column;
+  transform-origin:20px 0;opacity:0;visibility:hidden;transform:translateY(-8px) scale(.975);}
+#env #envCard{transition:opacity .22s,transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s,background .9s;}   /* #env #envCard: thắng transition chung của #env .env-glass, nếu không visibility tắt ngay và thẻ biến mất không mờ / trượt khi đóng */
+html[dir=rtl] #envCard{transform-origin:calc(100% - 20px) 0;}
+body.sheet-env #env #envCard{opacity:1;visibility:visible;transform:none;transition:opacity .22s,transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s,background .9s;}
+#env .env-eyebrow{display:flex;align-items:center;gap:8px;font:400 10px/1.2 var(--font-mono);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);}
+#env .env-eyebrow .place{color:rgb(var(--acc));transition:color .9s;}
+#env .env-eyebrow .tz{margin-inline-start:auto;letter-spacing:.08em;white-space:nowrap;}
+#env .live{position:relative;width:6px;height:6px;border-radius:50%;background:#7bd18b;flex:none;}
+#env .live::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid #7bd18b;opacity:.35;}
+#env[data-state="stale"] .live{background:#e6bd6a;}#env[data-state="stale"] .live::after{border-color:#e6bd6a;}
+#env[data-state="offline"] .live{background:#f07b6b;}#env[data-state="offline"] .live::after{border-color:#f07b6b;}
+#env[data-state="loading"] .live{background:var(--muted);}#env[data-state="loading"] .live::after{border-color:var(--muted);}
+#env .env-clock{display:flex;align-items:baseline;justify-content:flex-start;gap:6px;margin-top:10px;}
+html[dir=rtl] #env .env-clock{justify-content:flex-end;}   /* cụm giờ dir="ltr": vẫn canh về đầu dòng của trang */
+#env .env-clock .hm{font:500 52px/.92 var(--font-display);letter-spacing:.005em;font-variant-numeric:lining-nums tabular-nums;}
+#env .env-clock .ss{font:400 13px/1 var(--font-mono);color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums;}
+#env .env-date{margin-top:7px;font-size:12.5px;color:var(--text);opacity:.86;}
+#env .env-date::first-letter{text-transform:uppercase;}
+/* Vạch mặt trời: mọc → lặn, chấm là vị trí hiện tại (theo đồng hồ; daily=sunrise,sunset của Open-Meteo) */
+#env .env-sun{margin-top:14px;}
+#env .env-sun .track{position:relative;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.08),rgba(var(--acc),.55),rgba(255,255,255,.08));}
+#env .env-sun .dot{position:absolute;top:50%;width:7px;height:7px;margin-top:-3.5px;margin-inline-start:-3.5px;border-radius:50%;background:rgb(var(--acc));box-shadow:0 0 0 3px rgba(var(--acc),.18),0 0 12px rgba(var(--acc),.8);transition:left .8s cubic-bezier(.2,.7,.2,1),right .8s cubic-bezier(.2,.7,.2,1),opacity .4s,background .9s;}
+#env .env-sun .ends{display:flex;justify-content:space-between;gap:6px;margin-top:6px;font:400 10px/1 var(--font-mono);color:var(--muted);letter-spacing:.04em;}
+#env .env-rule{height:1px;margin:14px 0 13px;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(255,255,255,.03));}
+html[dir=rtl] #env .env-rule{background:linear-gradient(270deg,rgba(255,255,255,.12),rgba(255,255,255,.03));}
+#env .env-now{display:flex;align-items:center;gap:14px;}
+#env .env-now .env-ico{font-size:40px;stroke-width:1.25;}
+#env .env-now .temp{font:600 64px/.82 var(--font-display);color:var(--gold);font-variant-numeric:lining-nums;letter-spacing:-.01em;min-width:1.55ch;}
+#env .env-now .temp sup{font-size:.5em;vertical-align:top;line-height:1;margin-inline-start:1px;color:rgba(230,189,106,.8);}
+#env .env-now .desc{display:flex;flex-direction:column;gap:4px;min-width:0;}
+#env .env-now .desc b{font-weight:500;font-size:14px;line-height:1.25;}
+#env .env-now .desc span{font-size:11.5px;color:var(--muted);}
+#env .env-grid{margin:14px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;}
+#env .env-grid div{display:flex;flex-direction:column;gap:3px;min-width:0;}
+#env .env-grid dt{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--muted);white-space:nowrap;}
+#env .env-grid dt .env-ico{font-size:13px;opacity:.9;}
+#env .env-grid dt span{white-space:normal;min-width:0;line-height:1.25;}   /* nhãn dài (ar, ru) xuống dòng thay vì tràn khỏi thẻ */
+#env .env-grid dd{margin:0;font-size:13.5px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:start;}
+#env .env-grid dd[data-dir],#env .env-grid dd[data-uv]{white-space:normal;overflow-wrap:anywhere;line-height:1.25;}   /* chữ dài (th hướng "ตะวันตกเฉียงเหนือ", ru UV "11 Экстремальный") xuống dòng thay vì tràn khỏi cột (env-check mục 9) */
+html[dir=rtl] #env .env-grid dd[dir=ltr]{text-align:end;}   /* số dir="ltr" vẫn canh về đầu dòng của trang (bên phải) */
+#env .env-grid dd small{font-size:10.5px;font-weight:400;color:var(--muted);margin-inline-start:3px;}
+#env .env-grid .arrow{display:inline-block;width:11px;height:11px;margin-inline-end:4px;vertical-align:-1px;transition:transform .8s cubic-bezier(.2,.7,.2,1);}
+#env .env-foot{margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;gap:10px;font-size:10.5px;line-height:1.45;color:var(--muted);}
+#env .env-foot a{color:inherit;text-decoration:underline;text-underline-offset:2px;white-space:nowrap;}
+#env .env-foot .warn{color:var(--gold);}
+#envX{display:none;}
+#env .env-swap{transition:opacity .2s;}
+#env .env-swap.out{opacity:0;}
+/* Đang tải: khối xám chạy sáng thay số (hiệu ứng lặp duy nhất); ngoại tuyến: số liệu mờ, đồng hồ vẫn chạy */
+@keyframes envSk{to{background-position:-200% 0;}}
+#env[data-state="loading"] .v{color:transparent!important;border-radius:4px;background:linear-gradient(90deg,rgba(255,255,255,.07) 25%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.07) 75%) 0 0/200% 100%;animation:envSk 1.3s linear infinite;}
+#env[data-state="loading"] .v *{visibility:hidden;}
+#env[data-state="loading"] .env-now .env-ico,#env[data-state="loading"] #envPill > .env-ico{opacity:.25;}
+#env[data-state="stale"] .env-now,#env[data-state="stale"] .env-grid{opacity:.72;}
+#env[data-state="offline"] .env-now .temp,#env[data-state="offline"] #envPill .t{color:var(--muted);}
+#env[data-state="offline"] .env-grid{opacity:.45;}
+#env[data-state="offline"] .env-now .temp sup{display:none;}
+#env[data-state="offline"] .env-now .temp{font-size:44px;line-height:1;letter-spacing:.02em;white-space:nowrap;}
+/* Lớp mờ sau tờ đáy: chỉ điện thoại */
+#envScrim{display:none;}
+/* --- Bản gọn (khám phá và điện thoại): không giây, không mô tả, không mũi tên --- */
+body.explore #envPill .ss,body.explore #envPill .d,body.explore #envPill .chev,
+body.compact #envPill .ss,body.compact #envPill .d,body.compact #envPill .chev{display:none;}
+/* Máy tính, khám phá: góc trên phía nút Thoát (Thoát ở top 56 px), cao 36 px; thẻ dưới chỉ báo, canh mép phía Thoát (che Thoát khi mở) */
+body.explore:not(.compact) #envPill{top:calc(14px + env(safe-area-inset-top,0px));inset-inline:auto calc(14px + env(safe-area-inset-right,0px));height:36px;gap:8px;padding-inline:10px 12px;border-radius:11px;}
+body.explore:not(.compact) #envPill .env-ico{font-size:18px;}
+body.explore:not(.compact) #envPill .t{font-size:21px;}
+body.explore:not(.compact) #envCard{top:calc(58px + env(safe-area-inset-top,0px));inset-inline:auto calc(14px + env(safe-area-inset-right,0px));transform-origin:calc(100% - 20px) 0;max-height:calc(100vh - 72px - env(safe-area-inset-top,0px));}
+html[dir=rtl] body.explore:not(.compact) #envCard{transform-origin:20px 0;}
+/* --- Điện thoại (body.compact): chỉ báo bản gọn cao 44 px; không blur (D-019), nền đục hơn --- */
+body.compact #env .env-glass{backdrop-filter:none;-webkit-backdrop-filter:none;--glass:.86;box-shadow:0 8px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.1);}
+body.compact #envPill{top:calc(13px + env(safe-area-inset-top,0px));inset-inline:auto calc(8px + env(safe-area-inset-right,0px));height:44px;gap:8px;padding-inline:10px 12px;}
+body.compact.explore #envPill{inset-inline:calc(72px + env(safe-area-inset-left,0px)) auto;}   /* dù lượn: cạnh ⚙ (góc cuối dòng là nút Thoát) */
+/* Đi dạo, ô tô / xe máy: cột trái vật lý dưới hàng ⚙ / Thoát (top 60 px, như 📷 bên phải). Đi dạo: cạnh ⚙ đè thông báo chụp ảnh #stToast (giữa trên, top 8 px);
+   left vật lý: ar đổi ⚙ / Thoát nhưng 📷 vẫn ở phải vật lý */
+body.compact.stroll #envPill,body.compact.drive #envPill{inset-inline:auto;left:calc(8px + env(safe-area-inset-left,0px));top:calc(60px + env(safe-area-inset-top,0px));}
+body.compact.drive #envPill{height:34px;gap:7px;padding-inline:9px 10px;border-radius:10px;}
+@media (hover:none){
+  /* Cảm ứng: bản đồ nhỏ ở top 56 px dưới ⚙, chú thích ngay dưới: chỉ báo dưới chú thích. --env-dr-top = đáy #drMapNote + khe (envUI.ts đo, vì --dr-map-h chỉ đặt trên #drHud
+     và chú thích xuống dòng theo ngôn ngữ); giá trị lùi: 60 + 128 (CONFIG.drive.hud.mapTouch) + 40 */
+  body.compact.drive #envPill{top:var(--env-dr-top,calc(228px + env(safe-area-inset-top,0px)));}
+}
+@media (hover:hover){
+  /* Cửa sổ máy tính hẹp (compact + chuột), xe máy: 🔊 cạnh ⚙, 🎥 dưới ⚙, ◄ ► dưới 🎥 (bản đồ nhỏ ở đáy trái): chỉ báo bên phải hàng ◄ ►; ar lật theo nhóm nút */
+  body.compact.bike #envPill{left:calc(118px + env(safe-area-inset-left,0px));top:calc(134px + env(safe-area-inset-top,0px));}
+  html[dir=rtl] body.compact.bike #envPill{left:auto;right:calc(118px + env(safe-area-inset-right,0px));}
+}
+/* Dù lượn, chế độ xem (Đang xem …, giữa trên top 14 px): chỉ báo xuống dưới dải "Đang xem" (đo 98,14 195×52 trên 390 px, đáy 66 px; 72 px = đáy + khe 6 px), mép đầu dòng vật lý như đi dạo; dưới đó (top 100 / 150 px, giữa) chỉ có #exMpNotice / #exMpIdle, đáy là lời mời */
+body.compact.ex-watching:not(.drive):not(.stroll) #envPill{inset-inline:auto;left:calc(8px + env(safe-area-inset-left,0px));top:calc(72px + env(safe-area-inset-top,0px));}
+/* Điện thoại, chat (D-041) đang mở ô nhập: #exChat ở left 66 / top 56 px trùng chỗ chỉ báo của đi dạo (top 60) và xem dù lượn (top 72) nên tạm ẩn chỉ báo khi đang gõ; lái xe (chat left 157 px) và bay dù (chỉ báo top 13 px) không trùng. Trình duyệt thiếu :has() thì chỉ báo nằm chồng mép trái ô nhập */
+body.compact.ex-chat.stroll:has(#exChat.open) #envPill,body.compact.ex-chat.ex-watching:not(.drive):has(#exChat.open) #envPill{visibility:hidden;}
+/* Ô tô trên cảm ứng, dọc: thông báo nhiều người (#exMpNotice / #exMpIdle, quy tắc cũ ở khối lái xe nhiều người) xuống dưới chỉ báo thay vì dưới chú thích bản đồ nhỏ; 34 px = cao chỉ báo ô tô, 8 px = khe; cùng độ ưu tiên với quy tắc cũ, đứng sau nên thắng. Ngang giữ nguyên */
+@media (hover:none) and (orientation:portrait){
+  body.compact.drive #exMpNotice:not([hidden]){top:calc(var(--env-dr-top,calc(228px + env(safe-area-inset-top,0px))) + 34px + 8px);}
+  body.compact.drive #exMpIdle:not([hidden]){top:calc(var(--env-dr-top,calc(228px + env(safe-area-inset-top,0px))) + 34px + 8px + 70px);}
+}
+body.compact.drive #envPill .env-ico{font-size:17px;}
+body.compact.drive #envPill .t{font-size:20px;}
+body.compact.drive #envPill .hm{font-size:12.5px;}
+/* Tờ đáy: như tờ Cài đặt / Góc nhìn; nút × 40 px; lớp mờ phía sau */
+body.compact #envCard{top:auto;bottom:0;inset-inline:0;width:auto;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;z-index:10;border-radius:18px 18px 0 0;border-bottom:0;
+  padding:10px calc(20px + env(safe-area-inset-right,0px)) calc(26px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px));
+  opacity:1;transform:translateY(100%);}
+body.compact #env #envCard{transition:transform .34s cubic-bezier(.2,.85,.2,1),visibility 0s .34s;}   /* cùng độ ưu tiên với #env #envCard ở trên */
+body.compact.sheet-env #env #envCard{transform:none;transition:transform .34s cubic-bezier(.2,.85,.2,1),visibility 0s;}
+body.compact #envCard::before{content:"";align-self:center;flex:none;width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin-bottom:12px;}
+body.compact #envX{display:inline-flex;align-items:center;justify-content:center;position:absolute;top:14px;inset-inline-end:12px;width:40px;height:40px;margin:0;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+body.compact #envX svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;}
+body.compact #env .env-eyebrow .tz{margin-inline-end:44px;}
+body.compact #envScrim{display:block;position:fixed;inset:0;z-index:9;background:rgba(4,8,12,.45);opacity:0;pointer-events:none;transition:opacity .3s;}
+body.compact.sheet-env #envScrim{opacity:1;pointer-events:auto;}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}

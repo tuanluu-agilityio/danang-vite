@@ -574,6 +574,25 @@ const uiBase = {
   }
 };
 
+/* ------------------------- Giờ + thời tiết thực tế (D-042) -------------------------
+   Chỉ số liệu hiển thị: không điều khiển cảnh 3D. Nguồn: Open-Meteo (CC BY 4.0), không khóa API */
+const envBase = {
+  lat: 16.061,          // ° Bắc — vĩ độ Đà Nẵng (theo yêu cầu người dùng)
+  lon: 108.227,         // ° Đông — kinh độ Đà Nẵng (theo yêu cầu người dùng)
+  tz: 'Asia/Ho_Chi_Minh',   // múi giờ hiển thị đồng hồ / ngày (ICT, UTC+7)
+  api: 'https://api.open-meteo.com/v1/forecast',   // điểm cuối Open-Meteo
+  refreshMs: 600000,    // ms — nhịp lấy số liệu: 10 phút
+  staleMs: 2700000,     // ms — quá tuổi quan trắc này thì coi là số liệu cũ: 45 phút (ước lượng: 3 bước 15 phút)
+  timeoutMs: 10000,     // ms — quá thời gian này thì hủy yêu cầu, tính là lỗi (ước lượng)
+  retryMs: 60000,       // ms — chờ thử lại sau lỗi đầu tiên, gấp đôi mỗi lần (ước lượng)
+  retryMaxMs: 300000,   // ms — trần thời gian chờ thử lại (ước lượng)
+  dawnMin: [-30, 75] as [number, number],   // phút — khoảng quanh giờ mọc coi là bình minh (ước lượng, theo bản mẫu)
+  duskMin: [-75, 35] as [number, number],   // phút — khoảng quanh giờ lặn coi là hoàng hôn (ước lượng, theo bản mẫu)
+  sunFallback: [345, 1050] as [number, number],   // phút trong ngày — mọc 05:45, lặn 17:30, dùng khi chưa có số liệu (ước lượng)
+  storeKey: 'cauRong.env',    // khóa localStorage của bộ nhớ đệm số liệu
+  driveGap: 8                 // px — khe giữa đáy chú thích bản đồ nhỏ (#drMapNote) và chỉ báo khi lái ô tô / xe máy trên cảm ứng (ước lượng)
+};
+
 /* ------------------------- Tự khám phá bằng dù lượn -------------------------
    Chế độ bay tự do (W/A/S/D), mô hình bay ở explore/flight.ts. Mọi số đều (ước lượng) */
 const exploreBase = {
@@ -1268,6 +1287,7 @@ export const CONFIG = {
   cityNight: cityNightBase,
   boats: boatsBase,
   ui: uiBase,
+  env: envBase,
   mainTotal: sum(base.mainSpans),
   thuanPhuoc: deriveTp(thuanPhuocBase),
   tranThiLy: deriveTtl(tranThiLyBase),
