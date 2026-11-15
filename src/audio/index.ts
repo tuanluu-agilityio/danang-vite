@@ -34,12 +34,29 @@ export function createAudio() {
     noise: null, waterSrc: null, waterGain: null, lastFire: false, lastWater: false, distGain: 1, wxDuck: 1, wxRain: 0, wxWind: 0, wxIndoors: 0, patterAt: 0 };
   const R = Math.random;
 
+  /* Trần đỉnh cuối chuỗi tổng: |x| ≤ ngưỡng đi thẳng (không đổi âm lượng, không makeup gain như DynamicsCompressor), phần vượt uốn mềm tanh tới trần < 0 dBFS.
+     Bộ nén -18 dB phía trước không chặn được đỉnh nhanh: âm lượng 100 % đo được +0,2 dBFS ở nhịp xe máy, −0,4 dBFS lúc phun lửa (bị cắt cứng ở loa = tiếng tách) */
+  function ceiling(ctx: AudioContext): WaveShaperNode {
+    const T = CONFIG.music.ceiling, n = 2049, c = new Float32Array(n);
+    for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1, a = Math.abs(x); c[i] = a <= T ? x : Math.sign(x) * (T + (1 - T) * Math.tanh((a - T) / (1 - T))); }
+    const s = ctx.createWaveShaper(); s.curve = c; return s;
+  }
+  /* Bộ đệm ra loa (CONFIG.music.latencyHint); ?audiolat= ghi đè để so bằng tai. Trình duyệt không nhận tuỳ chọn thì tạo ngữ cảnh mặc định */
+  function latencyHint(): AudioContextLatencyCategory | number {
+    const q = new URLSearchParams(location.search).get('audiolat');
+    if (q === 'interactive' || q === 'balanced' || q === 'playback') return q;
+    const n = q === null ? NaN : Number(q);
+    return n > 0 && n <= 0.5 ? n : CONFIG.music.latencyHint;
+  }
   function build() {
-    const ctx = A.ctx = new ((window.AudioContext || (window as unknown as { webkitAudioContext: AudioCtor }).webkitAudioContext))();
+    const AC = (window.AudioContext || (window as unknown as { webkitAudioContext: AudioCtor }).webkitAudioContext);
+    let ctx: AudioContext;
+    try { ctx = new AC({ latencyHint: latencyHint() }); } catch { ctx = new AC(); }
+    A.ctx = ctx;
     // Chuỗi tổng: nén nhẹ → loa
     A.master = ctx.createGain(); A.master.gain.value = 0;
     const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
-    A.master.connect(comp).connect(ctx.destination);
+    A.master.connect(comp).connect(ceiling(ctx)).connect(ctx.destination);
     A.tone = ctx.createBiquadFilter(); A.tone.type = 'lowpass'; A.tone.frequency.value = CONFIG.music.night.toneDay;
     A.tone.connect(A.master);
     A.music = ctx.createGain(); A.music.gain.value = musicLevel(); A.music.connect(A.tone);
