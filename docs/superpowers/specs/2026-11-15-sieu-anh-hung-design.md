@@ -235,5 +235,5 @@ Hướng A (bản Người Nhện có giấy phép chính thức) chỉ mở l�
 ## 11. Để lại cho người làm / chờ người dùng
 
 - Màu chính xác, độ dày đường chỉ, cỡ biểu tượng, độ sáng ban đêm (`CONFIG.stroll.hero.glow`): agent chọn rồi đưa ảnh cho người dùng duyệt.
-- Chụp lại ảnh thẻ màn chọn `walk.webp` / `bike.webp` (`gen:chooser`) để thẻ cũng hiện anh hùng: tùy chọn, chỉ làm khi người dùng bảo.
+- Chụp lại ảnh thẻ màn chọn `walk.webp` / `bike.webp` (`gen:chooser`) để thẻ cũng hiện anh hùng: người dùng bảo làm (2026-11-15), đã chụp lại; thẻ Đi dạo đổi góc (ra trước mặt nhân vật) và ẩn đám đông `*-people` lúc chụp.
 - Mũ bảo hiểm (`helmet.show`): mặc định ẩn, người dùng có thể đổi.
