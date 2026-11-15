@@ -1,11 +1,12 @@
 import { t, onChange as onLangChange } from '../i18n';
-import type { LiveEnv, EnvMode } from '../realtime/liveEnv';
+import { liveNightGate, type LiveEnv, type EnvMode } from '../realtime/liveEnv';
 import type { EnvStore } from '../realtime/store';
 
 /* ===== Giao diện hai chế độ Trực tiếp / Mô phỏng (D-043, spec §4.4) =====
    Chữ chế độ + chấm trong chỉ báo #envPill (#envMode), công tắc #envModeSw trong thẻ #envCard, dòng khóa #liveLock trong bảng Cài đặt, thông báo #liveNotice.
    Trực tiếp: thanh / nút Ngày–Đêm, ô chọn + thanh cường độ thời tiết, nút Kịch bản bão bị vô hiệu, và handler của chúng (setupUI.ts / weatherUI.ts) tự bỏ qua qua liveLocked().
-   Tính năng cần ban đêm gọi liveYieldForNight() TRƯỚC khi ghi dayNight.target: đang Trực tiếp thì chuyển sang Mô phỏng ('feature') và hiện #liveNotice.
+   Tính năng cần ban đêm hỏi liveYieldForNight(dayNight.target) TRƯỚC khi ghi dayNight.target: Trực tiếp mà trời chưa tối thì chuyển sang Mô phỏng ('feature') và hiện #liveNotice;
+   Trực tiếp mà trời đã tối thật thì ở lại Trực tiếp và không ghi (liveNightGate, realtime/liveEnv.ts).
    Không có bộ điều khiển (liveEnv null, dựng lỗi): không gọi bindLiveMode ⇒ mọi phần tử trên giữ `hidden`, không khóa gì, như trước D-043. */
 
 let live: LiveEnv | null = null;
@@ -13,8 +14,9 @@ const LOCKED = ['timeSlider', 'btnNight', 'weatherSel', 'weatherK', 'btnWxStorm'
 
 /** Đang Trực tiếp: điều khiển mô phỏng không được ghi gì */
 export const liveLocked = (): boolean => !!live && live.mode === 'live';
-/** Tính năng cần ban đêm (trình diễn Cầu Rồng, góc rfHearts / swNight, tour Vòng quay): đang Trực tiếp thì chuyển Mô phỏng trước khi ghi dayNight.target */
-export function liveYieldForNight(): void { if (live && live.mode === 'live') live.setMode('manual', 'feature'); }
+/** Tính năng cần ban đêm (trình diễn Cầu Rồng, góc rfHearts / swNight, tour Vòng quay): true = được ghi dayNight.target (đã ở / vừa chuyển sang Mô phỏng);
+    false = đang Trực tiếp và trời đã tối thật, giữ Trực tiếp, không ghi. Gọi rồi mới đọc lại dayNight.target (chuyển Mô phỏng trả đêm mô phỏng đã nhớ) */
+export function liveYieldForNight(target: number): boolean { return liveNightGate(live, target); }
 
 export function bindLiveMode(le: LiveEnv, opts: { store: Pick<EnvStore, 'data' | 'onChange'>; syncSim: () => void; renderEnv: () => void }): void {
   live = le;

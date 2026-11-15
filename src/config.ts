@@ -619,6 +619,7 @@ const liveBase = {
   tauScale: 3,                // không đơn vị — Trực tiếp nhân hằng số thời gian CONFIG.weather.tau (trừ mặt ướt) để lần làm mới API không đổi cảnh thấy rõ (ước lượng)
   fogMax: 8,                  // không đơn vị — mật độ sương ×8 ở fog 1: FogExp2 gốc 0,00016 ⇒ 0,00128, còn ≈ 55 % độ tương phản ở 600 m, ≈ 19 % ở 1 km, ≈ 2,5 % ở 1,5 km (công trình gần vẫn nhận ra; ×14 làm Cầu Rồng gần mất ở tầm nhìn 300 m) (ước lượng, spec §4.2)
   elevDay: 6,                 // ° — độ cao mặt trời từ mức này trở lên là ngày hẳn (night = 0) (ước lượng, theo chạng vạng dân dụng)
+  darkAt: 0.5,                // 0–1 — tính năng cần ban đêm (trình diễn, góc rfHearts / swNight, tour Vòng quay): Trực tiếp mà dayNight.target ≥ mức này (trời đã tối thật) thì ở lại Trực tiếp, không ghi đêm; thấp hơn thì chuyển Mô phỏng (ước lượng, cùng ngưỡng 0,5 nút Ngày / Đêm dùng)
   elevNight: -6,              // ° — độ cao mặt trời từ mức này trở xuống là đêm hẳn (night = 1): giới hạn chạng vạng dân dụng
   warm: { full: 2, none: 15, below: -6 },   // ° — sắc ấm của nắng / sương (sunWarm): đủ ấm khi 0° ≤ độ cao ≤ 2°, hết ấm ở ≥ 15°; dưới 0° nhạt dần, hết ở −6° (ước lượng, spec §4.3)
   warmSun: 0xffa060,         // màu nắng (DirectionalLight) khi sunWarm = 1; gốc 0xfff1dc (ước lượng)

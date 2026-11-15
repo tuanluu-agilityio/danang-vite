@@ -2,7 +2,7 @@
    Một chỗ duy nhất ghi số liệu thật vào cảnh. Trực tiếp: mỗi khung đặt dayNight.target theo độ cao mặt trời thật (solar.ts) và giữ `sun` cho applyNight;
    kho số liệu (store.ts) báo đổi thì tính đích thời tiết (envMap.ts) rồi weather.setLive(). Mô phỏng: không ghi gì (preset / cường độ / đêm của người xem giữ nguyên).
    Không import three / DOM: mọi phụ thuộc tiêm vào để chạy dưới Node (tests/live-unit/liveEnv.test.ts). Không cấp phát mỗi khung. */
-import type { CONFIG } from '../config';
+import { CONFIG } from '../config';
 import type { WeatherParams } from '../environment/weather/state';
 import type { EnvStore } from './store';
 import { envToParams } from './envMap';
@@ -33,6 +33,16 @@ export type LiveEnv = {
 export function liveNextDelay(now: number, cfg: { obsStepMs: number; obsDelayMs: number; jitterMs: number; minDelayMs: number }, rnd: () => number): number {
   const S = cfg.obsStepMs, at = (Math.floor((now - cfg.obsDelayMs) / S) + 1) * S + cfg.obsDelayMs;
   return Math.max(cfg.minDelayMs, at - now + rnd() * cfg.jitterMs);
+}
+
+/** Tính năng cần ban đêm (trình diễn Cầu Rồng, góc rfHearts / swNight, tour Vòng quay) hỏi trước khi ghi dayNight.target. true = được ghi.
+    Mô phỏng / không có bộ điều khiển ⇒ true. Trực tiếp mà trời chưa tối (target < cfg.darkAt) ⇒ chuyển Mô phỏng ('feature') rồi true.
+    Trực tiếp mà trời đã tối thật ⇒ ở lại Trực tiếp, false (không ghi gì: đêm thật đã đủ cho tính năng). */
+export function liveNightGate(le: Pick<LiveEnv, 'mode' | 'setMode'> | null, target: number, darkAt: number = CONFIG.live.darkAt): boolean {
+  if (!le || le.mode !== 'live') return true;
+  if (target >= darkAt) return false;
+  le.setMode('manual', 'feature');
+  return true;
 }
 
 export function createLiveEnv(d: LiveDeps): LiveEnv {

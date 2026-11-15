@@ -170,3 +170,22 @@ test('liveNextDelay: căn mốc 15 phút + obsDelay, nhiễu ≤ jitter, không 
     assert.equal(((now + dl - L.obsDelayMs) % S + S) % S === 0 || dl === L.minDelayMs, true);
   }
 });
+
+test('liveNightGate: Mô phỏng ⇒ ghi; Trực tiếp ban ngày ⇒ sang Mô phỏng (feature) rồi ghi; Trực tiếp đã tối ⇒ ở lại, không ghi', async () => {
+  const { liveNightGate } = await import('../../src/realtime/liveEnv.ts');
+  assert.equal(liveNightGate(null, 0), true, 'không có bộ điều khiển: như trước D-043');
+  const m = rig('manual'); assert.equal(liveNightGate(m.live, 0.2), true); assert.equal(m.live.mode, 'manual');
+  // Trực tiếp, trưa: chuyển Mô phỏng, báo 'feature', trả đêm mô phỏng đã nhớ
+  const d = rig('live'); d.live.update(0.016); const why: string[] = []; d.live.onChange((w) => why.push(w));
+  assert.equal(liveNightGate(d.live, d.dayNight.target), true);
+  assert.equal(d.live.mode, 'manual'); assert.deepEqual(why, ['feature']);
+  // Trực tiếp, nửa đêm: ở lại Trực tiếp, không báo gì
+  const n = rig('live'); n.setNow(MIDNIGHT); n.live.update(0.016); const why2: string[] = []; n.live.onChange((w) => why2.push(w));
+  assert.equal(n.dayNight.target, 1);
+  assert.equal(liveNightGate(n.live, n.dayNight.target), false);
+  assert.equal(n.live.mode, 'live'); assert.deepEqual(why2, []);
+  // Ngưỡng: đúng CONFIG.live.darkAt
+  const e = rig('live'); e.live.update(0.016);
+  assert.equal(liveNightGate(e.live, L.darkAt), false); assert.equal(e.live.mode, 'live');
+  assert.equal(liveNightGate(e.live, L.darkAt - 0.01), true); assert.equal(e.live.mode, 'manual');
+});
