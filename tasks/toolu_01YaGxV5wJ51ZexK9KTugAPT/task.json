@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01YaGxV5wJ51ZexK9KTugAPT",
+  "agent_id": "a0e873a234267b518",
+  "subagent_type": "general-purpose",
+  "task_description": "Sửa đợt review cuối D-042",
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 148504,
+    "cache_read_tokens": 2241027,
+    "output_tokens": 13922,
+    "api_call_count": 21
+  },
+  "started_at": "2026-11-15T00:06:36.4029045+07:00",
+  "completed_at": "2026-11-15T00:17:27.6930153+07:00"
+}
