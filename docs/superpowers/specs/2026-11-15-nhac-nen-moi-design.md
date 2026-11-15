@@ -64,6 +64,8 @@ Mỗi vòng đổi kiểu rải và thêm bè quãng tám ở vòng lẻ để k
 
 ## 7. Hạn chế
 
+- Bộ lập lịch chạy trên luồng chính: nhìn trước 2 s (`CONFIG.music.lookahead`) để qua được các lần vòng vẽ khựng; khựng lâu hơn 2 s (lần đầu vào một chế độ, đo được 3,7–5,7 s trên máy đo) thì các bước lỡ giờ bị bỏ, dây nền vẫn ngân, nhịp vào lại đúng lưới. Hoa văn trống / bass theo chế độ vì vậy vào chậm tối đa 2 s.
+
 - Sau merge (PR #46): bỏ tiếng dế về đêm theo phản hồi "tiếng rít" của người dùng; chưa xác nhận đó đúng là tiếng họ nghe.
 
 - Agent không nghe được: hay / dở, có "muốn khám phá" không là việc của tai người. Mức từng lớp cân theo số đo RMS, không theo tai.

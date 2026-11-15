@@ -1416,7 +1416,9 @@ export type IntroConfig = typeof introBase;
    Mọi số ở đây là ước lượng theo tai nghe / số đo biên độ của bản kết xuất ngoại tuyến, chưa có nguồn công bố. */
 const musicBase = {
   bpm: 112,            // nhịp / phút; một ô 4/4 dài 2,14 s, cả bài 80 ô ≈ 2 phút 51 giây rồi nối liền về đầu (ước lượng)
-  lookahead: 0.3,      // s — lên lịch nốt trước chừng này (ước lượng)
+  lookahead: 2,        // s — lên lịch nốt trước chừng này. Phải dài hơn các lần vòng vẽ 3D khựng (bộ lập lịch chạy trên luồng chính): đo trên GPU thật thấy khung 0,25–1,9 s
+                       //     trong phút đầu (biên dịch nền bộ đèn) và vài giây khi vào một chế độ; 0,3 s cũ làm nốt dồn / lệch nhịp. Đổi lại hoa văn trống / bass theo chế độ vào chậm tối đa chừng này
+                       //     (âm lượng từng lớp vẫn đổi ngay)
   tickMs: 60,          // ms — nhịp gọi bộ lập lịch (ước lượng)
   seed: 5113,          // hạt giống rng() riêng cho biến tấu và nhiễu dây gảy (không dùng rand())
   gain: 0.65,          // hệ số của cả phần nhạc trước nút âm lượng chung (ước lượng)

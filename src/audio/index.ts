@@ -14,6 +14,7 @@ import type { MusicMode } from './score';
 interface AudioState {
   ctx: AudioContext | null; on: boolean; volume: number; night: number; timer: number;
   noise: AudioBuffer | null; white?: AudioBuffer;
+  tickAt?: number; tickGap: number;   // giờ của nhịp lập lịch trước, khoảng dài nhất giữa hai nhịp
   player?: Music; mode: MusicMode; mixKey: string; wxStorm: number;   // bộ phát nhạc, bản phối đang chọn, khóa bản phối đã áp, mức bão cho nhạc
   waterSrc: AudioBufferSourceNode | null; waterGain: GainNode | null; lastFire: boolean; lastWater: boolean; distGain: number;
   master?: GainNode; tone?: BiquadFilterNode; music?: GainNode; sfx?: GainNode; verb?: ConvolverNode; verbSend?: GainNode;
@@ -26,7 +27,7 @@ type AudioCtor = typeof AudioContext;
 const EXPLORE: MusicMode[] = ['glider', 'car', 'bike', 'stroll'];   // vào các chế độ này thì có tiếng "mở màn"
 
 export function createAudio() {
-  const A: AudioState = { ctx: null, on: false, volume: 0.7, night: 0, timer: 0, mode: 'overview', mixKey: '', wxStorm: 0,
+  const A: AudioState = { ctx: null, on: false, volume: 0.7, night: 0, timer: 0, mode: 'overview', mixKey: '', wxStorm: 0, tickGap: 0,
     noise: null, waterSrc: null, waterGain: null, lastFire: false, lastWater: false, distGain: 1, wxDuck: 1, wxRain: 0, wxWind: 0, wxIndoors: 0, patterAt: 0 };
   const R = Math.random;
 
@@ -105,7 +106,8 @@ export function createAudio() {
   /* Nhịp lập lịch: nhạc nhìn trước lookahead giây */
   function tick() {
     const now = A.ctx.currentTime;
-    A.player.schedule(now + CONFIG.music.lookahead);
+    if (A.tickAt) A.tickGap = Math.max(A.tickGap, now - A.tickAt); A.tickAt = now;
+    A.player.schedule(now + CONFIG.music.lookahead, now);
   }
   /* Bản phối = chế độ + đêm + mưa + bão, làm tròn để chỉ ghi tham số khi thật sự đổi (mỗi lần ghi là một loạt sự kiện tự động hoá, D-018) */
   function applyMix(now: number, snap = false) {
@@ -147,6 +149,8 @@ export function createAudio() {
     get mode() { return A.mode; },
     /* Vị trí trong bài (đoạn, ô, vòng) cho test / gỡ lỗi; null khi chưa có ngữ cảnh */
     get musicPos() { return A.player ? A.player.pos : null; },
+    /* Sức khoẻ bộ lập lịch (gỡ lỗi / test): nốt lên lịch trễ, độ trễ lớn nhất (s), khoảng lặng dài nhất giữa hai nhịp lập lịch (s) */
+    get musicStat() { return A.player ? { ...A.player.stat, gap: A.tickGap } : null; },
     /* Mỗi khung (hoặc ~10 lần/giây): rain, wind (m/s tức thời), wxStorm (0–1, hạ nhạc), indoors (camera trong hầm / dưới nước: nhỏ đi). Chưa bật âm thanh thì chỉ nhớ giá trị. */
     setWeather(rain, wind, storm, indoors) {
       const W = CONFIG.weather.sound; A.wxRain = rain; A.wxWind = wind; A.wxIndoors = indoors ? W.indoors : 1;

@@ -11,7 +11,8 @@ import { LAYERS, PROG, SECTIONS, THEME, BRIDGE, COUNTER, melodyIndex, midiHz, ch
 export interface MusicMix { mode: MusicMode; night: number; rain: number; storm: number }
 export interface MusicDeps { verb: AudioNode; brown: AudioBuffer; white: AudioBuffer; tone?: BiquadFilterNode }
 export interface Music {
-  schedule(until: number): void;                 // lên lịch mọi nốt bắt đầu trước `until` (giây theo đồng hồ ngữ cảnh)
+  schedule(until: number, now?: number): void;   // lên lịch mọi nốt bắt đầu trước `until` (giây theo đồng hồ ngữ cảnh); now: giờ hiện tại, để đếm nốt trễ
+  readonly stat: { skipped: number; worst: number; steps: number };   // số bước bị bỏ vì giờ của nó đã qua (luồng chính khựng lâu hơn lookahead), độ trễ lớn nhất (s), tổng số bước
   restart(t: number, section?: number): void;    // phát lại tại t từ đoạn mở đầu (hoặc đoạn thứ `section`, cho công cụ đo)
   setMix(m: MusicMix, now: number, snap?: boolean): void;
   sting(t: number): void;                        // tiếng "mở màn" khi vào một chế độ
@@ -187,18 +188,21 @@ export function createMusic(ctx: BaseAudioContext, out: AudioNode, deps: MusicDe
     const name: ProgName = S.prog === 'main' ? (night ? 'night' : 'day') : S.prog === 'alt' ? (night ? 'day' : 'night') : S.prog;
     chords = PROG[name]; arpPat = ARP[(cycle + sec) % ARP.length];
   }
-  function scheduleStep(t: number) {
+  /* mute: bước đã quá giờ — chỉ cập nhật hoà âm (đoạn, hợp âm, dây nền), không phát nốt nào */
+  function scheduleStep(t: number, mute = false) {
     const S = SECTIONS[sec], last = bar === S.bars - 1, hum = () => 0.9 + rnd() * 0.2;
     if (step === 0) {
-      if (bar === 0) { enterSection(S); if (S.crash) crash(t, 0.7); }
+      if (bar === 0) { enterSection(S); if (S.crash && !mute) crash(t, 0.7); }
       chord = chords[(bar + (S.progAt ?? 0)) % chords.length];
       const pad = chordNotes(chord, 54, 4);   // bốn bè quanh Fa♯ 3 – Mi 4: hợp âm kế cận nhau, bè đi gần
       for (let v = 0; v < 4; v++) for (const o of padOsc[v]) o.frequency.setTargetAtTime(midiHz(pad[v] + (v === 3 ? 12 : 0)), t, started ? 0.035 : 0.001);
       padEnv.gain.setTargetAtTime(S.pad, t, started ? 0.5 : 0.25); started = true;
+      if (mute) return;
       if (S.counter !== undefined && bar >= S.counter) counterNote(t, nearestTone(chord, COUNTER[bar % 8]), BAR, 0.16);
       if (last && S.riser) riser(t, BAR, 0.5);
       if (mix.storm > M.storm.tomAt) { tom(t, M.storm.tom * mix.storm, 62, stormBus); if (bar % 2) tom(t + STEP * 10, M.storm.tom * mix.storm * 0.7, 55, stormBus); }
     }
+    if (mute) return;
     const acc = ACCENT[step];
     // Bass
     const root = mix.storm > M.storm.pedalAt ? 38 : chord.bass;
@@ -233,6 +237,7 @@ export function createMusic(ctx: BaseAudioContext, out: AudioNode, deps: MusicDe
       }
     }
   }
+  const stat = { skipped: 0, worst: 0, steps: 0 };
   function advance() {
     if (++step < 16) return; step = 0;
     if (++bar < SECTIONS[sec].bars) return; bar = 0;
@@ -254,7 +259,17 @@ export function createMusic(ctx: BaseAudioContext, out: AudioNode, deps: MusicDe
   setMix(mix, 0, true);
 
   return {
-    schedule(until) { while (next < until) { scheduleStep(next); advance(); next += STEP; } },
+    /* Luồng chính khựng lâu hơn lookahead (biên dịch shader, nạp mô hình khi vào chế độ) thì có bước đã quá giờ. Phát chúng bây giờ = cả chùm nốt dồn vào một lúc
+       rồi nhạc lệch nhịp: nghe như "lag". Nên bỏ hẳn các bước đó (chỉ giữ việc đổi hợp âm của dây nền, vốn đang ngân suốt lúc khựng) và vào lại đúng lưới nhịp */
+    schedule(until, now = -1) {
+      while (next < until) {
+        stat.steps++;
+        const late = next < now + 0.01;
+        if (late) { stat.skipped++; stat.worst = Math.max(stat.worst, now - next); }
+        scheduleStep(late ? now + 0.01 : next, late); advance(); next += STEP;
+      }
+    },
+    stat,
     restart(t, section = 0) { next = t; sec = section % SECTIONS.length; bar = 0; step = 0; started = false; },
     setMix,
     sting(t) { if (M.sting <= 0) return; riser(t, 0.9, 0.35 * M.sting, bus.bell); for (const [i, m] of [81, 86, 90].entries()) bellNote(t + 0.9 + i * 0.09, m, 0.9 * M.sting); },
@@ -264,7 +279,9 @@ export function createMusic(ctx: BaseAudioContext, out: AudioNode, deps: MusicDe
 
 /* Kết xuất ngoại tuyến `seconds` giây nhạc với một bản phối cố định, qua đúng chuỗi lọc tổng + hồi âm + nén của trang (audio/index.ts):
    để đo biên độ / nghe thử mà không cần loa. Chỉ gọi trong công cụ kiểm (tests/music-render.mjs) */
-export async function renderMusic(seconds: number, m: MusicMix, sampleRate = 44100, section = 0, volume = 0.63): Promise<AudioBuffer> {
+/* load: nếu đưa mảng vào thì lên lịch dần từng 0,25 s như trang thật (không dồn cả bài một lần) và ghi vào đó số ms máy cần để xử lý mỗi 0,25 s âm thanh
+   (250 ms = vừa kịp thời gian thực trên một nhân): đo tải luồng âm thanh theo từng đoạn */
+export async function renderMusic(seconds: number, m: MusicMix, sampleRate = 44100, section = 0, load: number[] | null = null, volume = 0.63): Promise<AudioBuffer> {
   const ctx = new OfflineAudioContext(2, Math.ceil(seconds * sampleRate), sampleRate), rnd = rng(CONFIG.music.seed + 1);
   const master = ctx.createGain(); master.gain.value = volume;
   const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; master.connect(comp); comp.connect(ctx.destination);
@@ -272,6 +289,10 @@ export async function renderMusic(seconds: number, m: MusicMix, sampleRate = 441
   const bus = ctx.createGain(); bus.gain.value = CONFIG.music.gain; bus.connect(tone);
   const verb = ctx.createConvolver(); verb.buffer = makeIR(ctx, rnd); const send = ctx.createGain(); send.gain.value = 0.3 + CONFIG.music.night.verb * m.night; send.connect(verb); verb.connect(tone);
   const mu = createMusic(ctx, bus, { verb: send, tone, ...makeNoise(ctx, rnd) });
-  mu.setMix(m, 0, true); mu.restart(0.05, section); mu.schedule(seconds);
+  mu.setMix(m, 0, true); mu.restart(0.05, section);
+  if (!load) { mu.schedule(seconds); return ctx.startRendering(); }
+  const CH = 0.25; let last = 0;
+  const arm = (t: number) => { if (t < seconds) void ctx.suspend(t).then(() => { const now = performance.now(); load.push(now - last); mu.schedule(t + CH + CONFIG.music.lookahead); arm(t + CH); last = performance.now(); void ctx.resume(); }); };
+  mu.schedule(CH + CONFIG.music.lookahead); arm(CH); last = performance.now();
   return ctx.startRendering();
 }
