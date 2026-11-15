@@ -63,6 +63,7 @@ D-034 (`feature/lai-xe-oto`) vào `main` qua PR #30 (2026-11-12); Worker `danang
 
 ## Còn thiếu
 - Đoạn giới thiệu (D-045, PR #44): kiểm bản Netlify sau merge; các điểm chờ người dùng quyết; test nặng chưa chạy, `test:intro` trình duyệt không viết (xem `activeContext.md`); duyệt bản dịch `in*`.
+- Nhạc chủ đề, sửa sau merge (PR #46 bỏ tiếng dế; PR #48 hết lag + tách nhạc khỏi hiệu ứng): người dùng nghe lại trên bản Netlify; lần khựng > 2 s khi lần đầu vào một chế độ vẫn làm thiếu nhịp (xem `systemPatterns.md`).
 - Nhạc chủ đề (D-046, PR #42): kiểm bản Netlify sau merge; chưa có test trình duyệt nào chạy (xem `activeContext.md`).
 - Thẻ ảnh màn chọn (D-044, PR #40): kiểm bản Netlify sau merge; xem sảnh thật qua `wrangler dev` (ảnh ở sảnh mới xem bằng DOM dựng giả); test nặng chưa chạy (xem `activeContext.md`).
 - Môi trường thực (D-043, PR #39): hoàn thành + chạy `test:live`; chạy `test:env`, `test:weather`, `test:mobile`, `test:drawcalls`; xem lại hoàng hôn / sương sau ba sửa cuối; gợn mưa trên sông đã làm ở PR #41 (chưa chạy `test:weather`); duyệt bản dịch `live*`.

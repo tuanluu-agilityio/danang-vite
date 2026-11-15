@@ -5,6 +5,8 @@
    - Tiếng sông Hàn, mưa / gió / sấm.
    - Trình diễn: tiếng lửa phụt + trống, tiếng phun nước, to nhỏ theo khoảng cách camera.
    - Cầu sông Hàn: còi báo khi quay, tiếng động cơ mâm xoay.
+   Nhạc nền và hiệu ứng tách rời: `on` = âm thanh của trang đang chạy (hiệu ứng: sông, mưa gió, phun lửa / nước, còi, tiếng xe qua sfxPort);
+   `musicOn` = riêng nhạc nền (setMusic). Tắt nhạc không tắt hiệu ứng; thanh âm lượng là âm lượng chung.
    Một AudioContext, một bộ phát nhạc cho cả trang: đổi chế độ / góc nhìn không tạo bản nhạc thứ hai, không phát lại từ đầu. */
 
 import { CONFIG } from '../config';
@@ -14,6 +16,8 @@ import type { MusicMode } from './score';
 interface AudioState {
   ctx: AudioContext | null; on: boolean; volume: number; night: number; timer: number;
   noise: AudioBuffer | null; white?: AudioBuffer;
+  musicOn: boolean;                    // nhạc nền bật / tắt, độc lập với `on` (âm thanh chung)
+  tickAt?: number; tickGap: number;   // giờ của nhịp lập lịch trước, khoảng dài nhất giữa hai nhịp
   player?: Music; mode: MusicMode; mixKey: string; wxStorm: number;   // bộ phát nhạc, bản phối đang chọn, khóa bản phối đã áp, mức bão cho nhạc
   waterSrc: AudioBufferSourceNode | null; waterGain: GainNode | null; lastFire: boolean; lastWater: boolean; distGain: number;
   master?: GainNode; tone?: BiquadFilterNode; music?: GainNode; sfx?: GainNode; verb?: ConvolverNode; verbSend?: GainNode;
@@ -26,7 +30,7 @@ type AudioCtor = typeof AudioContext;
 const EXPLORE: MusicMode[] = ['glider', 'car', 'bike', 'stroll'];   // vào các chế độ này thì có tiếng "mở màn"
 
 export function createAudio() {
-  const A: AudioState = { ctx: null, on: false, volume: 0.7, night: 0, timer: 0, mode: 'overview', mixKey: '', wxStorm: 0,
+  const A: AudioState = { ctx: null, on: false, volume: 0.7, night: 0, timer: 0, mode: 'overview', mixKey: '', wxStorm: 0, tickGap: 0, musicOn: true,
     noise: null, waterSrc: null, waterGain: null, lastFire: false, lastWater: false, distGain: 1, wxDuck: 1, wxRain: 0, wxWind: 0, wxIndoors: 0, patterAt: 0 };
   const R = Math.random;
 
@@ -50,7 +54,7 @@ export function createAudio() {
     buildRiver(); buildWater(); buildWeatherSound();
   }
   const DUCK = Math.pow(10, CONFIG.music.duckDb / 20);
-  const musicLevel = () => CONFIG.music.gain * (A.ducked ? DUCK : 1) * A.wxDuck;   // nhạc nền: giọng thuyết minh và bão cùng hạ
+  const musicLevel = () => (A.musicOn ? CONFIG.music.gain : 0) * (A.ducked ? DUCK : 1) * A.wxDuck;   // nhạc nền: giọng thuyết minh và bão cùng hạ
 
 
   function drum(t, vel = 1) { // trống lớn khi rồng phun lửa
@@ -105,7 +109,8 @@ export function createAudio() {
   /* Nhịp lập lịch: nhạc nhìn trước lookahead giây */
   function tick() {
     const now = A.ctx.currentTime;
-    A.player.schedule(now + CONFIG.music.lookahead);
+    if (A.tickAt) A.tickGap = Math.max(A.tickGap, now - A.tickAt); A.tickAt = now;
+    A.player.schedule(now + CONFIG.music.lookahead, now);
   }
   /* Bản phối = chế độ + đêm + mưa + bão, làm tròn để chỉ ghi tham số khi thật sự đổi (mỗi lần ghi là một loạt sự kiện tự động hoá, D-018) */
   function applyMix(now: number, snap = false) {
@@ -113,6 +118,15 @@ export function createAudio() {
     if (key === A.mixKey) return;
     A.mixKey = key; A.player.setMix({ mode: A.mode, night, rain, storm }, now, snap);
     A.verbSend.gain.setTargetAtTime(0.3 + CONFIG.music.night.verb * night, now, 0.5);
+  }
+
+  /* Bắt đầu / tiếp tục nhạc. Nốt đã nằm trong hàng chờ (lookahead) thì không thu hồi được: vừa tắt xong bật lại ngay thì chơi tiếp từ chỗ đó (phát lại từ đầu sẽ
+     chồng hai lớp nốt); còn lại vào từ đoạn mở đầu "lời mời". snap: bản phối áp ngay (lần bật đầu), không trượt */
+  function beginMusic(now: number, snap: boolean) {
+    A.mixKey = ''; applyMix(now, snap);
+    if (A.player.nextTime <= now) A.player.restart(now + 0.12);
+    A.music.gain.cancelScheduledValues(now); A.music.gain.setTargetAtTime(musicLevel(), now, snap ? 0.01 : CONFIG.music.fadeIn);
+    clearInterval(A.timer); A.timer = window.setInterval(tick, CONFIG.music.tickMs); tick();
   }
 
   return {
@@ -123,11 +137,19 @@ export function createAudio() {
       if (A.on) return;                                   // đang phát: không lên lịch lại, không phát chồng
       A.on = true;
       const now = A.ctx.currentTime;
-      A.mixKey = ''; applyMix(now, true);                 // bản phối đúng chế độ ngay từ nốt đầu
-      A.player.restart(now + 0.12);                       // mỗi lần bật: vào từ đoạn mở đầu "lời mời"
       A.master.gain.cancelScheduledValues(now);
       A.master.gain.setTargetAtTime(A.volume, now, CONFIG.music.fadeIn);   // vào êm
-      clearInterval(A.timer); A.timer = window.setInterval(tick, CONFIG.music.tickMs); tick();
+      if (A.musicOn) beginMusic(now, true);
+    },
+    /* Riêng nhạc nền: tắt thì chỉ nhánh nhạc lặng dần, mọi hiệu ứng (tiếng xe, phun lửa / nước, sông, mưa gió, còi) vẫn kêu. Chưa có ngữ cảnh / âm thanh chung chưa bật thì chỉ nhớ */
+    get musicOn() { return A.musicOn; },
+    setMusic(on: boolean) {
+      if (on === A.musicOn) return;
+      A.musicOn = on;
+      if (!A.ctx || !A.on) return;
+      const now = A.ctx.currentTime;
+      if (on) beginMusic(now, false);
+      else { clearInterval(A.timer); A.music.gain.cancelScheduledValues(now); A.music.gain.setTargetAtTime(0, now, CONFIG.music.fadeOut); }
     },
     stop() {
       if (!A.ctx) return;
@@ -142,11 +164,13 @@ export function createAudio() {
     setMode(mode: MusicMode) {
       if (mode === A.mode) return;
       A.mode = mode;
-      if (A.ctx && A.on && EXPLORE.includes(mode)) A.player.sting(A.ctx.currentTime + 0.05);
+      if (A.ctx && A.on && A.musicOn && EXPLORE.includes(mode)) A.player.sting(A.ctx.currentTime + 0.05);
     },
     get mode() { return A.mode; },
     /* Vị trí trong bài (đoạn, ô, vòng) cho test / gỡ lỗi; null khi chưa có ngữ cảnh */
     get musicPos() { return A.player ? A.player.pos : null; },
+    /* Sức khoẻ bộ lập lịch (gỡ lỗi / test): nốt lên lịch trễ, độ trễ lớn nhất (s), khoảng lặng dài nhất giữa hai nhịp lập lịch (s) */
+    get musicStat() { return A.player ? { ...A.player.stat, gap: A.tickGap } : null; },
     /* Mỗi khung (hoặc ~10 lần/giây): rain, wind (m/s tức thời), wxStorm (0–1, hạ nhạc), indoors (camera trong hầm / dưới nước: nhỏ đi). Chưa bật âm thanh thì chỉ nhớ giá trị. */
     setWeather(rain, wind, storm, indoors) {
       const W = CONFIG.weather.sound; A.wxRain = rain; A.wxWind = wind; A.wxIndoors = indoors ? W.indoors : 1;
@@ -185,7 +209,7 @@ export function createAudio() {
       return { ctx: A.ctx, out: A.ext as AudioNode };
     },
     pause() { if (A.ctx && A.on) { clearInterval(A.timer); A.ctx.suspend(); } else if (A.ctx && A.extOn) A.ctx.suspend(); },
-    resume() { if (A.ctx && A.on) { A.ctx.resume(); clearInterval(A.timer); A.timer = window.setInterval(tick, CONFIG.music.tickMs); } else if (A.ctx && A.extOn) A.ctx.resume(); },
+    resume() { if (A.ctx && A.on) { A.ctx.resume(); clearInterval(A.timer); if (A.musicOn) A.timer = window.setInterval(tick, CONFIG.music.tickMs); } else if (A.ctx && A.extOn) A.ctx.resume(); },
     /* Gọi mỗi khung hình: ngày/đêm, trạng thái trình diễn, khoảng cách camera tới đầu rồng */
     /* Cầu sông Hàn: còi báo khi quay, tiếng động cơ mâm xoay; to nhỏ theo khoảng cách camera */
     setSwingDistance(d) { A.swingGain = Math.max(0.08, Math.min(1, 160 / Math.max(d, 1))); },

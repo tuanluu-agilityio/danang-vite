@@ -14,7 +14,7 @@ const WAV = process.argv.includes('--wav');
 const SR = 44100;
 
 const out = await build({
-  stdin: { contents: `import { renderMusic } from './src/audio/music.ts'; import { CONFIG } from './src/config.ts'; import { TOTAL_BARS } from './src/audio/score.ts'; globalThis.M = { renderMusic, bpm: CONFIG.music.bpm, bars: TOTAL_BARS, cfg: CONFIG.music };`, resolveDir: ROOT, loader: 'ts' },
+  stdin: { contents: `import { renderMusic } from './src/audio/music.ts'; import { CONFIG } from './src/config.ts'; import { TOTAL_BARS, SECTIONS } from './src/audio/score.ts'; globalThis.M = { renderMusic, bpm: CONFIG.music.bpm, bars: TOTAL_BARS, cfg: CONFIG.music, sections: SECTIONS.map((s) => ({ name: s.name, bars: s.bars })) };`, resolveDir: ROOT, loader: 'ts' },
   bundle: true, write: false, format: 'iife', platform: 'browser', define: { 'import.meta.env.BASE_URL': '"/"', 'import.meta.env': '{}' }, logLevel: 'silent'
 });
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
@@ -28,7 +28,7 @@ const LOOP = info.bars * 4 * 60 / info.bpm;   // độ dài một vòng bài (s)
 const db = (x) => (x > 0 ? 20 * Math.log10(x) : -Infinity).toFixed(1);
 async function render(name, mix, seconds, section = 0) {
   const r = await page.evaluate(async ({ mix, seconds, SR, wav, section }) => {
-    const t0 = performance.now(), buf = await M.renderMusic(seconds, mix, SR, section), L = buf.getChannelData(0), R = buf.getChannelData(1), n = L.length;
+    const t0 = performance.now(), buf = await M.renderMusic(seconds, mix, SR, section, null), L = buf.getChannelData(0), R = buf.getChannelData(1), n = L.length;
     let peak = 0, sum = 0, clip = 0; const win = [];
     for (let i = 0, w = 0, c = 0; i < n; i++) {
       const a = Math.max(Math.abs(L[i]), Math.abs(R[i])); if (a > peak) peak = a; if (a >= 0.999) clip++;
@@ -59,6 +59,23 @@ if (process.argv.includes('--solo')) {
     await page.evaluate((L) => { M.keep = M.keep || { ...M.cfg.level }; for (const k in M.cfg.level) M.cfg.level[k] = k === L ? M.keep[k] : 0; }, L);
     const r = await render('solo-' + L, { ...base, mode: 'overview' }, 9, 5);
     console.log(`  ${L.padEnd(6)} RMS ${db(r.rms)} dBFS, đỉnh ${db(r.peak)} dBFS`);
+  }
+  await browser.close(); process.exit(0);
+}
+// --load: lên lịch dần như trang thật rồi in tải luồng âm thanh theo từng ô nhịp (ms máy cho mỗi giây nhạc; ≥ 1000 = không kịp thời gian thực). --load=car chọn bản phối
+const LOADARG = process.argv.find((a) => a.startsWith('--load'));
+if (LOADARG) {
+  const mode = LOADARG.split('=')[1] || 'overview', BARSEC = 4 * 60 / info.bpm;
+  const r = await page.evaluate(async ({ mix, seconds, SR }) => { const load = []; await M.renderMusic(seconds, mix, SR, 0, load); return load; }, { mix: { ...base, mode }, seconds: LOOP + 2 * BARSEC, SR });
+  const secs = await page.evaluate(() => M.sections);
+  let bar = 0;
+  for (const S of [...secs, secs[0]]) {
+    const cells = [];
+    for (let b = 0; b < (S === secs[0] && bar > 0 ? 2 : S.bars); b++, bar++) {
+      const i0 = Math.round(bar * BARSEC / 0.25), i1 = Math.round((bar + 1) * BARSEC / 0.25), ms = r.slice(i0, i1).reduce((s, x) => s + x, 0) / ((i1 - i0) * 0.25);
+      cells.push(ms.toFixed(0).padStart(4));
+    }
+    console.log(`  ${S.name.padEnd(10)} ${cells.join(' ')}`);
   }
   await browser.close(); process.exit(0);
 }
