@@ -56,7 +56,7 @@ test('CONFIG.intro.scenes', () => {
   assert.equal(S[0].chapter, 1); assert.equal(S[S.length - 1].chapter, 6);
   for (const id of ['welcome', 'daynight', 'dragon', 'swing', 'finale']) assert.ok((CONFIG.intro.shots as any)[id], id);
 });
-test('đủ khóa i18n in*', { todo: 'Task 3' }, () => {
+test('đủ khóa i18n in*', () => {
   const LANGS = ['vi', 'en', 'ko', 'ja', 'zh', 'th', 'ar', 'hi', 'ru'];
   const load = (l: string) => JSON.parse(readFileSync(new URL(`../../src/i18n/locales/${l}.json`, import.meta.url), 'utf8'));
   const keys = Object.keys(load('vi')).filter(k => /^in[A-Z]/.test(k)).sort();
