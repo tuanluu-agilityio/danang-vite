@@ -61,6 +61,7 @@ import { setupUI } from './ui/setupUI';
 import { setupQualityUI } from './ui/qualityUI';
 import { setupCompactUI, ui as compactState, openSheet, closeSheets, reveal } from './ui/compactUI';
 import { setupEnvUI, type EnvUI } from './ui/envUI';
+import { bindLiveMode } from './ui/liveUI';
 import { createLiveEnv, liveNextDelay, type LiveEnv, type EnvMode } from './realtime/liveEnv';
 import { updateHrUI } from './ui/hrUI';
 
@@ -131,6 +132,8 @@ let liveEnv: LiveEnv | null = null;
 if (envUi) {
   try { liveEnv = createLiveEnv({ cfg: CONFIG.live, lat: CONFIG.env.lat, lon: CONFIG.env.lon, refreshMs: CONFIG.env.refreshMs, now: envUi.now, store: envUi.store, weather, dayNight, initial: envMode }); }
   catch (e) { console.warn('live: không dựng được chế độ Trực tiếp, dùng Mô phỏng', e); liveEnv = null; }
+  // Giao diện hai chế độ (D-043 Task 6): chỉ khi có bộ điều khiển; liveEnv null ⇒ không công tắc, không khóa, như trước D-043
+  if (liveEnv) { const le = liveEnv, eu = envUi; try { bindLiveMode(le, { store: eu.store, syncSim: ui.syncSim, renderEnv: eu.render }); } catch (e) { console.warn('live: không gắn được giao diện chế độ', e); } }
 }
 setupExplore(songHan.ctrl);
 

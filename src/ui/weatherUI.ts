@@ -9,6 +9,7 @@ import { followScenario } from '../views/camera';
 import { cam } from '../views/state';
 import { exitTour } from '../views/tour';
 import { narration } from '../audio/narration';
+import { liveLocked } from './liveUI';
 
 const NAME_KEY: Record<ImpactKey, string> = { dragon: 'bridgeDragon', thuanPhuoc: 'bridgeTp', tranThiLy: 'bridgeTtl', songHan: 'bridgeSh', hanTunnel: 'bridgeHr' };
 const cm = (m: number) => (m * 100).toFixed(1);
@@ -18,8 +19,11 @@ export function setupWeatherUI(toggle: Toggle) {
   const sel = document.getElementById('weatherSel') as HTMLSelectElement, k = document.getElementById('weatherK') as HTMLInputElement, val = document.getElementById('weatherKVal');
   const card = document.getElementById('wxImpact');
   const showK = () => { val.textContent = `${k.value}%`; };
-  sel.addEventListener('change', () => getWeather()?.setPreset(sel.value as PresetName));
-  k.addEventListener('input', () => { showK(); getWeather()?.setIntensity(Number(k.value) / 100); });
+  /* Đồng bộ lại theo trạng thái mô phỏng (preset / cường độ trong weather.state; Trực tiếp không đụng hai giá trị này) */
+  const sync = () => { const w = getWeather(); if (!w) return; sel.value = w.state.preset; k.value = String(Math.round(w.state.intensity * 100)); showK(); };
+  // Trực tiếp (D-043): disabled, và handler cũng bỏ qua rồi trả điều khiển về giá trị mô phỏng
+  sel.addEventListener('change', () => { if (liveLocked()) { sync(); return; } getWeather()?.setPreset(sel.value as PresetName); });
+  k.addEventListener('input', () => { if (liveLocked()) { sync(); return; } showK(); getWeather()?.setIntensity(Number(k.value) / 100); });
   showK();
 
   let sig = '', timer = 0;
@@ -58,6 +62,7 @@ export function setupWeatherUI(toggle: Toggle) {
     if (on) { sig = ''; render(); timer = window.setInterval(render, 500); }
   });
   onChange(() => { sig = ''; if (!card.hidden) render(); });
+  return sync;
 }
 
 /* Kịch bản bão (mục 6): nút bật/dừng, khung chú thích wxS1…wxS8, thanh tiến độ. Camera bay theo hành trình kịch bản (chế độ 'storm') cho tới khi người xem kéo chuột, cuộn,
@@ -83,6 +88,7 @@ function setupScenarioUI() {
   };
   btn.addEventListener('click', () => {
     const s = sc(); if (!s) return;
+    if (liveLocked()) return;   // Trực tiếp (D-043): nút disabled; chuyển sang Trực tiếp đã dừng kịch bản (liveEnv.setMode → stopScenario)
     wire();
     if (s.running) { s.stop(true); return; }
     exitTour(); narration.stop(); s.start({ from: { pos: camera.position, target: controls.target } }); followScenario();

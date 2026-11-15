@@ -580,5 +580,17 @@
   "envLoading": "Đang lấy số liệu quan trắc…",
   "envOffline": "Mất kết nối · đang thử lại",
   "envNoData": "Chưa có số liệu",
-  "envClockOk": "Đồng hồ vẫn chạy đúng giờ"
+  "envClockOk": "Đồng hồ vẫn chạy đúng giờ",
+  "liveBadge": "TRỰC TIẾP",
+  "simBadge": "MÔ PHỎNG",
+  "liveModeLive": "Trực tiếp",
+  "liveModeManual": "Mô phỏng",
+  "liveModeAria": "Chế độ cảnh 3D",
+  "liveNoteLive": "Cảnh 3D theo giờ và thời tiết thật lúc này.",
+  "liveNoteManual": "Tự chọn ngày / đêm và thời tiết trong Cài đặt.",
+  "liveLock": "Đang theo thời tiết thực tế",
+  "liveToManual": "Chuyển sang Mô phỏng",
+  "liveToLive": "Về Trực tiếp",
+  "liveNotice": "Đã chuyển sang Mô phỏng để xem cảnh đêm.",
+  "liveNoData": "Theo giờ thật, chưa có số liệu thời tiết."
 }

@@ -21,6 +21,7 @@ import { setupHrUI, hrRender } from './hrUI';
 import { setupRiverfrontUI } from './riverfrontUI';
 import { setupWeatherUI } from './weatherUI';
 import { setupDonateUI } from './donateUI';
+import { liveLocked, liveYieldForNight } from './liveUI';
 
 /* Gắn mọi bảng điều khiển: ngày/đêm, bóng đổ, trình diễn, chọn cầu, góc nhìn, nút bật/tắt từng cầu, bàn phím */
 export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }: { thuanPhuoc: ThuanPhuocBridge; tranThiLy: TranThiLyBridge; songHan: SongHanBridge; hanTunnel: HanTunnel; sunWheel: SunWheel }) {
@@ -32,8 +33,9 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
     btnNight.setAttribute('aria-pressed', String(isNight));
     btnNight.textContent = t(isNight ? 'toDay' : 'toNight');
   };
-  btnNight.addEventListener('click', () => { dayNight.target = dayNight.target > 0.5 ? 0 : 1; slider.value = String(dayNight.target * 100); syncNight(); });
-  slider.addEventListener('input', () => { dayNight.target = Number(slider.value) / 100; syncNight(); });
+  // Trực tiếp (D-043): hai điều khiển bị disabled, và handler cũng bỏ qua (khóa ở tầng mã, không chỉ DOM)
+  btnNight.addEventListener('click', () => { if (liveLocked()) return; dayNight.target = dayNight.target > 0.5 ? 0 : 1; slider.value = String(dayNight.target * 100); syncNight(); });
+  slider.addEventListener('input', () => { if (liveLocked()) { slider.value = String(Math.round(dayNight.target * 100)); return; } dayNight.target = Number(slider.value) / 100; syncNight(); });
   syncNight();
   setupAudioUI();
   // Đổi ngôn ngữ: cập nhật các chữ do code sinh ra
@@ -45,6 +47,7 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
   });
   btnShow.addEventListener('click', () => {
     show.on = !show.on; show.t = 0; btnShow.setAttribute('aria-pressed', String(show.on)); syncShowLine();
+    if (show.on) liveYieldForNight();   // Trực tiếp: sang Mô phỏng trước (D-043), rồi mới đặt đêm
     if (show.on && dayNight.target < 0.5) { dayNight.target = 1; slider.value = '100'; syncNight(); } // trình diễn diễn ra lúc 21:00
   });
   btnShadow.addEventListener('click', () => {
@@ -66,22 +69,23 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
   setupHrUI(hanTunnel, toggle);
   // Hai bờ sông: đèn trái tim, chế độ đối đáp/đồng bộ, quảng cáo; góc nhìn "Trái tim hai bờ" tự chuyển sang đêm
   setupRiverfrontUI(toggle);
-  document.querySelector('[data-view="rfHearts"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
+  document.querySelector('[data-view="rfHearts"]').addEventListener('click', () => { liveYieldForNight(); dayNight.target = 1; slider.value = '100'; syncNight(); });
   // Vòng quay Mặt Trời: tốc độ quay; góc nhìn ban đêm tự chuyển sang đêm
   const swSpeed = document.getElementById('swSpeed') as HTMLSelectElement;
   swSpeed.addEventListener('change', () => sunWheel.setSpeed(Number(swSpeed.value)));
   const swShow = document.getElementById('swShow') as HTMLSelectElement;   // kiểu show LED đêm (GĐ4)
   swShow.addEventListener('change', () => sunWheel.setShow(swShow.value));
-  document.querySelector('[data-view="swNight"]').addEventListener('click', () => { dayNight.target = 1; slider.value = '100'; syncNight(); });
+  document.querySelector('[data-view="swNight"]').addEventListener('click', () => { liveYieldForNight(); dayNight.target = 1; slider.value = '100'; syncNight(); });
   /* Tour Vòng quay (GĐ7): lên cabin / đỉnh / xuống do ride.ts xử lý; ở đây chỉ phần giao diện của điểm 6 (đêm + kiểu show) và trả lại khi thoát Tour */
   let swTourPrev: { night: number; show: string } | null = null;
   swRide.tour.onEnd = () => {
     if (!swTourPrev) return;
-    dayNight.target = swTourPrev.night; slider.value = String(swTourPrev.night * 100); syncNight();
+    if (!liveLocked()) { dayNight.target = swTourPrev.night; slider.value = String(swTourPrev.night * 100); syncNight(); }   // người xem đã về Trực tiếp giữa tour: đêm theo giờ thật
     sunWheel.setShow(swTourPrev.show); swShow.value = swTourPrev.show; swTourPrev = null;
   };
   tourHooks.sw = (phase, exit) => {
     if (phase === 'night') {
+      liveYieldForNight();   // Trực tiếp: sang Mô phỏng trước khi nhớ / ghi đêm (đêm nhớ là đêm mô phỏng, trả lại khi tour xong)
       swTourPrev ||= { night: dayNight.target, show: sunWheel.show() };
       dayNight.target = 1; slider.value = '100'; syncNight();
       sunWheel.setShow(CONFIG.sunWheel.tour.show); swShow.value = CONFIG.sunWheel.tour.show;
@@ -89,7 +93,7 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
     if (exit) swRide.tourEnd(); else swRide.tourPhase(phase);
   };
   // Thời tiết: preset + cường độ (GĐ2: chỉ khí quyển)
-  setupWeatherUI(toggle);
+  const syncWeather = setupWeatherUI(toggle);
   window.addEventListener('keydown', (e) => {
     if (cam.mode !== 'walk') return;
     const k = e.key.toLowerCase(); keys.add(k);
@@ -103,5 +107,7 @@ export function setupUI({ thuanPhuoc, tranThiLy, songHan, hanTunnel, sunWheel }:
   canvas.addEventListener('pointerdown', exitTour);
   canvas.addEventListener('wheel', exitTour, { passive: true });
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { exitTour(); leaveSwRide(true); } });   // Esc cũng xuống khỏi cabin Vòng quay Mặt Trời
-  return { donate };
+  /* Về Mô phỏng (D-043, liveUI.ts): thanh / nút Ngày–Đêm, ô chọn, thanh cường độ hiện lại đúng trạng thái mô phỏng */
+  const syncSim = () => { slider.value = String(Math.round(dayNight.target * 100)); syncNight(); syncWeather(); };
+  return { donate, syncSim };
 }

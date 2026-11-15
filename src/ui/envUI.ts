@@ -118,7 +118,8 @@ export function setupEnvUI(opts: { live: boolean; nextDelay?: (now: number) => n
       : t('envObs', { t: envHHMM(data.obsMin), n: Math.round(cfg.refreshMs / 60000) }));
     el.foot.classList.toggle('warn', st === 'stale' || st === 'offline');
     // Nhãn đọc màn hình của chỉ báo: kèm nhiệt độ + giờ (vẽ lại mỗi phút; đổi ngôn ngữ: i18n ghi data-i18n-aria trước rồi mới gọi listener nên nhãn này thắng)
-    setAria(pill, t('envAria') + ': ' + (data ? Math.round(data.temp) + '°, ' : st === 'offline' ? t('envOffline') + ', ' : '') + envHHMM(min));
+    const md = root.dataset.mode;   // chế độ Trực tiếp / Mô phỏng (D-043, liveUI.ts ghi; không có khi không dựng được bộ điều khiển)
+    setAria(pill, t('envAria') + ': ' + (data ? Math.round(data.temp) + '°, ' : st === 'offline' ? t('envOffline') + ', ' : '') + envHHMM(min) + (md ? ' · ' + t(md === 'live' ? 'liveModeLive' : 'liveModeManual') : ''));
     const dash = '—';
     if (!data) {
       if (st === 'offline') {
