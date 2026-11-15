@@ -6,6 +6,8 @@ import { sun, hemi, moon, bridgeLights } from './lights';
 import { setSun, stars, clouds } from './sky';
 import { water } from './water';
 import { lerp, clamp } from '../common/math';
+import { CONFIG } from '../config';
+import { sunElevK } from '../realtime/solar';
 
 /* ============================ Ngày / đêm ============================ */
 /* night: giá trị hiện tại (0 ngày → 1 đêm), target: giá trị người xem chọn; night tiến dần về target */
@@ -16,14 +18,30 @@ const C_HEMI_DAY = new THREE.Color(0xcfe6ff), C_HEMI_NIGHT = new THREE.Color(0x2
 const C_WATER_DAY = new THREE.Color(0x2c5a4f), C_WATER_NIGHT = new THREE.Color(0x08181b);
 const C_BULB_DAY = new THREE.Color(0x9a9890), C_BULB_NIGHT = new THREE.Color(2.4, 1.9, 1.1);
 
-export function applyNight(m: number, time: number) {
+/* Mặt trời thật của chế độ Trực tiếp (D-043, realtime/liveEnv.ts): elev / azim độ (azim la bàn, 0 = Bắc, 90 = Đông), warm 0–1 (solar.ts sunWarm) */
+export type SunOverride = { elev: number; azim: number; warm: number };
+const C_SUN = sun.color.clone(), C_SUN_WARM = new THREE.Color(CONFIG.live.warmSun), C_FOG_WARM = new THREE.Color(CONFIG.live.warmFog);
+let sunTinted = false;   // sun.color đang khác gốc (đã ở Trực tiếp): rời Trực tiếp thì trả lại một lần
+
+/* m: đêm 0–1. sun: bỏ trống / null = Mô phỏng, chạy y như trước D-043 (mặt trời cố định 205°, 40° → −7°) */
+export function applyNight(m: number, time: number, so?: SunOverride | null) {
   shared.uNight.value = m;
-  setSun(lerp(40, -7, m), 205);
-  sun.intensity = 3.0 * clamp(1 - m * 1.15, 0, 1);
+  if (so) {
+    // Đèn định hướng kẹp độ cao ≥ sunMinElev (bóng không dài vô hạn); bầu trời + phản chiếu nước nhận độ cao thật. Phương vị la bàn A ⇒ góc cảnh 180° − A (+X Đông, −Z Bắc)
+    setSun(Math.max(so.elev, CONFIG.live.sunMinElev), 180 - so.azim, so.elev);
+    // Hệ số theo độ cao luôn > 0: sun.intensity chỉ về 0 do `night` (≥ 0,87) như cũ, bộ đèn D-031 không đổi cách quyết
+    sun.intensity = 3.0 * clamp(1 - m * 1.15, 0, 1) * sunElevK(so.elev);
+    sun.color.copy(C_SUN).lerp(C_SUN_WARM, so.warm); sunTinted = true;
+  } else {
+    if (sunTinted) { sun.color.copy(C_SUN); sunTinted = false; }
+    setSun(lerp(40, -7, m), 205);
+    sun.intensity = 3.0 * clamp(1 - m * 1.15, 0, 1);
+  }
   moon.intensity = 0.35 * m;
   hemi.intensity = lerp(0.9, 0.22, m);
   hemi.color.copy(C_HEMI_DAY).lerp(C_HEMI_NIGHT, m);
   (scene.fog as THREE.FogExp2).color.copy(C_FOG_DAY).lerp(C_FOG_NIGHT, m);
+  if (so && so.warm > 0) (scene.fog as THREE.FogExp2).color.lerp(C_FOG_WARM, so.warm * CONFIG.live.warmFogK * (1 - m));   // sương ấm lúc mặt trời thấp; sunWarm liên tục nên không nhảy
   scene.environmentIntensity = lerp(1, 0.14, m);
   renderer.toneMappingExposure = lerp(0.55, 0.8, m);
   water.material.uniforms.waterColor.value.copy(C_WATER_DAY).lerp(C_WATER_NIGHT, m);

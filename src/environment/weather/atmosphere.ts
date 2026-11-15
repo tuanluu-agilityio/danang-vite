@@ -4,6 +4,7 @@ import { scene, renderer } from '../../core/renderer';
 import { sun, hemi } from '../../core/lights';
 import { sky, clouds } from '../../core/sky';
 import { water } from '../../core/water';
+import { quality } from '../../core/quality';
 import type { WeatherState } from './state';
 
 /* ===== [weather] Khí quyển (mục 4.2): sương, trời, ánh sáng, mây, nước — 0 draw call mới =====
@@ -17,10 +18,12 @@ const C = {
   haze: new THREE.Color(0xe8dcc4), gray: new THREE.Color(0x8c9aa3), storm: new THREE.Color(0x5d6870),     // màu sương: be nóng, xám xanh, bão
   hemiGray: new THREE.Color(0x8a949c),                                                                       // màu hemi khi trời xám
   waterSun: new THREE.Color(0x2f6f6a), waterRain: new THREE.Color(0x5a5a3e), waterStorm: new THREE.Color(0x4a4433),   // nước: xanh trong, nâu, nâu đục
-  cloudGray: new THREE.Color(0x7d868c), cloudStorm: new THREE.Color(0x2a2f33)                                 // mây: xám đậm, gần đen
+  cloudGray: new THREE.Color(0x7d868c), cloudStorm: new THREE.Color(0x2a2f33),                                // mây: xám đậm, gần đen
+  fog: new THREE.Color(CONFIG.live.fogColor)                                                                 // sương mù (D-043, chỉ Trực tiếp đặt fog > 0)
 };
 interface Base { fogDensity: number; turbidity: number; rayleigh: number; distortion: number; size: number; waterY: number; cloudColor: THREE.Color; cloudRotY: number }
 let base: Base | null = null, active = false, spin = 0;
+let liveClouds = false;   // clouds.count đang do Trực tiếp đặt theo độ phủ mây (D-043); rời Trực tiếp thì trả về số của bậc chất lượng
 
 /* Chụp giá trị gốc (gọi sau buildSky/buildWater, trước khi áp thời tiết). */
 export function buildAtmosphere() {
@@ -40,16 +43,22 @@ function restore() {
   clouds.material.color.copy(base.cloudColor); clouds.rotation.y = base.cloudRotY; spin = 0;
 }
 
-/* Gọi NGAY SAU applyNight(m): điều biến theo thời tiết hiện tại (state.current). */
-export function applyAtmosphere(s: WeatherState, m: number, dt: number) {
+/* Gọi NGAY SAU applyNight(m): điều biến theo thời tiết hiện tại (state.current).
+   live (D-043, chế độ Trực tiếp): số tấm mây theo độ phủ mây; Mô phỏng (false) không đụng clouds.count (bậc chất lượng quyết như cũ). */
+export function applyAtmosphere(s: WeatherState, m: number, dt: number, live = false) {
   if (!base) return;
   const A = CONFIG.weather.atmosphere, c = s.current, night = clamp01(m);
+  // Mật độ mây (0 lệnh vẽ thêm: InstancedMesh.count): cloudMin tấm khi quang → đủ số tấm của bậc chất lượng khi u ám
+  const qMax = Math.min(quality.current().clouds, clouds.instanceMatrix.count);
+  if (live) { clouds.count = Math.min(qMax, Math.round(lerp(CONFIG.live.cloudMin, qMax, clamp01(c.cloud)))); liveClouds = true; }
+  else if (liveClouds) { clouds.count = qMax; liveClouds = false; }
   const sunny = clamp01(c.haze);                                     // nắng hè: trời gắt, mù nóng
   const stormK = clamp01(Math.min(c.rain, c.wind / A.stormWind));    // bão: mưa lớn VÀ gió mạnh (liên tục theo thanh cường độ)
   const gray = clamp01(Math.max(c.rain, (c.cloud - A.grayCloud) * A.grayGain));   // trời xám: mưa hoặc mây dày
   const lvl = c.level;
   const windK = Math.min(1.5, c.wind / A.stormWind);               // gió (GĐ4): mây xoay, sóng tăng — kể cả khi không mưa
-  if (sunny < 1e-3 && gray < 1e-3 && stormK < 1e-3 && Math.abs(lvl) < 1e-3 && windK < 1e-4) {
+  const fogK = clamp01(c.fog || 0);                                  // sương / tầm nhìn kém (D-043): preset mô phỏng luôn 0
+  if (sunny < 1e-3 && gray < 1e-3 && stormK < 1e-3 && Math.abs(lvl) < 1e-3 && windK < 1e-4 && fogK < 1e-3) {
     if (active) { restore(); active = false; }                      // về `now`: trả đúng giá trị gốc, rồi không đụng gì nữa
     return;
   }
@@ -60,12 +69,17 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number) {
   fog.density = base.fogDensity * (1 + A.hazeFog * sunny + (A.rainFog - 1) * clamp01(c.rain) + (A.stormFog - A.rainFog) * stormK);
   tmp.copy(C.gray).lerp(C.storm, stormK).multiplyScalar(dark);
   fog.color.lerp(fogCol.copy(C.haze).multiplyScalar(dark), sunny * A.hazeTint).lerp(tmp, gray);
+  if (fogK > 0) {   // sương mù (D-043): dày tới fogMax lần, màu về xám trắng (tối theo đêm); fogK = 0 thì không chạy (hình mô phỏng không đổi)
+    fog.density *= 1 + (CONFIG.live.fogMax - 1) * fogK;
+    fog.color.lerp(fogCol.copy(C.fog).multiplyScalar(dark), fogK);
+  }
   // Trời
   const u = sky.material.uniforms;
   u.turbidity.value = lerp(lerp(lerp(base.turbidity, A.sunSky[0], sunny), A.graySky[0], gray), A.stormSky[0], stormK);
   u.rayleigh.value = lerp(lerp(lerp(base.rayleigh, A.sunSky[1], sunny), A.graySky[1], gray), A.stormSky[1], stormK);
+  if (fogK > 0) { const k = CONFIG.live.fogSky * fogK; u.turbidity.value = lerp(u.turbidity.value, A.graySky[0], k); u.rayleigh.value = lerp(u.rayleigh.value, A.graySky[1], k); }
   // Ánh sáng: nắng gắt khi hè; mây dày hạ nắng; bão gần như tắt nắng. Không đụng castShadow (nút "Bóng đổ" là của người dùng)
-  sun.intensity *= (1 + A.sunBoost * sunny) * (1 - A.sunCloud * clamp01(c.cloud)) * lerp(1, A.stormSun, stormK);
+  sun.intensity *= (1 + A.sunBoost * sunny) * (1 - A.sunCloud * clamp01(c.cloud)) * lerp(1, A.stormSun, stormK) * (1 - CONFIG.live.fogSun * fogK);   // mọi hệ số > 0: không đưa nắng về 0 giữa ban ngày (bộ đèn D-031)
   hemi.intensity *= (1 + A.hemiBoost * sunny) * lerp(1, A.hemiGray, gray) * lerp(1, A.hemiStorm / A.hemiGray, stormK);
   hemi.color.lerp(tmp.copy(C.hemiGray).multiplyScalar(dark), gray);
   renderer.toneMappingExposure *= (1 + A.expBoost * sunny) * lerp(1, A.expGray, gray) * lerp(1, A.expStorm / A.expGray, stormK);

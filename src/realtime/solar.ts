@@ -38,8 +38,15 @@ export function liveNight(elevDeg: number, cfg: { elevDay: number; elevNight: nu
   return 1 - smooth(cfg.elevNight, cfg.elevDay, elevDeg);
 }
 
-/** Sắc ấm của nắng / sương theo độ cao: 1 khi ≤ full°, giảm mượt về 0 ở none°, 0 khi mặt trời dưới below° (đêm hẳn). */
+/** Sắc ấm của nắng / sương theo độ cao: 1 khi full° ≥ độ cao ≥ 0°, giảm mượt về 0 ở none° (trưa); dưới 0° giảm mượt về 0 ở below° (đêm hẳn).
+    Hai đầu đều liên tục: không có bước nhảy ở below° (màu sương ấm không bật / tắt thấy được lúc chạng vạng). */
 export function sunWarm(elevDeg: number, cfg: { full: number; none: number; below: number } = CONFIG.live.warm): number {
-  if (elevDeg < cfg.below) return 0;
-  return 1 - smooth(cfg.full, cfg.none, elevDeg);
+  if (elevDeg <= cfg.below) return 0;
+  return (1 - smooth(cfg.full, cfg.none, elevDeg)) * smooth(cfg.below, Math.min(0, cfg.full), elevDeg);
+}
+
+/** Hệ số cường độ nắng theo độ cao: lowK ở chân trời (≤ 0°), 1 khi ≥ fullElev°, smoothstep ở giữa. Luôn > 0 khi lowK > 0
+    (bộ đèn D-031 chỉ chuyển sang 'night' khi applyNight đã đưa sun.intensity về 0 theo `night`, hệ số này không được làm việc đó). */
+export function sunElevK(elevDeg: number, cfg: { sunLowK: number; sunFullElev: number } = CONFIG.live): number {
+  return cfg.sunLowK + (1 - cfg.sunLowK) * smooth(0, cfg.sunFullElev, elevDeg);
 }

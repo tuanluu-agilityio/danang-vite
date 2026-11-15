@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG } from '../../src/config.ts';
-import { sunPosition, liveNight, sunWarm } from '../../src/realtime/solar.ts';
+import { sunPosition, liveNight, sunWarm, sunElevK } from '../../src/realtime/solar.ts';
 
 const LAT = 16.061, LON = 108.227;
 const at = (y: number, mo: number, d: number, h: number, mi: number) => Date.UTC(y, mo - 1, d, h, mi);
@@ -68,4 +68,22 @@ test('sunWarm', () => {
   assert.equal(sunWarm(-10), 0);
   const m = sunWarm(8); assert.ok(m > 0 && m < 1);
   assert.ok(sunWarm(5) > sunWarm(10));
+});
+test('sunWarm liên tục quanh chân trời và mốc −6° (màu sương không nhảy)', () => {
+  assert.equal(sunWarm(0), 1);
+  assert.equal(sunWarm(-6), 0);
+  const h = sunWarm(-3); assert.ok(h > 0 && h < 1, 'chạng vạng: nhạt dần ' + h);
+  assert.ok(sunWarm(-5.9) < 0.01, 'sát −6° gần 0: ' + sunWarm(-5.9));
+  let prev = sunWarm(-12);
+  for (let e = -12; e <= 20; e += 0.05) { const w = sunWarm(e); assert.ok(Math.abs(w - prev) < 0.03, 'bước nhảy ở ' + e.toFixed(2)); prev = w; }
+});
+test('sunElevK: > 0 ở chân trời, 1 từ sunFullElev, đơn điệu', () => {
+  const C = { sunLowK: 0.35, sunFullElev: 35 };
+  assert.equal(sunElevK(-20, C), 0.35);
+  assert.equal(sunElevK(0, C), 0.35);
+  assert.equal(sunElevK(35, C), 1);
+  assert.equal(sunElevK(80, C), 1);
+  let prev = 0;
+  for (let e = -5; e <= 60; e += 0.5) { const k = sunElevK(e, C); assert.ok(k >= prev && k > 0, 'đơn điệu ở ' + e); prev = k; }
+  assert.ok(sunElevK(10) > 0, 'cấu hình thật > 0');
 });

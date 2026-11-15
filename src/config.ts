@@ -620,7 +620,16 @@ const liveBase = {
   fogMax: 14,                 // không đơn vị — mật độ sương ×14 ở fog 1: FogExp2 gốc 0,00016 ⇒ còn ≈ 15 % độ tương phản ở 600 m (ước lượng, spec §4.2)
   elevDay: 6,                 // ° — độ cao mặt trời từ mức này trở lên là ngày hẳn (night = 0) (ước lượng, theo chạng vạng dân dụng)
   elevNight: -6,              // ° — độ cao mặt trời từ mức này trở xuống là đêm hẳn (night = 1): giới hạn chạng vạng dân dụng
-  warm: { full: 2, none: 15, below: -6 },   // ° — sắc ấm của nắng / sương (sunWarm): đủ ấm khi độ cao ≤ 2°, hết ấm ở ≥ 15°, tắt khi mặt trời dưới −6° (ước lượng, spec §4.3)
+  warm: { full: 2, none: 15, below: -6 },   // ° — sắc ấm của nắng / sương (sunWarm): đủ ấm khi 0° ≤ độ cao ≤ 2°, hết ấm ở ≥ 15°; dưới 0° nhạt dần, hết ở −6° (ước lượng, spec §4.3)
+  warmSun: 0xffa060,         // màu nắng (DirectionalLight) khi sunWarm = 1; gốc 0xfff1dc (ước lượng)
+  warmFog: 0xd9a27a,         // màu sương pha vào khi sunWarm = 1 (hoàng hôn / bình minh) (ước lượng)
+  warmFogK: 0.55,            // 0–1 — mức pha màu sương ấm ở sunWarm = 1, nhân thêm (1 − night) (ước lượng)
+  sunLowK: 0.35,             // không đơn vị — cường độ nắng ở chân trời so với trưa (sunElevK) (ước lượng)
+  sunFullElev: 35,           // ° — từ độ cao này trở lên nắng đủ mức ban ngày hiện có (ước lượng)
+  cloudMin: 4,               // số tấm mây khi trời quang (cloud 0) ở Trực tiếp; cloud 1 = số tấm theo bậc chất lượng (≤ 26) (ước lượng)
+  fogColor: 0xc9ced2,        // màu sương mù (xám trắng) pha vào theo fog, ban đêm nhân (1 − nightDim·night) như màu thời tiết khác (ước lượng)
+  fogSun: 0.5,               // không đơn vị — nắng ×(1 − 0,5·fog) khi sương (ước lượng)
+  fogSky: 0.6,               // 0–1 — Sky turbidity / rayleigh tiến về mức trời xám (atmosphere.graySky) theo 0,6·fog, để chân trời gần màu sương (ước lượng)
   sunMinElev: 10,             // ° — độ cao tối thiểu của đèn định hướng (bóng không dài vô hạn); bầu trời vẫn nhận độ cao thật (ước lượng)
   obsStepMs: 900000,          // ms — kỳ quan trắc Open-Meteo 15 phút; làm mới căn theo mốc này
   obsDelayMs: 90000,          // ms — chờ sau mốc quan trắc rồi mới lấy số liệu (để nguồn kịp cập nhật) (ước lượng)
