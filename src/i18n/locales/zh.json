@@ -580,5 +580,17 @@
   "envLoading": "正在获取观测数据…",
   "envOffline": "已断开 · 正在重试",
   "envNoData": "暂无数据",
-  "envClockOk": "时钟仍在准时运行"
+  "envClockOk": "时钟仍在准时运行",
+  "liveBadge": "实时",
+  "simBadge": "模拟",
+  "liveModeLive": "实时",
+  "liveModeManual": "模拟",
+  "liveModeAria": "3D 场景模式",
+  "liveNoteLive": "3D 场景跟随此刻的真实时间和天气。",
+  "liveNoteManual": "在设置中自行选择昼夜和天气。",
+  "liveLock": "正在跟随真实天气",
+  "liveToManual": "切换到模拟",
+  "liveToLive": "返回实时",
+  "liveNotice": "已切换到模拟以显示夜景。",
+  "liveNoData": "真实时间，暂无天气数据。"
 }

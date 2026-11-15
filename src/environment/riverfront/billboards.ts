@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CONFIG } from '../../config';
-import { shared } from '../../core/shared';
+import { shared, weatherU, LIVE_FOG } from '../../core/shared';
 import { lerp, rng } from '../../common/math';
 import { boxAt } from '../../common/geometry';
 import type { Atlas, Slot } from './adAtlas';
@@ -97,12 +97,14 @@ export function buildBillboards(atlas: Atlas, lm: Landmarks, buildings: Building
   ledGeo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); ledGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); ledGeo.setIndex(ix);
   ledGeo.setAttribute('aA', new THREE.BufferAttribute(aA, 4)); ledGeo.setAttribute('aB', new THREE.BufferAttribute(aB, 4)); ledGeo.setAttribute('aM', new THREE.BufferAttribute(aM, 1));
   const ledMat = new THREE.ShaderMaterial({
-    uniforms: { uAtlas: { value: atlas.texture }, uNight: shared.uNight },
-    vertexShader: 'attribute vec4 aA; attribute vec4 aB; attribute float aM; varying vec2 vUv; varying vec4 vA; varying vec4 vB; varying float vM; void main(){ vUv = uv; vA = aA; vB = aB; vM = aM; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: `uniform sampler2D uAtlas; uniform float uNight; varying vec2 vUv; varying vec4 vA; varying vec4 vB; varying float vM;
+    // Sương Trực tiếp (D-043, LIVE_FOG): uFogLive = 0 ở Mô phỏng ⇒ điểm ảnh như cũ
+    uniforms: { uAtlas: { value: atlas.texture }, uNight: shared.uNight, uFogLive: weatherU.uFogLive, uFogDensity: weatherU.uFogDensity, uFogColor: weatherU.uFogColor },
+    vertexShader: `attribute vec4 aA; attribute vec4 aB; attribute float aM; varying vec2 vUv; varying vec4 vA; varying vec4 vB; varying float vM; ${LIVE_FOG.VERT_DECL} void main(){ vUv = uv; vA = aA; vB = aB; vM = aM; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); ${LIVE_FOG.VERT_MAIN} }`,
+    fragmentShader: `uniform sampler2D uAtlas; uniform float uNight; varying vec2 vUv; varying vec4 vA; varying vec4 vB; varying float vM; ${LIVE_FOG.FRAG_DECL}
       void main(){ vec3 a = texture2D(uAtlas, mix(vA.xy, vA.zw, vUv)).rgb, b = texture2D(uAtlas, mix(vB.xy, vB.zw, vUv)).rgb;
         vec2 f = fract(vUv * vec2(64.0, 36.0)); float dotM = 0.78 + 0.22 * smoothstep(0.0, 0.25, min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y)));
         gl_FragColor = vec4(mix(a, b, vM) * dotM * mix(0.55, 1.25, uNight), 1.0);
+        ${LIVE_FOG.FRAG_MAIN}
         #include <colorspace_fragment>
       }`
   });

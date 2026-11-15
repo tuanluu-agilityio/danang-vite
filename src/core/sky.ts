@@ -48,10 +48,16 @@ export function buildSky() {
   }
   scene.add(clouds);
 }
-export function setSun(elev: number, azim: number) {
+/* elev / azim: độ cao + góc cảnh (θ: x = sin θ, z = cos θ) của đèn mặt trời (bóng đổ).
+   skyElev (D-043, chế độ Trực tiếp): độ cao thật cho bầu trời + phản chiếu nước khi đèn bị kẹp ở CONFIG.live.sunMinElev; bỏ trống thì như cũ (cả ba dùng elev). */
+const skyDir = new THREE.Vector3();
+export function setSun(elev: number, azim: number, skyElev?: number) {
   sunDir.setFromSphericalCoords(1, THREE.MathUtils.degToRad(90 - elev), THREE.MathUtils.degToRad(azim));
-  sky.material.uniforms.sunPosition.value.copy(sunDir);
-  if (water) water.material.uniforms.sunDirection.value.copy(sunDir).normalize();
+  const sd = skyElev === undefined ? sunDir : skyDir.setFromSphericalCoords(1, THREE.MathUtils.degToRad(90 - skyElev), THREE.MathUtils.degToRad(azim));
+  sky.material.uniforms.sunPosition.value.copy(sd);
+  // Nước nhận hướng thật (sd), không phải hướng đèn đã kẹp: vệt lóa nằm dưới đĩa mặt trời thấy trên trời; mặt trời dưới chân trời thì vector hướng xuống,
+  // tích vô hướng với tia phản xạ ≤ 0 nên không có lóa (như đêm của Mô phỏng, nơi độ cao xuống −7°)
+  if (water) water.material.uniforms.sunDirection.value.copy(sd).normalize();
   // vùng bóng đổ (±470 m) đi theo điểm camera đang nhìn; mặc định vẫn là gốc tọa độ như trước
   sun.position.copy(shadowCenter).addScaledVector(sunDir, 1000);
   sun.target.position.copy(shadowCenter);

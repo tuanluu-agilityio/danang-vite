@@ -15,7 +15,7 @@ import { buildFallen, fellTrees, standTrees, updateFallen, fallenState, fallenSn
 import { createScenario, type Scenario } from './scenario';
 import { updateWeatherSound } from './sound';
 import { controls } from '../../core/renderer';
-import { createWeatherState, setPreset, stepWeather, windNow, type PresetName, type WeatherParams, type WeatherState } from './state';
+import { createWeatherState, setPreset, presetTarget, stepWeather, windNow, type PresetName, type WeatherParams, type WeatherState } from './state';
 
 /* ===== [weather] Thời tiết — Giai đoạn 7: khí quyển + mưa + mặt ướt + gió + bão (chớp, đóng cầu, khoá quay, dừng trình diễn) + kịch bản bão + nắng hè (ảo ảnh, võng cáp) + cây đổ sau bão + âm thanh =====
    Giữ trạng thái (current/target/wet), nhận preset, ghi weatherU, điều biến khí quyển (atmosphere.ts), mưa (rain.ts, +1 draw call khi mưa),
@@ -34,8 +34,16 @@ export interface Weather {
   windAt: (z: number) => number; beaufort: (v?: number) => number;
   setParams: (p: Partial<WeatherParams>, instant?: boolean) => void;   // ghi đè target (test / kịch bản); instant: gán luôn current
   sway: () => ReturnType<typeof swayNow>;                              // biên độ lắc đang hiển thị (m, đã phóng đại)
+  /* Chế độ Trực tiếp (D-043, realtime/liveEnv.ts). p: đích từ số liệu thật (envMap.ts), tiến dần theo tau × CONFIG.live.tauScale; không đụng state.preset / intensity
+     (lựa chọn mô phỏng được giữ nguyên để trả lại). instant: gán luôn current + mặt ướt (ảnh chụp đầu tiên của phiên).
+     null: rời Trực tiếp — tauScale 1, đích về preset mô phỏng đã nhớ, enabled như setPreset (preset `now` ⇒ tắt, no-op). */
+  setLive: (p: WeatherParams | null, instant?: boolean) => void;
+  readonly live: boolean;
+  stopScenario: () => void;                                            // dừng kịch bản bão, không trả preset cũ (như người xem tự chọn preset)
+  standTrees: () => void;                                              // dựng lại cây đổ sau bão
 }
 let current: Weather | null = null;
+let live = false;   // chế độ Trực tiếp đang lái thời tiết (setLive)
 export const getWeather = () => current;
 
 export function buildWeather(): Weather {
@@ -59,7 +67,23 @@ export function buildWeather(): Weather {
     windAt: (z: number) => windAt(z, state.current.wind),
     beaufort: (v?: number) => beaufort(v ?? state.current.wind),
     setParams(p, instant = false) { Object.assign(state.target, p); if (instant) Object.assign(state.current, p); current.enabled = true; },
-    sway: swayNow
+    sway: swayNow,
+    setLive(p, instant = false) {
+      if (p) {
+        live = true; state.tauScale = CONFIG.live.tauScale;
+        state.target = { ...p };
+        if (instant) { Object.assign(state.current, p); state.wet = p.rain; }
+        current.enabled = true;
+      } else {
+        if (!live) return;
+        live = false; state.tauScale = 1;
+        state.target = presetTarget(state.preset, state.intensity);
+        current.enabled = state.preset !== 'now';
+      }
+    },
+    get live() { return live; },
+    stopScenario: () => current.scenario.stop(false),
+    standTrees
   };
   return current;
 }
@@ -82,7 +106,7 @@ export function updateWeather(dt: number, time: number, night: number, cam: THRE
   const s = current.state;
   current.scenario.update(dt);
   stepWeather(s, dt);
-  applyAtmosphere(s, night, dt);
+  applyAtmosphere(s, night, dt, live);
   const c = s.current, w = windNow(c, time), wet = s.wet < 1e-3 ? 0 : s.wet;   // dưới ngưỡng: 0 chính xác để nhánh shader ướt không chạy
   applyWetness(wet);
   updateWind(c, w, current.enabled);       // lắc dây/cây, thuyền, lửa, sóng (0 draw call)
@@ -104,6 +128,7 @@ let armed = false, afterT = -1;
 function aftermath(s: WeatherState, dt: number) {
   const F = CONFIG.weather.fallen, sc = current.scenario;
   if (s.current.wind >= F.armWind) armed = true;
+  if (live) { armed = false; if (afterT >= 0) { standTrees(); afterT = -1; } return; }   // Trực tiếp: không hư hại theo số liệu thật (spec §1), không mang "đã có bão" sang Mô phỏng
   if (armed && s.target.wind <= F.calmWind && !s.target.closed) { armed = false; fellTrees(sc.running ? sc.focus() : controls.target, s.current.windDir); afterT = 0; }
   if (afterT >= 0) {
     afterT += dt;
