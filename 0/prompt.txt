@@ -1,0 +1,483 @@
+<pasted_content id="c6f1">
+# TASK: INVESTIGATE & FIX INTRO GUIDE AUDIO STUTTERING, LAG AND CRACKLING
+
+**Project:** https://danangbridges.netlify.app/
+
+**Role:** Act as a Senior Audio Engineer, Three.js Performance Engineer, Frontend Architect and QA Engineer.
+
+**Execution mode:** Use Claude Superpowers to investigate, plan, implement and verify the fix. Work autonomously and make technically sound decisions based on the existing project architecture.
+
+---
+
+## 1. PROBLEM STATEMENT
+
+The current Intro Guide has a serious audio-quality problem, particularly toward the final segment of the introduction.
+
+Observed symptoms:
+
+- Audio becomes choppy and intermittently stutters.
+- Audio produces crackling, distortion or unpleasant digital noise.
+- Audio playback becomes delayed or temporarily freezes.
+- Audio is not smooth and consistent during the final portion of the introduction.
+- The issue appears more noticeable toward the end rather than throughout the entire introduction.
+
+**This is a quality issue that must be fixed, not something to work around.**
+
+The primary objective is to ensure that the entire Intro Guide has smooth, continuous, clean and synchronized audio from beginning to end.
+
+Do not assume that the audio file itself is necessarily the problem. Investigate the complete playback pipeline and identify the actual root cause.
+
+## 2. USE SUPERPOWERS TO INVESTIGATE BEFORE IMPLEMENTING
+
+Follow the appropriate Superpowers workflow.
+
+### Phase 1: Understand the existing architecture
+
+Before changing any code:
+
+1. Review the entire project structure.
+2. Locate the Intro Guide implementation and identify all related components, modules, services and assets.
+3. Understand how the introduction is orchestrated, including:
+   - Intro animation and scene transitions.
+   - Background music.
+   - Narration / voice-over.
+   - Sound effects.
+   - Audio playback controls.
+   - Audio loading and asset preloading.
+   - Pause, resume, replay and skip behavior.
+   - Final-segment transition and cleanup logic.
+4. Trace the audio lifecycle from initial loading to the final segment.
+5. Identify how Three.js rendering, animations and audio playback interact.
+
+Do not create a new audio architecture unnecessarily. First understand and reuse the existing implementation wherever possible.
+
+### Phase 2: Reproduce and diagnose the issue
+
+Reproduce the issue locally using the actual Intro Guide.
+
+Pay special attention to the final 20–30% of the introduction and the transitions immediately before and after the problematic segment.
+
+Investigate the following potential causes:
+
+**A. Audio playback problems**
+- Audio buffer decoding delays.
+- Incorrect or inefficient audio loading strategy.
+- Audio files being loaded too late.
+- Audio playback restarting unexpectedly.
+- Multiple audio instances playing simultaneously.
+- Incorrect audio scheduling or timing.
+- Audio source switching at segment boundaries.
+- Incorrect audio node lifecycle management.
+- AudioContext being suspended, recreated or interrupted.
+- Audio synchronization depending incorrectly on animation timing.
+
+**B. Audio quality problems**
+- Audio clipping or excessive gain.
+- Distortion caused by overlapping narration, music and sound effects.
+- Inconsistent volume levels between audio tracks.
+- Incorrect sample rate, encoding or corrupted audio assets.
+- Poor-quality audio conversion or compression.
+- Incorrect gain management during transitions.
+
+**C. Three.js and browser performance problems**
+- Excessive rendering workload during the final segment.
+- High CPU or GPU usage.
+- Expensive animations, shaders, particles or post-processing.
+- Memory leaks and excessive memory allocation.
+- Garbage collection pauses.
+- Main-thread blocking tasks.
+- Long-running JavaScript operations.
+- Unnecessary event listeners or animation loops.
+- Heavy asset loading during audio playback.
+
+**D. Transition and lifecycle problems**
+- Previous audio not being properly stopped or disposed of.
+- Multiple timers or callbacks triggering the same playback.
+- Incorrect timing when transitioning between introduction segments.
+- Audio cleanup occurring too early or too late.
+- Repeated creation of audio resources.
+- Audio playback being interrupted by scene initialization or destruction.
+
+Do not assume that all these problems exist. Use actual evidence from the code, browser diagnostics and reproduction tests to determine which ones are responsible.
+
+### Phase 3: Root Cause Analysis
+
+Before implementing changes:
+
+1. Identify the exact component, function or process causing the problem.
+2. Determine why the issue becomes noticeable near the end of the introduction.
+3. Distinguish between audio decoding problems, playback scheduling issues, audio clipping and rendering-performance bottlenecks.
+4. Check browser Console errors and warnings.
+5. Inspect Network requests, asset loading times and audio resource availability.
+6. Profile CPU, memory, frame rate and main-thread activity during the problematic segment.
+7. Compare audio behavior between the beginning, middle and end of the introduction.
+
+Produce a concise technical diagnosis and a concrete implementation plan.
+
+Do not jump directly to random code modifications.
+
+---
+
+## 3. IMPLEMENT THE FIX
+
+Once the root cause has been identified, implement the smallest reliable solution that fixes the underlying problem.
+
+Consider the following engineering requirements where applicable.
+
+### A. Stable audio playback
+
+- Avoid unnecessary audio resource recreation.
+- Avoid restarting or reloading audio during segment transitions.
+- Ensure audio assets are available before the segments that require them.
+- Prevent simultaneous playback of unintended duplicate audio instances.
+- Ensure playback timing does not depend on unstable animation frame timing.
+- Manage audio lifecycle and cleanup correctly.
+- Ensure pause and resume do not introduce timing errors.
+- Prevent audio playback from being interrupted by unrelated scene updates.
+
+If the existing implementation uses Web Audio API, review AudioContext, AudioBuffer, AudioBufferSourceNode, GainNode and their lifecycle carefully.
+
+If it uses HTMLAudioElement, review preload behavior, media readiness, playback promises, buffering, source reassignment and event handling.
+
+Use the approach that best fits the existing architecture. Do not migrate the entire audio system without strong technical justification.
+
+### B. Clean and distortion-free audio
+
+- Prevent audio clipping.
+- Maintain appropriate gain levels.
+- Avoid unwanted overlap between narration, background music and sound effects.
+- Preserve clear and natural voice-over quality.
+- Ensure smooth volume transitions where appropriate.
+- Avoid sudden volume jumps, clicks, pops or crackling.
+
+Do not simply reduce the master volume to hide distortion.
+
+### C. Smooth transitions
+
+Pay special attention to the final segment.
+
+- Ensure transitions between audio tracks are seamless.
+- Prevent abrupt audio interruptions.
+- Prevent duplicate playback during transitions.
+- Avoid unnecessary source switching.
+- Maintain correct synchronization between narration, music and visual content.
+
+### D. Rendering and performance optimization
+
+If profiling confirms that Three.js rendering is contributing to audio interruptions:
+
+- Optimize expensive rendering operations.
+- Reduce unnecessary allocations during animation.
+- Avoid blocking the main thread.
+- Optimize unnecessary animation and effect updates.
+- Ensure proper cleanup of temporary objects and resources.
+- Avoid introducing additional performance overhead.
+
+Do not unnecessarily reduce the visual quality of the Intro Guide.
+
+The objective is to improve performance while preserving the existing visual experience.
+
+---
+
+## 4. REGRESSION TESTING
+
+A code change is not sufficient evidence that the problem is fixed.
+
+Test the actual Intro Guide from beginning to end.
+
+### Required test scenarios
+
+1. Start the introduction from the first segment and allow it to play uninterrupted until completion.
+2. Carefully listen to the final 20–30% of the introduction.
+3. Replay the introduction multiple times.
+4. Pause and resume playback at different segments.
+5. Use the previous/next playback controls where applicable.
+6. Test the skip and replay behavior.
+7. Test the supported language versions, including Vietnamese and English.
+8. Verify that narration, background music and sound effects do not interfere with one another.
+9. Verify that audio playback remains stable while the Three.js scene is rendering complex animations.
+10. Check that finishing or exiting the Intro Guide properly releases audio resources.
+
+Use automated browser tests and available profiling tools where appropriate.
+
+Also perform actual listening tests. Automated tests alone cannot reliably determine whether sound is natural, smooth or free from audible distortion.
+
+Test on the primary desktop browser and check other supported browsers where feasible.
+
+### Performance verification
+
+Compare the problematic segment before and after the fix.
+
+Inspect:
+
+- Audio playback interruptions.
+- Audio loading and decoding behavior.
+- JavaScript long tasks.
+- CPU and memory usage.
+- Frame rate and frame-time spikes.
+- Browser Console errors.
+- Duplicate audio playback.
+- Unhandled audio playback promises.
+
+Do not claim success based solely on the absence of JavaScript errors.
+
+---
+
+## 5. STRICT ACCEPTANCE CRITERIA
+
+The task is considered complete only when ALL the following conditions are satisfied.
+
+| Requirement | Expected result |
+|---|---|
+| Audio smoothness | Continuous and smooth playback from beginning to end |
+| Audio stuttering | No audible stuttering or intermittent interruptions |
+| Audio distortion | No crackling, clipping, popping or unpleasant digital noise |
+| Playback latency | No unexpected delay or sluggish playback |
+| Synchronization | Narration, music and visual content remain appropriately synchronized |
+| Final segment | Plays as smoothly as the beginning and middle segments |
+| Transitions | No unwanted interruption, duplicate audio or sudden volume changes |
+| Replay | Replaying the introduction does not reproduce the issue |
+| Pause / Resume | Audio resumes correctly without glitches or timing problems |
+| Visual experience | Existing Intro Guide visuals and animations remain intact |
+| Browser stability | No new Console errors, unhandled playback failures or resource leaks |
+
+**Most important acceptance condition:**
+
+Listening to the entire Intro Guide, especially the final segment, must feel natural and uninterrupted.
+
+There must be:
+- NO stuttering.
+- NO lag.
+- NO unexpected playback delay.
+- NO crackling.
+- NO clipping.
+- NO abrupt audio cuts.
+- NO unpleasant sound distortion.
+
+The audio quality must remain consistent throughout the entire introduction.
+
+---
+
+## 6. IMPORTANT RESTRICTIONS
+
+Do NOT:
+
+- Simply lower the audio volume to hide the problem.
+- Remove the problematic final segment.
+- Shorten the introduction to avoid the issue.
+- Disable background music or narration as a workaround.
+- Reduce visual quality unnecessarily.
+- Replace the entire Intro Guide with a different implementation without justification.
+- Introduce additional audio libraries without first evaluating the existing system.
+- Make speculative modifications without understanding the root cause.
+- Claim the issue is fixed without testing actual audio playback.
+
+Preserve the current website experience, features, content, visual identity and existing audio content unless a specific asset is demonstrated to be defective.
+
+All changes must be compatible with the existing project architecture.
+
+---
+
+## 7. FINAL DELIVERABLE
+
+After implementation, provide a technical summary containing:
+
+1. **Root cause:** What exactly caused the audio problem?
+2. **Affected components:** Which files, functions or systems were responsible?
+3. **Implemented fixes:** What changes were made and why?
+4. **Performance improvements:** What bottlenecks were resolved?
+5. **Testing results:** Which scenarios were tested, and what were the actual results?
+6. **Remaining issues:** Clearly disclose anything that could not be reproduced, tested or verified.
+
+Do not report an acceptance criterion as passed unless it has actually been verified.
+
+## FINAL DIRECTIVE
+
+Take ownership of this issue from investigation through implementation and verification.
+
+Use Superpowers to plan and execute the work systematically. Make reasonable technical decisions autonomously, following the existing architecture rather than asking me to choose implementation details.
+
+**The priority is NOT to make the code look cleaner. The priority is to eliminate the actual audio defects and deliver a consistently smooth, clean and uninterrupted Intro Guide experience.**
+
+Do not stop after identifying the issue or writing a plan. Execute the implementation and complete the regression tests.
+</pasted_content id="c6f1">
+
+---
+
+<task-notification>
+<task-id>b2yedo38q</task-id>
+<tool-use-id>toolu_016gZznBQvqUj248ymPBj17s</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\b2yedo38q.output</output-file>
+<status>completed</status>
+<summary>Monitor "A/B run finish" stream ended</summary>
+<event>lượt 3 audiolat=0.05         hụt 0 lần, 0 ms, trễ TB 88.492 ms</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bn6zks26n</task-id>
+<tool-use-id>toolu_0129Xiu2uAptL9mL1x4VRcr3</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\bn6zks26n.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for last A/B run line" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bhxq0owo1</task-id>
+<tool-use-id>toolu_01ANp2M2xBmxsSipbAifwG9s</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\bhxq0owo1.output</output-file>
+<status>completed</status>
+<summary>Background command "A/B underruns under full CPU load: interactive vs 0.05s" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5e9cgds2</task-id>
+<summary>Monitor event: "A/B interactive vs 0.05 under load"</summary>
+<event>lượt 1 audiolat=interactive  hụt loa (giây ngữ cảnh, nhịp, lần, ms): 10.6 glider 1 10 · 17.8 bike 1 10 · 29.3 walk 2 23 · 29.3 walk 1 16 · 29.3 walk 3 30 · 29.3 walk 1 5 · 29.4 walk 4 45 · 29.4 walk 4 49 · 29.4 walk 3 33 · 29.4 walk 3 33 · 29.5 walk 3 26 · 29.5 walk 2 20 · 29.5 walk 5 48 · 29.6 walk 2 20 · 34.1 daynight 1 13 · 34.2 daynight 2 18 · 34.2 daynight 3 29 · 34.2 daynight 4 46 · 34.3 daynight 3 38 · 34.3 daynight 4 45 · 34.3 daynight 3 35 · 34.4 daynight 5 49 · 34.4 daynight 5 46 · 34....(truncated)</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5e9cgds2</task-id>
+<summary>Monitor event: "A/B interactive vs 0.05 under load"</summary>
+<event>lượt 1 audiolat=0.05         hụt loa (giây ngữ cảnh, nhịp, lần, ms):  =&gt; hụt 0 lần, 0 ms, trễ TB 88.523 ms</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5e9cgds2</task-id>
+<summary>Monitor event: "A/B interactive vs 0.05 under load"</summary>
+<event>lượt 2 audiolat=interactive  hụt loa (giây ngữ cảnh, nhịp, lần, ms):  =&gt; hụt 0 lần, 0 ms, trễ TB 48.535 ms</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5e9cgds2</task-id>
+<summary>Monitor event: "A/B interactive vs 0.05 under load"</summary>
+<event>lượt 2 audiolat=0.05         hụt loa (giây ngữ cảnh, nhịp, lần, ms):  =&gt; hụt 0 lần, 0 ms, trễ TB 88.487 ms</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5e9cgds2</task-id>
+<summary>Monitor event: "A/B interactive vs 0.05 under load"</summary>
+<event>lượt 3 audiolat=interactive  hụt loa (giây ngữ cảnh, nhịp, lần, ms):  =&gt; hụt 0 lần, 0 ms, trễ TB 48.46 ms</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5e9cgds2</task-id>
+<summary>Monitor event: "A/B interactive vs 0.05 under load"</summary>
+<event>lượt 3 audiolat=0.05         hụt loa (giây ngữ cảnh, nhịp, lần, ms):  =&gt; hụt 0 lần, 0 ms, trễ TB 88.522 ms</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5e9cgds2</task-id>
+<tool-use-id>toolu_013BRrph8P3VYuEDwhTSXNx3</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\b5e9cgds2.output</output-file>
+<status>completed</status>
+<summary>Monitor "A/B interactive vs 0.05 under load" stream ended</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bl3jpuunt</task-id>
+<tool-use-id>toolu_0129BCdWqcfGMmiP5rHjrtsg</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\bl3jpuunt.output</output-file>
+<status>completed</status>
+<summary>Background command "Proper A/B under load: old interactive vs new 0.05s" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnvkm1x4a</task-id>
+<summary>Monitor event: "A/B prefiltered noise render cost"</summary>
+<event>xong 1/4</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnvkm1x4a</task-id>
+<summary>Monitor event: "A/B prefiltered noise render cost"</summary>
+<event>xong 2/4</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnvkm1x4a</task-id>
+<summary>Monitor event: "A/B prefiltered noise render cost"</summary>
+<event>xong 3/4</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnvkm1x4a</task-id>
+<summary>Monitor event: "A/B prefiltered noise render cost"</summary>
+<event>xong 4/4</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnvkm1x4a</task-id>
+<tool-use-id>toolu_019N2G42bdSvT3XjyQ3erzp9</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\bnvkm1x4a.output</output-file>
+<status>completed</status>
+<summary>Monitor "A/B prefiltered noise render cost" stream ended</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b72xpxevh</task-id>
+<tool-use-id>toolu_013tJvha6aPgjPmoi78K7pqg</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\b72xpxevh.output</output-file>
+<status>completed</status>
+<summary>Background command "A/B audio render cost: before vs after prefiltered noise" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bw8d5v170</task-id>
+<tool-use-id>toolu_01HQnJgiqwneHZYCP56i2FZQ</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\5ae7ec2a-3b4f-4baa-bc9a-abcea6a432e3\tasks\bw8d5v170.output</output-file>
+<status>completed</status>
+<summary>Background command "Prod-path A/B under load: interactive, 0.05, 0.1" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+tôi muốn nghe thử trước
+
+---
+
+tôi commit và mở PR. Push và merge vào main. Update AI document
