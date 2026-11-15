@@ -18,7 +18,7 @@ Việc này **đảo một phần D-042** ("số liệu thật không bao giờ 
 **Không làm**
 - Không ngập, không dâng nước sông, không cấm cầu, không cây đổ theo số liệu thật (`level = 0`, `closed = false` ở chế độ Trực tiếp; cây đổ chỉ khi mô phỏng).
 - Không máy chủ, không đổi `server/multi`, không deploy Worker.
-- Không sửa shader mặt nước: nhánh `feature/ven-song-chan-thuc` (chưa merge) đang thay shader nước và đã có gợn mưa đọc cùng `WeatherParams` / `weatherFx`; làm ở đây sẽ xung đột. Trên `main` hiện tại mưa thật làm đổi màu nước, sóng (`distortionScale`), không có vòng gợn.
+- ~~Không sửa shader mặt nước vì nhánh `feature/ven-song-chan-thuc` đang thay nó~~ Cập nhật 2026-11-15: người dùng nói không dùng nhánh đó nữa; gợn mưa trên sông làm thẳng trên `main` (PR #41, `patchRainRipple()` trong `src/core/water.ts`, `CONFIG.weather.ripple`).
 - Không thêm thư viện, không thêm `PointLight` / `SpotLight`, không đổi thứ tự `build*()` hay lời gọi `rand()`.
 
 **Thất bại dù chạy được:** mưa to khi số liệu ghi 0 mm; chớp khi không có dông; API về làm cảnh giật; làm mới tự động ghi đè lựa chọn mô phỏng; lệnh vẽ góc cũ tăng ở `?test`.
