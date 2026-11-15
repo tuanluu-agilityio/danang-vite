@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01XT9YwGGYmHquw3LGT7a95R",
+  "agent_id": "a0d3aecf40657d63b",
+  "subagent_type": "general-purpose",
+  "task_description": "Review Sơn Trà terrain branch",
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 137527,
+    "cache_read_tokens": 350226,
+    "output_tokens": 9932,
+    "api_call_count": 4
+  },
+  "started_at": "2026-11-15T15:12:40.2525612+07:00",
+  "completed_at": "2026-11-15T15:16:04.6850595+07:00"
+}
