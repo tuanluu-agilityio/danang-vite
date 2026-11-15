@@ -1335,6 +1335,35 @@ const peopleBase = {
   }
 };
 
+/* ------------------------- Đoạn giới thiệu điện ảnh -------------------------
+   Chuỗi 9 nhịp tự chạy khi mở trang (docs/superpowers/specs/2026-11-15-intro-dien-anh-design.md, D-045). Mọi số đều (ước lượng) */
+const introBase = {
+  fade: 0.45,                          // s — màn tối dần ở cuối nhịp và sáng dần ở đầu nhịp (ước lượng)
+  nightRamp: [1.0, 6.5],               // s — nhịp daynight: dayNight.target đi 0 → 1 tuyến tính trong khoảng này (ước lượng)
+  swingSpeed: 30,                      // lần — hệ số tăng tốc quay Cầu sông Hàn, bằng Tour (ước lượng)
+  drift: 0.012,                        // rad/s — camera trôi quanh điểm nhìn khi finale đã hết và khi tạm dừng không áp (ước lượng)
+  dragon: { fireAt: 1.2, waterAt: 5.8 },   // s trong nhịp dragon — bật show (show.t = 0); nhảy show.t = 27 để bắt đầu phun nước (ước lượng)
+  scenes: [                            // s — thứ tự nhịp, chương và thời lượng (ước lượng)
+    { id: 'welcome', chapter: 1, dur: 7 }, { id: 'glider', chapter: 2, dur: 4.5 }, { id: 'car', chapter: 2, dur: 4.5 }, { id: 'bike', chapter: 2, dur: 4.5 },
+    { id: 'walk', chapter: 2, dur: 4.5 }, { id: 'daynight', chapter: 3, dur: 8 }, { id: 'dragon', chapter: 4, dur: 9 }, { id: 'swing', chapter: 5, dur: 9 }, { id: 'finale', chapter: 6, dur: 6 }
+  ] as { id: 'welcome' | 'glider' | 'car' | 'bike' | 'walk' | 'daynight' | 'dragon' | 'swing' | 'finale'; chapter: number; dur: number }[],
+  shots: {                             // m — tư thế camera đầu / cuối của nhịp toàn cảnh (ước lượng)
+    welcome:  { from: { pos: [-900, 950, 2300], target: [0, 0, -400] },  to: { pos: [-380, 210, 760],  target: [20, 20, -80] } },
+    daynight: { from: { pos: [-520, 190, 420],  target: [60, 20, -200] }, to: { pos: [-420, 150, 300],  target: [60, 20, -260] } },
+    dragon:   { from: { pos: [470, 60, 150],    target: [340, 18, 0] },   to: { pos: [396, 24, 46],     target: [336, 17, 0] } },
+    swing:    { from: { pos: [230, 70, -820],   target: [0, 8, -1080] },  to: { pos: [150, 125, -910],  target: [0, 8, -1080] } },
+    finale:   { from: { pos: [-300, 260, 500],  target: [0, 0, -300] },   to: { pos: [-760, 620, 1500], target: [0, 0, -300] } }
+  } as Record<'welcome' | 'daynight' | 'dragon' | 'swing' | 'finale', { from: { pos: [number, number, number]; target: [number, number, number] }; to: { pos: [number, number, number]; target: [number, number, number] } }>,
+  demo: {
+    glider: { pos: [40, 135, 700], yaw: Math.PI / 2, turnFrom: 1.6, turnTo: 2.8, turn: 1, climb: 0 },   // m, rad, s — đặt dù phía Nam Cầu Rồng bay về Bắc; rẽ trái nhẹ trong [turnFrom, turnTo] s (ước lượng)
+    car:    { gas: 1, camYawFrom: 1.0, camYawTo: 0, camYawS: 3.2 },   // rad — camera lệch quanh xe (drive.cam.yaw) về 0 trong camYawS giây (ước lượng)
+    bike:   { gas: 0.8, viewAt: 2.0 },                                  // s — lúc chuyển góc thứ nhất → thứ ba (ước lượng)
+    walk:   { run: false, camYawFrom: 0.5, camYawS: 3.5 }               // rad — camera lệch (so với hướng đi) về 0 trong camYawS giây (ước lượng)
+  },
+  storeKey: 'cauRong.intro', seenKey: 'cauRong.introSeen', playKey: 'cauRong.introPlay'   // khóa localStorage / sessionStorage
+};
+export type IntroConfig = typeof introBase;
+
 export const CONFIG = {
   ...base,
   perf: perfBase,
@@ -1358,7 +1387,8 @@ export const CONFIG = {
   vehicles: vehiclesBase,
   trees: treesBase,
   people: peopleBase,
-  live: liveBase
+  live: liveBase,
+  intro: introBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;
 export type HanTunnelConfig = typeof CONFIG.hanTunnel;
