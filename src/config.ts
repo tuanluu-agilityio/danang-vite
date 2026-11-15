@@ -1335,6 +1335,40 @@ const peopleBase = {
   }
 };
 
+/* ------------------------- Nhạc chủ đề "The Spirit of Da Nang" (D-046) ------------------------- */
+/* docs/superpowers/specs/2026-11-15-nhac-nen-moi-design.md. Nhạc tổng hợp bằng Web Audio theo bản tổng phổ ở src/audio/score.ts, bộ phát ở src/audio/music.ts.
+   Mọi số ở đây là ước lượng theo tai nghe / số đo biên độ của bản kết xuất ngoại tuyến, chưa có nguồn công bố. */
+const musicBase = {
+  bpm: 112,            // nhịp / phút; một ô 4/4 dài 2,14 s, cả bài 80 ô ≈ 2 phút 51 giây rồi nối liền về đầu (ước lượng)
+  lookahead: 0.3,      // s — lên lịch nốt trước chừng này (ước lượng)
+  tickMs: 60,          // ms — nhịp gọi bộ lập lịch (ước lượng)
+  seed: 5113,          // hạt giống rng() riêng cho biến tấu và nhiễu dây gảy (không dùng rand())
+  gain: 0.65,          // hệ số của cả phần nhạc trước nút âm lượng chung (ước lượng)
+  fadeIn: 0.9,         // s — hằng số thời gian lúc bật nhạc: vào êm, không bật to đột ngột (ước lượng)
+  fadeOut: 0.25,       // s — hằng số thời gian lúc tắt (ước lượng)
+  duckDb: -10,         // dB — hạ nhạc khi có giọng thuyết minh (yêu cầu 8–12 dB)
+  duckAttack: 0.12,    // s — hằng số thời gian hạ nhạc khi giọng cất lên (ước lượng)
+  duckRelease: 0.9,    // s — hằng số thời gian trả nhạc khi giọng dứt (ước lượng)
+  xfade: 0.6,          // s — hằng số thời gian chuyển bản phối khi đổi chế độ (≈ 2 s là xong) (ước lượng)
+  sting: 0.5,          // lực tiếng "mở màn" (tiếng dâng + chuông) khi vào một chế độ khám phá; 0 = tắt (ước lượng)
+  autoStart: true,     // lần đầu mở trang: nhạc tự bật ở thao tác đầu tiên của người xem (trừ khi họ đã tắt, hoặc URL có ?test)
+  level: { pad: 0.28, stab: 0.25, arp: 0.34, bass: 0.16, kick: 0.52, snare: 0.54, hat: 0.28, perc: 0.34, lead: 0.11, pluck: 0.62, bell: 0.19, air: 0.14 },   // âm lượng gốc từng lớp (ước lượng)
+  verb: { pad: 0.5, stab: 0.3, arp: 0.3, bass: 0, kick: 0.03, snare: 0.3, hat: 0.1, perc: 0.2, lead: 0.5, pluck: 0.5, bell: 0.7, air: 0.3 },             // phần gửi sang hồi âm của từng lớp (ước lượng)
+  delay: { steps: 3, feedback: 0.34, wet: 0.3, arp: 0.5, lead: 0.4, pluck: 0.35, bell: 0.5 },   // vọng nốt móc đơn chấm: độ trễ (bước), hồi tiếp, mức trả về, mức gửi từng lớp (ước lượng)
+  // Bản phối theo chế độ: hệ số nhân từng lớp; pump = độ "thở" theo trống cái (0–1); arpCut = Hz lọc tiếng rải; hat16 = thêm hi-hat móc kép; bassSync = bass đảo phách 3-3-2; trim = hệ số chung (ước lượng)
+  modes: {
+    overview: { pad: 1, stab: 1, arp: 1, bass: 1, kick: 1, snare: 1, hat: 1, perc: 0.6, lead: 1, pluck: 1, bell: 1, air: 0.6, pump: 0.3, arpCut: 3200, hat16: false, bassSync: false, trim: 1 },             // toàn cảnh, màn chọn: đủ bản phối
+    glider: { pad: 1.25, stab: 0.35, arp: 0.9, bass: 0.7, kick: 0.4, snare: 0, hat: 0.45, perc: 0.5, lead: 0.95, pluck: 0.9, bell: 1.3, air: 1.6, pump: 0.15, arpCut: 3800, hat16: false, bassSync: false, trim: 1 },   // dù lượn: dây + không khí rộng, trống nhẹ, không trống lẫy
+    car: { pad: 0.85, stab: 1.1, arp: 1.05, bass: 1.25, kick: 1.15, snare: 1.05, hat: 1, perc: 0.5, lead: 0.85, pluck: 0.7, bell: 0.6, air: 0.3, pump: 0.5, arpCut: 3000, hat16: false, bassSync: false, trim: 1 },     // ô tô: bass + trống rõ, "thở" theo trống cái
+    bike: { pad: 0.7, stab: 1.2, arp: 1.15, bass: 1.05, kick: 1, snare: 1.15, hat: 1.25, perc: 1.4, lead: 0.9, pluck: 0.8, bell: 0.6, air: 0.3, pump: 0.35, arpCut: 4200, hat16: true, bassSync: true, trim: 1 },        // xe máy: hi-hat móc kép, bass đảo phách, gõ sắc hơn
+    stroll: { pad: 0.95, stab: 0, arp: 0.45, bass: 0.5, kick: 0.3, snare: 0, hat: 0.2, perc: 0.9, lead: 0.3, pluck: 1.4, bell: 1.1, air: 0.8, pump: 0.1, arpCut: 2200, hat16: false, bassSync: false, trim: 1 },         // đi dạo, cabin vòng quay: dây gảy mang giai điệu, trống gần như lặng
+    tour: { pad: 0.9, stab: 0, arp: 0.35, bass: 0.45, kick: 0.2, snare: 0, hat: 0.15, perc: 0.4, lead: 0, pluck: 0.8, bell: 0.9, air: 0.9, pump: 0.1, arpCut: 2000, hat16: false, bassSync: false, trim: 0.8 }             // Tour, kịch bản bão: bản không khí lùi sau giọng đọc
+  },
+  night: { bell: 1.2, air: 0.5, lead: -0.25, drums: -0.15, toneDay: 12000, toneNight: 7500, padCutDay: 1500, padCutNight: 1000, verb: 0.18, minor: 0.5 },   // đêm: lớp lung linh + không khí tăng, giai điệu / trống dịu; lọc tổng và lọc dây (Hz); hồi âm thêm; night > minor thì hoà âm theo Si thứ (ước lượng)
+  rain: { lead: -0.3, pluck: 0.2, hat: -0.4, air: 0.6, padCut: -0.25 },   // mưa (0–1): giai điệu lùi, dây gảy + không khí tăng, dây tối hơn (ước lượng)
+  storm: { drone: 0.12, snare: -0.5, tomAt: 0.4, pedalAt: 0.5, tom: 0.3 } // bão (0–1): nền trầm, trống lẫy lùi; quá tomAt thêm trống trầm, quá pedalAt bass giữ nốt Rê (căng nhẹ, không thành nhạc thảm hoạ) (ước lượng)
+};
+
 export const CONFIG = {
   ...base,
   perf: perfBase,
@@ -1358,6 +1392,7 @@ export const CONFIG = {
   vehicles: vehiclesBase,
   trees: treesBase,
   people: peopleBase,
+  music: musicBase,
   live: liveBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;

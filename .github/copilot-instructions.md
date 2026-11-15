@@ -59,6 +59,8 @@ npm run test:traffic:unit # xe cộ: kích thước, hướng mặt, thông số
 npm run test:traffic   # xe cộ: một lệnh vẽ mỗi hệ, chuỗi rand() giữ nguyên, đèn theo đêm, bão dọn xe, tắt làn; đọc dist/
 npm run test:trees:unit # cây: hình học cây bóng mát / dừa, trần tam giác, thân cong (nhanh, không trình duyệt)
 npm run test:trees     # cây: 6 lưới, vị trí + chuỗi rand() giữ nguyên, dọn cây, cây đổ dựng lại, gió bám thân, dừa cửa hầm, ảnh; đọc dist/
+npm run test:music:unit # nhạc chủ đề (D-046): bản tổng phổ `src/audio/score.ts` (độ dài, thang âm, hợp âm), ánh xạ `cam.mode` → bản phối, `CONFIG.music` (nhanh, không trình duyệt)
+npm run test:music     # nhạc chủ đề: kết xuất ngoại tuyến từng đoạn bằng OfflineAudioContext trong Chromium (không mở cảnh 3D, không đọc dist/, ≈ 1 phút), chấm đỉnh / RMS / giây lặng; `-- --wav` ghi `tests/screens/music/*.wav` để nghe, `-- --solo` đo từng lớp, `-- --full` cả bài (rất chậm)
 npm run test:pilot:unit # người treo dù lượn (D-035): `pilot.glb` (trần dung lượng / tam giác / khớp, đoạn `sit`, không vũ khí, giấy phép), lò xo phản ứng, IK hai khớp, trang bị dựng bằng code, nạp + đường lùi (bộ nạp giả) (nhanh, không trình duyệt)
 npm run test:people:unit # người đi bộ: dáng đi / chạy, hình học hình khối ≤ 900 đỉnh, chia kiểu người; đám đông người thật: đọc `crowd.bin`, trần dung lượng / tam giác, chọn nhân vật, nhịp phát, vá pháp tuyến (nhanh, không trình duyệt)
 npm run test:people    # người đi bộ: 1 lưới + 1 lệnh vẽ mỗi hệ, kiểu đi / chạy / đứng, lề cầu, rời cầu khi bão, tắt/bật, `dragon-people` cắt theo khung nhìn; chạy người thật, `?crowd=off` (hình khối), chặn `crowd.*`, `crowd.bin` chậm quá giờ, `crowd.jpg` hỏng (đường lùi); đọc dist/
