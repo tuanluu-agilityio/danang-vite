@@ -305,6 +305,7 @@ const weatherBase = {
   rain: { count: 6000, box: [160, 90, 160] as [number, number, number], fall: 18, len: 1.6 },   // số vệt; hộp bao quanh camera (m); tốc độ rơi (m/s); độ dài vệt (m) (ước lượng)
   rainLook: { width: 0.03, alpha: 0.55, color: 0xc4ccd4 },   // m — bề rộng vệt; độ đục tối đa (0–1); màu vệt ban ngày (ước lượng, chỉnh theo ảnh)
   wetness: { roughness: 0.25, darken: 0.65, bridgeDarken: 0.8, bridgeRough: 0.45 },   // mặt ướt (mục 4.4): roughness đường khi ướt hẳn; màu đường ×0,65; bê tông/thép cầu (bridgePatch): màu ×0,8, roughness về tối đa 0,45 (ước lượng). Không đổi envMapIntensity: đường dùng scene.environment nên three bỏ qua giá trị này
+  ripple: { cell: [2.4, 4.1] as [number, number], sharp: 16, amp: 1.6, fade: 90, speed: 1.6, rough: 0.12, roughScale: 3.5 },   // gợn mưa trên sông (core/water.ts): m — cạnh ô lưới hai lớp vòng tròn; độ mảnh của vòng (lớn = mảnh; vòng dày hơn thật để còn thấy từ xa); độ dốc cộng vào pháp tuyến khi mưa 1; m — khoảng cách biên độ còn một nửa; nhịp vòng lan theo uniform time của nước (≈ 0,6 đơn vị/s); độ nhám chung cộng thêm; hệ số tần số của nhám so với sóng thường (ước lượng)
   lightning: {
     minGap: 3, maxGap: 12, distMin: 800, distMax: 3000,   // s giữa hai tia chớp (cường độ chớp 1 → minGap, 0 → maxGap, nhân ngẫu nhiên 0,6–1,4); khoảng cách tia chớp tới camera (m) (ước lượng)
     height: 700, segs: 12, branches: 3, branchSegs: 5,   // m — độ cao chân mây; số đoạn tia chính; số nhánh; số đoạn mỗi nhánh (ước lượng)
