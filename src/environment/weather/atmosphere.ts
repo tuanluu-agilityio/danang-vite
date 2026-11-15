@@ -6,6 +6,7 @@ import { sky, clouds, stars } from '../../core/sky';
 import { water } from '../../core/water';
 import { quality } from '../../core/quality';
 import { weatherU } from '../../core/shared';
+import { liveSunWarm } from '../../core/dayNight';
 import type { WeatherState } from './state';
 
 /* ===== [weather] Khí quyển (mục 4.2): sương, trời, ánh sáng, mây, nước — 0 draw call mới =====
@@ -62,7 +63,8 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number, live = f
   const lvl = c.level;
   const windK = Math.min(1.5, c.wind / A.stormWind);               // gió (GĐ4): mây xoay, sóng tăng — kể cả khi không mưa
   const fogK = clamp01(c.fog || 0);                                  // sương / tầm nhìn kém (D-043): preset mô phỏng luôn 0
-  if (sunny < 1e-3 && gray < 1e-3 && stormK < 1e-3 && Math.abs(lvl) < 1e-3 && windK < 1e-4 && fogK < 1e-3) {
+  const warmK = live ? liveSunWarm.value : 0;                        // hoàng hôn / bình minh Trực tiếp (D-043): trời đỏ cam quanh mặt trời thấp; Mô phỏng luôn 0
+  if (sunny < 1e-3 && gray < 1e-3 && stormK < 1e-3 && Math.abs(lvl) < 1e-3 && windK < 1e-4 && fogK < 1e-3 && warmK < 1e-3) {
     if (active) { restore(); active = false; }                      // về `now`: trả đúng giá trị gốc, rồi không đụng gì nữa
     liveFogU(live);
     return;
@@ -80,6 +82,7 @@ export function applyAtmosphere(s: WeatherState, m: number, dt: number, live = f
   const u = sky.material.uniforms;
   u.turbidity.value = lerp(lerp(lerp(base.turbidity, A.sunSky[0], sunny), A.graySky[0], gray), A.stormSky[0], stormK);
   u.rayleigh.value = lerp(lerp(lerp(base.rayleigh, A.sunSky[1], sunny), A.graySky[1], gray), A.stormSky[1], stormK);
+  if (warmK > 0) { const k = warmK * (1 - gray); u.turbidity.value = lerp(u.turbidity.value, CONFIG.live.warmSky[0], k); u.rayleigh.value = lerp(u.rayleigh.value, CONFIG.live.warmSky[1], k); }   // trời u ám / mưa thì hoàng hôn xám
   if (fogK > 0) { const k = CONFIG.live.fogSky * fogK; u.turbidity.value = lerp(u.turbidity.value, A.graySky[0], k); u.rayleigh.value = lerp(u.rayleigh.value, A.graySky[1], k); }
   // Ánh sáng: nắng gắt khi hè; mây dày hạ nắng; bão gần như tắt nắng. Không đụng castShadow (nút "Bóng đổ" là của người dùng)
   sun.intensity *= (1 + A.sunBoost * sunny) * (1 - A.sunCloud * clamp01(c.cloud)) * lerp(1, A.stormSun, stormK) * (1 - CONFIG.live.fogSun * fogK);   // mọi hệ số > 0: không đưa nắng về 0 giữa ban ngày (bộ đèn D-031)
