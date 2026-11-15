@@ -72,12 +72,14 @@ test('mọi trường hợp: tổng trọng số = 1 ± 1e-6, không âm, rate t
   }
 });
 
-test('stCharModel: 0 nam → p0, 1 nữ → p3; không có / giá trị lạ → nam; hai nhân vật là hai mô hình khác nhau và có thật', () => {
+test('stCharModel: 0 nam → hero-m, 1 nữ → hero-f (D-048); không có / giá trị lạ → nam; hai nhân vật là hai mô hình khác nhau và có thật', () => {
   const C = CONFIG.stroll.anim.chars;
-  assert.deepEqual(C, [0, 3]);
+  assert.deepEqual(C, [5, 6]);
+  assert.equal(CONFIG.stroll.anim.models[5], 'people/hero-m.glb'); assert.equal(CONFIG.stroll.anim.models[6], 'people/hero-f.glb');
   assert.equal(stCharModel(0), C[0]); assert.equal(stCharModel(1), C[1]);
   for (const v of [undefined, null, 2, -1, '1', 1.5, NaN, {}]) assert.equal(stCharModel(v), C[0], `ch ${String(v)}`);
   assert.notEqual(C[0], C[1]);
   for (const k of C) assert.ok(CONFIG.stroll.anim.models[k], `mô hình ${k}`);
-  assert.equal(CONFIG.stroll.anim.models.length, 5);
+  assert.equal(CONFIG.stroll.anim.models.length, 7);
+  assert.equal(stCharModel(7), C[0]);
 });

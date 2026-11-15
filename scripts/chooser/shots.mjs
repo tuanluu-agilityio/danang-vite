@@ -45,10 +45,11 @@ const SHOTS = {
     await drag(page, -55, -8);
     await wait(page, 500);
   } },
-  /* Đi dạo: lề Cầu Rồng, nhân vật có xương, nhìn dọc cầu */
+  /* Đi dạo: lề Cầu Rồng, nhân vật siêu anh hùng (D-048) nhìn chéo phía trước; ẩn đám đông người đi bộ (mọi lưới '*-people' trừ 'stroll-people') để không ai che nhân vật */
   walk: { url: '?explore=stroll', w: W, h: H, async pose(page) {
     await wait(page, 2500);   // chờ nhân vật glb nạp xong
-    await drag(page, 90, -30);
+    await page.evaluate(() => window.__app.scene.traverse((o) => { if (/-people$/.test(o.name) && o.name !== 'stroll-people') o.visible = false; }));
+    await drag(page, 450, -20);   // vòng ra trước mặt nhân vật: thấy tấm ngực + tia dây cầu
     await wait(page, 600);
   } },
   /* Tham quan có hướng dẫn: toàn cảnh Cầu Rồng (camera quỹ đạo của trang thường) */

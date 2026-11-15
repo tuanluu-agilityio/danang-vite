@@ -39,7 +39,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 const st = (pose = 0, speed = 0): StState => ({ x: 1, y: 2.6, z: 3, yaw: 0.5, speed, vy: 0, air: false, pose, evac: false, photo: 0, tx: 0, tz: 0 });
 const rigs = () => stAvatars.build().children.filter((c) => c.name === 'stroll-rig');
 const W = (slot: number, name: string, ch?: number) => (ch === undefined ? { slot, name } : { slot, name, ch });
-const M = 0, F = 3;   // mô hình nam / nữ (CONFIG.stroll.anim.chars)
+const [M, F] = CONFIG.stroll.anim.chars;   // mô hình nam / nữ (D-048: hero-m 5, hero-f 6)
 /* Người khác ở slot i có một mẫu vị trí (pose 1) rồi update */
 function other(i: number, now: number): void { stAvatars.onPos([[i, 10 * i, 2.6, 0, 0, 1, now]], now); stAvatars.update(now); }
 
@@ -52,23 +52,23 @@ test('build trả Group tên stroll-people, gọi hai lần trả cùng một đ
   assert.ok(g.children.some((c) => c.name === 'stroll-blocky'), 'có hình khối làm hình tạm');
 });
 
-test('setSelf khi chưa nạp: hình khối hiện, debug(slot).real === false, model 0', () => {
+test('setSelf khi chưa nạp: hình khối hiện, debug(slot).real === false, model nam', () => {
   const L = deferredLoader(); fresh(L.fn);
   stAvatars.setSelf(0, st(), 0.016);
   const d = stAvatars.debug(0)!;
-  assert.equal(d.real, false); assert.equal(d.model, 0);
+  assert.equal(d.real, false); assert.equal(d.model, M);
   assert.equal(stBlocky.shown(0), true); assert.equal(stBlocky.mesh!.visible, true);
-  assert.deepEqual(L.calls, [0], 'nạp đúng mô hình 0, một lần');
-  stAvatars.setSelf(0, st(), 0.016); assert.deepEqual(L.calls, [0], 'không nạp lại khi đang chờ');
+  assert.deepEqual(L.calls, [M], 'nạp đúng mô hình 0, một lần');
+  stAvatars.setSelf(0, st(), 0.016); assert.deepEqual(L.calls, [M], 'không nạp lại khi đang chờ');
 });
 
 test('nạp xong: real === true, hình khối của slot ẩn', async () => {
   const L = deferredLoader(); fresh(L.fn);
   stAvatars.setSelf(0, st(), 0.016);
-  L.resolve(0, fakeSource()); await tick();
+  L.resolve(M, fakeSource()); await tick();
   stAvatars.setSelf(0, st(), 0.016);
   const d = stAvatars.debug(0)!;
-  assert.equal(d.real, true); assert.equal(d.model, 0);
+  assert.equal(d.real, true); assert.equal(d.model, M);
   assert.equal(stBlocky.shown(0), false); assert.equal(stBlocky.mesh!.visible, false, 'không slot nào cần hình khối: không tốn lệnh vẽ');
   assert.equal(rigs().length, 1);
   const r = rigs()[0];
@@ -113,9 +113,9 @@ test('slot đổi chủ trong lúc đang nạp: kết quả cũ bị bỏ, nhóm
   stAvatars.sync([W(1, 'Bình', 1)], -1); other(1, 1200); assert.equal(stAvatars.debug(1)!.real, true);
   stAvatars.sync([W(1, 'Tôi')], 1); stAvatars.setSelf(1, st(), 0.016);
   assert.equal(rigs().length, 0, 'bản sao của người khác đã gỡ');
-  assert.equal(stAvatars.debug(1)!.model, 0); assert.equal(stAvatars.debug(1)!.real, false);
+  assert.equal(stAvatars.debug(1)!.model, M); assert.equal(stAvatars.debug(1)!.real, false);
   /* rời chế độ trong lúc mô hình 0 đang nạp: về sau cũng không hiện gì */
-  stAvatars.clear(); L.resolve(0, fakeSource()); await tick();
+  stAvatars.clear(); L.resolve(M, fakeSource()); await tick();
   stAvatars.update(1300);
   assert.equal(rigs().length, 0); assert.equal(stAvatars.mesh!.visible, false);
   assert.equal(stBlocky.mesh!.visible, false);
@@ -330,4 +330,21 @@ test('mình đổi nhân vật ở sảnh rồi đi: nhân vật của mình the
   stAvatars.setSelf(0, st(), 0.016); await tick(); stAvatars.setSelf(0, st(), 0.016);
   assert.equal(stAvatars.debug(0)!.model, F); assert.equal(stAvatars.debug(0)!.real, true); assert.equal(rigs().length, 1);
   stChar.set(9); assert.equal(stChar.get(), 0, 'giá trị lạ → nam');
+});
+
+test('stRigSource: chỉ vật liệu có emissiveMap được vá phát sáng theo đêm (D-048), khóa program cố định, đọc shared.uNight', async () => {
+  const { shared } = await import('../../src/core/shared.ts');
+  const { ST_CLIPS } = await import('../../src/explore/stroll/anim.ts');
+  const glow = new THREE.MeshStandardMaterial({ emissiveMap: new THREE.Texture() }), plain = new THREE.MeshStandardMaterial();
+  const sc = new THREE.Group(); sc.add(new THREE.Mesh(new THREE.BufferGeometry(), glow), new THREE.Mesh(new THREE.BufferGeometry(), plain));
+  stRigSource(sc, ST_CLIPS.map((n) => new THREE.AnimationClip(n, 1, [])), {}, 1.8, (o) => o.clone());
+  assert.equal(glow.customProgramCacheKey(), 'stHeroGlow');
+  assert.notEqual(plain.customProgramCacheKey(), 'stHeroGlow');
+  assert.equal(plain.onBeforeCompile, THREE.Material.prototype.onBeforeCompile, 'vật liệu không phát sáng giữ nguyên');
+  const sh = { uniforms: {} as Record<string, unknown>, fragmentShader: 'void main(){\n#include <emissivemap_fragment>\n}', vertexShader: '' };
+  glow.onBeforeCompile(sh as never, null as never);
+  assert.equal(sh.uniforms.uNight, shared.uNight);
+  assert.match(sh.fragmentShader, /uniform float uNight;/);
+  assert.match(sh.fragmentShader, /totalEmissiveRadiance \*= clamp\( uNight, 0\.0, 1\.0 \) \* /);
+  assert.deepEqual(glow.emissive.toArray(), [1, 1, 1]);
 });
