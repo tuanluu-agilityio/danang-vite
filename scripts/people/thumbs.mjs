@@ -1,11 +1,11 @@
 /* ===== Ảnh xem trước hai nhân vật Đi dạo ở sảnh (nam / nữ): public/people/thumb-m.webp, thumb-f.webp =====
-   npm run gen:thumbs. Mở Chromium (Playwright, như các test), nạp p<k>.glb bằng GLTFLoader của three, đặt dáng đứng (đoạn idle), vẽ lên canvas nền trong suốt rồi ghi WebP.
+   npm run gen:thumbs. Mở Chromium (Playwright, như các test), nạp mô hình nhân vật (D-048: hero-m.glb / hero-f.glb) bằng GLTFLoader của three, đặt dáng đứng (đoạn idle), vẽ lên canvas nền trong suốt rồi ghi WebP.
    Mô hình lấy theo CHARS bên dưới: phải khớp CONFIG.stroll.anim.chars (tests/stroll-unit/glb.test.ts kiểm hai tệp ảnh có và đủ nhỏ). Chỉ chạy lại khi đổi nhân vật. */
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { serveDir, launch } from '../../tests/lib.mjs';
 
-const CHARS = [['thumb-m', 0], ['thumb-f', 3]];   // [tên ảnh, số mô hình]: nam p0, nữ p3 (CONFIG.stroll.anim.chars)
+const CHARS = [['thumb-m', 'people/hero-m.glb'], ['thumb-f', 'people/hero-f.glb']];   // [tên ảnh, mô hình]: nam / nữ = CONFIG.stroll.anim.models[chars[0 | 1]] (D-048: hai siêu anh hùng)
 const W = 240, H = 360;                           // px — gấp đôi cỡ hiện ở sảnh (120 × 180 tối đa)
 const PUB = fileURLToPath(new URL('../../public/', import.meta.url));
 
@@ -14,13 +14,13 @@ const HTML = `<!doctype html><meta charset="utf-8">
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-window.shot = async (k, w, h) => {
+window.shot = async (path, w, h) => {
   const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   r.setSize(w, h); r.setClearColor(0, 0);
   const scene = new THREE.Scene();
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f99, 2.2));
   const sun = new THREE.DirectionalLight(0xfff2dd, 2.4); sun.position.set(3, 4, 2); scene.add(sun);
-  const g = await new GLTFLoader().loadAsync('/people/p' + k + '.glb');
+  const g = await new GLTFLoader().loadAsync('/' + path);
   g.scene.traverse((o) => { o.frustumCulled = false; });
   scene.add(g.scene);
   const idle = g.animations.find((a) => a.name === 'idle');
@@ -49,6 +49,6 @@ try {
     const url = await page.evaluate(([k, w, h]) => window.shot(k, w, h), [k, W, H]);
     const buf = Buffer.from(url.split(',')[1], 'base64');
     fs.writeFileSync(PUB + 'people/' + name + '.webp', buf);
-    console.log(`people/${name}.webp ← p${k}.glb: ${buf.length} byte`);
+    console.log(`people/${name}.webp ← ${k}: ${buf.length} byte`);
   }
 } finally { await browser.close(); srv.close(); }

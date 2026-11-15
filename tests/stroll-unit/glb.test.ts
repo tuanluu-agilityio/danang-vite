@@ -67,6 +67,8 @@ test('ảnh xem trước hai nhân vật ở sảnh (npm run gen:thumbs): có, l
     assert.ok(b.length <= 20000, `${f}: ${b.length} byte`);
     assert.ok(html.includes('people/' + f), `index.html thiếu people/${f}`);
   }
+  const js = readFileSync(join(DIR, '..', '..', 'scripts', 'people', 'thumbs.mjs'), 'utf8');
+  for (const m of ['people/hero-m.glb', 'people/hero-f.glb']) assert.ok(js.includes(m), `thumbs.mjs phải vẽ từ ${m} (D-048)`);
 });
 
 /* ===== Hai siêu anh hùng (D-048): public/people/hero-m.glb, hero-f.glb, sinh bằng scripts/people/hero.py từ p0 / p3 ===== */
