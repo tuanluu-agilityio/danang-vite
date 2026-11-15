@@ -1423,6 +1423,10 @@ const musicBase = {
                        //     trong phút đầu (biên dịch nền bộ đèn) và vài giây khi vào một chế độ; 0,3 s cũ làm nốt dồn / lệch nhịp. Đổi lại hoa văn trống / bass theo chế độ vào chậm tối đa chừng này
                        //     (âm lượng từng lớp vẫn đổi ngay)
   tickMs: 60,          // ms — nhịp gọi bộ lập lịch (ước lượng)
+  latencyHint: 0.05 as AudioContextLatencyCategory | number,   // s — bộ đệm ra loa của AudioContext (latencyHint). Mặc định 'interactive' (10 ms trên Windows) quá sát: nhạc tổng hợp
+                       //     tốn tới 1,3 ms TB / 3,7 ms p99 mỗi khối 2,67 ms ở đoạn 'theme' (trùng bốn nhịp cuối intro) nên máy đang có tải hụt mẫu (tiếng lụp bụp, đo bằng playoutStats).
+                       //     0,05 ⇒ tổng trễ ≈ 80 ms (đo Chrome / Windows), trong ngưỡng hình – tiếng khó nhận ra; ?audiolat=<s|interactive|balanced|playback> để thử (ước lượng)
+  ceiling: 0.89,       // biên độ — ngưỡng (≈ −1 dBFS) của trần đỉnh cuối chuỗi tổng: dưới ngưỡng đi thẳng, trên ngưỡng uốn mềm tới ≈ −0,23 dBFS (audio/index.ts ceiling(); ước lượng)
   seed: 5113,          // hạt giống rng() riêng cho biến tấu và nhiễu dây gảy (không dùng rand())
   gain: 0.65,          // hệ số của cả phần nhạc trước nút âm lượng chung (ước lượng)
   fadeIn: 0.9,         // s — hằng số thời gian lúc bật nhạc: vào êm, không bật to đột ngột (ước lượng)
