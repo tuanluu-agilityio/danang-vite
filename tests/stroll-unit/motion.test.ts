@@ -48,17 +48,17 @@ test('đi thẳng 10 s: đi 3,5 m/s, chạy 10 m/s', () => {
 test('hướng theo camYaw', () => {
   const map = makeMap();
   let s = at(map, 0, 17.4);
-  for (let i = 0; i < 30; i++) stStep(s, inp({ mz: 1, camYaw: 0 }), map, DT);
+  for (let i = 0; i < 60; i++) stStep(s, inp({ mz: 1, camYaw: 0 }), map, DT);
   assert.ok(s.x > 1 && Math.abs(s.z - 17.4) < 0.01, 'camYaw 0, tới → x tăng');
   s = at(map, 0, 0 + 3.5);   // dải phân cách có thân rồng chỉ ở đầu / cuối: x = 0 trống
   const z0 = s.z;
-  for (let i = 0; i < 30; i++) stStep(s, inp({ mz: 1, camYaw: Math.PI / 2 }), map, DT);
+  for (let i = 0; i < 60; i++) stStep(s, inp({ mz: 1, camYaw: Math.PI / 2 }), map, DT);
   assert.ok(s.z < z0 - 1, 'camYaw π/2, tới → z giảm');
   s = at(map, 0, 17.4); const z1 = s.z;
   for (let i = 0; i < 30; i++) stStep(s, inp({ mx: 1, camYaw: 0 }), map, DT);
   assert.ok(s.z > z1 + 0.1, 'camYaw 0, sang phải → z tăng (lề hẹp, bị lan can chặn)');
   s = at(map, 0, 5); const z2 = s.z;
-  for (let i = 0; i < 30; i++) stStep(s, inp({ mx: 1, camYaw: 0 }), map, DT);
+  for (let i = 0; i < 60; i++) stStep(s, inp({ mx: 1, camYaw: 0 }), map, DT);
   assert.ok(s.z > z2 + 1, 'camYaw 0, sang phải → z tăng (chỗ rộng)');
 });
 

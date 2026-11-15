@@ -739,7 +739,7 @@ const exploreBase = {
 /* ------------------------- Đi dạo nhiều người -------------------------
    Chế độ đi bộ góc nhìn sau lưng (docs/superpowers/specs/2026-11-11-di-dao-design.md). Vùng đi được dựng ở explore/stroll/mapData.ts. Mọi số đều (ước lượng) */
 const strollBase = {
-  walk: 3.5,           // m/s — tốc độ đi, nhanh hơn người thật để đi được nhiều nơi (ước lượng)
+  walk: 1.6,           // m/s — tốc độ đi (phím W): nhịp đi bộ thật của người lớn (người dùng chọn 2026-11-15; trước là 3,5)
   run: 10,             // m/s — tốc độ chạy, giữ Shift / gạt hết cỡ: hết Cầu Rồng 666 m khoảng một phút (ước lượng)
   accel: 30,           // m/s² — gia tốc tiến tới tốc độ đích và hãm lại (ước lượng)
   turn: 12,            // 1/s — tốc độ nhân vật quay mặt về hướng đi (ước lượng)
