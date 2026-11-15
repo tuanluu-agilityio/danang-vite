@@ -1,8 +1,8 @@
 # Nhạc chủ đề "The Spirit of Da Nang" (D-046)
 
-_2026-11-15 · nhánh `feature/nhac-nen-moi` (từ `main` `51e5518`) · trạng thái: đã triển khai trên nhánh, chờ người dùng nghe demo; chưa mở PR_
+_2026-11-15 · nhánh `feature/nhac-nen-moi` (từ `main` `51e5518`) · trạng thái: đã triển khai (PR #42)_
 
-Bản yêu cầu của người dùng ("Redesign the entire background music experience", 2026-11-15) bảo xem mã thật rồi làm tới cùng, không dừng ở kế hoạch; các lựa chọn dưới đây là của agent, người dùng chưa duyệt từng mục. **Chưa ai nghe bản nhạc này**: agent không nghe được, chỉ đo biên độ.
+Bản yêu cầu của người dùng ("Redesign the entire background music experience", 2026-11-15) bảo xem mã thật rồi làm tới cùng, không dừng ở kế hoạch; các lựa chọn dưới đây là của agent, người dùng chưa duyệt từng mục; họ tự review demo rồi bảo merge (2026-11-15). Agent không nghe được bản nhạc, chỉ đo biên độ.
 
 ## 1. Vì sao nhạc cũ không hợp
 
@@ -64,7 +64,7 @@ Mỗi vòng đổi kiểu rải và thêm bè quãng tám ở vòng lẻ để k
 
 ## 7. Hạn chế
 
-- Chưa ai nghe: hay / dở, có "muốn khám phá" không là việc của tai người. Mức từng lớp cân theo số đo RMS, không theo tai.
+- Agent không nghe được: hay / dở, có "muốn khám phá" không là việc của tai người. Mức từng lớp cân theo số đo RMS, không theo tai.
 - Tiếng synth, không có dây / kèn thật; muốn chất dàn nhạc thật thì phải thay bằng bản thu (stem cùng 112 nhịp / phút, Rê trưởng thì giữ được cách phối theo lớp).
 - Mỗi lần bật lại nhạc là vào từ đầu bài. Tải lại trang cũng vậy.
 - Người xem cũ chưa từng bấm nút nhạc nay sẽ có nhạc ở thao tác đầu tiên.
