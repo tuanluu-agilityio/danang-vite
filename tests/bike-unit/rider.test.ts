@@ -50,6 +50,7 @@ test('IK tay ≤ handTol ở steer 0 và ±khóa lái; chân ≤ footTol; ngư�
   const sz = hb.getSize(new THREE.Vector3());
   assert.ok(sz.x > 0.2 && sz.x < 0.45 && sz.y > 0.08 && sz.y < 0.3, `mũ cỡ ${sz.toArray().map((v) => v.toFixed(3))}`);
   assert.ok(hb.getCenter(new THREE.Vector3()).distanceTo(hd) < 0.25, 'mũ ở quanh xương đầu');
+  assert.equal(hm.visible, RC.helmet.show, 'mũ hiện theo rider.helmet.show (D-048: siêu anh hùng mặc định không mũ)');
   r.dispose(); b.dispose();
   /* xe còn hình tạm: người ẩn (hình tạm đã có người khối) */
   bkModelSetLoader(() => new Promise(() => {}));
