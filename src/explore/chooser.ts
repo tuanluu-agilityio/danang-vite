@@ -54,12 +54,23 @@ export function exShowChooser(onPick: (choice: ExChoice) => void, onWatch: (choi
     }
   } catch { /* bộ nhớ bị chặn */ }
   wireLang(root);
+  /* Ảnh thẻ nạp lười (màn chọn ẩn thì chưa tải; vào thẳng `?explore=…` không tải gì): chưa xong thì trong suốt (.ld) rồi hiện dần; ảnh lỗi thì thẻ còn nền tối + chữ */
+  root.querySelectorAll<HTMLImageElement>('img.ex-img').forEach((im) => {
+    if (im.complete && im.naturalWidth) return;
+    im.classList.add('ld');
+    im.addEventListener('load', () => im.classList.remove('ld'), { once: true });
+  });
   /* Không dùng { once: true }: từ sảnh bấm Quay lại / Esc thì các thẻ phải chọn lại được. Hộp đã đóng (đã chọn xong) thì bỏ qua */
   root.querySelectorAll<HTMLButtonElement>('button[data-pick]').forEach((b) => {
     if (b.disabled) return;
     b.addEventListener('click', () => {
       if (root.hidden) return;
       const choice = b.dataset.pick as ExChoice;
+      /* Đánh dấu thẻ đang chọn (viền vàng, aria-pressed) và đưa ảnh của nó lên đầu sảnh; chỉ là hiển thị, luồng chọn bên dưới giữ nguyên */
+      root.querySelectorAll<HTMLButtonElement>('button[data-pick]').forEach((o) => { const on = o === b; o.classList.toggle('sel', on); o.setAttribute('aria-pressed', String(on)); });
+      const im = b.querySelector<HTMLImageElement>('img.ex-img');
+      root.dataset.mode = choice;
+      if (im && im.naturalWidth) root.style.setProperty('--ex-hero', `url("${im.currentSrc || im.src}")`); else root.style.removeProperty('--ex-hero');
       /* Dù lượn / Đi dạo / Ô tô / Xe máy có máy chủ: sang bước chọn slot + nhập tên (mở kết nối ở đây, không sớm hơn); không có máy chủ: bay / đi / lái một mình ngay như trước.
          Ô tô và Xe máy chung 5 chỗ lái (phiên 'drive'); xe máy xin chỗ với veh 1. Thẻ đã chọn đi theo onWatch: người xem chạy module của thẻ đó, nhận lời mời thì lên đúng loại xe */
       const kind = choice === 'walk' ? 'walk' : choice === 'car' || choice === 'bike' ? 'drive' : 'fly';

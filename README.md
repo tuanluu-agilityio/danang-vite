@@ -73,11 +73,13 @@ src/
 server/
   multi/             máy chủ dù lượn nhiều người (Cloudflare Worker + Durable Object, `npm --prefix server/multi run dev`)
 public/
+  chooser/           5 ảnh thẻ của màn chọn phương tiện (WebP, chụp từ cảnh 3D bằng `npm run gen:chooser`)
   bike/              `scooter.glb` (xe tay ga cho chế độ Lái xe máy, ≤ 1 MB) và LICENSE-Scooter.txt
   car/               `vf3.glb` (xe VinFast VF 3 cho chế độ Lái xe, ≤ 1,5 MB) và LICENSE-VF3.txt
   people/            5 nhân vật đi dạo p0..p4.glb (có xương + chuyển động; chế độ Đi dạo dùng p0 nam và p3 nữ theo lựa chọn ở sảnh), ảnh xem trước `thumb-m.webp` / `thumb-f.webp` (`npm run gen:thumbs`), người treo dù lượn `pilot.glb` (có xương, đoạn `sit`), `crowd.bin` + `crowd.jpg` (10 nhân vật giản lược cho đám đông người đi bộ, chuyển động nướng sẵn) và LICENSE-Rocketbox.txt
   voice/             clip thuyết minh của Tour
 scripts/
+  chooser/           shots.mjs: chụp ảnh thẻ màn chọn phương tiện vào `public/chooser/` (`npm run gen:chooser`)
   bike/              convert.py: xử lý mô hình xe tay ga `src/scooter.glb` (Grab3D, CC0; đổi hướng, tách thân / cổ lái / bánh, màu đỉnh, thêm đèn hậu / xi nhan / mặt đồng hồ, nút neo người lái, thu ảnh) thành `public/bike/scooter.glb` (`npm run gen:bike`, cần Blender 4.5, chạy qua `scripts/people/blender.mjs`)
   car/               convert.py: xử lý mô hình VF 3 thô `vinfast_vf3.glb` (xoá biển số, tách bánh, đổi hướng / tỉ lệ, thu ảnh) thành `public/car/vf3.glb` (`npm run gen:car`, cần Blender 4.5, chạy qua `scripts/people/blender.mjs`)
   people/            convert.py: chuyển Microsoft Rocketbox sang .glb (`npm run gen:people`); crowd.py: sinh `crowd.bin` + `crowd.jpg` (`npm run gen:crowd`); pilot.py: sinh `pilot.glb` cho người treo dù lượn (`npm run gen:pilot`); cả ba cần Blender 4.5 và chạy qua `blender.mjs` (đặt biến môi trường `BLENDER` nếu Blender không ở chỗ mặc định)
