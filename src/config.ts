@@ -620,6 +620,7 @@ const liveBase = {
   fogMax: 14,                 // không đơn vị — mật độ sương ×14 ở fog 1: FogExp2 gốc 0,00016 ⇒ còn ≈ 15 % độ tương phản ở 600 m (ước lượng, spec §4.2)
   elevDay: 6,                 // ° — độ cao mặt trời từ mức này trở lên là ngày hẳn (night = 0) (ước lượng, theo chạng vạng dân dụng)
   elevNight: -6,              // ° — độ cao mặt trời từ mức này trở xuống là đêm hẳn (night = 1): giới hạn chạng vạng dân dụng
+  warm: { full: 2, none: 15, below: -6 },   // ° — sắc ấm của nắng / sương (sunWarm): đủ ấm khi độ cao ≤ 2°, hết ấm ở ≥ 15°, tắt khi mặt trời dưới −6° (ước lượng, spec §4.3)
   sunMinElev: 10,             // ° — độ cao tối thiểu của đèn định hướng (bóng không dài vô hạn); bầu trời vẫn nhận độ cao thật (ước lượng)
   obsStepMs: 900000,          // ms — kỳ quan trắc Open-Meteo 15 phút; làm mới căn theo mốc này
   obsDelayMs: 90000,          // ms — chờ sau mốc quan trắc rồi mới lấy số liệu (để nguồn kịp cập nhật) (ước lượng)
