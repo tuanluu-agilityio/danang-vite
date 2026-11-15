@@ -1,0 +1,1804 @@
+<pasted_content id="484a">
+# MASTER PROMPT — CREATE A CINEMATIC INTRO GUIDE VIDEO FOR DANANG BRIDGES 3D
+
+## 1. ROLE & MISSION
+
+You are an expert multidisciplinary creative production team consisting of:
+
+- **Creative Director:** Defines the visual storytelling, emotional impact, pacing, and cinematic identity.
+- **3D Cinematic Director:** Plans camera movements, transitions, angles, and visual composition.
+- **Video Editor:** Creates a professional, polished YouTube video using real footage captured from the project.
+- **Motion Graphics Designer:** Adds elegant titles, feature labels, transitions, and visual effects.
+- **Sound Designer & Music Producer:** Creates an exciting soundtrack and immersive environmental sound effects.
+- **Technical Director:** Uses browser automation, screen recording, video processing, and editing tools to produce the final video.
+
+Your mission is to create a professional cinematic introduction and feature showcase video for:
+
+**Website:** https://danangbridges.netlify.app/
+
+**Project:** Đà Nẵng Bridges 3D — An interactive 3D experience that allows people to explore the iconic bridges of Da Nang, Vietnam.
+
+This is a video production task, NOT a request to redesign or rebuild the website.
+
+Use the existing website as the primary visual source. Capture its real 3D environment, animations, movements, and features.
+
+The final video must make viewers excited to visit the website and experience it themselves.
+
+---
+
+## 2. USE SUPERPOWERS — AUTONOMOUS EXECUTION WORKFLOW
+
+You MUST use the installed Superpowers plugin/workflow.
+
+Follow the appropriate workflow:
+
+1. Explore and understand the existing project and website.
+2. Brainstorm the creative direction and define the video concept.
+3. Create a detailed production specification.
+4. Create a practical implementation plan with scenes, timestamps, camera directions, transitions, and audio.
+5. Execute the production plan.
+6. Review the first render, identify visual or audio weaknesses, and improve it.
+7. Export and verify the final video.
+
+Use the installed Superpowers skills and commands that are actually available. Do not assume command names without checking.
+
+**Autonomy requirements:**
+
+- Do not stop after producing a storyboard or a written plan.
+- Do not simply explain how I could make the video.
+- Actually produce and export the finished video.
+- Make reasonable creative and technical decisions independently.
+- Do not repeatedly ask me to approve minor decisions.
+- Do not ask me to manually choose camera positions, music, fonts, or transitions.
+- Only report a blocker if something genuinely prevents production.
+- Complete all feasible work with the available environment and tools.
+
+---
+
+## 3. FIRST: EXPLORE THE EXISTING WEBSITE
+
+Before recording anything, explore the actual running website.
+
+URL: https://danangbridges.netlify.app/
+
+Inspect the available interface, 3D scenes, camera controls, animations, and interactive features.
+
+Pay particular attention to:
+
+### Transportation and exploration modes
+
+- Paragliding mode — Dù lượn.
+- Car driving mode — Ô tô.
+- Motorbike mode — Xe máy.
+- Walking mode — Đi dạo.
+
+### Major landmarks
+
+- Dragon Bridge — Cầu Rồng.
+- Thuan Phuoc Bridge — Cầu Thuận Phước.
+- Tran Thi Ly Bridge — Cầu Trần Thị Lý.
+- Han River Swing Bridge — Cầu sông Hàn.
+- Han River Tunnel — Hầm sông Hàn, if suitable for the final montage.
+
+### Environmental and interactive features
+
+- Day and night transitions.
+- Dragon Bridge fire and water animations.
+- Han River Bridge rotation.
+- Weather conditions and rain simulation.
+- Rain falling onto the river and the resulting water-surface ripples.
+- Trees, vegetation, and surrounding environment.
+- Wet roads and reflections.
+- River reflections and lighting.
+- Vehicles, boats, pedestrians, and other environmental movement.
+- Different camera viewpoints and automatic tours.
+
+Explore the website to determine how these features are activated and how they look in practice.
+
+Do not assume that a button necessarily represents a fully working feature. Test it before including it in the video.
+
+**Important:** The visual footage must come from the actual project. Do not replace the website's 3D environment with unrelated stock footage or AI-generated city scenes.
+
+If a particular effect is unavailable or does not work, do not fabricate it. Document the limitation and prioritize the features that can be demonstrated correctly.
+
+---
+
+## 4. VIDEO CREATIVE DIRECTION
+
+### Core concept
+
+**"DA NANG — EXPERIENCE THE CITY FROM A DIFFERENT PERSPECTIVE"**
+
+Vietnamese alternative:
+
+**"ĐÀ NẴNG — KHÁM PHÁ THÀNH PHỐ THEO CÁCH CỦA BẠN"**
+
+The video should communicate three emotions:
+
+1. Wonder — The beauty of Da Nang and the Han River through an immersive 3D world.
+2. Excitement — The freedom to fly, drive, ride, and walk through the city.
+3. Discovery — The small details, environmental effects, dynamic bridges, and realistic atmosphere that make the experience special.
+
+### Visual identity
+
+Use a combination of:
+
+- Cinematic aerial camera movements.
+- Smooth first-person perspectives.
+- Dynamic tracking shots.
+- Wide-angle establishing shots.
+- Beautiful close-up details.
+- Smooth time transitions.
+- Dramatic but tasteful lighting.
+- Professional cinematic editing.
+
+The video should feel like a premium travel experience combined with a modern interactive 3D product showcase.
+
+Avoid the appearance of a simple screen recording or a basic software tutorial.
+
+### Technical output
+
+- Duration: Target 90 seconds, acceptable range 80–110 seconds.
+- Aspect ratio: 16:9.
+- Resolution: 1920 × 1080 minimum.
+- Frame rate: 30 FPS.
+- Format: MP4, H.264.
+- Audio: AAC.
+- Platform: YouTube.
+- Use cinematic color grading while preserving the original appearance and identity of the website.
+- Use clean, elegant typography.
+- Avoid excessive text and unnecessary interface elements.
+
+---
+
+## 5. DETAILED STORYBOARD — APPROXIMATELY 90 SECONDS
+
+Create the video around the following timeline.
+
+You may slightly adjust scene durations to improve storytelling, but preserve the main features and narrative.
+
+### SCENE 1 — CINEMATIC OPENING (00:00–00:08)
+
+**Objective:** Immediately capture attention.
+
+Visual direction:
+
+- Begin with a beautiful wide aerial view of the Han River.
+- Slowly reveal the bridges and the surrounding 3D city.
+- Use a cinematic camera movement to establish the scale of the environment.
+- Transition between a beautiful daylight or sunset view and an impressive night view.
+- Show the Dragon Bridge or several bridges in a visually compelling composition.
+
+Text overlay:
+
+"DA NANG"
+
+Then:
+
+"EXPERIENCE THE CITY IN 3D"
+
+Audio:
+
+- Start with an atmospheric cinematic sound.
+- Introduce an exciting musical build-up.
+- Make the opening visually powerful, but do not overload it with effects.
+
+### SCENE 2 — FOUR WAYS TO EXPLORE (00:08–00:27)
+
+**Objective:** Demonstrate that the viewer can explore the city in four different ways.
+
+Create four short cinematic sequences.
+
+**A. PARAGLIDING — DÙ LƯỢN**
+
+- Show a first-person flying perspective.
+- Capture a smooth glide over the city and the Han River.
+- Reveal the bridges from above.
+- Make viewers feel the freedom of flying.
+- Use smooth, cinematic camera movement.
+
+Overlay:
+
+"PARAGLIDING"
+
+"Fly above the city"
+
+**B. CAR — Ô TÔ**
+
+- Show the car driving through the 3D environment.
+- Capture a beautiful road-level perspective.
+- Drive across one of the recognizable bridges.
+- Show the surrounding city and river while moving.
+
+Overlay:
+
+"CAR EXPERIENCE"
+
+"Drive through Da Nang"
+
+**C. MOTORBIKE — XE MÁY**
+
+- Show a first-person motorbike driving experience.
+- Capture movement along the road and across the bridges.
+- Use a slightly more energetic camera movement than the car scene.
+- Highlight the freedom of exploring the city.
+
+Overlay:
+
+"MOTORBIKE"
+
+"Ride and discover"
+
+**D. WALKING — ĐI DẠO**
+
+- Show a peaceful walking perspective.
+- Capture the bridge, riverbank, trees, and surrounding environment.
+- Show the contrast between the fast driving scenes and the calm walking experience.
+
+Overlay:
+
+"WALKING"
+
+"Explore every detail"
+
+Use smooth transitions between the four modes.
+
+Each mode should be immediately recognizable. Do not spend too long showing menu interfaces.
+
+### SCENE 3 — DISCOVER THE ICONIC BRIDGES (00:27–00:40)
+
+**Objective:** Showcase the beauty of the bridges and the 3D environment.
+
+Create a cinematic montage featuring:
+
+1. Dragon Bridge — Cầu Rồng.
+2. Thuan Phuoc Bridge — Cầu Thuận Phước.
+3. Tran Thi Ly Bridge — Cầu Trần Thị Lý.
+4. Han River Swing Bridge — Cầu sông Hàn.
+
+Camera directions:
+
+- Wide panoramic shots.
+- Low-angle views looking up at bridge structures.
+- Smooth tracking shots along the bridges.
+- Aerial views showing the bridges in relation to the river.
+- Interesting architectural close-ups.
+
+The bridges must be visually recognizable.
+
+Avoid static shots whenever possible. Use natural camera movements to communicate scale, depth, and immersion.
+
+Overlay the names of the bridges briefly and elegantly.
+
+### SCENE 4 — DAY & NIGHT TRANSFORMATION (00:40–00:51)
+
+**Objective:** Demonstrate the dynamic day/night environment.
+
+This scene should be visually beautiful.
+
+Start with a daylight shot of the Han River.
+
+Then create a smooth transition:
+
+- Daylight.
+- Golden-hour atmosphere.
+- Sunset.
+- Nighttime.
+
+Highlight:
+
+- The changing sky and environmental lighting.
+- Bridge illumination.
+- City lights.
+- Reflections on the river.
+- The difference in atmosphere between daytime and nighttime.
+
+Use a cinematic match cut or smooth time transition.
+
+Do not simply show two disconnected screenshots.
+
+Overlay:
+
+"ONE CITY"
+
+"DIFFERENT MOMENTS"
+
+### SCENE 5 — THE SIGNATURE BRIDGE EXPERIENCES (00:51–01:08)
+
+**Objective:** Highlight the most memorable interactive bridge features.
+
+This is one of the most important sections of the video.
+
+**A. DRAGON BRIDGE — FIRE & WATER**
+
+Capture the Dragon Bridge from a suitable camera angle.
+
+Show:
+
+- The dragon's head.
+- The fire animation.
+- The water animation.
+- The visual impact of the animation at night.
+- The lighting and reflections around the bridge.
+
+Make the fire and water effects visually dramatic.
+
+Use carefully synchronized sound effects where available.
+
+Overlay:
+
+"THE DRAGON COMES ALIVE"
+
+"FIRE & WATER EXPERIENCE"
+
+**B. HAN RIVER SWING BRIDGE**
+
+Capture the bridge from a wide, recognizable angle.
+
+Show the rotation mechanism in action.
+
+Include:
+
+- The bridge before rotation.
+- The rotating bridge structure.
+- A suitable close-up or tracking shot.
+- The relationship between the moving bridge and the river.
+
+Make the mechanical movement clear to the viewer.
+
+Overlay:
+
+"THE ICONIC HAN RIVER SWING BRIDGE"
+
+Important: When an event is being demonstrated through the project's simulation, do not present it as an actual live event happening at that moment. Keep the visual presentation exciting but accurate.
+
+### SCENE 6 — THE DETAILS THAT BRING THE WORLD TO LIFE (01:08–01:21)
+
+**Objective:** This section differentiates the project from a typical 3D city visualization.
+
+Do not rush this section.
+
+Show beautiful close-up footage of small environmental details.
+
+Prioritize the following:
+
+**Rain and water**
+
+- Rain falling onto the Han River.
+- Small ripples forming where raindrops touch the water.
+- Water-surface movement.
+- Rainy atmosphere.
+- Wet roads and environmental reflections.
+
+The camera should get close enough for viewers to notice the small water interactions.
+
+**Trees and vegetation**
+
+- Trees along the riverbanks.
+- Green vegetation surrounding the environment.
+- Natural movement of foliage where implemented.
+- Different lighting conditions on trees during day and night.
+
+**Environmental realism**
+
+- Clouds and changing weather.
+- Reflections of city lights on the river.
+- Moving vehicles.
+- Boats on the river.
+- Pedestrians.
+- Road lighting and surrounding environmental details.
+
+Use macro-style cinematic shots and gentle camera movements.
+
+The goal is to make the viewer realize:
+
+"This is not just a 3D model of bridges. It is an interactive world with a living environment."
+
+Overlay:
+
+"EVERY DETAIL MATTERS"
+
+"AN INTERACTIVE WORLD TO DISCOVER"
+
+Do not spend equal time on every detail. Prioritize rain-on-water effects, trees, and realistic environmental interactions.
+
+### SCENE 7 — CINEMATIC ENDING (01:21–01:30)
+
+**Objective:** Leave a strong impression and encourage viewers to explore the website.
+
+Visual direction:
+
+- Return to a wide nighttime view of the Han River.
+- Show the illuminated bridges.
+- Use a smooth camera pullback or aerial reveal.
+- Let the music reach its final emotional peak.
+
+End card:
+
+**DA NANG BRIDGES 3D**
+
+"Explore. Experience. Discover."
+
+https://danangbridges.netlify.app/
+
+Optional final line:
+
+"Your journey through Da Nang starts here."
+
+Keep the ending elegant, clean, and memorable.
+
+---
+
+## 6. CINEMATIC CAMERA & RECORDING GUIDELINES
+
+This section is critical.
+
+The footage must look professionally directed rather than randomly captured.
+
+### Camera movement
+
+Use different camera techniques:
+
+- Slow aerial flyovers.
+- Smooth forward tracking shots.
+- First-person movement.
+- Side tracking shots.
+- Wide establishing shots.
+- Low-angle architectural shots.
+- Close-up detail shots.
+- Slow cinematic reveals.
+- Smooth transitions between viewpoints.
+
+### Recording rules
+
+- Use a sufficiently high-resolution browser viewport.
+- Prefer recording at 60 FPS when the available environment supports stable capture, then export at 30 FPS.
+- Avoid visible mouse movement unless it is needed to demonstrate a specific interaction.
+- Do not leave menus, loading indicators, error messages, or debugging panels on screen.
+- Wait until each scene is fully loaded and visually stable before recording.
+- Keep camera movement smooth.
+- Avoid excessive camera rotation or sudden changes in direction.
+- Make sure important objects remain in frame.
+- Capture multiple takes when necessary and select the best footage.
+
+### Cinematic composition
+
+Use:
+
+- Balanced composition.
+- Clear visual focal points.
+- Attractive lighting.
+- Appropriate depth and perspective.
+- Natural contrast.
+- Smooth transitions.
+
+Avoid:
+
+- Random camera movement.
+- Overly fast cuts.
+- Excessive motion blur.
+- Excessive zooming.
+- Overuse of transition effects.
+- Distorted or stretched visuals.
+- Shots that do not clearly communicate a feature.
+
+---
+
+## 7. MUSIC & SOUND DESIGN
+
+Create an original cinematic soundtrack or use music with clearly verified commercial/YouTube usage rights.
+
+Do not use copyrighted commercial music without permission.
+
+### Music direction
+
+The music should communicate:
+
+- Excitement.
+- Freedom.
+- Adventure.
+- Discovery.
+- Wonder.
+- Modern technology.
+
+Suggested musical structure:
+
+- Opening: Atmospheric cinematic introduction.
+- Four exploration modes: Energetic rhythm begins.
+- Bridge showcase: Grand cinematic development.
+- Day/night: Emotional and beautiful musical transition.
+- Fire and water: Dramatic musical peak.
+- Environmental details: Slightly calmer, atmospheric section.
+- Ending: Strong emotional resolution.
+
+### Environmental sound effects
+
+Where appropriate, add subtle:
+
+- Wind during paragliding.
+- Car engine sounds.
+- Motorbike engine sounds.
+- Ambient city sounds.
+- Water movement.
+- Rainfall.
+- Fire effects.
+- Water spray.
+- Nighttime environmental ambience.
+
+Ensure environmental audio does not overpower the music or narration.
+
+### Voice-over
+
+Prefer a natural, engaging Vietnamese voice-over.
+
+The narration should sound like a premium travel experience introduction, not a technical product manual.
+
+Suggested narration:
+
+"Bạn đã bao giờ muốn khám phá Đà Nẵng theo một cách hoàn toàn khác?
+
+Hãy bắt đầu từ bầu trời, tự do lướt qua dòng sông Hàn.
+
+Hoặc ngồi sau tay lái, khám phá những cây cầu biểu tượng của thành phố.
+
+Bạn cũng có thể dạo bước, tận hưởng từng khoảnh khắc bình yên bên dòng sông.
+
+Từ ánh nắng ban ngày đến thành phố rực rỡ khi đêm xuống.
+
+Chứng kiến Rồng phun lửa, phun nước. Khám phá cây cầu sông Hàn xoay độc đáo.
+
+Và đừng bỏ lỡ những chi tiết nhỏ: từng hạt mưa trên mặt nước, những hàng cây và nhịp sống của thành phố.
+
+Đà Nẵng không chỉ để ngắm nhìn.
+
+Đà Nẵng để bạn tự mình trải nghiệm."
+
+Adjust the narration naturally to match the final editing timeline.
+
+If high-quality Vietnamese text-to-speech is unavailable, prioritize strong on-screen storytelling and environmental audio rather than using poor-quality robotic narration.
+
+---
+
+## 8. MOTION GRAPHICS & TEXT OVERLAYS
+
+Design a consistent visual language.
+
+Use:
+
+- Modern typography.
+- Elegant text transitions.
+- Minimalist feature titles.
+- Subtle fade-in and fade-out.
+- Smooth animated text.
+- Small, clean feature labels.
+
+The text should complement the footage, not compete with it.
+
+Prefer short English feature labels with Vietnamese narration.
+
+Do not add excessive subtitles, technical information, or long descriptions.
+
+The video should remain visually immersive.
+
+---
+
+## 9. TECHNICAL PRODUCTION REQUIREMENTS
+
+First inspect the available production environment.
+
+Check whether the following are available:
+
+- Browser automation such as Playwright.
+- Browser support for WebGL.
+- Screen/video recording tools.
+- FFmpeg.
+- Available audio processing tools.
+- Any existing video editing or rendering utilities.
+
+Choose the most reliable production pipeline based on the tools actually available.
+
+Possible approach:
+
+1. Open the website using a browser with WebGL support.
+2. Interact with the actual website to activate the required modes and effects.
+3. Record individual cinematic scenes.
+4. Save source recordings with descriptive filenames.
+5. Assemble and edit the footage.
+6. Generate or obtain legally usable soundtrack and sound effects.
+7. Add voice-over and motion graphics.
+8. Render the final MP4.
+9. Review the complete video and fix any noticeable problems.
+
+Do not modify the production website or its application code merely to create the video.
+
+If the original repository is available, inspect its structure and use it only as needed to support the recording process. Do not assume that the repository is available.
+
+Use temporary recording scripts or automation files outside the production application where practical.
+
+---
+
+## 10. QUALITY ASSURANCE — DO NOT SKIP
+
+After rendering, watch the entire video from beginning to end.
+
+Check:
+
+### Visual quality
+
+- Are all four transportation modes shown clearly?
+- Does each mode look different?
+- Are the bridges recognizable?
+- Is the day/night transformation visually impressive?
+- Can viewers clearly see the Dragon Bridge fire and water effects?
+- Is the Han River bridge rotation understandable?
+- Can viewers actually notice the rain ripples on the river?
+- Are the trees and environmental details visible?
+- Are there any loading screens, glitches, or unwanted browser elements?
+- Are the transitions smooth?
+
+### Audio quality
+
+- Is the music synchronized with the video?
+- Is the soundtrack exciting but not overwhelming?
+- Are environmental sounds appropriately mixed?
+- Is the Vietnamese narration natural and clear?
+
+### Storytelling
+
+- Does the opening capture attention within the first few seconds?
+- Does the video build excitement progressively?
+- Are the key features demonstrated rather than merely listed?
+- Does the ending leave viewers wanting to explore the website?
+
+### Export quality
+
+- Does the video play correctly?
+- Is the aspect ratio 16:9?
+- Is the resolution 1920 × 1080 or higher?
+- Is the duration within the target range?
+- Is the audio properly embedded?
+- Is the final MP4 suitable for YouTube upload?
+
+Fix any obvious mistakes before final delivery.
+
+---
+
+## 11. FINAL DELIVERABLES
+
+Create a dedicated output folder, for example:
+
+`output/danang-bridges-intro/`
+
+Deliver the following:
+
+1. **danang-bridges-intro.mp4** — Final cinematic YouTube video.
+2. **storyboard.md** — Final scene breakdown and timestamps.
+3. **voiceover-script.md** — Final narration script.
+4. **subtitles.srt** — Vietnamese subtitles, if narration is used.
+5. **assets/** — Music, sound effects, graphics, and other assets used, subject to their licensing conditions.
+6. **production-notes.md** — Short documentation describing the production pipeline and any limitations.
+
+Optionally produce a suitable YouTube thumbnail if this can be done without compromising the primary video deliverable.
+
+The final response must include:
+
+- Exact path to the exported MP4.
+- Final duration, resolution, and frame rate.
+- A brief summary of the features included.
+- Any features that could not be recorded successfully.
+- Confirmation that the exported video was reviewed.
+
+**MOST IMPORTANT FINAL INSTRUCTION:**
+
+Do not stop at the planning stage.
+
+Do not deliver a slideshow, storyboard, static screenshots, or a collection of unedited screen recordings as the final result.
+
+I need a real, professionally edited, cinematic MP4 video showcasing the actual Danang Bridges 3D website.
+
+Make creative decisions independently and prioritize visual quality, immersion, and emotional impact.
+
+The final product should make someone watch it and immediately want to open the website and explore Da Nang in 3D.
+</pasted_content id="484a">
+
+---
+
+dừng lại, tôi muốn cập nhật
+
+---
+
+<pasted_content id="484a">
+# MASTER PROMPT — DANANG BRIDGES 3D
+# BILINGUAL CINEMATIC INTRO GUIDE VIDEO PRODUCTION
+## Vietnamese & English Versions
+
+## 1. ROLE & MISSION
+
+You are an expert multidisciplinary creative production team consisting of:
+
+- **Creative Director:** Defines storytelling, emotional impact, pacing, and cinematic identity.
+- **3D Cinematic Director:** Plans camera movements, transitions, angles, and visual composition.
+- **Video Editor:** Creates professional, polished YouTube videos using real footage captured from the project.
+- **Motion Graphics Designer:** Creates titles, feature labels, transitions, and visual effects.
+- **Sound Designer & Music Producer:** Creates an exciting soundtrack and immersive environmental sound effects.
+- **Localization Specialist:** Creates natural Vietnamese and English voice-over scripts, subtitles, and localized text overlays.
+- **Technical Director:** Uses browser automation, screen recording, video processing, and editing tools to produce the final videos.
+
+Your mission is to produce TWO complete, professionally edited cinematic introduction videos for:
+
+**Website:** https://danangbridges.netlify.app/
+
+**Project:** Da Nang Bridges 3D — An interactive 3D experience that allows people to explore the iconic bridges of Da Nang, Vietnam.
+
+### Two mandatory final video versions
+
+**VERSION 1 — VIETNAMESE**
+
+Filename: `danang-bridges-intro-vi.mp4`
+
+Language:
+- Vietnamese voice-over.
+- Vietnamese on-screen descriptions where appropriate.
+- Vietnamese subtitles.
+- Vietnamese YouTube end card.
+
+Target audience:
+- Vietnamese viewers.
+- People interested in Da Nang.
+- Domestic tourists.
+- People interested in interactive 3D experiences.
+
+**VERSION 2 — ENGLISH**
+
+Filename: `danang-bridges-intro-en.mp4`
+
+Language:
+- Natural English voice-over.
+- English on-screen descriptions.
+- English subtitles.
+- English YouTube end card.
+
+Target audience:
+- International tourists.
+- Foreign visitors interested in Da Nang.
+- International audiences interested in immersive travel experiences.
+
+**Important:** These must be TWO SEPARATE VIDEOS, not one video containing alternating Vietnamese and English narration.
+
+Both versions must use the same core footage and visual storytelling, but their narration, subtitles, text overlays, and end cards must be appropriately localized.
+
+The English version must sound like an original English promotional video, not a literal machine translation of the Vietnamese version.
+
+The objective is to make viewers excited to visit the website and experience Da Nang themselves.
+
+---
+
+## 2. USE SUPERPOWERS — AUTONOMOUS EXECUTION WORKFLOW
+
+You MUST use the installed Superpowers plugin/workflow.
+
+Follow the appropriate workflow:
+
+1. Explore and understand the existing project and website.
+2. Define the creative direction and video concept.
+3. Create a detailed production specification.
+4. Build a production plan covering scenes, timestamps, camera directions, transitions, and audio.
+5. Execute the production plan.
+6. Review the first render, identify weaknesses, and improve it.
+7. Produce and export both language versions.
+8. Verify both final videos.
+
+Use the installed Superpowers skills and commands that are actually available. Do not assume command names without checking.
+
+### Autonomy requirements
+
+- Do not stop after producing a storyboard or written plan.
+- Do not simply explain how I could make the videos.
+- Actually produce and export both finished videos.
+- Make reasonable creative and technical decisions independently.
+- Do not repeatedly ask me to approve minor decisions.
+- Do not ask me to manually choose camera positions, music, fonts, or transitions.
+- Only report a blocker if something genuinely prevents production.
+- Complete all feasible work with the available environment and tools.
+
+---
+
+## 3. FIRST: EXPLORE THE EXISTING WEBSITE
+
+Before recording anything, explore the actual running website.
+
+URL: https://danangbridges.netlify.app/
+
+Inspect the available interface, 3D scenes, camera controls, animations, and interactive features.
+
+Pay particular attention to:
+
+### Transportation and exploration modes
+
+- Paragliding mode — Dù lượn.
+- Car driving mode — Ô tô.
+- Motorbike mode — Xe máy.
+- Walking mode — Đi dạo.
+
+### Major landmarks
+
+- Dragon Bridge — Cầu Rồng.
+- Thuan Phuoc Bridge — Cầu Thuận Phước.
+- Tran Thi Ly Bridge — Cầu Trần Thị Lý.
+- Han River Swing Bridge — Cầu sông Hàn.
+
+### Environmental and interactive features
+
+- Day and night transitions.
+- Dragon Bridge fire and water animations.
+- Han River Bridge rotation.
+- Weather conditions and rain simulation.
+- Rain falling onto the river and resulting water-surface ripples.
+- Trees and surrounding vegetation.
+- Wet roads and reflections.
+- River reflections and lighting.
+- Vehicles, boats, pedestrians, and other environmental movement.
+- Different camera viewpoints and automatic tours.
+
+Explore how these features are activated and how they look in practice.
+
+Do not assume that a button represents a fully working feature. Test it before including it in the video.
+
+**Important:** The visual footage must come from the actual project. Do not replace the website's 3D environment with unrelated stock footage or AI-generated city scenes.
+
+If a particular effect is unavailable or does not work, do not fabricate it. Prioritize features that can be demonstrated correctly.
+
+---
+
+## 4. VIDEO CREATIVE DIRECTION
+
+### Core concept
+
+**English title:**
+
+"DA NANG — EXPERIENCE THE CITY FROM A DIFFERENT PERSPECTIVE"
+
+**Vietnamese title:**
+
+"ĐÀ NẴNG — KHÁM PHÁ THÀNH PHỐ THEO CÁCH CỦA BẠN"
+
+The two videos must communicate three emotions:
+
+1. Wonder — The beauty of Da Nang and the Han River through an immersive 3D world.
+2. Excitement — The freedom to fly, drive, ride, and walk through the city.
+3. Discovery — The small details, environmental effects, dynamic bridges, and realistic atmosphere that make the experience special.
+
+### Visual identity
+
+Use a combination of:
+
+- Cinematic aerial camera movements.
+- Smooth first-person perspectives.
+- Dynamic tracking shots.
+- Beautiful close-up details.
+- Wide-angle establishing shots.
+- Smooth time transitions.
+- Dramatic but tasteful lighting.
+- Professional cinematic editing.
+
+The videos should feel like premium travel experiences combined with modern interactive 3D product showcases.
+
+Avoid the appearance of simple screen recordings or basic software tutorials.
+
+### Technical output
+
+For BOTH versions:
+
+- Duration: Target 90 seconds, acceptable range 80–110 seconds.
+- Aspect ratio: 16:9.
+- Resolution: 1920 × 1080 minimum.
+- Frame rate: 30 FPS.
+- Format: MP4, H.264.
+- Audio: AAC.
+- Platform: YouTube.
+- Use cinematic color grading while preserving the website's original appearance.
+- Use clean, elegant typography.
+- Avoid excessive text and unnecessary interface elements.
+
+---
+
+## 5. DETAILED STORYBOARD — APPROXIMATELY 90 SECONDS
+
+Create one master visual timeline and use it to produce both localized versions.
+
+The following timing is a creative guideline. Slightly adjust scene durations where necessary to improve storytelling, while retaining all important features.
+
+### SCENE 1 — CINEMATIC OPENING (00:00–00:08)
+
+Objective: Immediately capture attention.
+
+Visual direction:
+
+- Begin with a beautiful wide aerial view of the Han River.
+- Slowly reveal the bridges and surrounding 3D city.
+- Use cinematic camera movement to establish the scale of the environment.
+- Transition between daylight or sunset and an impressive nighttime view.
+- Show the Dragon Bridge or several bridges in a visually compelling composition.
+
+Vietnamese text:
+
+"ĐÀ NẴNG"
+
+"KHÁM PHÁ THÀNH PHỐ THEO CÁCH CỦA BẠN"
+
+English text:
+
+"DA NANG"
+
+"EXPERIENCE THE CITY YOUR WAY"
+
+Audio:
+
+- Start with atmospheric cinematic sound.
+- Introduce an exciting musical build-up.
+- Make the opening visually powerful without overloading it with effects.
+
+### SCENE 2 — FOUR WAYS TO EXPLORE (00:08–00:27)
+
+Objective: Demonstrate that viewers can explore the city in four different ways.
+
+Create four short cinematic sequences.
+
+**A. PARAGLIDING — DÙ LƯỢN**
+
+- Show a first-person flying perspective.
+- Capture a smooth glide over the city and the Han River.
+- Reveal the bridges from above.
+- Make viewers feel the freedom of flying.
+- Use smooth cinematic camera movement.
+
+Vietnamese text:
+
+"DÙ LƯỢN"
+
+"Bay giữa không trung, ngắm nhìn thành phố"
+
+English text:
+
+"PARAGLIDING"
+
+"Fly above the city"
+
+**B. CAR — Ô TÔ**
+
+- Show the car driving through the 3D environment.
+- Capture a beautiful road-level perspective.
+- Drive across a recognizable bridge.
+- Show the surrounding city and river while moving.
+
+Vietnamese text:
+
+"TRẢI NGHIỆM Ô TÔ"
+
+"Vi vu qua những cây cầu biểu tượng"
+
+English text:
+
+"CAR EXPERIENCE"
+
+"Drive through Da Nang"
+
+**C. MOTORBIKE — XE MÁY**
+
+- Show a first-person motorbike driving experience.
+- Capture movement along the road and across bridges.
+- Use a slightly more energetic camera movement than the car scene.
+- Highlight the freedom of exploring the city.
+
+Vietnamese text:
+
+"TRẢI NGHIỆM XE MÁY"
+
+"Khám phá từng cung đường"
+
+English text:
+
+"MOTORBIKE"
+
+"Ride and discover"
+
+**D. WALKING — ĐI DẠO**
+
+- Show a peaceful walking perspective.
+- Capture bridges, riverbanks, trees, and surrounding environments.
+- Demonstrate the contrast between fast driving scenes and calm walking experiences.
+
+Vietnamese text:
+
+"ĐI DẠO"
+
+"Chậm lại và tận hưởng từng khoảnh khắc"
+
+English text:
+
+"WALKING"
+
+"Explore every detail"
+
+Use smooth transitions between the four modes.
+
+Each mode should be immediately recognizable. Do not spend too long showing menu interfaces.
+
+### SCENE 3 — DISCOVER THE ICONIC BRIDGES (00:27–00:40)
+
+Objective: Showcase the beauty of the bridges and 3D environment.
+
+Create a cinematic montage featuring:
+
+1. Dragon Bridge — Cầu Rồng.
+2. Thuan Phuoc Bridge — Cầu Thuận Phước.
+3. Tran Thi Ly Bridge — Cầu Trần Thị Lý.
+4. Han River Swing Bridge — Cầu sông Hàn.
+
+Camera directions:
+
+- Wide panoramic shots.
+- Low-angle views looking up at bridge structures.
+- Smooth tracking shots along the bridges.
+- Aerial views showing bridges in relation to the river.
+- Interesting architectural close-ups.
+
+The bridges must be visually recognizable.
+
+Avoid static shots whenever possible. Use natural camera movements to communicate scale, depth, and immersion.
+
+Vietnamese overlay:
+
+"NHỮNG CÂY CẦU BIỂU TƯỢNG CỦA ĐÀ NẴNG"
+
+English overlay:
+
+"THE ICONIC BRIDGES OF DA NANG"
+
+Show individual bridge names briefly and elegantly in the corresponding language.
+
+### SCENE 4 — DAY & NIGHT TRANSFORMATION (00:40–00:51)
+
+Objective: Demonstrate the dynamic day/night environment.
+
+Start with daylight footage of the Han River.
+
+Create a smooth visual transition:
+
+- Daylight.
+- Golden-hour atmosphere.
+- Sunset.
+- Nighttime.
+
+Highlight:
+
+- The changing sky and environmental lighting.
+- Bridge illumination.
+- City lights.
+- Reflections on the river.
+- The contrast between daytime and nighttime.
+
+Use a cinematic match cut or smooth time transition.
+
+Vietnamese text:
+
+"MỘT THÀNH PHỐ"
+
+"MUÔN SẮC MÀU TRẢI NGHIỆM"
+
+English text:
+
+"ONE CITY"
+
+"DIFFERENT MOMENTS"
+
+Do not simply show two disconnected screenshots.
+
+### SCENE 5 — THE SIGNATURE BRIDGE EXPERIENCES (00:51–01:08)
+
+Objective: Highlight the most memorable interactive bridge features.
+
+This is one of the most important sections.
+
+**A. DRAGON BRIDGE — FIRE & WATER**
+
+Capture the Dragon Bridge from a suitable camera angle.
+
+Show:
+
+- The dragon's head.
+- The fire animation.
+- The water animation.
+- The visual impact of the animation at night.
+- The lighting and reflections around the bridge.
+
+Make the fire and water effects visually dramatic.
+
+Use carefully synchronized sound effects where available.
+
+Vietnamese text:
+
+"CẦU RỒNG PHUN LỬA & PHUN NƯỚC"
+
+"Khi biểu tượng thành phố thức giấc"
+
+English text:
+
+"DRAGON BRIDGE FIRE & WATER"
+
+"Watch the dragon come alive"
+
+**B. HAN RIVER SWING BRIDGE**
+
+Capture the bridge from a wide, recognizable angle.
+
+Show the rotation mechanism in action.
+
+Include:
+
+- The bridge before rotation.
+- The rotating bridge structure.
+- A suitable close-up or tracking shot.
+- The relationship between the moving bridge and the river.
+
+Make the mechanical movement clear to viewers.
+
+Vietnamese text:
+
+"CẦU SÔNG HÀN XOAY"
+
+"Biểu tượng độc đáo bên dòng sông Hàn"
+
+English text:
+
+"THE HAN RIVER SWING BRIDGE"
+
+"Experience an iconic landmark in motion"
+
+Important: When an event is being demonstrated through project simulation, do not present it as an actual live event happening at that moment.
+
+### SCENE 6 — THE DETAILS THAT BRING THE WORLD TO LIFE (01:08–01:21)
+
+Objective: Differentiate the project from a typical 3D city visualization.
+
+Do not rush this section.
+
+Show beautiful close-up footage of small environmental details.
+
+**Rain and water**
+
+- Rain falling onto the Han River.
+- Small ripples forming where raindrops touch the water.
+- Water-surface movement.
+- Rainy atmosphere.
+- Wet roads and environmental reflections.
+
+The camera should get close enough for viewers to notice the small water interactions.
+
+**Trees and vegetation**
+
+- Trees along the riverbanks.
+- Green vegetation surrounding the environment.
+- Natural foliage movement where implemented.
+- Different lighting conditions on trees during day and night.
+
+**Environmental realism**
+
+- Clouds and changing weather.
+- Reflections of city lights on the river.
+- Moving vehicles.
+- Boats on the river.
+- Pedestrians.
+- Road lighting and surrounding environmental details.
+
+Use macro-style cinematic shots and gentle camera movements.
+
+Prioritize rain-on-water effects, trees, and realistic environmental interactions.
+
+Vietnamese text:
+
+"TỪNG CHI TIẾT ĐỀU CÓ SỨC SỐNG"
+
+"Một thế giới 3D đầy trải nghiệm"
+
+English text:
+
+"EVERY DETAIL MATTERS"
+
+"An interactive world to discover"
+
+The goal is to make viewers realize:
+
+"This is not just a 3D model of bridges. It is an interactive world with a living environment."
+
+### SCENE 7 — CINEMATIC ENDING (01:21–01:30)
+
+Objective: Leave a strong impression and encourage viewers to explore the website.
+
+Visual direction:
+
+- Return to a wide nighttime view of the Han River.
+- Show illuminated bridges.
+- Use a smooth camera pullback or aerial reveal.
+- Let the music reach its final emotional peak.
+
+Vietnamese end card:
+
+**ĐÀ NẴNG BRIDGES 3D**
+
+"Khám phá. Trải nghiệm. Cảm nhận."
+
+"Chuyến hành trình khám phá Đà Nẵng bắt đầu từ đây."
+
+https://danangbridges.netlify.app/
+
+English end card:
+
+**DA NANG BRIDGES 3D**
+
+"Explore. Experience. Discover."
+
+"Your journey through Da Nang starts here."
+
+https://danangbridges.netlify.app/
+
+Keep both endings elegant, clean, and memorable.
+
+---
+
+## 6. CINEMATIC CAMERA & RECORDING GUIDELINES
+
+The footage must look professionally directed rather than randomly captured.
+
+### Camera movement
+
+Use different cinematic techniques:
+
+- Slow aerial flyovers.
+- Smooth forward tracking shots.
+- First-person movement.
+- Side tracking shots.
+- Wide establishing shots.
+- Low-angle architectural shots.
+- Close-up detail shots.
+- Slow cinematic reveals.
+- Smooth transitions between viewpoints.
+
+### Recording rules
+
+- Use a sufficiently high-resolution browser viewport.
+- Prefer recording at 60 FPS when the available environment supports stable capture, then export at 30 FPS.
+- Avoid visible mouse movement unless required to demonstrate an interaction.
+- Do not leave menus, loading indicators, error messages, or debugging panels on screen.
+- Wait until each scene is fully loaded and visually stable before recording.
+- Keep camera movement smooth.
+- Avoid excessive camera rotation or sudden changes in direction.
+- Make sure important objects remain in frame.
+- Capture multiple takes when necessary and select the best footage.
+
+### Cinematic composition
+
+Use:
+
+- Balanced composition.
+- Clear visual focal points.
+- Attractive lighting.
+- Appropriate depth and perspective.
+- Natural contrast.
+- Smooth transitions.
+
+Avoid:
+
+- Random camera movement.
+- Overly fast cuts.
+- Excessive motion blur.
+- Excessive zooming.
+- Overuse of transitions.
+- Distorted visuals.
+- Shots that do not clearly communicate a feature.
+
+---
+
+## 7. MUSIC & SOUND DESIGN
+
+Create an original cinematic soundtrack or use music with clearly verified commercial/YouTube usage rights.
+
+Do not use copyrighted commercial music without permission.
+
+### Music direction
+
+The soundtrack should communicate:
+
+- Excitement.
+- Freedom.
+- Adventure.
+- Discovery.
+- Wonder.
+- Modern technology.
+
+Suggested musical structure:
+
+- Opening: Atmospheric cinematic introduction.
+- Four exploration modes: Energetic rhythm begins.
+- Bridge showcase: Grand cinematic development.
+- Day/night: Emotional and beautiful musical transition.
+- Fire and water: Dramatic musical peak.
+- Environmental details: Slightly calmer atmospheric section.
+- Ending: Strong emotional resolution.
+
+### Environmental sound effects
+
+Where appropriate, add subtle:
+
+- Wind during paragliding.
+- Car engine sounds.
+- Motorbike engine sounds.
+- Ambient city sounds.
+- Water movement.
+- Rainfall.
+- Fire effects.
+- Water spray.
+- Nighttime environmental ambience.
+
+Ensure environmental audio does not overpower the music or narration.
+
+### Language-specific voice-over
+
+Produce TWO separate voice-over tracks.
+
+**Vietnamese voice-over:**
+
+- Native-quality Vietnamese pronunciation.
+- Natural Vietnamese expressions.
+- Warm, engaging, emotionally expressive narration.
+- Premium travel-documentary presentation.
+- Avoid robotic or overly formal delivery.
+
+Suggested Vietnamese narration:
+
+"Bạn đã bao giờ muốn khám phá Đà Nẵng theo một cách hoàn toàn khác?
+
+Hãy bắt đầu từ bầu trời, tự do lướt qua dòng sông Hàn.
+
+Hoặc ngồi sau tay lái, khám phá những cây cầu biểu tượng của thành phố.
+
+Bạn cũng có thể dạo bước, tận hưởng từng khoảnh khắc bình yên bên dòng sông.
+
+Từ ánh nắng ban ngày đến thành phố rực rỡ khi đêm xuống.
+
+Chứng kiến Rồng phun lửa, phun nước. Khám phá cây cầu sông Hàn xoay độc đáo.
+
+Và đừng bỏ lỡ những chi tiết nhỏ: từng hạt mưa trên mặt nước, những hàng cây và nhịp sống của thành phố.
+
+Đà Nẵng không chỉ để ngắm nhìn.
+
+Đà Nẵng để bạn tự mình trải nghiệm."
+
+**English voice-over:**
+
+- Natural native-quality English.
+- Clear international pronunciation.
+- Engaging, expressive, cinematic delivery.
+- Premium travel-promotion style.
+- Avoid literal translations and unnatural phrasing.
+
+Suggested English narration:
+
+"Have you ever wanted to experience Da Nang in a completely different way?
+
+Take to the skies and glide freely above the beautiful Han River.
+
+Or get behind the wheel and explore the city's iconic bridges.
+
+Slow down, take a walk, and enjoy the peaceful atmosphere along the river.
+
+From the warmth of daylight to the sparkling beauty of the city at night.
+
+Watch the Dragon Bridge breathe fire and water. Discover the iconic Han River Swing Bridge in motion.
+
+And look closer. Raindrops dancing on the river, beautiful green trees, and countless details that bring this world to life.
+
+Da Nang is more than a city to see.
+
+It's a city to experience."
+
+Both scripts may be refined to fit the final video duration and actual available footage.
+
+The English narration should be adapted for international viewers, not translated word for word.
+
+If high-quality Vietnamese or English text-to-speech is unavailable, prioritize natural-sounding narration and do not use poor-quality robotic voices.
+
+---
+
+## 8. MOTION GRAPHICS & TEXT LOCALIZATION
+
+Design a consistent visual language for both versions.
+
+Use:
+
+- Modern typography.
+- Elegant text transitions.
+- Minimalist feature titles.
+- Subtle fade-in and fade-out.
+- Smooth animated text.
+- Small, clean feature labels.
+
+### Localization rules
+
+Vietnamese version:
+
+- Use correct Vietnamese spelling and diacritics.
+- Use natural, concise Vietnamese expressions.
+- Select fonts that fully support Vietnamese characters.
+- Maintain proper line spacing and readability.
+
+English version:
+
+- Use natural English expressions.
+- Avoid awkward literal translations.
+- Use internationally recognizable feature labels.
+- Maintain consistent typography and composition.
+
+### Important
+
+- Keep the same visual positions and approximate timing for corresponding text overlays.
+- Replace Vietnamese text with English text in the English version.
+- Never display both languages simultaneously unless there is a compelling visual reason.
+- Do not add excessive subtitles or technical descriptions.
+- The text should complement the footage, not compete with it.
+
+---
+
+## 9. SUBTITLES
+
+Create separate subtitle files:
+
+- `danang-bridges-intro-vi.srt`
+- `danang-bridges-intro-en.srt`
+
+Requirements:
+
+- Synchronize subtitles accurately with the corresponding voice-over.
+- Use natural sentence segmentation.
+- Avoid excessively long subtitle lines.
+- Ensure readability on mobile and desktop.
+- Check Vietnamese diacritics.
+- Check English punctuation and capitalization.
+
+Burned-in subtitles are optional. Prefer clean subtitles that can also be delivered as separate SRT files for YouTube.
+
+---
+
+## 10. TECHNICAL PRODUCTION REQUIREMENTS
+
+First inspect the available production environment.
+
+Check whether the following are available:
+
+- Browser automation such as Playwright.
+- Browser support for WebGL.
+- Screen/video recording tools.
+- FFmpeg.
+- Available audio processing tools.
+- Any existing video editing or rendering utilities.
+
+Choose the most reliable production pipeline based on tools actually available.
+
+### Recommended production workflow
+
+1. Open the website using a browser with WebGL support.
+2. Interact with the actual website to activate the required modes and effects.
+3. Record individual cinematic scenes.
+4. Save source recordings with descriptive filenames.
+5. Assemble a master visual timeline.
+6. Generate or obtain legally usable soundtrack and sound effects.
+7. Prepare Vietnamese and English voice-over tracks.
+8. Create the Vietnamese version using Vietnamese text overlays and subtitles.
+9. Create the English version using English text overlays and subtitles.
+10. Render both final MP4 files.
+11. Review both complete videos and fix noticeable problems.
+
+Do not modify the production website or its application code merely to create the videos.
+
+If the original repository is available, inspect its structure and use it only as needed to support recording. Do not assume the repository is available.
+
+Use temporary recording scripts or automation files outside the production application where practical.
+
+### Efficiency requirement
+
+Do not record the entire website twice.
+
+Create one high-quality set of source footage, then reuse it to produce two separately localized video versions.
+
+However, you may record additional footage if the English and Vietnamese versions require different storytelling or timing.
+
+---
+
+## 11. QUALITY ASSURANCE — DO NOT SKIP
+
+After rendering, watch BOTH videos from beginning to end.
+
+### Visual quality
+
+- Are all four transportation modes shown clearly?
+- Does each mode look different?
+- Are the bridges recognizable?
+- Is the day/night transformation visually impressive?
+- Can viewers clearly see the Dragon Bridge fire and water effects?
+- Is the Han River Bridge rotation understandable?
+- Can viewers notice the rain ripples on the river?
+- Are the trees and environmental details visible?
+- Are there any loading screens, glitches, or unwanted browser elements?
+- Are the transitions smooth?
+- Are both versions visually consistent?
+
+### Language quality
+
+Vietnamese version:
+
+- Does the narration sound natural?
+- Is pronunciation correct?
+- Are all Vietnamese diacritics displayed correctly?
+- Are subtitles synchronized?
+- Is the language engaging and appropriate for Vietnamese viewers?
+
+English version:
+
+- Does the narration sound natural to international audiences?
+- Is the pronunciation clear?
+- Does the English wording sound like a professionally written promotional video?
+- Are subtitles synchronized?
+- Are there any awkward literal translations?
+
+### Audio quality
+
+- Is the music synchronized with the video?
+- Is the soundtrack exciting but not overwhelming?
+- Are environmental sounds appropriately mixed?
+- Is each voice-over track clear and balanced?
+
+### Storytelling
+
+- Does the opening capture attention within the first few seconds?
+- Does the video build excitement progressively?
+- Are key features demonstrated rather than merely listed?
+- Does the ending encourage viewers to explore the website?
+
+### Export quality
+
+For both files:
+
+- Correct 16:9 aspect ratio.
+- 1920 × 1080 resolution or higher.
+- 30 FPS.
+- Duration within the target range.
+- Audio properly embedded.
+- Correct language throughout.
+- No missing frames or corrupted footage.
+- Suitable for YouTube upload.
+
+Fix obvious mistakes before final delivery.
+
+---
+
+## 12. FINAL DELIVERABLES
+
+Create a dedicated output folder:
+
+`output/danang-bridges-intro/`
+
+Organize the deliverables as follows:
+
+```text
+output/danang-bridges-intro/
+│
+├── vietnamese/
+│   ├── danang-bridges-intro-vi.mp4
+│   ├── voiceover-vi.md
+│   ├── subtitles-vi.srt
+│   ├── youtube-title-description-vi.md
+│   └── thumbnail-vi.png
+│
+├── english/
+│   ├── danang-bridges-intro-en.mp4
+│   ├── voiceover-en.md
+│   ├── subtitles-en.srt
+│   ├── youtube-title-description-en.md
+│   └── thumbnail-en.png
+│
+├── shared/
+│   ├── storyboard.md
+│   ├── production-notes.md
+│   ├── assets/
+│   └── source-footage/
+│
+└── README.md
+```
+
+Thumbnails are desirable but secondary to the two completed videos.
+
+### YouTube metadata
+
+Prepare separate YouTube titles and descriptions.
+
+Vietnamese title should emphasize:
+
+- Khám phá Đà Nẵng 3D.
+- Trải nghiệm dù lượn, ô tô, xe máy và đi dạo.
+- Các cây cầu biểu tượng.
+- Trải nghiệm ngày và đêm.
+
+English title should emphasize:
+
+- Explore Da Nang in 3D.
+- Immersive city exploration.
+- Four different ways to experience the city.
+- Iconic bridges and dynamic environments.
+
+Descriptions should include the website:
+
+https://danangbridges.netlify.app/
+
+Use relevant hashtags without keyword stuffing.
+
+### Final response
+
+When completing production, report:
+
+1. Exact paths to both exported MP4 files.
+2. Duration, resolution, and frame rate of each.
+3. Features included in both videos.
+4. Any features that could not be recorded successfully.
+5. Confirmation that both videos were reviewed.
+6. Paths to the subtitle files and YouTube metadata.
+
+**MOST IMPORTANT FINAL INSTRUCTION:**
+
+Do not stop at the planning stage.
+
+Do not deliver a slideshow, storyboard, static screenshots, or a collection of unedited screen recordings as the final result.
+
+I need TWO real, professionally edited, cinematic MP4 videos showcasing the actual Danang Bridges 3D website:
+
+- One complete Vietnamese version.
+- One complete English version.
+
+Both must be polished, immersive, emotionally engaging, and suitable for publishing on YouTube.
+
+Use the actual project footage, make creative decisions independently, and prioritize visual quality, storytelling, and localization.
+
+The ultimate goal is simple:
+
+Make Vietnamese and international viewers watch these videos and immediately want to visit the website to explore Da Nang in 3D.
+</pasted_content id="484a">
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>b_dragon: 135 khung, 45.3 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>b_thuanphuoc: 135 khung, 51.9 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>b_ttl: 135 khung, 47.0 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>b_songhan: 135 khung, 51.9 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>daynight: 300 khung, 127.5 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>dragon_fire: 165 khung, 66.7 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>dragon_water: 150 khung, 56.6 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>swing: 240 khung, 123.8 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>rain_river: 195 khung, 78.2 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>trees_wet: 165 khung, 49.3 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<summary>Monitor event: "recording progress (record.log)"</summary>
+<event>night_life: 165 khung, 76.2 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bz7lxjqxy</task-id>
+<tool-use-id>toolu_01Uhq4PUrh3XiPV2ptrxXvZ2</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\a1f2cb85-139a-4ad1-9684-9632bd2bff39\tasks\bz7lxjqxy.output</output-file>
+<status>completed</status>
+<summary>Monitor "recording progress (record.log)" stream ended</summary>
+<event>finale: 315 khung, 137.2 s, cam intro</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bxp4rt40s</task-id>
+<tool-use-id>toolu_01WFw78jCZXwkfPB6Q2YwR8Z</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\a1f2cb85-139a-4ad1-9684-9632bd2bff39\tasks\bxp4rt40s.output</output-file>
+<status>completed</status>
+<summary>Background command "cd "/d/2026 - Tuan/danang-vite/output/danang-bridges-intro"; until grep -qE "^finale:|Error|error|pageerror" work/record.log || ! tasklist 2&gt;/dev/null | grep -qi node.exe; do sleep 10; done; tail -14 work/record.log" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bfrp3fyzo</task-id>
+<tool-use-id>toolu_019RuLwikTqzoNUDiTjnevp3</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\a1f2cb85-139a-4ad1-9684-9632bd2bff39\tasks\bfrp3fyzo.output</output-file>
+<status>completed</status>
+<summary>Background command "cd "/d/2026 - Tuan/danang-vite/output/danang-bridges-intro"; until grep -q done work/compose-en.log 2&gt;/dev/null; do sleep 15; done; grep -v "^frame=\|^\s*$" work/compose-vi.log | tail -2; grep -v "frame=" work/compose-en.log | tail -3" completed (exit code 0)</summary>
+</task-notification>

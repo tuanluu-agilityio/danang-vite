@@ -3,7 +3,7 @@
   "checkpoint_id": "01M7GG0HREW6C98S51ZETGQ62G",
   "strategy": "manual-commit",
   "branch": "feature/intro-am-thanh",
-  "checkpoints_count": 15,
+  "checkpoints_count": 17,
   "files_touched": [
     "src/audio/index.ts",
     "src/config.ts",
@@ -24,14 +24,21 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": "/1/prompt.txt"
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": "/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 264,
-    "cache_creation_tokens": 398114,
-    "cache_read_tokens": 27724178,
-    "output_tokens": 99358,
-    "api_call_count": 117,
+    "input_tokens": 472,
+    "cache_creation_tokens": 693362,
+    "cache_read_tokens": 49069938,
+    "output_tokens": 192850,
+    "api_call_count": 214,
     "subagent_tokens": {
       "input_tokens": 0,
       "cache_creation_tokens": 0,
