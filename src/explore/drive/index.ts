@@ -40,6 +40,7 @@ import { drHudShow, drHudHide, drHudUpdate } from './hud';
 import { drTouchBind } from './touch';
 import { drSound } from './sound';
 import { exNightStep } from '../nightShows';
+import { show } from '../../bridges/dragon/effects';
 import { exMulti } from '../multi';
 import { exDrivers } from '../multi/remoteDrive';
 import { exWatchShow, exWatchHide, exWatchRender, exFlyNotice } from '../multi/watch';
@@ -75,7 +76,7 @@ let exit: () => void = () => {};   // thoát chung (explore.exit), dùng khi m�
 const _ws = { x: 0, z: 0, yaw: 0, v: 0 };   // xe đang xem đưa cho HUD (đồng hồ, bản đồ nhỏ), tái dùng mỗi khung
 let touch: ReturnType<typeof drTouchBind> | null = null;   // điều khiển cảm ứng (setupDrive dựng)
 const boxes: DrBox[] = [];         // hộp xe tự động gần xe, tái dùng mỗi khung (trNearby chỉ thêm phần tử khi phải nới)
-let saved: { fov: number; explore: boolean } | null = null;   // thứ start() đổi, stop() trả lại: fov camera, lớp body 'explore' đã có từ trước chưa
+let saved: { fov: number; explore: boolean; show: boolean } | null = null;   // thứ start() đổi, stop() trả lại: fov camera, lớp body 'explore' đã có từ trước chưa, show.on của Cầu Rồng (exNightStep đổi theo trời)
 
 const active = () => cam.mode === 'car' && state !== null;
 const inMode = () => active() || watching;   // Esc và giao diện lái áp cho cả chế độ xem
@@ -169,6 +170,8 @@ export const drive = {
   get state(): DrState | null { return state; },
   get net(): DrNet | null { return net; },
   get cam(): DrCam { return camS; },
+  /* Tự lái (intro, D-045): khác null thì update() gọi auto(_inp) thay cho phím + cảm ứng, còi tắt; bên gán ghi vào _inp, không cấp phát */
+  auto: null as ((inp: DrInput) => void) | null,
   /* Vào lái: một mình (không phiên / ngoại tuyến) hoặc với slot lái vừa được cấp (xuất phát theo slot, màu xe theo slot) */
   start(): void {
     if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
@@ -184,7 +187,7 @@ export const drive = {
     driveView.far = CONFIG.drive.tunnelFar;
     drKeys.clear(); touch?.reset();
     drHudShow(n); drSound.start();
-    if (!saved) saved = { fov: camera.fov, explore: document.body.classList.contains('explore') };
+    if (!saved) saved = { fov: camera.fov, explore: document.body.classList.contains('explore'), show: show.on };
     cam.flight.then = null; cam.mode = 'car'; controls.enabled = false;
     camera.fov = CONFIG.drive.cam.fov; onResize();   // onResize cập nhật ma trận chiếu và hệ số cỡ điểm theo fov mới
     drCamPlace(camera, state, camS, n, 0, true);
@@ -202,7 +205,7 @@ export const drive = {
     exDrivers.setSelf(-1);
     driveView.far = CONFIG.drive.tunnelFar;
     drHudShow(n);
-    if (!saved) saved = { fov: camera.fov, explore: document.body.classList.contains('explore') };
+    if (!saved) saved = { fov: camera.fov, explore: document.body.classList.contains('explore'), show: show.on };
     cam.flight.then = null; cam.mode = 'car'; controls.enabled = false;
     camera.fov = CONFIG.drive.cam.fov; onResize();
     document.body.classList.add('explore', 'drive', 'ex-watching');
@@ -212,9 +215,12 @@ export const drive = {
   update(dt: number): void {
     if (watching) { watchStep(dt); return; }
     if (!active()) return;
-    drInputFromKeys(drKeys, _inp);
-    if (touch) touch.read(_inp);   // gộp, không xóa phím
-    drSound.horn(drKeys.has('KeyH'));
+    if (drive.auto) { drive.auto(_inp); drSound.horn(false); }
+    else {
+      drInputFromKeys(drKeys, _inp);
+      if (touch) touch.read(_inp);   // gộp, không xóa phím
+      drSound.horn(drKeys.has('KeyH'));
+    }
     advance(dt, _inp);
   },
   /* Gọi ngay sau lệnh vẽ khung chính (main.ts); chỗ cho HUD / chụp ảnh của task sau */
@@ -231,6 +237,7 @@ export const drive = {
     if (saved) {
       if (!saved.explore) document.body.classList.remove('explore');
       camera.fov = saved.fov; onResize();                            // onResize tính lại ma trận chiếu và pScale theo fov cũ
+      if (show.on !== saved.show) { show.on = saved.show; show.t = 0; }
       saved = null;
     }
     if (cam.mode === 'car') { cam.mode = 'orbit'; controls.enabled = true; }

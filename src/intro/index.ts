@@ -1,0 +1,265 @@
+/* ===== Đoạn giới thiệu điện ảnh: bộ điều khiển (D-045) =====
+   Phát ≈ 57 s trên chính cảnh 3D đang chạy (spec docs/superpowers/specs/2026-11-15-intro-dien-anh-design.md): dòng thời gian thuần (timeline.ts),
+   chín nhịp (scenes.ts), lớp DOM (ui.ts). main.ts gọi intro.update(dt) ngay sau updateCamera(dt) và bỏ bước của bốn chế độ khi intro.hold.
+   begin() (sau khung đầu, do play() gọi) chụp trạng thái (camera, fov, near, controls, dayNight.target, chế độ Trực tiếp, show.on, tốc độ + trạng thái Cầu sông Hàn); cleanup() trả lại hết,
+   gọi được nhiều lần (xong, Bỏ qua, nút hành động, lỗi). Cầu sông Hàn: chỉ đụng tới khi lúc bắt đầu nó đang CLOSED; chưa về CLOSED thì "tiễn" trong update() tới khi đóng
+   (cả sau khi intro đã kết thúc) rồi trả tốc độ quay đã chụp.
+   Phím (pha capture trên window) chặn mọi phím khi intro chạy để không lọt xuống phím lái / Esc thoát (explore.exit tải lại trang).
+   Không thêm gì vào cảnh; mỗi khung không cấp phát. */
+import * as THREE from 'three';
+import { camera, controls } from '../core/renderer';
+import { onResize } from '../core/postprocessing';
+import { dayNight } from '../core/dayNight';
+import { show } from '../bridges/dragon/effects';
+import { cam } from '../views/state';
+import { drive } from '../explore/drive';
+import { bike } from '../explore/bike';
+import { stAvatars } from '../explore/stroll/avatars';
+import { plPreload } from '../explore/pilot';
+import { exRevealChooser, exHideChooser } from '../explore/chooser';
+import { audio } from '../audio';
+import { CONFIG } from '../config';
+import { inCreate, inAdvance, inSeek, inFade, inFill, inShould, type InClock, type InSceneId } from './timeline';
+import { inScenes, inScenesInit, inSee } from './scenes';
+import { inUiSetup, inUiShow, inUiRender, inUiFill, inUiVeil, inUiPaused, inUiNoMore, inUiSound, type InActKind } from './ui';
+import type { SwingController } from '../bridges/song-han/SwingController';
+import type { LiveEnv } from '../realtime/liveEnv';
+
+export interface IntroDeps { ctrl: SwingController; live: LiveEnv | null }
+
+const I = CONFIG.intro, S = I.scenes, LAST = S.length - 1;
+const clock: InClock = inCreate();
+let deps: IntroDeps | null = null;
+let active = false;
+let cur = -1;                                  // nhịp đã enter() (−1: chưa / đã leave)
+let waitMo: MutationObserver | null = null;    // play() khi #loading chưa done: chờ khung đầu
+/* Trạng thái chụp lúc play(), trả ở cleanup() */
+const snap = { pos: new THREE.Vector3(), target: new THREE.Vector3(), fov: 50, near: 0.5, enabled: true, maxPolar: Math.PI * 0.495, night: 0, wasLive: false, showOn: false, speed: 1 };
+const eaten = new Set<string>();               // phím đã bị chặn keydown: keyup của chúng cũng chặn, keyup của phím khác để lọt
+
+/* Bộ nhớ trình duyệt có thể bị chặn: mọi lần đọc / ghi bọc try */
+const sget = (s: () => Storage, k: string): string | null => { try { return s().getItem(k); } catch { return null; } };
+const sset = (s: () => Storage, k: string, v: string | null): void => { try { if (v === null) s().removeItem(k); else s().setItem(k, v); } catch { /* bộ nhớ bị chặn */ } };
+const LS = () => localStorage, SS = () => sessionStorage;
+
+/* ---------- Nhạc nền trong intro: chỉ đọc audio.on và bấm hộ #btnMusic (cùng handler + lựa chọn đã lưu của audioUI.ts; bản nhạc nào cũng chạy đúng) ---------- */
+const MUSIC_KEY = 'cauRong.music';                     // lựa chọn nhạc đã lưu ('on' | 'off'), audioUI.ts ghi
+let touched = false;                                   // người xem đã thao tác trong lượt intro này (tắt gợi ý, chỉ tự bật một lần)
+let noAuto = false;                                    // ?test: không tự bật nhạc
+const clickMusic = (): void => { document.getElementById('btnMusic')?.click(); };
+let seenOn = false;                                    // audio.on ở lần đồng bộ gần nhất (mỗi khung)
+let eatToggle = false;                                 // thao tác đầu tiên là M / #inSound và audioUI.ts (D-046) vừa tự bật nhạc ở chính thao tác đó: bỏ lần bấm hộ kế tiếp, kẻo bật rồi tắt ngay
+const syncSound = (): void => { seenOn = audio.on; inUiSound(audio.on, !touched); };
+const toggleMusic = (): void => { if (eatToggle) eatToggle = false; else clickMusic(); syncSound(); };
+/* Thao tác đầu tiên của người xem: chờ một nhịp (bản nhạc khác có thể tự bật trước ở cùng thao tác) rồi nếu vẫn tắt và người xem chưa chọn tắt thì bấm hộ */
+function musicNudge(): void {
+  if (noAuto || audio.on || sget(LS, MUSIC_KEY) === 'off') return;
+  setTimeout(() => { if (active && !audio.on && sget(LS, MUSIC_KEY) !== 'off') clickMusic(); syncSound(); }, 0);
+}
+function onFirstInput(e: Event): void {
+  if (!active || touched) return;
+  touched = true;
+  const tg = e.target as Element | null;
+  const onBtn = !!(tg && tg.closest && tg.closest('#inSound')), k = (e as KeyboardEvent).key;
+  eatToggle = audio.on && !seenOn && (onBtn || k === 'm' || k === 'M');   // audioUI.ts đăng ký trước nên đã chạy xong ở thao tác này
+  if (!onBtn) musicNudge();   // bấm chính nút nhạc: để nút tự bật / tắt, không bấm hộ
+  syncSound();
+}
+
+/* Đổi nhịp: leave() nhịp cũ → trạng thái nền của nhịp mới → enter(). jump: nhảy (nút, phím, bắt đầu) chứ không chạy tự nhiên từ nhịp trước ⇒ đặt luôn dayNight.night */
+function enterScene(i: number, jump: boolean): void {
+  if (cur >= 0) { const old = inScenes[S[cur].id]; cur = -1; old.leave(); }
+  const id: InSceneId = S[i].id;
+  const night = id === 'dragon' || id === 'swing' || id === 'finale' ? 1 : 0;   // welcome … daynight: ngày (daynight tự tăng trong update); ba nhịp cuối: đêm
+  dayNight.target = night; if (jump) dayNight.night = night;
+  if (show.on) { show.on = false; show.t = 0; }                                    // chỉ nhịp dragon bật trình diễn
+  cam.flight.then = null; cam.mode = 'intro'; controls.enabled = false;            // nhịp chế độ đổi tiếp trong enter() (start())
+  cur = i;
+  inScenes[id].enter();
+  inScenes[id].update(clock.t, 0);                                                 // đặt camera ngay (kể cả khi đang tạm dừng)
+  inUiRender(i); syncSound();
+  if (id === 'finale') (document.getElementById('inStart') as HTMLButtonElement | null)?.focus({ preventScroll: true });
+}
+
+/* Lỗi trong một nhịp: ghi lại, dọn, hiện màn chọn. Trang không được kẹt ở intro */
+function fail(e: unknown): void { console.warn('[intro] lỗi trong nhịp, dừng giới thiệu', e); intro.skip(); }
+
+/* Trả mọi thứ đã đổi; gọi nhiều lần an toàn */
+function cleanup(): void {
+  if (waitMo) { waitMo.disconnect(); waitMo = null; }
+  if (!active) return;
+  active = false;
+  if (cur >= 0) { const old = inScenes[S[cur].id]; cur = -1; try { old.leave(); } catch (e) { console.warn('[intro] lỗi khi rời nhịp', e); } }
+  const c = deps?.ctrl;
+  if (c && inSee.own) { if (c.state !== 'CLOSED') inSee.off = true; else c.speed = snap.speed; }   // cầu do intro quay mà chưa đóng: tiễn về CLOSED trong update() rồi trả tốc độ; cầu có sẵn từ trước thì không đụng
+  if (show.on !== snap.showOn) { show.on = snap.showOn; show.t = 0; }
+  const live = deps?.live;
+  if (snap.wasLive && live) live.setMode('live', 'user');                         // Trực tiếp tự tính lại dayNight.target theo mặt trời thật
+  else dayNight.target = snap.night;                                              // trời chuyển mượt bằng stepNight
+  camera.position.copy(snap.pos); controls.target.copy(snap.target);
+  if (camera.fov !== snap.fov || camera.near !== snap.near) { camera.fov = snap.fov; camera.near = snap.near; onResize(); }
+  controls.maxPolarAngle = snap.maxPolar;
+  cam.flight.then = null; cam.mode = 'orbit'; controls.enabled = snap.enabled;
+  controls.update();
+  clock.paused = false; inUiPaused(false);
+  document.body.classList.remove('intro');
+  inUiShow(false);
+}
+
+/* Bắt đầu thật (sau khung đầu): chụp trạng thái, Mô phỏng, camera intro, lớp phủ, nhịp 0 */
+function begin(): void {
+  waitMo = null;
+  if (active) return;
+  snap.pos.copy(camera.position); snap.target.copy(controls.target);
+  snap.fov = camera.fov; snap.near = camera.near; snap.enabled = controls.enabled; snap.maxPolar = controls.maxPolarAngle;
+  snap.night = dayNight.target; snap.showOn = show.on;
+  const c = deps?.ctrl;
+  if (c && !inSee.off) { snap.speed = c.speed; inSee.own = c.state === 'CLOSED'; }   // đang tiễn dở từ lượt trước thì giữ mốc cũ; cầu không đóng lúc bắt đầu thì intro không đụng tới
+  const live = deps?.live;
+  snap.wasLive = !!live && live.mode === 'live';
+  active = true; touched = false;
+  try {
+    /* mô hình nạp trước (chưa về thì chế độ dùng hình tạm có sẵn). Sau khung đầu, không sớm hơn: nạp trong lúc prewarm() (main.ts) chạy thì phần làm nóng
+       shader của mô hình (compileAsync) chồng lên prewarm và three ném "reading 'isReady'" (thấy trên GPU thật, ?test&intro) */
+    plPreload(); drive.preload(); bike.preload(); stAvatars.preload();
+    if (snap.wasLive) live!.setMode('manual', 'user');                              // trước: setMode ghi dayNight.target của Mô phỏng; intro ghi đè ngay sau
+    dayNight.target = 0;
+    cam.mode = 'intro'; controls.enabled = false; cam.flight.then = null;
+    exHideChooser();
+    document.body.classList.add('intro');
+    inSeek(clock, S, 0); clock.paused = false; inUiPaused(false);
+    inUiNoMore(sget(LS, I.storeKey) === 'off');
+    inUiShow(true);
+    try { enterScene(0, true); } catch (e) { fail(e); }
+  } catch (e) { console.warn('[intro] lỗi khi khởi động, bỏ qua giới thiệu', e); cleanup(); exRevealChooser(); }   // không để trang kẹt không có màn chọn
+}
+
+function go(i: number): void {
+  if (!active) return;
+  const n = inSeek(clock, S, i);
+  if (clock.paused) { clock.paused = false; inUiPaused(false); }                  // nhảy nhịp là muốn xem: chạy tiếp (đang tạm dừng thì màn tối đầu nhịp sẽ đứng yên)
+  try { enterScene(n, true); } catch (e) { fail(e); }
+}
+
+/* Phím khi intro chạy (pha capture, trước mọi trình nghe khác trên window) */
+function onKeyDown(e: KeyboardEvent): void {
+  if (!active) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.key === 'Tab') return;
+  const tg = e.target as HTMLElement | null;
+  const inSel = !!tg && tg.id === 'inLang';
+  if (inSel && (e.key.startsWith('Arrow') || e.key === 'Home' || e.key === 'End')) return;   // ô ngôn ngữ: mũi tên đổi lựa chọn như thường
+  e.stopImmediatePropagation(); eaten.add(e.code);
+  const rtl = document.documentElement.dir === 'rtl';
+  if (e.key === 'Escape') { e.preventDefault(); intro.skip(); }
+  else if (e.key === ' ') { e.preventDefault(); if (!e.repeat) intro.pause(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); if (rtl) intro.prev(); else intro.next(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); if (rtl) intro.next(); else intro.prev(); }
+  else if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') { e.preventDefault(); if (!e.repeat) toggleMusic(); }   // M = nút #inSound
+  else if (e.key === 'Enter' && S[clock.i].id === 'finale' && !(tg && /^(BUTTON|SELECT|INPUT)$/.test(tg.tagName))) { e.preventDefault(); intro.skip(); }
+}
+function onKeyUp(e: KeyboardEvent): void {
+  if (!eaten.delete(e.code)) return;                                              // chỉ chặn keyup của phím intro đã chặn keydown (kể cả khi intro vừa kết thúc bằng chính phím đó)
+  e.stopImmediatePropagation();
+  if (e.key === ' ') e.preventDefault();                                          // Space không bấm nút đang focus (đã dùng để tạm dừng)
+}
+
+export const intro = {
+  get active(): boolean { return active; },
+  get hold(): boolean { return active && clock.paused; },
+  get clock(): Readonly<InClock> { return clock; },
+  get sceneId(): InSceneId | null { return active ? S[clock.i].id : null; },
+  /* Gắn DOM, phím, nút #exIntroBtn / #btnIntro; gọi một lần */
+  setup(d: IntroDeps): void {
+    deps = d;
+    inScenesInit(d.ctrl);
+    inUiSetup({
+      seek: (i) => go(i), prev: () => intro.prev(), next: () => intro.next(), pause: () => intro.pause(), skip: () => intro.skip(),
+      act: (k) => intro.act(k), replay: () => go(0),
+      noMore: (on) => sset(LS, I.storeKey, on ? 'off' : null)
+    });
+    noAuto = new URLSearchParams(location.search).has('test');
+    /* onFirstInput PHẢI đăng ký trước onKeyDown: cả hai ở pha capture trên window và onKeyDown gọi stopImmediatePropagation, nên đăng ký sau thì phím đầu tiên không bao giờ tới onFirstInput (không tự bật nhạc) */
+    window.addEventListener('pointerdown', onFirstInput, true);
+    window.addEventListener('keydown', onFirstInput, true);
+    document.getElementById('inSound')?.addEventListener('click', toggleMusic);
+    window.addEventListener('keydown', onKeyDown, true);
+    window.addEventListener('keyup', onKeyUp, true);
+    document.getElementById('exIntroBtn')?.addEventListener('click', () => {
+      intro.play();
+      if (active && !touched) { touched = true; musicNudge(); syncSound(); }      // bấm "Xem giới thiệu" là thao tác của người xem: áp quy tắc tự bật ngay
+    });
+    document.getElementById('btnIntro')?.addEventListener('click', () => {
+      sset(SS, I.playKey, '1');                                                    // trang mới đọc cờ này (wants) rồi phát; chép cách tải lại của explore.exit()
+      const u = new URL(location.href);
+      u.searchParams.delete('explore'); u.searchParams.delete('chooser'); u.searchParams.delete('intro');   // ?intro=off thắng cờ playKey (inShould) nên bỏ luôn
+      if (u.href === location.href) location.reload(); else location.replace(u.toString());
+    });
+  },
+  /* Có tự phát không (spec §5.1); đọc + xóa cờ playKey (nút "Xem giới thiệu" trong bảng Cài đặt) */
+  wants(q: URLSearchParams): boolean {
+    const forced = sget(SS, I.playKey) === '1';
+    if (forced) sset(SS, I.playKey, null);
+    let reduced = false;
+    try { reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { /* không có matchMedia */ }
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    return inShould({ explore: q.has('explore'), test: q.has('test'), introParam: q.get('intro'), stored: sget(LS, I.storeKey), seen: sget(SS, I.seenKey) === '1', forced, reducedMotion: reduced, saveData: !!(conn && conn.saveData) });
+  },
+  /* Phát từ nhịp 0; chờ #loading.done nếu chưa có (như exRevealChooser); đang phát / đang chờ thì bỏ qua */
+  play(): void {
+    if (active || waitMo || !deps) return;
+    sset(SS, I.seenKey, '1');
+    const loading = document.getElementById('loading');
+    if (!loading || loading.classList.contains('done')) { begin(); return; }
+    const mo = new MutationObserver(() => { if (loading.classList.contains('done')) { mo.disconnect(); if (waitMo === mo) begin(); } });
+    waitMo = mo;
+    mo.observe(loading, { attributes: true, attributeFilter: ['class'] });
+  },
+  /* Mỗi khung, ngay sau updateCamera(dt): tiễn cầu, dòng thời gian, nhịp, màn tối, tiến trình */
+  update(dt: number): void {
+    if (inSee.off) {
+      const c = deps?.ctrl;
+      if (!c || c.state === 'CLOSED') { inSee.off = false; if (c && inSee.own) c.speed = snap.speed; }   // cầu đã đóng: trả tốc độ quay đã chụp
+      else { c.speed = I.swingSpeed; if (c.state === 'OPEN') c.requestClose(); }
+    }
+    if (!active || clock.paused) return;
+    try {
+      const n = inAdvance(clock, S, dt);
+      if (n >= 0) enterScene(n, false);
+      if (cur >= 0) inScenes[S[cur].id].update(clock.t, dt);
+    } catch (e) { fail(e); return; }
+    if (!active) return;
+    syncSound();                                                                   // chỉ ghi DOM khi audio.on đổi (ui.ts nhớ giá trị đã ghi)
+    const i = clock.i;
+    inUiVeil(inFade(clock.t, S[i].dur, I.fade, i === 0, i === LAST));
+    inUiFill(i, inFill(clock, S, i));
+  },
+  seek(i: number): void { go(i); },
+  next(): void { if (active && clock.i < LAST) go(clock.i + 1); },
+  prev(): void { if (active && clock.i > 0) go(clock.i - 1); },
+  pause(on?: boolean): void {
+    if (!active) return;
+    clock.paused = on === undefined ? !clock.paused : on;
+    inUiPaused(clock.paused);
+  },
+  /* Kết thúc intro, hiện màn chọn */
+  skip(): void { if (!active && !waitMo) return; cleanup(); exRevealChooser(); },
+  /* Nút hành động (spec §5.2): kết thúc, hiện màn chọn rồi bấm hộ đúng phần tử có sẵn */
+  act(kind: InActKind): void {
+    const c = deps?.ctrl;
+    const busy = kind === 'swing' && !!c && c.state !== 'CLOSED';
+    cleanup();
+    if (busy) { inSee.off = false; if (c && inSee.own) c.speed = snap.speed; }                                                  // "Xem cầu quay" khi cầu đang quay: để cầu quay tiếp, không tiễn
+    exRevealChooser();
+    const click = (sel: string) => (document.querySelector(sel) as HTMLElement | null)?.click();
+    if (kind === 'glider' || kind === 'car' || kind === 'bike' || kind === 'walk') { click(`button[data-pick="${kind}"]`); return; }
+    click('button[data-pick="guided"]');
+    if (kind === 'tour') click('[data-view="allTour"]');
+    else if (kind === 'dragon') {
+      click('[data-bridge="dragon"]'); click('[data-view="head"]');
+      const b = document.getElementById('btnShow'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click();
+    } else if (kind === 'swing') {
+      click('[data-bridge="sh"]');
+      if (!busy) document.getElementById('btnSwing')?.click();
+    }
+  }
+};

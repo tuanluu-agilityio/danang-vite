@@ -65,6 +65,7 @@ import { setupEnvUI, type EnvUI } from './ui/envUI';
 import { bindLiveMode } from './ui/liveUI';
 import { createLiveEnv, liveNextDelay, type LiveEnv, type EnvMode } from './realtime/liveEnv';
 import { updateHrUI } from './ui/hrUI';
+import { intro } from './intro';
 
 initI18n();
 void narration.init();
@@ -136,7 +137,11 @@ if (envUi) {
   // Giao diện hai chế độ (D-043 Task 6): chỉ khi có bộ điều khiển; liveEnv null ⇒ không công tắc, không khóa, như trước D-043
   if (liveEnv) { const le = liveEnv, eu = envUi; try { bindLiveMode(le, { store: eu.store, syncSim: ui.syncSim, renderEnv: eu.render }); } catch (e) { console.warn('live: không gắn được giao diện chế độ', e); } }
 }
-setupExplore(songHan.ctrl);
+// Đoạn giới thiệu điện ảnh (D-045): gắn trước setupExplore; tự phát thì màn chọn gắn nhưng chưa hiện (intro hiện khi xong / bỏ qua)
+intro.setup({ ctrl: songHan.ctrl, live: liveEnv });
+const autoIntro = intro.wants(query);
+setupExplore(songHan.ctrl, autoIntro);
+if (autoIntro) intro.play();
 
 /* Móc kiểm thử: chỉ bật khi URL có ?test (dùng cho tests/*.mjs đo draw call và chạy Tour) */
 /* Chỉ các lớp three mà tests/*.mjs dùng: đưa cả namespace THREE vào một object làm Rollup giữ lại mọi export của three (D-018) */
@@ -154,7 +159,7 @@ const multiTest = {
 if (query.has('test')) {
   perf.on = query.has('perf');
   (window as unknown as { __app: unknown }).__app = { reflectState, renderer, scene, camera, controls, cam, shared, songHan, hr: hanTunnel, sunWheel, riverfront, weather, hrDrive, swRide, windFx, THREE: TEST_THREE, dayNight, lights: lightState, tours: TOURS, tour, narration, audio, perf, quality, ui: { ...ui, ui: compactState, openSheet, closeSheets, reveal }, explore, keys, multi: multiTest, exFlight: { exCreate, exStep, exInputFromKeys, exBuildGlider, exPlaceGlider, exChase, CONFIG_explore: CONFIG.explore }, boats: boatsTest, traffic: trafficTest, trees: treesTest, people: peopleTest,
-    stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive, bike, env: envUi, live: liveEnv };
+    stroll: { stroll, stValid, stGroundY, stMove, stCamPlace, CONFIG_stroll: CONFIG.stroll, avatars: stAvatars }, drive, bike, env: envUi, live: liveEnv, intro, show };
 }
 
 /* ============================ Vòng lặp ============================ */
@@ -179,7 +184,9 @@ function animate() {
   updateEffects(dt, time); pt = perf.lap('effects', pt);
   updateTraffic(dt); updateDragonPeople(dt, time, camera); pt = perf.lap('traffic', pt);
   updateBoats(dt, time); pt = perf.lap('boats', pt);
-  updateCamera(dt); explore.update(dt); stroll.update(dt); drive.update(dt); bike.update(dt); pt = perf.lap('camera', pt);
+  updateCamera(dt); intro.update(dt);                      // intro (D-045): camera nhịp toàn cảnh + dòng thời gian; tạm dừng thì bốn chế độ đứng yên
+  if (!intro.hold) { explore.update(dt); stroll.update(dt); drive.update(dt); bike.update(dt); }
+  pt = perf.lap('camera', pt);
   for (let k = 0; k < bridges.length; k++) { bridges[k].update(dt, time, camera); pt = perf.lap(bridgeKeys[k], pt); }
   hanTunnel.holdBoats(songHan.boats.list);
   updateHrUI(camera);

@@ -40,7 +40,8 @@ function setUnderInert(root: HTMLElement, on: boolean): void {
   } else { for (const c of inerted) c.inert = false; inerted.length = 0; }
 }
 
-export function exShowChooser(onPick: (choice: ExChoice) => void, onWatch: (choice: ExChoice) => void = () => {}): void {
+/* opts.defer: gắn mọi thứ như cũ nhưng chưa hiện (intro, D-045, hiện sau bằng exRevealChooser); bỏ trống thì hiện ngay như cũ */
+export function exShowChooser(onPick: (choice: ExChoice) => void, onWatch: (choice: ExChoice) => void = () => {}, opts?: { defer?: boolean }): void {
   const root = el();
   if (!root) return;
   lockGliderOnTouch(root);
@@ -82,10 +83,20 @@ export function exShowChooser(onPick: (choice: ExChoice) => void, onWatch: (choi
       exHideChooser(); onPick(choice);
     });
   });
+  if (!opts?.defer) exRevealChooser();
+}
+
+/* Hiện màn chọn (đã gắn bằng exShowChooser): bỏ ẩn, inert phần dưới, focus thẻ đầu; chờ #loading.done (đặt sau khung đầu) nếu chưa có.
+   Gọi nhiều lần an toàn: đang chờ hoặc đang hiện thì bỏ qua */
+let revealMo: MutationObserver | null = null;
+export function exRevealChooser(): void {
+  const root = el();
+  if (!root || revealMo || !root.hidden) return;
   const show = () => { root.hidden = false; setUnderInert(root, true); root.querySelector<HTMLButtonElement>('button[data-pick]:not(:disabled)')?.focus({ preventScroll: true }); };
   const loading = document.getElementById('loading');
   if (!loading || loading.classList.contains('done')) { show(); return; }
-  const mo = new MutationObserver(() => { if (loading.classList.contains('done')) { mo.disconnect(); show(); } });   // #loading.done được đặt sau khung đầu
+  const mo = new MutationObserver(() => { if (loading.classList.contains('done')) { mo.disconnect(); revealMo = null; show(); } });   // #loading.done được đặt sau khung đầu
+  revealMo = mo;
   mo.observe(loading, { attributes: true, attributeFilter: ['class'] });
 }
 

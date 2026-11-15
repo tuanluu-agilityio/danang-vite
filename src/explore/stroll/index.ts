@@ -27,6 +27,7 @@ import { stCamPlace, stCamDrag, type StCam } from './camera';
 import { stInputFromKeys, stKeyName } from './keys';
 import { stTouchBind } from './touch';
 import { exNightStep } from '../nightShows';
+import { show } from '../../bridges/dragon/effects';
 import { exMulti } from '../multi';
 import { exWatchShow, exWatchHide, exWatchRender, exFlyNotice } from '../multi/watch';
 import type { SwingController } from '../../bridges/song-han/SwingController';
@@ -58,6 +59,7 @@ let touch: ReturnType<typeof stTouchBind> | null = null;   // điều khiển c�
 let chased = false;          // camera đã bám người được xem lần nào chưa (lần đầu đặt thẳng, không trượt từ xa)
 const camS: StCam = { yaw: 0, pitch: CONFIG.stroll.cam.pitch };
 const _inp: StInput = { mx: 0, mz: 0, run: false, camYaw: 0 };   // đầu vào tái dùng mỗi khung
+let saved: { explore: boolean; show: boolean } | null = null;   // thứ start() đổi, stop() trả lại (như drive/index.ts): lớp body 'explore' đã có từ trước chưa, show.on của Cầu Rồng (exNightStep đổi theo trời)
 
 const active = () => cam.mode === 'stroll' && state !== null;
 const inMode = () => active() || watching;   // Esc và giao diện đi dạo áp cho cả chế độ xem
@@ -120,6 +122,8 @@ export const stroll = {
   get state(): StState | null { return state; },
   get map(): StMap | null { return map; },
   get cam(): StCam { return camS; },
+  /* Tự lái (intro, D-045): khác null thì update() gọi auto(_inp) thay cho phím + cần gạt; bên gán ghi vào _inp, không cấp phát */
+  auto: null as ((inp: StInput) => void) | null,
   /* Vào đi: một mình (không phiên / ngoại tuyến) hoặc với slot đi dạo vừa được cấp (xuất phát lệch theo slot) */
   start(): void {
     if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
@@ -133,6 +137,7 @@ export const stroll = {
     if (!mesh.parent) scene.add(mesh);
     stAvatars.setSelf(selfSlot, state);
     keys.clear(); if (touch) touch.reset();
+    if (!saved) saved = { explore: document.body.classList.contains('explore'), show: show.on };
     cam.flight.then = null; cam.mode = 'stroll'; controls.enabled = false;
     stCamPlace(camera, controls.target, state, camS, m, 0, true);
     document.body.classList.add('explore', 'stroll');
@@ -154,9 +159,26 @@ export const stroll = {
   update(dt: number): void {
     if (watching) { watchStep(dt); return; }
     if (!active()) return;
-    stInputFromKeys(keys, camS.yaw, _inp);
-    if (touch) touch.read(_inp);   // cần gạt đang giữ thì ghi đè hướng và chạy của phím
+    if (stroll.auto) stroll.auto(_inp);
+    else {
+      stInputFromKeys(keys, camS.yaw, _inp);
+      if (touch) touch.read(_inp);   // cần gạt đang giữ thì ghi đè hướng và chạy của phím
+    }
     advance(dt, _inp);
+  },
+  /* Rời đi dạo mà không tải lại trang (intro, D-045): bỏ nhân vật của mình, trả lớp body / show.on / camera như trước start(). Đang xem hoặc chưa đi thì không làm gì; gọi nhiều lần an toàn */
+  stop(): void {
+    if (state === null || watching) return;
+    state = null; keys.clear(); if (touch) touch.reset();
+    stAvatars.setSelf(selfSlot, null);
+    stAvatars.mesh?.removeFromParent();   // multi/index.ts và start() tự thêm lại khi cần
+    document.body.classList.remove('stroll');
+    if (saved) {
+      if (!saved.explore) document.body.classList.remove('explore');
+      if (show.on !== saved.show) { show.on = saved.show; show.t = 0; }
+      saved = null;
+    }
+    if (cam.mode === 'stroll') { cam.mode = 'orbit'; controls.enabled = true; }
   },
   photo: stPhoto,
   /* Gọi ngay sau lệnh vẽ khung chính (main.ts): chụp canvas nếu có yêu cầu */

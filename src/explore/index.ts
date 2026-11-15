@@ -11,6 +11,7 @@ import { plPreload, plReset, plSetWarm, plDebug } from './pilot';
 import { exChase } from './chase';
 import { exShowChooser } from './chooser';
 import { exNight, exNightBind, exNightStep } from './nightShows';
+import { show } from '../bridges/dragon/effects';
 import { exMulti } from './multi';
 import { stroll, setupStroll } from './stroll';
 import { drive, setupDrive } from './drive';
@@ -41,6 +42,7 @@ let state: GliderState | null = null;
 let watching = false;   // đang xem người khác bay (hết chỗ hoặc vừa nhường chỗ): không có dù của mình, không đọc phím
 let chased = false;     // camera đã bám người được xem lần nào chưa (lần đầu đặt thẳng, không trượt từ xa)
 let readout = '';   // chữ đang hiện ở #exSpeed: chỉ ghi DOM khi đổi
+let saved: { explore: boolean; show: boolean } | null = null;   // thứ start() đổi, stop() trả lại (như drive/index.ts): lớp body 'explore' đã có từ trước chưa, show.on của Cầu Rồng (exNightStep đổi theo trời)
 
 const active = () => cam.mode === 'glider' && state !== null;
 const inGlider = () => active() || watching;   // Esc và giao diện bay áp cho cả chế độ xem
@@ -92,13 +94,18 @@ export const explore = {
   get watching() { return watching; },
   /* Cho test: số đo người treo của dù mình (pilot/index.ts plDebug); null khi chưa bay */
   pilotDebug() { return glider ? plDebug(glider) : null; },
-  start(): void {
+  /* Tự lái (intro, D-045): khác null thì update() gọi auto(_inp) thay cho phím; bên gán ghi vào _inp, không cấp phát */
+  auto: null as ((inp: GliderInput) => void) | null,
+  /* at: điểm + hướng cất cánh (intro); bỏ trống thì cất cánh ở CONFIG.explore.takeoff như cũ */
+  start(at?: { pos: [number, number, number]; yaw: number }): void {
     plPreload();
     if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
     exMulti.onChange = onMultiChange;
     state = exCreate();
     const slot = exMulti.session ? exMulti.session.mySlot : -1;
     if (slot >= 0) state.pos.z += CONFIG.explore.multi.spawnSpread * (slot - 2);   // mỗi slot cất cánh lệch một đoạn để không chồng nhau
+    if (at) { state.pos.set(at.pos[0], at.pos[1], at.pos[2]); state.yaw = at.yaw; }
+    if (!saved) saved = { explore: document.body.classList.contains('explore'), show: show.on };
     if (!glider) glider = exBuildGlider();
     if (!glider.parent) scene.add(glider);
     glider.visible = true;
@@ -123,7 +130,20 @@ export const explore = {
   update(dt: number): void {
     if (watching) { watchStep(dt); return; }
     if (!active()) return;
+    if (explore.auto) { explore.auto(_inp); advance(dt, _inp); return; }
     advance(dt, exInputFromKeys(keys, _inp));
+  },
+  /* Rời bay mà không tải lại trang (intro, D-045): cất dù, trả lớp body / show.on / camera như trước start(). Đang xem hoặc chưa bay thì không làm gì; gọi nhiều lần an toàn */
+  stop(): void {
+    if (state === null || watching) return;
+    state = null; keys.clear();
+    if (glider) { glider.visible = false; glider.removeFromParent(); }
+    if (saved) {
+      if (!saved.explore) document.body.classList.remove('explore');
+      if (show.on !== saved.show) { show.on = saved.show; show.t = 0; }
+      saved = null;
+    }
+    if (cam.mode === 'glider') { cam.mode = 'orbit'; controls.enabled = true; }
   },
   /* Cho test: như update nhưng nhận đầu vào trực tiếp */
   step(dt: number, inp: GliderInput): void {
@@ -139,7 +159,8 @@ export const explore = {
   },
 };
 
-export function setupExplore(ctrl: SwingController): void {
+/* deferChooser: gắn màn chọn như cũ nhưng chưa hiện (intro hiện bằng exRevealChooser khi xong) */
+export function setupExplore(ctrl: SwingController, deferChooser = false): void {
   exNightBind(ctrl);
   setupStroll(ctrl, () => explore.exit());
   setupDrive(ctrl, () => explore.exit());
@@ -171,12 +192,12 @@ export function setupExplore(ctrl: SwingController): void {
   if (q.get('explore') === 'stroll') { stroll.start(); return; }   // đi dạo một mình, không qua slot
   if (q.get('explore') === 'drive') { drive.start(); return; }   // lái xe một mình
   if (q.get('explore') === 'bike') { bike.start(); return; }     // xe máy một mình
-  if (!q.has('test') || q.has('chooser')) {
+  if (!q.has('test') || q.has('chooser') || deferChooser) {   // deferChooser: ?test&intro cũng cần màn chọn (hiện khi intro xong / bỏ qua)
     document.querySelector('button[data-pick="walk"]')?.addEventListener('click', () => stAvatars.preload());   // chọn thẻ Đi dạo: nạp nhân vật của mình ngay, trong lúc ở sảnh
     document.querySelector('button[data-pick="glider"]')?.addEventListener('click', () => plPreload());   // chọn thẻ Dù lượn: nạp người treo ngay, trong lúc ở sảnh
     document.querySelector('button[data-pick="car"]')?.addEventListener('click', () => drive.preload());   // chọn thẻ Ô tô: nạp mô hình xe ngay
     document.querySelector('button[data-pick="bike"]')?.addEventListener('click', () => bike.preload());   // chọn thẻ Xe máy: nạp mô hình xe máy ngay (Task 3)
     exShowChooser((choice) => { if (choice === 'glider') explore.start(); else if (choice === 'walk') stroll.start(); else if (choice === 'car') drive.start(); else if (choice === 'bike') bike.start(); },
-      (choice) => { if (choice === 'walk') stroll.startWatching(); else if (choice === 'car') drive.startWatching(); else if (choice === 'bike') bike.startWatching(); else explore.startWatching(); });   // 'guided': màn chọn tự ẩn, giao diện cũ
+      (choice) => { if (choice === 'walk') stroll.startWatching(); else if (choice === 'car') drive.startWatching(); else if (choice === 'bike') bike.startWatching(); else explore.startWatching(); }, { defer: deferChooser });   // 'guided': màn chọn tự ẩn, giao diện cũ
   }
 }

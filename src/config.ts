@@ -1335,6 +1335,35 @@ const peopleBase = {
   }
 };
 
+/* ------------------------- Đoạn giới thiệu điện ảnh -------------------------
+   Chuỗi 9 nhịp tự chạy khi mở trang (docs/superpowers/specs/2026-11-15-intro-dien-anh-design.md, D-045). Mọi số đều (ước lượng) */
+const introBase = {
+  fade: 0.45,                          // s — màn tối dần ở cuối nhịp và sáng dần ở đầu nhịp (ước lượng)
+  nightRamp: [1.0, 6.5],               // s — nhịp daynight: dayNight.target đi 0 → 1 tuyến tính trong khoảng này (ước lượng)
+  swingSpeed: 30,                      // lần — hệ số tăng tốc quay Cầu sông Hàn, bằng Tour (ước lượng)
+  drift: 0.012,                        // rad/s — camera trôi quanh điểm nhìn khi finale đã hết và khi tạm dừng không áp (ước lượng)
+  dragon: { fireAt: 1.2, waterAt: 5.8 },   // s trong nhịp dragon — bật show (show.t = 0); nhảy show.t = 27 để bắt đầu phun nước (ước lượng)
+  scenes: [                            // s — thứ tự nhịp, chương và thời lượng (ước lượng)
+    { id: 'welcome', chapter: 1, dur: 7 }, { id: 'glider', chapter: 2, dur: 4.5 }, { id: 'car', chapter: 2, dur: 4.5 }, { id: 'bike', chapter: 2, dur: 4.5 },
+    { id: 'walk', chapter: 2, dur: 4.5 }, { id: 'daynight', chapter: 3, dur: 8 }, { id: 'dragon', chapter: 4, dur: 9 }, { id: 'swing', chapter: 5, dur: 9 }, { id: 'finale', chapter: 6, dur: 6 }
+  ] as { id: 'welcome' | 'glider' | 'car' | 'bike' | 'walk' | 'daynight' | 'dragon' | 'swing' | 'finale'; chapter: number; dur: number }[],
+  shots: {                             // m — tư thế camera đầu / cuối của nhịp toàn cảnh (ước lượng)
+    welcome:  { from: { pos: [-420, 520, 1900], target: [0, 0, -300] },  to: { pos: [-150, 80, 820],  target: [20, -20, 80] } },   // trên cao phía Nam hạ thấp, tiến gần: cuối nhịp Cầu Rồng ≈ 1/3 bề ngang, sông dẫn về Cầu sông Hàn, chân trời ở 1/3 trên
+    daynight: { from: { pos: [-520, 190, 420],  target: [-10, 20, -280] }, to: { pos: [-420, 150, 300],  target: [-30, 20, -340] } },   // điểm nhìn lệch về Bắc để Cầu Rồng nằm bên phải khối chữ
+    dragon:   { from: { pos: [392, 72, 66],    target: [316, 10, -2] },  to: { pos: [380, 20, 52],     target: [316, 17, 3] } },   // cần cẩu hạ từ trên cao xuống cận cảnh đầu rồng góc thấp (gần góc VIEWS.head), đầu rồng bên phải khối chữ, thân chạy về phía sau; đường hạ gần như thẳng đứng để không xuyên tòa nhà bờ Đông
+    swing:    { from: { pos: [260, 120, -760],  target: [-40, 6, -1040] }, to: { pos: [150, 90, -860],  target: [-70, 6, -1020] } },   // nhịp xoay + khoảng sông mở nằm nửa phải khung
+    finale:   { from: { pos: [-150, 60, 250],   target: [40, 20, -60] },  to: { pos: [-560, 190, 300], target: [300, 0, -900] } }     // từ sát Cầu Rồng sáng đèn lùi lên vừa phải: cuối nhịp Cầu Rồng ở góc dưới phải, sông dẫn lên Cầu sông Hàn
+  } as Record<'welcome' | 'daynight' | 'dragon' | 'swing' | 'finale', { from: { pos: [number, number, number]; target: [number, number, number] }; to: { pos: [number, number, number]; target: [number, number, number] } }>,
+  demo: {
+    glider: { pos: [0, 80, 150], yaw: Math.PI / 2, turnFrom: 3.4, turnTo: 4.0, turn: 1, climb: 0 },   // m, rad, s — đặt dù phía Nam Cầu Rồng bay về Bắc (≈ 50 m/s), qua cầu ở ≈ 3 s; rẽ trái nhẹ trong [turnFrom, turnTo] s (ước lượng)
+    car:    { gas: 1, camYawFrom: 1.0, camYawTo: 0, camPitchFrom: 0.35, camYawS: 3.2 },   // rad — camera lệch quanh xe (drive.cam.yaw) về 0 và nâng (drive.cam.pitch, trên nóc xe AI) về 0 trong camYawS giây (ước lượng)
+    bike:   { gas: 1, viewAt: 2.0, place: [60, 1291.625, Math.PI] as [number, number, number] | null },   // s — lúc chuyển góc thứ nhất → thứ ba; place: m, m, rad — chỗ xuất phát riêng (bike.placeAt), làn giữa chiều đi Tây cầu Trần Thị Lý, chạy về tháp nghiêng x = −130; null = chỗ xuất phát mặc định trên Cầu Rồng như ô tô (ước lượng)
+    walk:   { run: false, camYawFrom: -0.5, camYawS: 3.5 }              // rad — camera lệch (so với hướng đi; âm: về phía mặt đường, dương đụng lan can) về 0 trong camYawS giây (ước lượng)
+  },
+  storeKey: 'cauRong.intro', seenKey: 'cauRong.introSeen', playKey: 'cauRong.introPlay'   // khóa localStorage / sessionStorage
+};
+export type IntroConfig = typeof introBase;
+
 /* ------------------------- Nhạc chủ đề "The Spirit of Da Nang" (D-046) ------------------------- */
 /* docs/superpowers/specs/2026-11-15-nhac-nen-moi-design.md. Nhạc tổng hợp bằng Web Audio theo bản tổng phổ ở src/audio/score.ts, bộ phát ở src/audio/music.ts.
    Mọi số ở đây là ước lượng theo tai nghe / số đo biên độ của bản kết xuất ngoại tuyến, chưa có nguồn công bố. */
@@ -1393,7 +1422,8 @@ export const CONFIG = {
   trees: treesBase,
   people: peopleBase,
   music: musicBase,
-  live: liveBase
+  live: liveBase,
+  intro: introBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;
 export type HanTunnelConfig = typeof CONFIG.hanTunnel;

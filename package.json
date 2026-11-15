@@ -30,6 +30,7 @@
     "test:citynight": "node tests/citynight-check.mjs",
     "test:multi": "node tests/multi-check.mjs",
     "test:env:unit": "tsx --test tests/env-unit/*.test.ts",
+    "test:intro:unit": "tsx --test tests/intro-unit/*.test.ts",
     "test:live:unit": "tsx --test tests/live-unit/*.test.ts",
     "test:env": "node tests/env-check.mjs",
     "test:live": "node tests/live-check.mjs",

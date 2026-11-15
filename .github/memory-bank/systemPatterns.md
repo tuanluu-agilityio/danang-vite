@@ -159,6 +159,14 @@ Không kế thừa `BridgeBase`: module `index.ts` giữ một đối tượng `
 - Worktree đặt trong `.worktrees/` dùng `node_modules` của thư mục cha qua cơ chế tìm ngược của Node: không cần junction, không `npm ci` / `npm install` ở gốc worktree; chỉ `server/multi` cần `npm --prefix server/multi ci` riêng để có `wrangler`.
 - Giao diện từ PR #37: `#exChat` không nền, luôn hiện khi `body.explore.ex-chat`, `pointer-events:none` tới khi có lớp `.open` (không dùng `hidden`); ô nhập / dòng trạng thái ẩn bằng `visibility` để giữ chỗ (mở không làm dòng tin nhảy); danh sách dồn đáy bằng `:first-child{margin-top:auto}` (không `justify-content:flex-end`, vì vậy mới cuộn lên được); tin cũ gắn lớp `.old` trong `tick()` (500 ms), CSS chỉ ẩn khi chưa mở. Thêm dòng tin vẫn chỉ bằng `textContent`.
 
+## Mẫu đoạn giới thiệu điện ảnh (`src/intro/`, D-045)
+- Intro **không dựng cảnh riêng**: nó mượn các hệ thật. Mỗi chế độ khám phá (`explore`, `stroll`, `drive`, `bike`) có móc `auto` (hàm trả đầu vào điều khiển mỗi khung thay cho phím) và `stop()` (thoát **không** tải lại trang, trả `show.on` / `show.t`, camera, lớp `body`); chế độ mới muốn có mặt trong intro phải có đủ hai thứ đó và chạy được một mình (không mở phiên nhiều người).
+- `cam.mode = 'intro'`: `updateCamera` bỏ qua, `intro.update(dt)` đặt tư thế ngay sau; khi `intro.hold` thì vòng `animate` không gọi `update` của các chế độ khác ngoài chế độ intro đang mượn. Thêm `CameraMode` mới thì xem lại `ui/swingUI.ts` và ánh xạ nhạc theo chế độ (D-046).
+- Dòng thời gian (`timeline.ts`) và tư thế (`shots.ts`) là hàm thuần, test bằng node; `scenes.ts` chỉ chứa `enter` / `step` / `leave` của từng nhịp và **mọi** thứ `enter` bật thì `leave` phải trả (bỏ qua / tua có thể xảy ra ở bất kỳ khung nào). Cầu sông Hàn đang quay khi bỏ qua được "tiễn" đóng lại ở `intro.update` sau khi intro đã trả điều khiển.
+- Nạp trước mô hình của các chế độ chỉ sau khung đầu (`begin()`), không trong `play()`: gọi trước khi prewarm xong làm three ném "reading 'isReady'".
+- Khóa lưu trữ: `localStorage['cauRong.intro'] = 'off'` (không hiện lại), `sessionStorage['cauRong.introSeen']` (đã xem trong phiên), `sessionStorage['cauRong.introPlay']` (nút Xem lại đặt rồi tải lại trang); mọi truy cập bọc `try`. Tham số URL: `?intro` ép phát (cả khi `?test`), `?intro=off` tắt.
+- Ở chế độ Trực tiếp (D-043) intro chuyển `LiveEnv` sang `manual` lúc phát và trả lại lúc dọn; nút hành động của intro **bấm hộ** phần tử sẵn có (`button[data-pick=…]`, `[data-view=…]`, `#btnShow`, `#btnSwing`, `#btnMusic`) thay vì gọi thẳng hàm, nên đổi `id` / `data-*` của các nút đó phải sửa `src/intro/ui.ts`.
+
 ## Mẫu kiểm thử
 - `?test` → `window.__app` (renderer, scene, camera, cam, songHan, hr, tours, narration…). Thêm đối tượng mới vào `__app` khi cần kiểm.
 - `tests/lib.mjs`: `serveDir`, `launch` (SwiftShader), `openApp`, `frames`, `waitFlight`. Test đọc `dist/` → build trước.

@@ -51,6 +51,7 @@ import type { DrInput } from '../drive/motion';
 import { drEnsureNet } from '../drive';
 import { trNearby } from '../../common/trafficQuery';
 import { exNightStep } from '../nightShows';
+import { show } from '../../bridges/dragon/effects';
 import { weatherU, shared } from '../../core/shared';
 import { bkCreate, bkStep, bkRecover, bkSignal, bkPitch, BK_BODY, type BkState, type BkInput } from './motion';
 import { bkInputFromKeys, BK_KEYS } from './keys';
@@ -106,7 +107,7 @@ let touch: ReturnType<typeof drTouchBind> | null = null;                      //
 const readTouch = (o: DrInput): void => { if (touch) touch.read(o); };
 let hornTouch = false;                                                        // đang giữ nút 📢
 const boxes: DrBox[] = [];          // hộp xe tự động gần xe, tái dùng mỗi khung
-let saved: { fov: number; near: number; explore: boolean } | null = null;   // thứ start() đổi, stop() trả lại
+let saved: { fov: number; near: number; explore: boolean; show: boolean } | null = null;   // thứ start() đổi, stop() trả lại (show: show.on của Cầu Rồng, exNightStep đổi theo trời)
 const _snd: BkSoundIn = { v: 0, rpm: 0, throttle: 0, brakeK: 0, sus: 0, sig: 0, rain: 0, tunnel: false, river: 0, view: 1, near: boxes, nNear: 0, x: 0, z: 0, yaw: 0, t: 0 };   // đầu vào âm thanh tái dùng mỗi khung
 
 let watching = false;               // đang xem xe người khác (hết chỗ lái hoặc vừa nhường chỗ): không có xe của mình, không đọc phím
@@ -282,6 +283,8 @@ export const bike = {
   /* Đổi góc nhìn: trộn vị trí + hướng + fov + near trong cam1.mixS, không dừng xe */
   setView(v: 1 | 3): void { camB.view = v === 3 ? 3 : 1; },
   get watching(): boolean { return watching; },
+  /* Tự lái (intro, D-045): khác null thì update() gọi auto(_inp) thay cho phím + cảm ứng, còi tắt; grip và gió giật vẫn tính sau như cũ. Bên gán ghi vào _inp, không cấp phát */
+  auto: null as ((inp: BkInput) => void) | null,
   /* Vào lái: một mình (không phiên / ngoại tuyến) hoặc với slot lái vừa được cấp (xuất phát theo slot) */
   start(): void {
     if (watching) { watching = false; document.body.classList.remove('ex-watching'); exWatchHide(); }
@@ -306,7 +309,7 @@ export const bike = {
     driveView.far = CONFIG.drive.tunnelFar;   // mặt đường hầm hiện ở nút giao với hai đường dọc mới, như ô tô
     bkKeys.clear(); touch?.reset(); hornTouch = false;
     drHudShow(n); bkHudShow(); bkSound.start();
-    if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore') };
+    if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore'), show: show.on };
     cam.flight.then = null; cam.mode = 'bike'; controls.enabled = false;
     riderEye();
     bkCamPlace(camera, state, camB, n, 0, true); onResize();   // fov / near góc thứ nhất; onResize cập nhật ma trận chiếu và hệ số cỡ điểm
@@ -329,7 +332,7 @@ export const bike = {
     exDrivers.setSelf(-1);
     driveView.far = CONFIG.drive.tunnelFar;
     drHudShow(n);
-    if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore') };
+    if (!saved) saved = { fov: camera.fov, near: camera.near, explore: document.body.classList.contains('explore'), show: show.on };
     cam.flight.then = null; cam.mode = 'bike'; controls.enabled = false;
     camW.yaw = 0; camW.pitch = 0; camW.idle = 0;
     document.body.classList.add('explore', 'drive', 'bike', 'ex-watching');
@@ -339,9 +342,12 @@ export const bike = {
   update(dt: number): void {
     if (watching) { watchStep(dt); return; }
     if (!active()) return;
-    bkInputFromKeys(bkKeys, _inp);
-    bkTouchMerge(_inp, _dr, readTouch);   // gộp cảm ứng, không xóa phím (máy lai)
-    bkSound.horn(bkKeys.has('KeyH') || hornTouch);
+    if (bike.auto) { bike.auto(_inp); bkSound.horn(false); }
+    else {
+      bkInputFromKeys(bkKeys, _inp);
+      bkTouchMerge(_inp, _dr, readTouch);   // gộp cảm ứng, không xóa phím (máy lai)
+      bkSound.horn(bkKeys.has('KeyH') || hornTouch);
+    }
     const s = state!, tun = bkInTunnel(net!, s) && bkCovered(s), wd = weatherU.uWindDir.value;
     _inp.grip = bkGrip(weatherU.uWet.value, tun);                                       // mặt ướt (trễ theo mưa); đoạn hầm kín luôn khô
     _inp.steer += bkGustSteer(s.v, weatherU.uGust.value, wd[0], wd[1], s.yaw);        // gió giật đẩy nhẹ độ nghiêng (≤ fx.gust.steer)
@@ -369,6 +375,7 @@ export const bike = {
     if (saved) {
       if (!saved.explore) document.body.classList.remove('explore');
       camera.fov = saved.fov; camera.near = saved.near; onResize();   // onResize tính lại ma trận chiếu theo fov / near cũ
+      if (show.on !== saved.show) { show.on = saved.show; show.t = 0; }
       saved = null;
     }
     if (cam.mode === 'bike') { cam.mode = 'orbit'; controls.enabled = true; }
