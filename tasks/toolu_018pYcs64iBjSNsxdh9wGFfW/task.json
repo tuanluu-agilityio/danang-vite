@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_018pYcs64iBjSNsxdh9wGFfW",
+  "agent_id": "a302fe1790bb266c7",
+  "subagent_type": "general-purpose",
+  "task_description": "Builder check on hero spec",
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 138623,
+    "cache_read_tokens": 328773,
+    "output_tokens": 4125,
+    "api_call_count": 4
+  },
+  "started_at": "2026-11-15T17:23:19.3844425+07:00",
+  "completed_at": "2026-11-15T17:24:13.4254778+07:00"
+}
