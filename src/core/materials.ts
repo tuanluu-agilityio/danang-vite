@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { shared } from './shared';
 import { canvasTex } from './textures';
 import { makeRoadTexture } from '../common/textures';
+import { mtMaterial } from '../environment/mountainMat';
 import { trLeafTexture, trFrondTexture } from '../common/trees/textures';
 
 /* ============================ Vật liệu dùng chung ============================ */
@@ -27,7 +28,7 @@ export const MAT = {
   land: new THREE.MeshStandardMaterial({ color: 0x9a9f86, roughness: 1 }),
   sand: new THREE.MeshStandardMaterial({ color: 0xe2d3a8, roughness: 1 }),
   grass: new THREE.MeshStandardMaterial({ color: 0x5f8a45, roughness: 1 }),
-  mountain: new THREE.MeshStandardMaterial({ color: 0x2f4c33, roughness: 1, flatShading: true }),
+  mountain: mtMaterial(),   // núi rừng (D-047): màu đỉnh + vân tán trong shader, environment/mountainMat.ts
   /* Cây (src/common/trees/): màu vỏ / độ sáng tán / màu tàu lá nằm trong màu đỉnh của hình ⇒ mọi lưới dùng 3 vật liệu này phải có thuộc tính color */
   trunk: new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1 }),
   leaf: new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, map: trLeafTexture(), roughness: 0.9 }),   // sắc xanh từng cây: instanceColor

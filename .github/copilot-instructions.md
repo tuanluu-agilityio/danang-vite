@@ -57,6 +57,7 @@ npm run test:boats:unit # tàu thuyền: vị trí tàu tụ tập, vùng cấm,
 npm run test:boats     # tàu thuyền: đội tàu, chuỗi rand() giữ nguyên, tàu tụ tập ngày/đêm/bão, LED trên sông; đọc dist/
 npm run test:traffic:unit # xe cộ: kích thước, hướng mặt, thông số từng loại xe (nhanh, không trình duyệt)
 npm run test:traffic   # xe cộ: một lệnh vẽ mỗi hệ, chuỗi rand() giữ nguyên, đèn theo đêm, bão dọn xe, tắt làn; đọc dist/
+npm run test:terrain:unit # núi Sơn Trà + Hải Vân (D-047): hàm độ cao tất định, đỉnh dưới điểm cất cánh dù lượn, không phủ đất bờ Đông, không vách dốc > 62°, đường chân trời ≥ 3 đỉnh, trần tam giác lưới (nhanh, không trình duyệt); xem ảnh: `node tests/sontra-shots.mjs [--label=after] [--dist=<dist khác>]` (GPU thật, ghi `tests/screens/sontra/`)
 npm run test:trees:unit # cây: hình học cây bóng mát / dừa, trần tam giác, thân cong (nhanh, không trình duyệt)
 npm run test:trees     # cây: 6 lưới, vị trí + chuỗi rand() giữ nguyên, dọn cây, cây đổ dựng lại, gió bám thân, dừa cửa hầm, ảnh; đọc dist/
 npm run test:music:unit # nhạc chủ đề (D-046): bản tổng phổ `src/audio/score.ts` (độ dài, thang âm, hợp âm), ánh xạ `cam.mode` → bản phối, `CONFIG.music` (nhanh, không trình duyệt)

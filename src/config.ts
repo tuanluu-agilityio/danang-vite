@@ -1255,6 +1255,53 @@ const vehiclesBase = {
   maxVerts: 2000                                    // đỉnh — trần tổng số đỉnh hình học gộp 3 loại xe
 };
 
+/* ===== Núi Sơn Trà + dãy Hải Vân (D-047): lưới địa hình theo hàm độ cao, phủ rừng. Hình dạng sống núi ở src/environment/terrain.ts ===== */
+const sonTraBase = {
+  cell: 22,            // m — cạnh ô lưới Sơn Trà (ước lượng: nhìn từ cầu cách 3–6 km, 1 điểm ảnh ≈ 3–6 m)
+  cellFar: 64,         // m — cạnh ô lưới dãy Hải Vân (xa 6–10 km)
+  maxTris: 140000,     // tam giác — trần của cả lưới núi (có test kiểm)
+  slopePow: 1.1,      // số mũ mặt cắt sườn: > 1 thì sườn lõm, chân thoải (ước lượng)
+  footEase: 0.28,      // 0..1 — hạ thêm ở chân sườn cho chân núi thoải ra biển (ước lượng)
+  crestRound: 0.05,     // phần bề rộng sườn dùng bo tròn đỉnh sống (ước lượng)
+  crestVar: 0.1,       // 0..1 — đường sống nhấp nhô: hạ tối đa bấy nhiêu phần độ cao (ước lượng)
+  crestLen: 330,       // m — bước nhấp nhô dọc sống (ước lượng)
+  blend: 90,           // m — độ mượt khi hợp các sống núi (ước lượng)
+  spurLen: 520,        // m — khoảng cách điển hình giữa hai dông phụ dọc sống (ước lượng)
+  spurAmp: 0.34,        // 0..1 — dông phụ thò ra / khe thụt vào so với bề rộng sườn (ước lượng)
+  warpLen: 1500,       // m — bước của nhiễu vặn miền (ước lượng)
+  warpAmp: 210,        // m — biên độ vặn miền, làm sống và đường bờ cong tự nhiên (ước lượng)
+  warp2Len: 420,       // m — bước của lớp vặn miền nhỏ (ước lượng)
+  warp2Amp: 32,        // m — biên độ lớp vặn nhỏ, làm khe xói uốn lượn thay vì song song (ước lượng)
+  gullyLen: 640,       // m — bước của khe xói (ước lượng)
+  gullyAmp: 0.12,       // 0..1 — khe xói khoét sâu nhất bao nhiêu phần độ cao (ước lượng)
+  gullyCrest: 0.85,    // 0..1 — giảm khe xói ở gần đỉnh để đỉnh giữ độ cao (ước lượng)
+  bumpLen: 170,        // m — bước gồ ghề nhỏ (ước lượng)
+  bumpAmp: 11,         // m — biên độ gồ ghề nhỏ (ước lượng)
+  seaDrop: 7,          // m — chân núi chìm dưới mặt nước bấy nhiêu để mép nước cắt gọn (ước lượng)
+  coastAmp: 16,        // m — đường bờ lệch lên xuống theo nhiễu (ước lượng)
+  keepX: 1480,         // m — mép Đông của đất liền bờ Đông (river.ts): phía Tây x này và phía Nam keepZ là đất, đường, nhà, núi không được phủ
+  keepZ: -3700,        // m — mép Bắc của đất bờ Đông (bridges/thuan-phuoc/site.ts)
+  keepY: 2.3,          // m — trần độ cao núi tại mép đất (dưới landY 2,5)
+  keepRamp: 620,       // m — ra xa mép đất bấy nhiêu thì núi đạt đủ độ cao (ước lượng)
+  /* màu (sRGB) nướng vào đỉnh */
+  forestDark: 0x142e24, // rừng trong khe / sườn khuất (ước lượng theo ảnh)
+  forestMid: 0x28502a,  // rừng thường (ước lượng theo ảnh)
+  forestLight: 0x4a7338, // tán được nắng trên dông (ước lượng theo ảnh)
+  forestDry: 0x5d6d3a,  // mảng lá vàng / trảng cây bụi (ước lượng theo ảnh)
+  rock: 0x7a7265,      // đá lộ ở dốc đứng (ước lượng theo ảnh)
+  shore: 0x8f8773,     // đá / cát mép nước (ước lượng theo ảnh)
+  rockSlope: [0.66, 0.54] as [number, number],   // normal.y — bắt đầu / hoàn toàn là đá (≈ 49° → 57°) (ước lượng)
+  shoreY: [6, 1.5] as [number, number],           // m — dải đá mép nước: bắt đầu / hoàn toàn (ước lượng)
+  aoNear: 4,           // ô — bán kính so độ cao cho độ khuất khe nhỏ
+  aoFar: 13,           // ô — bán kính so độ cao cho độ khuất thung lũng lớn
+  aoGain: 0.75,         // hệ số độ khuất (ước lượng)
+  /* vân tán rừng trong shader: bề rộng một lần lặp texture (m) cho tán cây, cụm tán, mảng sắc độ */
+  tile: [140, 560, 2600] as [number, number, number],   // m (ước lượng)
+  canopyTone: [0.66, 1.26] as [number, number],          // hệ số sáng ở kẽ tán / đỉnh tán (ước lượng)
+  canopyBump: 1.7,     // độ nghiêng pháp tuyến theo vân tán, để tán bắt nắng (ước lượng)
+  hueAmp: 0.38         // 0..1 — mức lệch sang sắc vàng của các mảng lớn (ước lượng)
+};
+
 /* ------------------------- Cây ------------------------- */
 /* docs/superpowers/specs/2026-11-11-cay-va-nguoi-thuc-te-design.md — cây bóng mát (G1) và cây dừa (G2).
    Hình dáng: src/common/trees/shapes.ts (không gian chuẩn hóa, instance nhân cỡ thật); texture canvas: src/common/trees/textures.ts. */
@@ -1420,6 +1467,7 @@ export const CONFIG = {
   bike: bikeBase,
   vehicles: vehiclesBase,
   trees: treesBase,
+  sonTra: sonTraBase,
   people: peopleBase,
   music: musicBase,
   live: liveBase,

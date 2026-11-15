@@ -36,6 +36,7 @@
     "test:live": "node tests/live-check.mjs",
     "test:multi:unit": "tsx --test tests/multi-unit/*.test.ts",
     "test:multi:worker": "node tests/multi-unit/worker.integration.mjs",
+    "test:terrain:unit": "tsx --test tests/terrain-unit/*.test.ts",
     "test:boats:unit": "tsx --test tests/boats-unit/*.test.ts",
     "test:boats": "node tests/boats-check.mjs",
     "test:traffic:unit": "tsx --test tests/traffic-unit/*.test.ts",
