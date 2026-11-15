@@ -1,6 +1,6 @@
 # Thẻ ảnh ở màn chọn phương tiện (D-044)
 
-_2026-11-15 · nhánh `feature/the-chon-che-do` (từ `main` `80273c9`, gộp `305b883`) · trạng thái: đã triển khai trên nhánh, chưa mở PR_
+_2026-11-15 · nhánh `feature/the-chon-che-do` (từ `main` `80273c9`, gộp `305b883`) · trạng thái: đã triển khai (PR #40)_
 
 Bản yêu cầu của người dùng ("Enhancement: Visual Mode Selection Panel", 2026-11-15) bảo xem mã thật rồi làm tới cùng, không dừng ở bản đề xuất; các lựa chọn dưới đây là của agent, người dùng chưa duyệt từng mục.
 
