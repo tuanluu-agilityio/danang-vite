@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M7EYJ5W15CJSX0VWSMHG4H17",
+  "session_id": "74301d8d-691a-4249-a652-af2a3f1cdff1",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-15T06:33:24.0010938Z",
+  "branch": "feature/ven-song-chan-thuc",
+  "checkpoints_count": 4,
+  "save_step_count": 5,
+  "files_touched": [
+    "src/config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5-2",
+  "turn_id": "f6cd0debad7e",
+  "checkpoint_transcript_start": 1557,
+  "transcript_lines_at_start": 1557,
+  "compact_transcript_start": 112,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 5
+  }
+}
