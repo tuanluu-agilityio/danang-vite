@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01CDsY88yeB6q4c6aMFJg36X",
+  "agent_id": "a9720bd40f354fb40",
+  "task_description": "Review intro Task 2",
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 115570,
+    "cache_read_tokens": 833735,
+    "output_tokens": 9434,
+    "api_call_count": 10
+  },
+  "started_at": "2026-11-15T09:42:49.1025991+07:00",
+  "completed_at": "2026-11-15T09:44:27.0733678+07:00"
+}

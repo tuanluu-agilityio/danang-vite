@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_01JhPjMEKmcrDGVtaE9Mo8Yo",
+  "agent_id": "a6b264c180e50e5e2",
+  "task_description": "Intro Task 2 mode hooks",
+  "token_usage": {
+    "input_tokens": 54,
+    "cache_creation_tokens": 196146,
+    "cache_read_tokens": 4240985,
+    "output_tokens": 20036,
+    "api_call_count": 27
+  },
+  "started_at": "2026-11-15T09:36:32.1566744+07:00",
+  "completed_at": "2026-11-15T09:42:11.132664+07:00"
+}
