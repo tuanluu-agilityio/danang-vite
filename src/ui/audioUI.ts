@@ -1,6 +1,7 @@
 import { audio } from '../audio';
 import { narration } from '../audio/narration';
 import { onChange } from '../i18n';
+import { CONFIG } from '../config';
 
 /* Nút nhạc nền: trình duyệt chỉ cho phát âm thanh sau khi người xem bấm */
 export function setupAudioUI() {
@@ -16,9 +17,12 @@ export function setupAudioUI() {
     if (audio.on) audio.stop(); else audio.start();
     save(KEY, audio.on ? 'on' : 'off'); sync();
   });
+  vol.addEventListener('change', () => { if (document.body.classList.contains('explore')) vol.blur(); });   // đang khám phá: trả phím mũi tên cho điều khiển
   vol.addEventListener('input', () => { audio.setVolume(Number(vol.value) / 100 * 0.9); save(KEY + '.vol', vol.value); });
-  // Lần trước đã bật nhạc: phát lại ngay khi người xem chạm vào trang lần đầu
-  if (load(KEY) === 'on') {
+  // Nhạc bật ở thao tác đầu tiên của người xem (trình duyệt không cho phát trước đó): lần trước đã bật, hoặc chưa từng chọn (D-046: nhạc là một phần trải nghiệm;
+  // ai đã tắt thì giữ tắt). ?test chỉ theo lựa chọn đã lưu để các test cũ không tự có âm thanh
+  const auto = CONFIG.music.autoStart && load(KEY) === null && !new URLSearchParams(location.search).has('test');
+  if (load(KEY) === 'on' || auto) {
     const arm = (e: Event) => {
       const el = e.target as Element;
       if (el && el.closest && el.closest('#btnMusic')) return;
