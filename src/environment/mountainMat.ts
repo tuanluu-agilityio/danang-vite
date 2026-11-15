@@ -49,9 +49,9 @@ export function mtMaterial() {
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
   {
     float e2 = 6.0 / ${f(T.tile[1])}, e1 = 1.6 / ${f(T.tile[0])};
-    vec2 mtG = vec2(texture2D(uMtTex, mtU2 + vec2(e2, 0.0)).r - mtC2, texture2D(uMtTex, mtU2 + vec2(0.0, e2)).r - mtC2) * 0.62
+    vec2 mtG = vec2(texture2D(uMtTex, mtU2 + vec2(e2, 0.0)).r - mtC2, texture2D(uMtTex, mtU2 + vec2(0.0, e2)).r - mtC2).yx * 0.62
              + vec2(texture2D(uMtTex, mtU1 + vec2(e1, 0.0)).r - mtC1, texture2D(uMtTex, mtU1 + vec2(0.0, e1)).r - mtC1) * 0.38;
-    // mtU2 lấy theo (z, x) nên đổi chỗ gradient của lớp cụm tán: gần đúng là đủ cho vân rừng
+    // mtU2 lấy theo (z, x) nên gradient của lớp cụm tán đổi chỗ (.yx) về trục thế giới
     normal = normalize(normal - (viewMatrix * vec4(mtG.x, 0.0, mtG.y, 0.0)).xyz * ${f(T.canopyBump)} * mtVeg);
   }`);
   };

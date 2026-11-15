@@ -1255,9 +1255,6 @@ const vehiclesBase = {
   maxVerts: 2000                                    // đỉnh — trần tổng số đỉnh hình học gộp 3 loại xe
 };
 
-/* ------------------------- Cây ------------------------- */
-/* docs/superpowers/specs/2026-11-11-cay-va-nguoi-thuc-te-design.md — cây bóng mát (G1) và cây dừa (G2).
-   Hình dáng: src/common/trees/shapes.ts (không gian chuẩn hóa, instance nhân cỡ thật); texture canvas: src/common/trees/textures.ts. */
 /* ===== Núi Sơn Trà + dãy Hải Vân (D-047): lưới địa hình theo hàm độ cao, phủ rừng. Hình dạng sống núi ở src/environment/terrain.ts ===== */
 const sonTraBase = {
   cell: 22,            // m — cạnh ô lưới Sơn Trà (ước lượng: nhìn từ cầu cách 3–6 km, 1 điểm ảnh ≈ 3–6 m)
@@ -1304,6 +1301,10 @@ const sonTraBase = {
   canopyBump: 1.7,     // độ nghiêng pháp tuyến theo vân tán, để tán bắt nắng (ước lượng)
   hueAmp: 0.38         // 0..1 — mức lệch sang sắc vàng của các mảng lớn (ước lượng)
 };
+
+/* ------------------------- Cây ------------------------- */
+/* docs/superpowers/specs/2026-11-11-cay-va-nguoi-thuc-te-design.md — cây bóng mát (G1) và cây dừa (G2).
+   Hình dáng: src/common/trees/shapes.ts (không gian chuẩn hóa, instance nhân cỡ thật); texture canvas: src/common/trees/textures.ts. */
 const treesBase = {
   maxTris: { shadeCrown: 700, shadeTrunk: 150, palmCrown: 450, palmTrunk: 120, palmStatic: 260 },   // tam giác — trần mỗi hình (spec §6, quyết định của agent), unit test giữ
   shade: {

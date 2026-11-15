@@ -31,6 +31,20 @@ test('không vách hình học: dốc giữa hai mẫu kề ≤ 62°', () => {
   assert.ok(worst <= lim, `chênh lớn nhất ${worst.toFixed(1)} m trên ${c} m`);
 });
 
+test('liền mạch: bước 1 m không nhảy quá 3 m (không vệt nối ở mũi sống)', () => {
+  let worst = 0, at = '';
+  const scan = (hf: (x: number, z: number) => number, x0: number, x1: number, z0: number, z1: number, n: number) => {
+    for (let k = 0; k < n; k++) {
+      const z = z0 + (z1 - z0) * (k + 0.37) / n; let p = hf(x0, z);
+      for (let x = x0 + 1; x <= x1; x++) { const h = hf(x, z); if (Math.max(h, p) > 5 && Math.abs(h - p) > worst) { worst = Math.abs(h - p); at = `(${x}, ${z.toFixed(0)})`; } p = h; }
+      const x = x0 + (x1 - x0) * (k + 0.61) / n; p = hf(x, z0);
+      for (let zz = z0 + 1; zz <= z1; zz++) { const h = hf(x, zz); if (Math.max(h, p) > 5 && Math.abs(h - p) > worst) { worst = Math.abs(h - p); at = `(${x.toFixed(0)}, ${zz})`; } p = h; }
+    }
+  };
+  scan(stHeight, ST_BOX.x0, ST_BOX.x1, ST_BOX.z0, ST_BOX.z1, 60); scan(hvHeight, HV_BOX.x0, HV_BOX.x1, HV_BOX.z0, HV_BOX.z1, 40);
+  assert.ok(worst <= 3, `nhảy ${worst.toFixed(1)} m tại ${at}`);
+});
+
 test('đường chân trời từ Cầu Rồng có ≥ 3 đỉnh', () => {
   const eye = [40, 13, -17], N = 160, sky: number[] = [];
   for (let k = 0; k < N; k++) {

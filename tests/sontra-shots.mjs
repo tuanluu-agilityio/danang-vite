@@ -1,4 +1,4 @@
-// Chụp núi Sơn Trà từ bốn cầu (đứng trên mặt cầu, tầm mắt người) và vài góc rộng, ngày + hoàng hôn + đêm, để so trước / sau (D-047).
+// Chụp núi Sơn Trà từ bốn cầu (đứng trên mặt cầu, tầm mắt người) và vài góc rộng, ngày + đêm, để so trước / sau (D-047).
 // Dùng GPU thật (như tests/gpu-time.mjs) cho nhanh; không chấm đạt / lỗi, chỉ ghi ảnh + lệnh vẽ + tam giác vào tests/screens/sontra/<nhãn>/.
 //
 //   npm run build && node tests/sontra-shots.mjs [--label=after] [--w=1600] [--h=900]

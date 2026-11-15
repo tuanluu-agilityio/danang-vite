@@ -67,8 +67,8 @@ function spineH(pts: Pt[], x: number, z: number, seed: number) {
   // tọa độ vòng quanh sống c ∈ [0, C)
   const n = pts.length, Re = pts[n - 1][3] * 0.55, Rs = pts[0][3] * 0.55, C = 2 * acc + Math.PI * (Re + Rs);
   let c: number;
-  if (seg === n - 2 && tt >= 1) { const a = pts[n - 2], b = pts[n - 1], dx = b[0] - a[0], dz = b[1] - a[1]; c = acc + (Math.PI / 2 - Math.atan2(dx * (z - b[1]) - dz * (x - b[0]), dx * (x - b[0]) + dz * (z - b[1]))) * Re; }
-  else if (seg === 0 && tt <= 0) { const a = pts[0], b = pts[1], dx = a[0] - b[0], dz = a[1] - b[1]; c = 2 * acc + Math.PI * Re + (Math.PI / 2 - Math.atan2(dx * (z - a[1]) - dz * (x - a[0]), dx * (x - a[0]) + dz * (z - a[1]))) * Rs; }
+  if (seg === n - 2 && tt >= 1) { const a = pts[n - 2], b = pts[n - 1], dx = b[0] - a[0], dz = b[1] - a[1]; const k = (Math.PI / 2 - Math.atan2(dx * (z - b[1]) - dz * (x - b[0]), dx * (x - b[0]) + dz * (z - b[1]))) / Math.PI; c = S + k * (2 * acc + Math.PI * Re - 2 * S); }   // nội suy giữa giá trị hai mép mũi (tính từ S đã trộn) ⇒ liền với hai sườn
+  else if (seg === 0 && tt <= 0) { const a = pts[0], b = pts[1], dx = a[0] - b[0], dz = a[1] - b[1]; const k = (Math.PI / 2 - Math.atan2(dx * (z - a[1]) - dz * (x - a[0]), dx * (x - a[0]) + dz * (z - a[1]))) / Math.PI, c0 = 2 * acc + Math.PI * Re - S; c = c0 + k * (C + S - c0); }
   else c = side > 0 ? S : 2 * acc + Math.PI * Re - S;
   const ang = c / C * Math.PI * 2, ca = Math.cos(ang), sa = Math.sin(ang), per = (len: number, o: number) => { const r = C / (Math.PI * 2 * len); return stNoise(o + r * ca, o * 1.7 + 3.3 + r * sa); };
   const o = seed * 9.1 + 20;
