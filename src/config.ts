@@ -590,6 +590,15 @@ const envBase = {
   duskMin: [-75, 35] as [number, number],   // phút — khoảng quanh giờ lặn coi là hoàng hôn (ước lượng, theo bản mẫu)
   sunFallback: [345, 1050] as [number, number],   // phút trong ngày — mọc 05:45, lặn 17:30, dùng khi chưa có số liệu (ước lượng)
   storeKey: 'cauRong.env',    // khóa localStorage của bộ nhớ đệm số liệu
+  interval: 900,              // s — kỳ quan trắc mặc định khi phản hồi thiếu current.interval (Open-Meteo: 15 phút); đổi lượng mưa của kỳ ra mm/h (D-043)
+  valid: {                    // khoảng hợp lệ khi đọc số liệu (D-043, spec §4.1): bắt buộc ngoài khoảng ⇒ bỏ cả phản hồi; tùy chọn ngoài khoảng ⇒ null
+    temp: [-20, 55] as [number, number],      // °C — nhiệt độ (ước lượng, rộng hơn cực trị Đà Nẵng)
+    hum: [0, 100] as [number, number],        // % — độ ẩm tương đối
+    cloud: [0, 100] as [number, number],      // % — độ phủ mây
+    wind: [0, 250] as [number, number],       // km/h — gió trung bình 10 m (ước lượng)
+    gust: [0, 300] as [number, number],       // km/h — gió giật 10 m, tùy chọn (ước lượng)
+    vis: [0, 100000] as [number, number]      // m — tầm nhìn, tùy chọn (ước lượng)
+  },
   driveGap: 8                 // px — khe giữa đáy chú thích bản đồ nhỏ (#drMapNote) và chỉ báo khi lái ô tô / xe máy trên cảm ứng (ước lượng)
 };
 
