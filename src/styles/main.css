@@ -250,15 +250,52 @@ body.compact #swStormNote{top:calc(124px + env(safe-area-inset-top,0px));max-wid
 /* Màn chọn phương tiện: lớp phủ chặn chuột vào canvas, phủ cả các bảng; có ô chọn ngôn ngữ riêng (#exLang) */
 .ex-chooser{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(6,10,13,.72);}
 .ex-lang{display:block;margin:0 0 12px;width:max-content;}
-.ex-box{position:static;max-width:min(720px,100%);max-height:100%;overflow-y:auto;padding:22px 24px;box-sizing:border-box;}
+.ex-box{position:static;max-width:min(980px,100%);max-height:100%;overflow-y:auto;padding:22px 24px;box-sizing:border-box;}
 .ex-box h2{margin:0 0 16px;font-family:var(--font-display);font-weight:600;font-size:26px;line-height:1.15;color:var(--gold);text-wrap:balance;}
-.ex-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
-.ex-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:84px;padding:12px 14px;text-align:start;}
-.ex-card b{font-weight:600;font-size:14px;color:var(--text);}
-.ex-card span,.ex-card i{font-style:normal;font-size:11.5px;line-height:1.4;color:var(--muted);}
-.ex-card:disabled{opacity:.55;cursor:not-allowed;}
+/* Thẻ ảnh (D-044): mỗi chế độ một ảnh chụp từ chính cảnh 3D (public/chooser/*.webp, `npm run gen:chooser`), chữ nằm trên dải tối ở đáy ảnh.
+   Máy tính: bốn thẻ dọc 4:5 một hàng + thẻ Tham quan có hướng dẫn thành dải ngang bên dưới. Ảnh chưa tải / lỗi (lớp .ld) thì thẻ còn nền tối + chữ.
+   Thẻ vừa chọn (.sel, aria-pressed) giữ viền vàng khi quay lại từ sảnh; ảnh của nó thành dải đầu sảnh (--ex-hero do chooser.ts đặt) */
+.ex-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.ex-card{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:4px;aspect-ratio:4/5;min-height:84px;padding:14px;text-align:start;
+  background:#0c1418;border:1px solid var(--panel-line);border-radius:10px;transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .25s,box-shadow .35s;}
+.ex-card[data-pick="guided"]{grid-column:1/-1;aspect-ratio:auto;min-height:104px;}
+.ex-img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;filter:saturate(1.14) contrast(1.05);transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .4s,filter .3s;}
+.ex-img.ld{opacity:0;}
+.ex-card::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(to top,rgba(6,10,13,.94) 0%,rgba(6,10,13,.62) 30%,rgba(6,10,13,0) 62%);transition:opacity .3s;}
+.ex-card[data-pick="guided"]::after{background:linear-gradient(to top,rgba(6,10,13,.9) 0%,rgba(6,10,13,.35) 60%,rgba(6,10,13,.1) 100%);}
+.ex-card b{font-family:var(--font-display);font-weight:600;font-size:23px;line-height:1.1;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.55);}
+.ex-card span,.ex-card i{font-style:normal;font-size:12px;line-height:1.4;color:rgba(238,240,234,.86);text-shadow:0 1px 6px rgba(0,0,0,.6);}
+@media (hover:hover){
+  .ex-card:not(:disabled):hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 14px 30px rgba(0,0,0,.45);}
+  .ex-card:not(:disabled):hover .ex-img{transform:scale(1.07);}
+}
+.ex-card:not(:disabled):active{transform:scale(.985);}
+.ex-card.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 14px 30px rgba(0,0,0,.45);}
+.ex-card.sel b{color:var(--gold);}
+.ex-card:disabled{cursor:not-allowed;}
+.ex-card:disabled .ex-img{filter:grayscale(.85) brightness(.6);}
+.ex-card:disabled b,.ex-card:disabled span{opacity:.7;}
 .ex-card:disabled .ex-note{color:var(--gold);}
-.ex-card:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+.ex-card:focus-visible{outline:2px solid rgba(238,240,234,.85);outline-offset:2px;}   /* trắng ngà: khác viền vàng của thẻ đang chọn (.sel) */
+.ex-card:focus-visible .ex-img{transform:scale(1.04);}
+/* Điện thoại dọc: lưới 2 × 2 thẻ vuông + dải Tham quan; nằm ngang: năm thẻ một hàng */
+body.compact .ex-box{padding:16px 14px;}
+body.compact .ex-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+body.compact .ex-card{aspect-ratio:1/1;padding:11px;}
+body.compact .ex-card[data-pick="guided"]{aspect-ratio:auto;min-height:92px;}
+body.compact .ex-card b{font-size:19px;}
+@media (orientation:landscape){
+  body.compact .ex-cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}
+  body.compact .ex-card,body.compact .ex-card[data-pick="guided"]{grid-column:auto;aspect-ratio:4/5;min-height:0;padding:9px;}
+  body.compact .ex-card b{font-size:16px;}
+  body.compact .ex-card span,body.compact .ex-card i{font-size:10.5px;}
+}
+/* Sảnh: hộp hẹp lại như trước (720 px); trên máy tính ảnh của chế độ vừa chọn đứng thành cột bên đầu dòng (lật theo RTL); điện thoại không hiện để sảnh không cao thêm */
+.ex-box:has(.ex-mp-lobby:not([hidden])){max-width:min(720px,100%);}
+body:not(.compact) .ex-chooser[data-mode] .ex-mp-lobby{position:relative;min-height:300px;padding-inline-start:236px;box-sizing:border-box;}
+body:not(.compact) .ex-chooser[data-mode] .ex-mp-lobby::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:220px;border-radius:10px;border:1px solid var(--gold);box-sizing:border-box;
+  background:linear-gradient(to top,rgba(6,10,13,.55),rgba(6,10,13,0) 45%),var(--ex-hero,none) center/cover no-repeat,#0c1418;filter:saturate(1.14) contrast(1.05);}
+@media (prefers-reduced-motion:reduce){.ex-card,.ex-img{transition:none;}.ex-card:hover,.ex-card:hover .ex-img,.ex-card:focus-visible .ex-img{transform:none !important;}}
 /* Ghi công mô hình VF 3 (CC BY 4.0, public/car/LICENSE-VF3.txt): dòng nhỏ cuối hộp, hiện cả ở màn chọn lẫn sảnh */
 .ex-credit{margin:14px 0 0;font-size:11px;line-height:1.45;color:var(--muted);}
 .ex-credit a{color:inherit;text-decoration:underline;text-underline-offset:2px;}

@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "gen:voice": "node scripts/gen-narration.mjs",
     "gen:thumbs": "node scripts/people/thumbs.mjs",
+    "gen:chooser": "node scripts/chooser/shots.mjs",
     "gen:people": "node scripts/people/blender.mjs scripts/people/convert.py",
     "gen:crowd": "node scripts/people/blender.mjs scripts/people/crowd.py",
     "gen:car": "node scripts/people/blender.mjs scripts/car/convert.py",
