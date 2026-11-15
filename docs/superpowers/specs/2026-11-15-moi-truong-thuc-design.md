@@ -1,6 +1,6 @@
 # Môi trường 3D theo thời tiết + giờ thực tế Đà Nẵng (D-043) — thiết kế
 
-_Ngày: 2026-11-15 · Nhánh: `feature/moi-truong-thuc` (từ `main` `80273c9`) · Trạng thái: đang làm_
+_Ngày: 2026-11-15 · Nhánh: `feature/moi-truong-thuc` (từ `main` `80273c9`) · Trạng thái: đã triển khai mã (PR #39); test trình duyệt chưa chạy_
 _Nguồn: bản yêu cầu "Real-time Weather-driven 3D Environment" của người dùng (2026-11-15). Người dùng dặn làm thẳng tới khi xong, không chờ duyệt spec / plan; mọi lựa chọn dưới đây ghi "(agent chọn)" là quyết định của agent, người dùng chưa duyệt._
 
 ## 1. Mục tiêu và lý do

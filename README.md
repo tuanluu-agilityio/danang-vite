@@ -65,7 +65,7 @@ src/
     drive/           lái xe VF 3 (camera sau xe): mạng đường nhiều tầng (`net`, `roadData`), vật cản, va chạm, chuyển động theo số liệu thật, xe + bánh + đèn, xe tự động chặn / sơ tán nhịp quay, HUD, bàn đạp cảm ứng, tiếng xe
     bike/            lái xe máy tay ga (góc nhìn thứ nhất / thứ ba, dùng chung mạng đường + va chạm của `drive/`): chuyển động có nghiêng, mô hình + đèn, người lái có xương (nhân vật Đi dạo + IK + mũ), camera, mặt đồng hồ canvas, âm thanh tổng hợp, vệt đèn pha / bụi nước, hạt nhựa + vệt ướt trên mặt đường, HUD xe máy; test đơn vị ở `tests/bike-unit/` (`npm run test:bike:unit`), test trình duyệt `tests/bike-check.mjs` (`npm run test:bike`)
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
-  realtime/          giờ + thời tiết thực tế tại Đà Nẵng (D-042): đồng hồ theo múi giờ, đọc Open-Meteo, kho trạng thái (nhịp lấy, thử lại, bộ nhớ đệm); chỉ hiển thị, không điều khiển cảnh; giao diện ở `ui/envUI.ts`, test đơn vị ở `tests/env-unit/` (`npm run test:env:unit`)
+  realtime/          giờ + thời tiết thực tế tại Đà Nẵng (D-042): đồng hồ theo múi giờ, đọc Open-Meteo, kho trạng thái (nhịp lấy, thử lại, bộ nhớ đệm); chỉ hiển thị, không điều khiển cảnh; giao diện ở `ui/envUI.ts`, test đơn vị ở `tests/env-unit/` (`npm run test:env:unit`); từ D-043 còn ánh xạ số liệu → cảnh (envMap.ts), vị trí mặt trời (solar.ts), bộ điều khiển Trực tiếp / Mô phỏng (liveEnv.ts)
   audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
   ui/                bảng điều khiển, nút quay cầu, âm thanh, chất lượng hình, chế độ gọn cho điện thoại (compactUI.ts), chỉ báo giờ + thời tiết thực tế (envUI.ts)
   i18n/              index.ts + locales/{vi,en,ko,ja,zh,th,ar,hi,ru}.json

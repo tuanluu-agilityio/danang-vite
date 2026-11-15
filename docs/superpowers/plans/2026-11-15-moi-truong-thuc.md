@@ -195,3 +195,7 @@ Yêu cầu:
 ## Self-review
 
 Spec §4.1 → Task 1; §4.2 → Task 2 + 4; §4.3 → Task 3 + 4 + 5 (`skew`); §4.4 → Task 5 + 6; §4.5 → Task 5 (`nextDelay`) + Task 7 (hai trang); §4.6 → ràng buộc chung + Task 7 (lệnh vẽ); §4.7 → Task 1–3, 5, 7. Review Focus 1 → Task 1, 2 → Task 2, 3 → Task 2 (`state.test.ts`), 4 → Task 5, 5 → Task 5.
+
+## Trạng thái (2026-11-15)
+
+Task 1–6 xong (commit `a26aeb5`, `f42ba7b`, `0050971`, `aa570c7`, `295b13f`, `3673d45`, `6863e1c`). Task 7 **dở**: người dùng bảo dừng test nặng rồi merge sau khi xem demo. Đã có từ Task 7: ba sửa sản phẩm `397d70a` (tính năng cần đêm chỉ chuyển Mô phỏng khi trời chưa tối), `bdeaf04` (sương che tấm LED), `96c843f` (hoàng hôn ấm hơn) và bản nháp `tests/live-check.mjs` (`9a8937f`, chưa chạy lần nào, chưa đối chiếu đủ 18 kịch bản). Chưa làm: chạy `test:live`, `test:env`, `test:weather`, `test:mobile`, so lệnh vẽ, bộ ảnh `tests/screens/live-*.png`. Các chỗ làm khác plan ghi ở D-043 trong `.github/memory-bank/decisions.md`.
