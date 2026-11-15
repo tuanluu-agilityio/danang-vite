@@ -1,0 +1,9 @@
+Nhập session đang làm việc lên đây để xem tiến độ
+
+---
+
+Đang chạy task mấy rồi còn mấy task nữa
+
+---
+
+Không cần test nặng. Gửi artifact tôi sẽ review
