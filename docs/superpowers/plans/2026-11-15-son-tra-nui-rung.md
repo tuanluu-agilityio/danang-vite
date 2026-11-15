@@ -1,6 +1,6 @@
 # Bán đảo Sơn Trà núi rừng tự nhiên (D-047) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Thay các hình nón của Sơn Trà (và Hải Vân) bằng một lưới địa hình liền mạch phủ rừng, nhìn thuyết phục từ bốn cầu, không tăng lệnh vẽ.
 
@@ -38,10 +38,10 @@
 - `ST_BOX`, `HV_BOX: { x0, x1, z0, z1 }` — khung lấy mẫu.
 - `stNoise(x: number, z: number): number` — nhiễu giá trị 0..1 (dùng lại cho màu).
 
-- [ ] Viết test: tất định (gọi hai lần bằng nhau); `max` trong bán kính 400 m quanh (2600, −4700) thuộc 660..698 và `stHeight(2600, −4700) ≤ 698`; mọi mẫu bước 40 m trong x 262..1480, z −3700..−2300 có `stHeight ≤ 2.5`; trên lưới 26 m toàn `ST_BOX` chênh cao giữa hai mẫu kề ≤ 1,9 × 26 m; đường chân trời từ (40, 13, −17) quét 160 tia phương vị về phía núi có ≥ 3 cực đại cục bộ cách nhau ≥ 4 tia; mọi giá trị hữu hạn.
-- [ ] Chạy `npm run test:terrain:unit`, thấy trượt vì chưa có module.
-- [ ] Viết `terrain.ts` theo spec §4.1.
-- [ ] Chạy lại tới khi đạt; `npm run typecheck`; commit.
+- [x] Viết test: tất định (gọi hai lần bằng nhau); `max` trong bán kính 400 m quanh (2600, −4700) thuộc 660..698 và `stHeight(2600, −4700) ≤ 698`; mọi mẫu bước 40 m trong x 262..1480, z −3700..−2300 có `stHeight ≤ 2.5`; trên lưới 26 m toàn `ST_BOX` chênh cao giữa hai mẫu kề ≤ 1,9 × 26 m; đường chân trời từ (40, 13, −17) quét 160 tia phương vị về phía núi có ≥ 3 cực đại cục bộ cách nhau ≥ 4 tia; mọi giá trị hữu hạn.
+- [x] Chạy `npm run test:terrain:unit`, thấy trượt vì chưa có module.
+- [x] Viết `terrain.ts` theo spec §4.1.
+- [x] Chạy lại tới khi đạt; `npm run typecheck`; commit.
 
 ### Task 2: Lưới núi
 
@@ -49,19 +49,19 @@
 
 **Interfaces — Consumes:** Task 1. **Produces:** `mtGeometry(): THREE.BufferGeometry` (position, normal, color, `aRock`; có index) — `buildMountains()` dùng nó với `MAT.mountain`.
 
-- [ ] Test: `mtGeometry()` có đủ 4 thuộc tính, không NaN, số tam giác ≤ 140 000 và ≥ 30 000, pháp tuyến dài ≈ 1 và `normal.y > 0` mọi đỉnh, không đỉnh nào trong vùng cấm cao hơn 2,5 m.
-- [ ] Viết lưới theo spec §4.2 (tách phần dựng hình khỏi `scene.add` để test node không cần renderer: `mtGeometry` nằm trong `terrain.ts`-cùng-thư-mục file mới `mountainGeo.ts` nếu `mountains.ts` kéo theo `core/renderer`).
-- [ ] Test đạt, `typecheck`, commit.
+- [x] Test: `mtGeometry()` có đủ 4 thuộc tính, không NaN, số tam giác ≤ 140 000 và ≥ 30 000, pháp tuyến dài ≈ 1 và `normal.y > 0` mọi đỉnh, không đỉnh nào trong vùng cấm cao hơn 2,5 m.
+- [x] Viết lưới theo spec §4.2 (tách phần dựng hình khỏi `scene.add` để test node không cần renderer: `mtGeometry` nằm trong `terrain.ts`-cùng-thư-mục file mới `mountainGeo.ts` nếu `mountains.ts` kéo theo `core/renderer`).
+- [x] Test đạt, `typecheck`, commit.
 
 ### Task 3: Vật liệu rừng + chỉnh theo ảnh
 
 **Files:** Modify `src/core/materials.ts` (`MAT.mountain`), `src/core/textures.ts` hoặc file mới `src/environment/mountainMat.ts` (texture tán + vá shader); `tests/sontra-shots.mjs` (đã có).
 
-- [ ] Vật liệu theo spec §4.3.
-- [ ] `npm run build && node tests/sontra-shots.mjs --label=after`; xem ảnh bốn cầu + vịnh + sát sườn + đêm; chỉnh điểm sống / nhiễu / màu rồi lặp lại tới khi không còn dấu hình học và các mục Review Focus ổn.
-- [ ] So lệnh vẽ `stats.json` trước / sau (phải bằng nhau từng góc); `test:terrain:unit`, `typecheck`, `build`; commit.
+- [x] Vật liệu theo spec §4.3.
+- [x] `npm run build && node tests/sontra-shots.mjs --label=after`; xem ảnh bốn cầu + vịnh + sát sườn + đêm; chỉnh điểm sống / nhiễu / màu rồi lặp lại tới khi không còn dấu hình học và các mục Review Focus ổn.
+- [x] So lệnh vẽ `stats.json` trước / sau (phải bằng nhau từng góc); `test:terrain:unit`, `typecheck`, `build`; commit.
 
 ### Task 4: Kiểm cuối + tài liệu
 
-- [ ] Review toàn nhánh bằng một agent mới (đọc diff), sửa điều đáng sửa.
-- [ ] Ghi D-047 vào `.github/memory-bank/decisions.md`, cập nhật `activeContext.md`, `progress.md`, `copilot-instructions.md` §5 (lệnh mới), trạng thái spec; commit.
+- [x] Review toàn nhánh bằng một agent mới (đọc diff), sửa điều đáng sửa.
+- [x] Ghi D-047 vào `.github/memory-bank/decisions.md`, cập nhật `activeContext.md`, `progress.md`, `copilot-instructions.md` §5 (lệnh mới), trạng thái spec; commit.

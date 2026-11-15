@@ -1,6 +1,6 @@
 # Bán đảo Sơn Trà: núi rừng tự nhiên thay hình nón (D-047)
 
-_2026-11-15 · nhánh `feature/son-tra-nui-rung` (worktree `.worktrees/son-tra`, từ `main` `063c445`) · Trạng thái: đang làm_
+_2026-11-15 · nhánh `feature/son-tra-nui-rung` (worktree `.worktrees/son-tra`, từ `main` `063c445`) · Trạng thái: đã triển khai (`c69232d`), chờ người dùng duyệt ảnh; ô lưới thực tế 22 m, ≈ 81 000 tam giác_
 
 ## 1. Ý định
 
