@@ -16,6 +16,7 @@ const ACT: Partial<Record<InSceneId, InActKind>> = { glider: 'glider', car: 'car
 const KEYS: Partial<Record<InSceneId, string>> = { glider: 'inK_glider', car: 'inK_car', bike: 'inK_bike', walk: 'inK_walk' };                   // nhịp có hàng phím
 const TOUCH: Partial<Record<InSceneId, string>> = { car: 'inTouch_car', bike: 'inTouch_bike', walk: 'inTouch_walk', glider: 'exDesktopOnly' };   // máy cảm ứng: một dòng thay hàng phím
 
+const LONG = 18;   // ký tự — tiêu đề dài hơn thì gắn .in-long (main.css)
 const $ = (id: string) => document.getElementById(id);
 let root: HTMLElement | null = null;
 const segs: HTMLButtonElement[] = [];
@@ -74,7 +75,9 @@ export function inUiRender(i: number): void {
   root.dataset.scene = id;
   const set = (eid: string, v: string) => { const e = $(eid); if (e && e.textContent !== v) e.textContent = v; };
   set('inEyebrow', '0' + s.chapter + ' — ' + t('inCh' + s.chapter));
-  set('inTitle', t('inT_' + id)); set('inSub', t('inS_' + id));
+  const title = t('inT_' + id);
+  set('inTitle', title); set('inSub', t('inS_' + id));
+  $('inCap')?.classList.toggle('in-long', [...title].length > LONG);   // tiêu đề dài: khối chữ rộng hơn + cỡ nhỏ hơn để không quá hai dòng
   const note = id === 'daynight' ? t('inWx') : id === 'dragon' ? t('inDragonNote') : id === 'swing' ? t('inFast', { n: CONFIG.intro.swingSpeed }) + ' · ' + t('inSwingNote') : '';
   const ne = $('inNote'); if (ne) { ne.textContent = note; ne.hidden = !note; }
   /* hàng phím: "phím|nghĩa;phím|nghĩa", phím cách nhau dấu cách → mỗi phím một <kbd>; cảm ứng: một dòng .in-touch */
@@ -133,4 +136,13 @@ export function inUiPaused(on: boolean): void {
   b.setAttribute('aria-pressed', String(on));
   b.dataset.i18nAria = on ? 'inPlay' : 'inPause';
   b.setAttribute('aria-label', t(on ? 'inPlay' : 'inPause'));
+}
+
+/* Nút nhạc #inSound: biểu tượng + aria-pressed theo audio.on, vòng sáng gợi ý (.in-hint) khi nhạc tắt và người xem chưa thao tác; chỉ ghi DOM khi đổi */
+let sndOn: boolean | null = null, sndHint: boolean | null = null;
+export function inUiSound(on: boolean, hint: boolean): void {
+  const b = $('inSound'); if (!b) return;
+  if (on !== sndOn) { sndOn = on; b.setAttribute('aria-pressed', String(on)); }
+  const h = hint && !on;
+  if (h !== sndHint) { sndHint = h; b.classList.toggle('in-hint', h); }
 }

@@ -1348,16 +1348,16 @@ const introBase = {
     { id: 'walk', chapter: 2, dur: 4.5 }, { id: 'daynight', chapter: 3, dur: 8 }, { id: 'dragon', chapter: 4, dur: 9 }, { id: 'swing', chapter: 5, dur: 9 }, { id: 'finale', chapter: 6, dur: 6 }
   ] as { id: 'welcome' | 'glider' | 'car' | 'bike' | 'walk' | 'daynight' | 'dragon' | 'swing' | 'finale'; chapter: number; dur: number }[],
   shots: {                             // m — tư thế camera đầu / cuối của nhịp toàn cảnh (ước lượng)
-    welcome:  { from: { pos: [-900, 950, 2300], target: [0, 0, -400] },  to: { pos: [-380, 210, 760],  target: [20, 20, -80] } },
-    daynight: { from: { pos: [-520, 190, 420],  target: [60, 20, -200] }, to: { pos: [-420, 150, 300],  target: [60, 20, -260] } },
-    dragon:   { from: { pos: [250, 45, 120],   target: [328, 18, -10] }, to: { pos: [298, 23, 48],     target: [326, 18, -10] } },   // từ trên sông phía Tây Nam tiến về đầu rồng, nhìn lệch trái để đầu rồng nằm bên phải khối chữ (bản đầu đi qua tòa nhà bờ Đông)
-    swing:    { from: { pos: [230, 70, -820],   target: [0, 8, -1080] },  to: { pos: [150, 125, -910],  target: [0, 8, -1080] } },
-    finale:   { from: { pos: [-300, 260, 500],  target: [0, 0, -300] },   to: { pos: [-760, 620, 1500], target: [0, 0, -300] } }
+    welcome:  { from: { pos: [-420, 520, 1900], target: [0, 0, -300] },  to: { pos: [-150, 80, 820],  target: [20, -20, 80] } },   // trên cao phía Nam hạ thấp, tiến gần: cuối nhịp Cầu Rồng ≈ 1/3 bề ngang, sông dẫn về Cầu sông Hàn, chân trời ở 1/3 trên
+    daynight: { from: { pos: [-520, 190, 420],  target: [-10, 20, -280] }, to: { pos: [-420, 150, 300],  target: [-30, 20, -340] } },   // điểm nhìn lệch về Bắc để Cầu Rồng nằm bên phải khối chữ
+    dragon:   { from: { pos: [392, 72, 66],    target: [316, 10, -2] },  to: { pos: [380, 20, 52],     target: [316, 17, 3] } },   // cần cẩu hạ từ trên cao xuống cận cảnh đầu rồng góc thấp (gần góc VIEWS.head), đầu rồng bên phải khối chữ, thân chạy về phía sau; đường hạ gần như thẳng đứng để không xuyên tòa nhà bờ Đông
+    swing:    { from: { pos: [260, 120, -760],  target: [-40, 6, -1040] }, to: { pos: [150, 90, -860],  target: [-70, 6, -1020] } },   // nhịp xoay + khoảng sông mở nằm nửa phải khung
+    finale:   { from: { pos: [-150, 60, 250],   target: [40, 20, -60] },  to: { pos: [-560, 190, 300], target: [300, 0, -900] } }     // từ sát Cầu Rồng sáng đèn lùi lên vừa phải: cuối nhịp Cầu Rồng ở góc dưới phải, sông dẫn lên Cầu sông Hàn
   } as Record<'welcome' | 'daynight' | 'dragon' | 'swing' | 'finale', { from: { pos: [number, number, number]; target: [number, number, number] }; to: { pos: [number, number, number]; target: [number, number, number] } }>,
   demo: {
     glider: { pos: [0, 80, 150], yaw: Math.PI / 2, turnFrom: 3.4, turnTo: 4.0, turn: 1, climb: 0 },   // m, rad, s — đặt dù phía Nam Cầu Rồng bay về Bắc (≈ 50 m/s), qua cầu ở ≈ 3 s; rẽ trái nhẹ trong [turnFrom, turnTo] s (ước lượng)
     car:    { gas: 1, camYawFrom: 1.0, camYawTo: 0, camPitchFrom: 0.35, camYawS: 3.2 },   // rad — camera lệch quanh xe (drive.cam.yaw) về 0 và nâng (drive.cam.pitch, trên nóc xe AI) về 0 trong camYawS giây (ước lượng)
-    bike:   { gas: 0.8, viewAt: 2.0 },                                  // s — lúc chuyển góc thứ nhất → thứ ba (ước lượng)
+    bike:   { gas: 1, viewAt: 2.0, place: [60, 1291.625, Math.PI] as [number, number, number] | null },   // s — lúc chuyển góc thứ nhất → thứ ba; place: m, m, rad — chỗ xuất phát riêng (bike.placeAt), làn giữa chiều đi Tây cầu Trần Thị Lý, chạy về tháp nghiêng x = −130; null = chỗ xuất phát mặc định trên Cầu Rồng như ô tô (ước lượng)
     walk:   { run: false, camYawFrom: -0.5, camYawS: 3.5 }              // rad — camera lệch (so với hướng đi; âm: về phía mặt đường, dương đụng lan can) về 0 trong camYawS giây (ước lượng)
   },
   storeKey: 'cauRong.intro', seenKey: 'cauRong.introSeen', playKey: 'cauRong.introPlay'   // khóa localStorage / sessionStorage

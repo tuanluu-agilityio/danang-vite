@@ -78,7 +78,11 @@ export const inScenes: Record<InSceneId, InSceneRun> = {
     leave() { drive.auto = null; drive.stop(); }
   },
   bike: {
-    enter() { st = 0; viewed = false; bike.start(); bike.auto = bAuto; },
+    enter() {
+      st = 0; viewed = false; bike.start();
+      const p = D.bike.place; if (p) bike.placeAt(p[0], p[1], p[2]);   // chỗ riêng (cầu Trần Thị Lý) để nhịp xe máy khác nhịp ô tô
+      bike.auto = bAuto;
+    },
     update(t) { st = t; if (!viewed && t >= D.bike.viewAt) { viewed = true; bike.setView(3); } },
     leave() { bike.auto = null; bike.stop(); }
   },

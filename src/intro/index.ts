@@ -16,10 +16,11 @@ import { bike } from '../explore/bike';
 import { stAvatars } from '../explore/stroll/avatars';
 import { plPreload } from '../explore/pilot';
 import { exRevealChooser, exHideChooser } from '../explore/chooser';
+import { audio } from '../audio';
 import { CONFIG } from '../config';
 import { inCreate, inAdvance, inSeek, inFade, inFill, inShould, type InClock, type InSceneId } from './timeline';
 import { inScenes, inScenesInit, inSee } from './scenes';
-import { inUiSetup, inUiShow, inUiRender, inUiFill, inUiVeil, inUiPaused, inUiNoMore, type InActKind } from './ui';
+import { inUiSetup, inUiShow, inUiRender, inUiFill, inUiVeil, inUiPaused, inUiNoMore, inUiSound, type InActKind } from './ui';
 import type { SwingController } from '../bridges/song-han/SwingController';
 import type { LiveEnv } from '../realtime/liveEnv';
 
@@ -39,6 +40,25 @@ const sget = (s: () => Storage, k: string): string | null => { try { return s().
 const sset = (s: () => Storage, k: string, v: string | null): void => { try { if (v === null) s().removeItem(k); else s().setItem(k, v); } catch { /* bộ nhớ bị chặn */ } };
 const LS = () => localStorage, SS = () => sessionStorage;
 
+/* ---------- Nhạc nền trong intro: chỉ đọc audio.on và bấm hộ #btnMusic (cùng handler + lựa chọn đã lưu của audioUI.ts; bản nhạc nào cũng chạy đúng) ---------- */
+const MUSIC_KEY = 'cauRong.music';                     // lựa chọn nhạc đã lưu ('on' | 'off'), audioUI.ts ghi
+let touched = false;                                   // người xem đã thao tác trong lượt intro này (tắt gợi ý, chỉ tự bật một lần)
+let noAuto = false;                                    // ?test: không tự bật nhạc
+const clickMusic = (): void => { document.getElementById('btnMusic')?.click(); };
+const syncSound = (): void => inUiSound(audio.on, !touched);
+/* Thao tác đầu tiên của người xem: chờ một nhịp (bản nhạc khác có thể tự bật trước ở cùng thao tác) rồi nếu vẫn tắt và người xem chưa chọn tắt thì bấm hộ */
+function musicNudge(): void {
+  if (noAuto || audio.on || sget(LS, MUSIC_KEY) === 'off') return;
+  setTimeout(() => { if (!audio.on && sget(LS, MUSIC_KEY) !== 'off') clickMusic(); syncSound(); }, 0);
+}
+function onFirstInput(e: Event): void {
+  if (!active || touched) return;
+  touched = true;
+  const tg = e.target as Element | null;
+  if (!(tg && tg.closest && tg.closest('#inSound'))) musicNudge();   // bấm chính nút nhạc: để nút tự bật / tắt, không bấm hộ
+  syncSound();
+}
+
 /* Đổi nhịp: leave() nhịp cũ → trạng thái nền của nhịp mới → enter(). jump: nhảy (nút, phím, bắt đầu) chứ không chạy tự nhiên từ nhịp trước ⇒ đặt luôn dayNight.night */
 function enterScene(i: number, jump: boolean): void {
   if (cur >= 0) { const old = inScenes[S[cur].id]; cur = -1; old.leave(); }
@@ -50,7 +70,7 @@ function enterScene(i: number, jump: boolean): void {
   cur = i;
   inScenes[id].enter();
   inScenes[id].update(clock.t, 0);                                                 // đặt camera ngay (kể cả khi đang tạm dừng)
-  inUiRender(i);
+  inUiRender(i); syncSound();
   if (id === 'finale') (document.getElementById('inStart') as HTMLButtonElement | null)?.focus({ preventScroll: true });
 }
 
@@ -95,7 +115,7 @@ function begin(): void {
   cam.mode = 'intro'; controls.enabled = false; cam.flight.then = null;
   exHideChooser();
   document.body.classList.add('intro');
-  active = true;
+  active = true; touched = false;
   inSeek(clock, S, 0); clock.paused = false; inUiPaused(false);
   inUiNoMore(sget(LS, I.storeKey) === 'off');
   inUiShow(true);
@@ -122,6 +142,7 @@ function onKeyDown(e: KeyboardEvent): void {
   else if (e.key === ' ') { e.preventDefault(); if (!e.repeat) intro.pause(); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); if (rtl) intro.prev(); else intro.next(); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); if (rtl) intro.next(); else intro.prev(); }
+  else if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') { e.preventDefault(); if (!e.repeat) clickMusic(); syncSound(); }   // M = nút #inSound
   else if (e.key === 'Enter' && S[clock.i].id === 'finale' && !(tg && /^(BUTTON|SELECT|INPUT)$/.test(tg.tagName))) { e.preventDefault(); intro.skip(); }
 }
 function onKeyUp(e: KeyboardEvent): void {
@@ -145,13 +166,20 @@ export const intro = {
       act: (k) => intro.act(k), replay: () => go(0),
       noMore: (on) => sset(LS, I.storeKey, on ? 'off' : null)
     });
+    noAuto = new URLSearchParams(location.search).has('test');
+    window.addEventListener('pointerdown', onFirstInput, true);                     // trước onKeyDown: nó chặn mọi trình nghe sau trên window
+    window.addEventListener('keydown', onFirstInput, true);
+    document.getElementById('inSound')?.addEventListener('click', () => { clickMusic(); syncSound(); });
     window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('keyup', onKeyUp, true);
-    document.getElementById('exIntroBtn')?.addEventListener('click', () => intro.play());
+    document.getElementById('exIntroBtn')?.addEventListener('click', () => {
+      intro.play();
+      if (active && !touched) { touched = true; musicNudge(); syncSound(); }      // bấm "Xem giới thiệu" là thao tác của người xem: áp quy tắc tự bật ngay
+    });
     document.getElementById('btnIntro')?.addEventListener('click', () => {
       sset(SS, I.playKey, '1');                                                    // trang mới đọc cờ này (wants) rồi phát; chép cách tải lại của explore.exit()
       const u = new URL(location.href);
-      u.searchParams.delete('explore'); u.searchParams.delete('chooser');
+      u.searchParams.delete('explore'); u.searchParams.delete('chooser'); u.searchParams.delete('intro');   // ?intro=off thắng cờ playKey (inShould) nên bỏ luôn
       if (u.href === location.href) location.reload(); else location.replace(u.toString());
     });
   },
@@ -188,6 +216,7 @@ export const intro = {
       if (cur >= 0) inScenes[S[cur].id].update(clock.t, dt);
     } catch (e) { fail(e); return; }
     if (!active) return;
+    syncSound();                                                                   // chỉ ghi DOM khi audio.on đổi (ui.ts nhớ giá trị đã ghi)
     const i = clock.i;
     inUiVeil(inFade(clock.t, S[i].dur, I.fade, i === 0, i === LAST));
     inUiFill(i, inFill(clock, S, i));
