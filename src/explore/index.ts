@@ -192,7 +192,7 @@ export function setupExplore(ctrl: SwingController, deferChooser = false): void 
   if (q.get('explore') === 'stroll') { stroll.start(); return; }   // đi dạo một mình, không qua slot
   if (q.get('explore') === 'drive') { drive.start(); return; }   // lái xe một mình
   if (q.get('explore') === 'bike') { bike.start(); return; }     // xe máy một mình
-  if (!q.has('test') || q.has('chooser')) {
+  if (!q.has('test') || q.has('chooser') || deferChooser) {   // deferChooser: ?test&intro cũng cần màn chọn (hiện khi intro xong / bỏ qua)
     document.querySelector('button[data-pick="walk"]')?.addEventListener('click', () => stAvatars.preload());   // chọn thẻ Đi dạo: nạp nhân vật của mình ngay, trong lúc ở sảnh
     document.querySelector('button[data-pick="glider"]')?.addEventListener('click', () => plPreload());   // chọn thẻ Dù lượn: nạp người treo ngay, trong lúc ở sảnh
     document.querySelector('button[data-pick="car"]')?.addEventListener('click', () => drive.preload());   // chọn thẻ Ô tô: nạp mô hình xe ngay

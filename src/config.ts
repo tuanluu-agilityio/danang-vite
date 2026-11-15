@@ -1350,15 +1350,15 @@ const introBase = {
   shots: {                             // m — tư thế camera đầu / cuối của nhịp toàn cảnh (ước lượng)
     welcome:  { from: { pos: [-900, 950, 2300], target: [0, 0, -400] },  to: { pos: [-380, 210, 760],  target: [20, 20, -80] } },
     daynight: { from: { pos: [-520, 190, 420],  target: [60, 20, -200] }, to: { pos: [-420, 150, 300],  target: [60, 20, -260] } },
-    dragon:   { from: { pos: [470, 60, 150],    target: [340, 18, 0] },   to: { pos: [396, 24, 46],     target: [336, 17, 0] } },
+    dragon:   { from: { pos: [250, 45, 120],   target: [328, 18, -10] }, to: { pos: [298, 23, 48],     target: [326, 18, -10] } },   // từ trên sông phía Tây Nam tiến về đầu rồng, nhìn lệch trái để đầu rồng nằm bên phải khối chữ (bản đầu đi qua tòa nhà bờ Đông)
     swing:    { from: { pos: [230, 70, -820],   target: [0, 8, -1080] },  to: { pos: [150, 125, -910],  target: [0, 8, -1080] } },
     finale:   { from: { pos: [-300, 260, 500],  target: [0, 0, -300] },   to: { pos: [-760, 620, 1500], target: [0, 0, -300] } }
   } as Record<'welcome' | 'daynight' | 'dragon' | 'swing' | 'finale', { from: { pos: [number, number, number]; target: [number, number, number] }; to: { pos: [number, number, number]; target: [number, number, number] } }>,
   demo: {
-    glider: { pos: [40, 135, 700], yaw: Math.PI / 2, turnFrom: 1.6, turnTo: 2.8, turn: 1, climb: 0 },   // m, rad, s — đặt dù phía Nam Cầu Rồng bay về Bắc; rẽ trái nhẹ trong [turnFrom, turnTo] s (ước lượng)
-    car:    { gas: 1, camYawFrom: 1.0, camYawTo: 0, camYawS: 3.2 },   // rad — camera lệch quanh xe (drive.cam.yaw) về 0 trong camYawS giây (ước lượng)
+    glider: { pos: [0, 80, 150], yaw: Math.PI / 2, turnFrom: 3.4, turnTo: 4.0, turn: 1, climb: 0 },   // m, rad, s — đặt dù phía Nam Cầu Rồng bay về Bắc (≈ 50 m/s), qua cầu ở ≈ 3 s; rẽ trái nhẹ trong [turnFrom, turnTo] s (ước lượng)
+    car:    { gas: 1, camYawFrom: 1.0, camYawTo: 0, camPitchFrom: 0.35, camYawS: 3.2 },   // rad — camera lệch quanh xe (drive.cam.yaw) về 0 và nâng (drive.cam.pitch, trên nóc xe AI) về 0 trong camYawS giây (ước lượng)
     bike:   { gas: 0.8, viewAt: 2.0 },                                  // s — lúc chuyển góc thứ nhất → thứ ba (ước lượng)
-    walk:   { run: false, camYawFrom: 0.5, camYawS: 3.5 }               // rad — camera lệch (so với hướng đi) về 0 trong camYawS giây (ước lượng)
+    walk:   { run: false, camYawFrom: -0.5, camYawS: 3.5 }              // rad — camera lệch (so với hướng đi; âm: về phía mặt đường, dương đụng lan can) về 0 trong camYawS giây (ước lượng)
   },
   storeKey: 'cauRong.intro', seenKey: 'cauRong.introSeen', playKey: 'cauRong.introPlay'   // khóa localStorage / sessionStorage
 };
