@@ -64,6 +64,8 @@ Mỗi vòng đổi kiểu rải và thêm bè quãng tám ở vòng lẻ để k
 
 ## 7. Hạn chế
 
+- Nhạc tách khỏi hiệu ứng (sửa sau merge): nút Nhạc nền chỉ tắt nhánh nhạc (`audio.setMusic`); tiếng xe, phun lửa / nước, sông, mưa gió, còi chạy theo âm thanh chung, mở ở thao tác đầu tiên của người xem; thanh trượt là âm lượng chung. Không có nút tắt riêng hiệu ứng (kéo âm lượng về 0; tiếng xe có nút 🔊).
+
 - Bộ lập lịch chạy trên luồng chính: nhìn trước 2 s (`CONFIG.music.lookahead`) để qua được các lần vòng vẽ khựng; khựng lâu hơn 2 s (lần đầu vào một chế độ, đo được 3,7–5,7 s trên máy đo) thì các bước lỡ giờ bị bỏ, dây nền vẫn ngân, nhịp vào lại đúng lưới. Hoa văn trống / bass theo chế độ vì vậy vào chậm tối đa 2 s.
 
 - Sau merge (PR #46): bỏ tiếng dế về đêm theo phản hồi "tiếng rít" của người dùng; chưa xác nhận đó đúng là tiếng họ nghe.

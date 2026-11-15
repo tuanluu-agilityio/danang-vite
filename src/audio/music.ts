@@ -17,6 +17,7 @@ export interface Music {
   setMix(m: MusicMix, now: number, snap?: boolean): void;
   sting(t: number): void;                        // tiếng "mở màn" khi vào một chế độ
   readonly pos: { section: string; bar: number; cycle: number };
+  readonly nextTime: number;                     // giờ của bước kế tiếp chưa lên lịch (trước đó là nốt đã nằm trong hàng chờ)
 }
 
 const ACCENT = [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0];      // nhấn 3-3-2: cảm giác đang đi tới
@@ -273,6 +274,7 @@ export function createMusic(ctx: BaseAudioContext, out: AudioNode, deps: MusicDe
     restart(t, section = 0) { next = t; sec = section % SECTIONS.length; bar = 0; step = 0; started = false; },
     setMix,
     sting(t) { if (M.sting <= 0) return; riser(t, 0.9, 0.35 * M.sting, bus.bell); for (const [i, m] of [81, 86, 90].entries()) bellNote(t + 0.9 + i * 0.09, m, 0.9 * M.sting); },
+    get nextTime() { return next; },
     get pos() { return { section: SECTIONS[sec].name, bar, cycle }; }
   };
 }
