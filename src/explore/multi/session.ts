@@ -1,12 +1,15 @@
 /* ===== Dù lượn, đi dạo và lái xe nhiều người: máy trạng thái phiên (không DOM, không three) =====
    Một phiên thuộc một loại (kind): 'fly' giành chỗ bay, 'walk' giành chỗ đi dạo, 'drive' giành chỗ lái xe. Ba nhóm 5 slot riêng; peers là nhóm cùng loại với mình
    (dùng cho đầy chỗ, chọn người xem, lời mời). Phase 'flying' nghĩa là "đang giữ chỗ" cho mọi loại (đi dạo, lái xe cũng vậy). */
-import type { Flyer, Kind, ServerMsg } from './protocol';
+import type { ChatWhy, Flyer, Kind, ServerMsg } from './protocol';
 import type { Transport } from './client';
 import { multiParams } from './params';
 
 export type Phase = 'connecting' | 'lobby' | 'flying' | 'watching' | 'solo';
 export type Notice = '' | 'offline' | 'lost' | 'late' | 'nameBad' | 'released';
+
+const KINDS: readonly unknown[] = ['fly', 'walk', 'drive'];
+const fin = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
 export class MultiSession {
   phase: Phase = 'connecting';
@@ -24,6 +27,9 @@ export class MultiSession {
   onPos: (f: number[][]) => void = () => {};
   onWalkPos: (w: number[][]) => void = () => {};
   peersDrive: (d: number[][]) => void = () => {};   // nhóm d của gói pos (mẫu onWalkPos): mỗi phần tử [slot, x, y, z, yaw, v, st, giờ gửi]
+  chatOk = false;     // D-041: lobby gần nhất có chat === 1 (máy chủ cũ không có ⇒ ẩn chat); mất kết nối / máy chủ cũ ⇒ false
+  onChat: (m: { k: Kind; slot: number; name: string; text: string }) => void = () => {};   // tin người khác ở gần; không gọi onChange
+  onChatAck: (m: { id: number; n?: number; why?: ChatWhy }) => void = () => {};   // hồi âm tin mình; không gọi onChange
   private t: Transport | null = null;
   private disposed = false;
   private first = true; // chưa nhận lobby nào
@@ -81,6 +87,13 @@ export class MultiSession {
     this.t?.send({ t: 'pos', x: p.x, y: p.y, z: p.z, yaw: p.yaw, v: p.v, st: p.st, ts });
   }
 
+  /* Chat: chỉ khi đang giữ chỗ, còn kết nối và máy chủ biết chat; true nếu đã đưa cho transport (chưa chắc tới máy chủ, chờ chatAck) */
+  sendChat(text: string, id: number): boolean {
+    if (this.phase !== 'flying' || !this.t || !this.chatOk) return false;
+    this.t.send({ t: 'chat', text, id });
+    return true;
+  }
+
   heartbeat(): void {
     if (this.phase === 'flying') this.t?.send({ t: 'hb' });
   }
@@ -110,7 +123,7 @@ export class MultiSession {
 
   private lost(): void {
     if (this.disposed) return;
-    this.phase = 'solo'; this.notice = 'lost';
+    this.phase = 'solo'; this.notice = 'lost'; this.chatOk = false;
     this.flyers = []; this.walkers = []; this.drivers = []; this.mySlot = -1; this.watched = -1; this.invite = false;
     this.t = null; this.onChange();
   }
@@ -120,7 +133,7 @@ export class MultiSession {
     const t = this.t;
     this.t = null;
     if (t) { t.onClose = () => {}; t.onMessage = () => {}; t.close(); }
-    this.phase = 'solo'; this.notice = 'offline';
+    this.phase = 'solo'; this.notice = 'offline'; this.chatOk = false;
     this.flyers = []; this.walkers = []; this.drivers = [];
     this.onChange();
   }
@@ -132,6 +145,7 @@ export class MultiSession {
         if (this.first && this.kind === 'walk' && !Array.isArray(m.walkers)) { this.first = false; this.offline(); return; }
         if (this.first && this.kind === 'drive' && !Array.isArray(m.drivers)) { this.first = false; this.offline(); return; }
         this.flyers = m.flyers;
+        this.chatOk = m.chat === 1;
         this.walkers = Array.isArray(m.walkers) ? m.walkers : [];
         this.drivers = Array.isArray(m.drivers) ? m.drivers : [];
         if (this.first) {
@@ -164,6 +178,13 @@ export class MultiSession {
       case 'released':
         if (this.phase === 'flying') { this.notice = 'released'; this.toWatching(); }
         break;
+      /* Chat (D-041): kiểm kiểu từng trường rồi gọi móc, không gọi onChange; gói sai kiểu bỏ lặng */
+      case 'chat':
+        if (KINDS.includes(m.k) && fin(m.slot) && typeof m.name === 'string' && typeof m.text === 'string') this.onChat({ k: m.k, slot: m.slot, name: m.name, text: m.text });
+        return;
+      case 'chatAck':
+        if (fin(m.id) && (m.n === undefined || fin(m.n)) && (m.why === undefined || typeof m.why === 'string')) this.onChatAck({ id: m.id, n: m.n, why: m.why });
+        return;
     }
     this.onChange();
   }

@@ -9,6 +9,7 @@ import { exConnect } from './client';
 import { MultiSession } from './session';
 import { exRemotes } from './remote';
 import { exLabelsUpdate, exLabelsClear } from './labels';
+import { exChat } from './chat';
 import { ExIdle } from './idle';
 import { stAvatars } from '../stroll/avatars';
 import { stChar } from '../stroll/char';
@@ -132,6 +133,7 @@ export const exMulti = {
     if (kind === 'drive') s.veh = veh === 1 ? 1 : 0;
     if (kind === 'walk' || s.veh === 1) s.ch = stChar.get();   // nhân vật đã chọn lần trước (chung Đi dạo và xe máy); sảnh đổi thì ghi lại (lobby.ts)
     let ready = false;
+    exChat.attach(s);   // trò chuyện theo khoảng cách (D-041): onChat / onChatAck, đồng hồ danh sách gần
     s.onPos = f => exRemotes.onPos(f, performance.now());
     s.onWalkPos = w => stAvatars.onPos(w, performance.now());
     s.peersDrive = d => exDrivers.onPos(d, performance.now());
@@ -142,6 +144,7 @@ export const exMulti = {
       if (s.phase === 'solo') exLabelsClear();
       renderRoster();
       if (s.phase === 'flying') idleStart(); else idleStop();
+      exChat.sync(s);
       exMulti.onChange();
       if (!ready) { ready = true; onReady(); }
     };
@@ -152,6 +155,7 @@ export const exMulti = {
   /* Đóng phiên (Quay lại / Esc ở sảnh, hoặc chọn Bay một mình khi có máy chủ): đóng WebSocket, ẩn dù người khác, nhãn, danh sách; begin() mở lại được */
   end(): void {
     if (!session) return;
+    exChat.detach();
     session.dispose(); session = null;
     exMulti.onChange = () => {};
     idleStop(); exRemotes.clear(); stAvatars.clear(); exDrivers.clear(); exLabelsClear();
@@ -167,8 +171,9 @@ export const exMulti = {
     exLabelsUpdate(camera, exRemotes, nowMs, stAvatars, exDrivers);
     if (state && session.kind === 'fly' && session.phase === 'flying' && nowMs - sentAt >= 1000 / M.sendHz) {
       sentAt = nowMs;
-      const p = state.pos, r = (v: number) => Math.round(v * 10) / 10, a = (v: number) => Math.round(v * 1000) / 1000;
-      session.sendPos(r(p.x), r(p.y), r(p.z), a(state.yaw), a(state.bank), Math.round(nowMs));
+      const p = state.pos, r = (v: number) => Math.round(v * 10) / 10, a = (v: number) => Math.round(v * 1000) / 1000, x = r(p.x), y = r(p.y), z = r(p.z);
+      session.sendPos(x, y, z, a(state.yaw), a(state.bank), Math.round(nowMs));
+      exChat.setSelf(x, y, z);   // chat: khoảng cách tính từ đúng vị trí máy chủ biết
     }
   },
 
@@ -177,7 +182,9 @@ export const exMulti = {
     if (!session || !s || session.kind !== 'walk' || session.phase !== 'flying' || nowMs - sentAt < 1000 / M.sendHz) return;
     sentAt = nowMs;
     const r = (v: number) => Math.round(v * 100) / 100, a = (v: number) => Math.round(v * 1000) / 1000;
-    session.sendWalk(r(s.x), r(s.y), r(s.z), a(s.yaw), s.pose, Math.round(nowMs));
+    const x = r(s.x), y = r(s.y), z = r(s.z);
+    session.sendWalk(x, y, z, a(s.yaw), s.pose, Math.round(nowMs));
+    exChat.setSelf(x, y, z);
   },
 
   /* Mỗi khung khi lái xe có chỗ: gửi vị trí + vận tốc + góc lái sendHz lần/s (s = null: không gửi). Cả lúc đang sơ tán khỏi nhịp quay Cầu sông Hàn.
@@ -186,7 +193,9 @@ export const exMulti = {
     if (!session || !s || session.kind !== 'drive' || session.phase !== 'flying' || nowMs - sentAt < 1000 / M.sendHz) return;
     sentAt = nowMs;
     const r = (v: number) => Math.round(v * 100) / 100, a = (v: number) => Math.round(v * 1000) / 1000;
-    session.sendDrive({ x: r(s.x), y: r(s.y), z: r(s.z), yaw: a(s.yaw), v: r(s.v), st: a(st ?? s.steer), ts: Math.round(nowMs) });
+    const x = r(s.x), y = r(s.y), z = r(s.z);
+    session.sendDrive({ x, y, z, yaw: a(s.yaw), v: r(s.v), st: a(st ?? s.steer), ts: Math.round(nowMs) });
+    exChat.setSelf(x, y, z);
   },
 
   /* Người chơi vừa bấm phím điều khiển: đếm lại thời gian rời máy */
@@ -211,5 +220,7 @@ export const exMulti = {
     return session && session.kind === 'drive' && session.phase === 'watching' && session.watched >= 0 ? exDrivers.slotState(session.watched) : null;
   }
 };
+
+exChat.onActivity = () => exMulti.activity();   // gõ trong ô chat tính là còn đó
 
 onLang(() => { rosterKey = ''; renderRoster(); });

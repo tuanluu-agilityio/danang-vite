@@ -61,7 +61,7 @@ src/
   explore/           tự khám phá bằng dù lượn: mô hình bay thuần, dù, camera bám, màn chọn phương tiện, điều phối
     pilot/           người treo dù lượn có xương (D-035): nạp `pilot.glb`, lò xo phản ứng theo lượt rẽ / tăng giảm tốc / gió, IK tay nắm quai phanh, đai + dây dựng bằng code (một SkinnedMesh), đường lùi về người khối
     stroll/          đi dạo (camera sau lưng): bản đồ va chạm 2D thuần, vùng đi được, chuyển động, nhân vật, camera, cần gạt cảm ứng, chụp ảnh
-    multi/           dù lượn nhiều người (5 chỗ): giao thức + thông số dùng chung với máy chủ, phiên, sảnh, dù người khác, nhãn, chế độ xem, rời máy
+    multi/           dù lượn nhiều người (5 chỗ): giao thức + thông số dùng chung với máy chủ, phiên, sảnh, dù người khác, nhãn (kèm bong bóng chat), chế độ xem, rời máy, trò chuyện theo khoảng cách ≤ 150 m (`chat.ts`, `chatCore.ts`, D-041)
     drive/           lái xe VF 3 (camera sau xe): mạng đường nhiều tầng (`net`, `roadData`), vật cản, va chạm, chuyển động theo số liệu thật, xe + bánh + đèn, xe tự động chặn / sơ tán nhịp quay, HUD, bàn đạp cảm ứng, tiếng xe
     bike/            lái xe máy tay ga (góc nhìn thứ nhất / thứ ba, dùng chung mạng đường + va chạm của `drive/`): chuyển động có nghiêng, mô hình + đèn, người lái có xương (nhân vật Đi dạo + IK + mũ), camera, mặt đồng hồ canvas, âm thanh tổng hợp, vệt đèn pha / bụi nước, hạt nhựa + vệt ướt trên mặt đường, HUD xe máy; test đơn vị ở `tests/bike-unit/` (`npm run test:bike:unit`), test trình duyệt `tests/bike-check.mjs` (`npm run test:bike`)
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)

@@ -1,8 +1,8 @@
 /* ===== Phòng bầu trời chung: logic thuần, không phụ thuộc Cloudflare (Durable Object bọc ngoài) ===== */
 import { multiParams as P } from '../../../src/explore/multi/params';
-import { exSanitizeName, exCharNorm, exVehNorm } from '../../../src/explore/multi/protocol';
-import type { ServerMsg, Flyer, Kind } from '../../../src/explore/multi/protocol';
-import { exIsBad } from './badwords';
+import { exSanitizeName, exCharNorm, exVehNorm, exSanitizeChat } from '../../../src/explore/multi/protocol';
+import type { ServerMsg, Flyer, Kind, ChatWhy } from '../../../src/explore/multi/protocol';
+import { exIsBad, exIsBadText } from './badwords';
 
 export type Out = { to: string | 'all'; msg: ServerMsg };
 
@@ -10,7 +10,8 @@ export type Out = { to: string | 'all'; msg: ServerMsg };
 // ch: nhân vật người đi dạo / người đi xe máy chọn (0 nam, 1 nữ), dùng ở nhóm đi dạo và chỗ lái xe máy; phát kèm walkers / drivers của lobby để mọi khách (cả người vào sau) vẽ đúng
 // veh: loại xe của chỗ lái (0 ô tô, 1 xe máy), chỉ dùng ở nhóm lái; ô tô luôn ch 0
 interface Slot { id: string; name: string; seen: number; pos: number[] | null; dirty: boolean; ch: number; veh: number }
-interface Conn { stamps: number[] }
+// stamps: giờ các gói pos trong 1 s gần nhất; chat: giờ các tin chat đã qua kiểm tần suất trong rateWinMs gần nhất (kể cả tin rỗng / tục; tin bị từ chối vì quá nhanh không ghi)
+interface Conn { stamps: number[]; chat: number[] }
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const wrapPi = (a: number) => a - Math.round(a / (2 * Math.PI)) * 2 * Math.PI;   // góc về [−π, π]
@@ -29,12 +30,12 @@ export class SkyRoom {
     this.slots.forEach((s, i) => { if (s) flyers.push({ slot: i, name: s.name }); });
     this.walkSlots.forEach((s, i) => { if (s) walkers.push({ slot: i, name: s.name, ch: s.ch }); });
     this.driveSlots.forEach((s, i) => { if (s) drivers.push({ slot: i, name: s.name, ch: s.ch, veh: s.veh }); });   // khách cũ bỏ qua ch / veh
-    return { to: 'all', msg: { t: 'lobby', flyers, walkers, drivers } };
+    return { to: 'all', msg: { t: 'lobby', flyers, walkers, drivers, chat: 1 } };   // chat 1: máy chủ biết chat (D-041), khách cũ bỏ qua
   }
 
   connect(id: string, now: number): Out[] | null {
     if (!this.conns.has(id) && this.conns.size >= P.maxConns) return null;
-    this.conns.set(id, { stamps: [] });
+    this.conns.set(id, { stamps: [], chat: [] });
     return [{ to: id, msg: this.lobby().msg }];
   }
 
@@ -70,7 +71,7 @@ export class SkyRoom {
     for (const e of list) {
       const group = this.groupOf(e.kind === 'walk' || e.kind === 'drive' ? e.kind : 'fly');
       if (e.slot < 0 || e.slot >= group.length) continue;
-      if (!this.conns.has(e.id)) this.conns.set(e.id, { stamps: [] });
+      if (!this.conns.has(e.id)) this.conns.set(e.id, { stamps: [], chat: [] });
       const seen = typeof e.seen === 'number' && Number.isFinite(e.seen) ? Math.min(e.seen, now) : now - P.slotTimeoutMs + P.heartbeatMs;
       const veh = e.kind === 'drive' ? exVehNorm(e.veh) : 0;   // attachment cũ không có veh: ô tô
       group[e.slot] = { id: e.id, name: e.name, seen, pos: null, dirty: false, ch: e.kind === 'walk' || veh === 1 ? exCharNorm(e.ch) : 0, veh };
@@ -79,10 +80,11 @@ export class SkyRoom {
 
   message(id: string, raw: string, now: number): Out[] {
     const conn = this.conns.get(id);
-    if (!conn || typeof raw !== 'string' || raw.length > P.maxMsgBytes) return [];
+    if (!conn || typeof raw !== 'string' || raw.length > P.chat.msgBytes) return [];
     let m: any;
     try { m = JSON.parse(raw); } catch { return []; }
     if (!m || typeof m !== 'object') return [];
+    if (m.t !== 'chat' && raw.length > P.maxMsgBytes) return [];   // chỉ tin chat được dài tới chat.msgBytes; tin khác giữ maxMsgBytes như cũ
     const kind = this.kindOf(id);   // loại theo slot kết nối đang giữ, không theo trường trong gói
     const group = this.groupOf(kind);
     const slot = kind === null ? -1 : group.findIndex(s => s !== null && s.id === id);
@@ -91,6 +93,7 @@ export class SkyRoom {
       case 'leave': return this.release(id) ? [this.lobby()] : [];
       case 'hb': if (slot < 0) return []; group[slot].seen = now; return this.flush(now);
       case 'pos': return slot >= 0 ? this.onPos(conn, group[slot]!, slot, kind, m, now) : [];
+      case 'chat': return this.onChat(id, conn, slot >= 0 ? group[slot] : null, slot, kind, m, now);
       default: return [];
     }
   }
@@ -131,6 +134,30 @@ export class SkyRoom {
     }
     s.dirty = true;
     return this.flush(now);
+  }
+
+  /* Chat (D-041): kiểm theo thứ tự giữ chỗ → tần suất → rỗng → từ tục; qua hết thì gửi riêng tới từng người giữ chỗ (mọi nhóm) đã có pos, còn sống, cách người gửi ≤ chat.radius (3D).
+     k / slot / name lấy từ slot của kết nối, trường cùng tên trong gói bị bỏ qua. Người gửi chưa có pos thì không ai nhận. Hồi âm chatAck { id, n } hoặc { id, why } chỉ tới người gửi */
+  private onChat(id: string, conn: Conn, s: Slot | null, slot: number, kind: Kind | null, m: any, now: number): Out[] {
+    const C = P.chat;
+    const cid = Number.isSafeInteger(m.id) ? m.id : 0;
+    const no = (why: ChatWhy): Out[] => [{ to: id, msg: { t: 'chatAck', id: cid, why } }];
+    if (!s) return no('slot');
+    conn.chat = conn.chat.filter(t => now - t < C.rateWinMs);
+    if (conn.chat.length >= C.ratePerWin) return no('rate');   // tin bị từ chối vì quá nhanh không ghi giờ: gửi dồn không kéo dài thời gian khóa
+    conn.chat.push(now);
+    const text = exSanitizeChat(m.text);
+    if (text === null) return no('empty');
+    if (exIsBadText(text)) return no('bad');
+    s.seen = now;   // chat tính là còn sống như hb
+    const out: Out[] = [];
+    const p = s.pos;
+    if (p) for (const group of [this.slots, this.walkSlots, this.driveSlots]) for (const t of group) {
+      if (!t || t.id === id || !t.pos || now - t.seen > P.slotTimeoutMs) continue;
+      if (Math.hypot(t.pos[1] - p[1], t.pos[2] - p[2], t.pos[3] - p[3]) <= C.radius) out.push({ to: t.id, msg: { t: 'chat', k: kind!, slot, name: s.name, text } });
+    }
+    out.push({ to: id, msg: { t: 'chatAck', id: cid, n: out.length } });
+    return out;
   }
 
   /* Phát gói gộp các slot có vị trí mới (cách lần trước >= broadcastMs). Vị trí bị hãm trong cửa sổ vẫn dirty nên đi ở lần phát sau (pos hoặc hb của bất kỳ ai).
