@@ -1,0 +1,183 @@
+<pasted_content id="4cda">
+# Enhancement: Visual Mode Selection Panel – Da Nang Bridges 3D
+
+## 1. Project Context
+
+I have an existing interactive 3D exploration website:
+
+https://danangbridges.netlify.app/
+
+The website allows visitors to explore Da Nang, Vietnam, through multiple transportation and movement modes.
+
+Currently, the mode selection panel displays the available modes primarily as plain text. This looks basic and does not communicate the visual experience of each mode effectively.
+
+Your task is to redesign and enhance this panel into an immersive, visually appealing mode selection interface.
+
+**Important:** This is an enhancement of an existing project. Do not rebuild the website or replace its existing architecture.
+
+## 2. Main Objective
+
+Replace the current text-based mode selection interface with image-based visual cards.
+
+Each available mode should have its own representative image or visual illustration.
+
+The available modes currently include:
+
+1. **Paragliding** – First-person paragliding experience above Da Nang, with panoramic views of the coastline, mountains, rivers, and bridges.
+2. **Motorcycle** – Exploring Da Nang streets and bridges on a motorcycle.
+3. **Car** – Driving through Da Nang with an immersive driving perspective.
+4. **Walking** – Exploring the city on foot, with a human character representing the visitor.
+
+Review the existing project to identify all currently supported modes. Do not remove or rename any existing modes.
+
+## 3. Visual Design Direction
+
+Create a premium, modern, immersive interface inspired by high-quality travel applications, interactive 3D experiences, and AAA game mode-selection screens.
+
+### Mode Cards
+
+Each mode should be represented by a dedicated image card.
+
+Visual requirements:
+
+- Use a large, high-quality representative image for each mode.
+- Images should communicate the actual experience of that mode, not just show an unrelated vehicle.
+- Use cinematic photography or realistic 3D-rendered visuals.
+- Apply subtle dark gradients to ensure text remains readable.
+- Display the mode name prominently.
+- Add a short descriptive subtitle.
+- Include a clear visual indication of the currently selected mode.
+- Use smooth hover animations, subtle scaling, and elegant transitions.
+- Avoid excessive borders, unnecessary decorations, or generic dashboard aesthetics.
+
+### Suggested Visual References
+
+- Paragliding: A person paragliding above Da Nang's coastline, with a spectacular aerial view of the city.
+- Motorcycle: A modern motorcycle riding along a beautiful urban road in Da Nang.
+- Car: A modern car driving along a scenic road with Da Nang's bridges in the background.
+- Walking: A realistic human character walking along a riverside promenade in Da Nang.
+
+The images should have consistent visual quality, lighting, color grading, and composition.
+
+## 4. Interaction & Animation
+
+The redesigned panel must preserve all existing functionality.
+
+Implement the following interactions:
+
+- Clicking a card selects the corresponding movement mode.
+- The selected card should have a distinct visual state.
+- Hovering over a card should trigger a subtle zoom or image animation.
+- Switching between modes should feel smooth and responsive.
+- If the existing application supports previewing or activating a mode, preserve that behavior.
+- Do not introduce unnecessary confirmation dialogs.
+
+The interface should clearly communicate which mode is currently active or selected.
+
+## 5. Layout & Responsive Design
+
+Review the existing mode selection panel and choose a layout that fits the current application.
+
+Suggested approaches:
+
+- Desktop: Horizontal image cards or a cinematic grid.
+- Mobile: Horizontally scrollable cards or a compact vertical layout.
+- Keep the panel visually balanced without obstructing the 3D exploration experience.
+- Maintain compatibility with the existing UI and camera viewport.
+
+Do not let the redesigned panel consume excessive screen space.
+
+## 6. Technical Requirements
+
+Before implementation:
+
+1. Inspect the existing project structure.
+2. Locate the current mode selection UI and its related components.
+3. Understand how mode selection is connected to the existing movement systems.
+4. Identify the current state management and styling approach.
+5. Implement the enhancement using the existing architecture and conventions.
+
+Important constraints:
+
+- Do not modify the underlying movement logic.
+- Do not break multiplayer synchronization.
+- Do not affect existing player or vehicle spawning.
+- Do not change the existing camera behavior.
+- Do not interfere with real-time weather, chat, or other existing features.
+- Reuse existing assets and dependencies where appropriate.
+- Avoid introducing unnecessary libraries.
+
+### Image Assets
+
+Prioritize the following order:
+
+1. Reuse suitable existing project assets.
+2. Use existing image-generation assets if available.
+3. Generate or source appropriate high-quality images if necessary.
+
+Avoid generic placeholders, emoji, or simple CSS illustrations as substitutes for actual representative imagery.
+
+Optimize images for web performance. Use appropriate image dimensions, compression, and lazy loading where suitable.
+
+## 7. Implementation Workflow
+
+Use Superpowers to organize the work.
+
+**Phase 1 – Exploration**
+- Review the current mode selection interface.
+- Identify relevant components, assets, and interaction logic.
+- Understand the existing UI constraints.
+
+**Phase 2 – Design**
+- Establish a consistent visual direction.
+- Determine the card layout and image composition.
+- Define hover, selected, and transition states.
+
+**Phase 3 – Implementation**
+- Replace the text-based presentation with visual image cards.
+- Integrate the cards with the existing mode selection logic.
+- Implement responsive behavior and animations.
+
+**Phase 4 – Validation**
+- Test every available mode.
+- Verify that selecting a card activates the correct existing mode.
+- Check desktop and mobile layouts.
+- Ensure multiplayer and other existing features remain unaffected.
+- Check image loading, performance, and browser console errors.
+
+## 8. Quality Expectations
+
+The final result should feel like a premium interactive travel experience rather than a conventional website settings panel.
+
+The user should immediately understand the difference between each mode simply by looking at its image.
+
+Prioritize:
+- Visual quality
+- Realistic imagery
+- Consistent design language
+- Smooth interactions
+- Minimal UI footprint
+- Preservation of existing functionality
+
+**Final instruction:** Review the actual project before making decisions. Adapt the implementation to the existing architecture instead of assuming a particular component structure or technology. Do not stop after producing a design proposal; implement, test, and complete the enhancement.
+</pasted_content id="4cda">
+
+---
+
+<task-notification>
+<task-id>bviwmnjzc</task-id>
+<tool-use-id>toolu_019evFhxCBma8qRsRBcFtx4j</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\0b883b31-3fa6-40b8-a0ba-fec7729a6ac1\tasks\bviwmnjzc.output</output-file>
+<status>completed</status>
+<summary>Background command "Run mobile UI test on real GPU in background" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b4zvid9w6</task-id>
+<tool-use-id>toolu_01T8BqmMdwpF2A4hvXZNz8gT</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\0b883b31-3fa6-40b8-a0ba-fec7729a6ac1\tasks\b4zvid9w6.output</output-file>
+<status>completed</status>
+<summary>Background command "Build main baseline in temp worktree and run mobile test there" completed (exit code 0)</summary>
+</task-notification>
