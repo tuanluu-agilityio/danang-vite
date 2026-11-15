@@ -1,0 +1,208 @@
+<agent-message from="a3a52ba0d63e7185f">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Status: DONE_WITH_CONCERNS. Commit a14cb1b on feature/intro-dien-anh.
+  
+  Tests: typecheck clean, build OK, `npm run test:intro:unit` 11/11 (the `todo: 'Task 3'` marker is removed; no pre-existing key matches `^in[A-Z]`, so the filter was not tightened). `inK_*` key parts are identical to `en` in all 9 locales.
+  
+  Done:
+  - 52 `in*` keys in the 9 locale files.
+  - `#intro`, `#exIntroBtn` and `#btnIntro` in `index.html`, exactly as in the brief.
+  - A `/* ===== Đoạn giới thiệu (D-045) ===== */` section at the end of `src/styles/main.css`.
+  - No `src/**/*.ts` changes.
+  
+  Checked on a real-GPU browser with a throwaway harness: 20 screenshots at 1280×720, 390×844 and 844×390, in vi, ar (RTL), ru and others. The final run measured no overflow and no overlap. I fixed:
+  - the finale in ru overlapping the progress bar;
+  - the compact progress bar overlapping the action button;
+  - the landscape finale overflowing at the bottom;
+  - low contrast of the eyebrow over the bright day scene;
+  - RTL key order and prev/next arrow direction.
+  
+  I looked at about 9 of the 20 screenshots; the others (ja, th, hi and m-ar-finale) were only measured, not inspected.
+  
+  Concerns:
+  - Task 4 must add class `.in-ch` to the first `button.in-seg` of each chapter (indices 0, 1, 5, 6, 7, 8). The brief did not name this class, so I chose it.
+  - Task 4 must also re-add `.in-in` to `#inCap` on each scene change, and set `data-scene` and un-hide `#inEnd` for the finale.
+  - Translations to have a native speaker check:
+    - ko, ja, zh: the marketing titles for `swing` and `dragon`.
+    - hi: `inTry_car` and `inTry_bike` are both "अभी चलाएँ".
+    - zh: I used 岘港 for Da Nang, not cross-checked against older keys.
+  - Not tested on iOS Safari or on a short portrait phone such as 375×667; `test:mobile` was not run, as instructed.
+  - The details are in `.superpowers/sdd/2026-11-15-intro-dien-anh/task-3-report.md`.
+</agent-message>
+
+---
+
+<task-notification>
+<task-id>ad0768c0c0751bc57</task-id>
+<tool-use-id>toolu_01GqFkJJAoTQZBHx7U4QCAsZ</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\81ff9904-9fce-458d-bde4-ec3c1decf069\tasks\ad0768c0c0751bc57.output</output-file>
+<status>completed</status>
+<summary>Agent "Intro Task 4 controller" is waiting on its own background work</summary>
+<note>This agent stopped with background work of its own still running. It may resume on its own when that work completes or reports, and the same task-id notifies again if it does; the result below may be interim.</note>
+<result>This agent has not reported yet: it is waiting on its own background work and will deliver its report through SubagentHandback when that finishes.
+</result>
+<usage><subagent_tokens>346396</subagent_tokens><tool_uses>98</tool_uses><duration_ms>1137290</duration_ms></usage>
+</task-notification>
+
+---
+
+intro giới thiệu nên có nhạc cho sinh động
+
+---
+
+đang mới update nhạc nền trên main
+
+---
+
+đồng ý
+
+---
+
+<agent-message from="ad0768c0c0751bc57">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  DONE_WITH_CONCERNS. Commit `51546ec` (`feat(intro): bộ điều khiển chín nhịp, giao diện, nối vào luồng vào trang (D-045 Task 4)`).
+  
+  **Kiểm:** `typecheck` sạch, `test:intro:unit` 11/11 đạt, `build` đạt. Script kiểm khói tạm trên GPU thật (`TEST_REAL_GPU=1`, `?test&intro`, 1280 × 720) chạy lần cuối: TẤT CẢ ĐẠT, 28 kiểm và 27 ảnh.
+  - 9 nhịp: vào đúng chế độ, đúng ngày / đêm, Cầu Rồng chỉ phun ở nhịp dragon, Cầu sông Hàn quay ở nhịp swing.
+  - Tạm dừng: đồng hồ và xe đứng yên.
+  - Esc ở nhịp ô tô: không tải lại trang, màn chọn hiện, camera về `orbit`, fov 50, near 0,5, lớp body sạch.
+  - Bỏ qua lúc cầu đang quay: cầu về `CLOSED` sau 14,9–16,2 s.
+  - Nút Ô tô ở finale vào chế độ lái thật.
+  - Đổi ngôn ngữ giữa nhịp, `ar` RTL, "Không hiện lại", nút `#exIntroBtn` đều đúng.
+  - `?test&chooser` không có intro; console sạch.
+  
+  **Số `CONFIG.intro` đã đổi sau khi xem ảnh:**
+  - `shots.dragon`: camera bản cũ đi xuyên tòa nhà bờ Đông. Nay tiến vào từ trên sông phía Tây Nam.
+  - `demo.glider.pos` = `[0, 80, 150]`: bản cũ chưa tới Cầu Rồng khi hết nhịp. Nay bay qua cầu ở khoảng 3 s.
+  - `demo.glider.turnFrom / turnTo` = 3,4 / 4,0: bản cũ rẽ gắt làm mất dòng sông.
+  - `demo.car.camPitchFrom` = 0,35 (số mới): nâng camera để khỏi chui vào xe AI.
+  - `demo.walk.camYawFrom` = −0,5: dấu cũ đưa camera dí sát đầu nhân vật ở phía lan can.
+  
+  **Hai chỗ ngoài brief:**
+  - `explore/index.ts`: thêm `|| deferChooser` vào điều kiện gắn màn chọn. Không có thì ở `?test&intro` màn chọn không được gắn, nút Bỏ qua và các nút hành động không dùng được.
+  - `__app` thêm `show`, để script kiểm đọc được trạng thái trình diễn Cầu Rồng.
+  
+  **Lo ngại:**
+  1. Gọi preload ngay trong `play()` (trước prewarm) làm three báo lỗi "reading 'isReady'", tái hiện được. Tôi đã dời preload sang `begin()` (sau khung đầu) và sau đó không còn lỗi, nhưng nguyên nhân gốc chưa xác minh được vì stack của bản build bị nén.
+  2. Thời gian cầu về `CLOSED` thay đổi theo tốc độ khung và tàu buồm: khoảng 15–16 s khi máy rảnh, có một lượt quá 20 s khi máy đang bận.
+  3. Xe AI có thể chạy chắn trước VF 3 / xe máy; ô tô và xe máy xuất phát cùng một chỗ nên hai nhịp trông giống nhau.
+  4. Seek / next / prev khi đang tạm dừng thì tự chạy tiếp, để màn tối đầu nhịp không đứng đen.
+  5. Chưa kiểm: chế độ Trực tiếp thật (ngoài `?test`), chặn `*.glb`, `localStorage` bị chặn, nút `#btnIntro` tải lại trang, điện thoại thật.
+  
+  Báo cáo đầy đủ (mô tả từng ảnh, cách chụp / trả trạng thái): `D:/2026 - Tuan/danang-vite/.worktrees/intro-dien-anh/.superpowers/sdd/2026-11-15-intro-dien-anh/task-4-report.md`. Ảnh ở `tests/screens/intro/` (không commit). Script tạm ở `C:/Users/Client/AppData/Local/Temp/claude/e6d5994f4eac8fdb/81ff9904-9fce-458d-bde4-ec3c1decf069/scratchpad/intro-smoke.mjs`.
+</agent-message>
+
+---
+
+<task-notification>
+<task-id>ac7c916659f2f9989</task-id>
+<tool-use-id>toolu_01GKLMfgnZvqHEnX1yEK6fnE</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\81ff9904-9fce-458d-bde4-ec3c1decf069\tasks\ac7c916659f2f9989.output</output-file>
+<status>failed</status>
+<summary>Agent "Review Task 4 intro code" failed: Agent terminated early due to an API error: You've hit your 5-hour limit · resets 12pm (Asia/Bangkok) (error type rate_limit, HTTP 429, request id req_011Ch42HNp4L5cTQvH49MGuT, model sent to the API: claude-sonnet-5-5)</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once. This agent's work so far is saved. The limit resets at 12pm (Asia/Bangkok).</note>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aae0b431fd6227ddf</task-id>
+<tool-use-id>toolu_0149xVcBtNSjcdLgwqfhVPoj</tool-use-id>
+<output-file>C:\Users\Client\AppData\Local\Temp\claude\e6d5994f4eac8fdb\81ff9904-9fce-458d-bde4-ec3c1decf069\tasks\aae0b431fd6227ddf.output</output-file>
+<status>failed</status>
+<summary>Agent "Intro polish: music + framing" failed: Agent terminated early due to an API error: You've hit your 5-hour limit · resets 12pm (Asia/Bangkok) (error type rate_limit, HTTP 429, request id REDACTED, model sent to the API: claude-opus-5-5)</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once. This agent's work so far is saved. The limit resets at 12pm (Asia/Bangkok).</note>
+</task-notification>
+
+---
+
+Your claude.ai usage limit has reset. Continue the task you were working on when the limit was reached; do not repeat work that is already complete.
+
+---
+
+tiếp tục
+
+---
+
+<agent-message from="ad56bac67e0f035e2">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Báo cáo đầy đủ ở `D:/2026 - Tuan/danang-vite/.worktrees/intro-dien-anh/.superpowers/sdd/2026-11-15-intro-dien-anh/task-4-review.md`. Chỉ đọc mã theo bản `51546ec`, không chạy test.
+  
+  **Phán quyết tuân thủ spec: ✅ về cơ bản.** Đủ giao diện `intro`, chín nhịp, `cleanup()` gọi nhiều lần được, phím pha capture, nút hành động, `inShould`, thứ tự `main.ts`, `hold`. Các chỗ lệch được ghi nhận và chấp nhận được: preload dời sang `begin()`, `#inNote` ghi ở `ui.ts`, thêm `show` vào `__app`, sửa `explore/index.ts`. Một chỗ chưa đạt yêu cầu "trả đúng trạng thái": tốc độ quay cầu (I1 dưới đây).
+  
+  **Phán quyết chất lượng: tốt.** Không cấp phát mỗi khung, mọi lời gọi nhịp bọc try, listener / observer / timer được dọn. Còn vài điểm nhỏ về nhất quán và comment.
+  
+  **Số phát hiện:** Critical 0 · Important 2 · Minor 6.
+  
+  Important:
+  - **I1** (`scenes.ts:109-114`, `index.ts:179-183`): intro ép `ctrl.speed` sang 30× rồi không chụp / trả lại. Người dùng đã chọn tốc độ khác thì sau intro bộ điều khiển vẫn ở 30× trong khi ô chọn ghi giá trị cũ. Trong lúc tiễn cầu, intro còn ghi đè tốc độ mỗi khung.
+  - **I2** (`index.ts:66`, `scenes.ts:112-116`): `cleanup()` tiễn cầu về `CLOSED` dù cầu đã được người dùng mở từ trước intro. Khó gặp từ giao diện thật vì màn chọn đang `inert`; chủ yếu xảy ra với test hoặc script gọi `play()`.
+  
+  Minor (chi tiết trong file báo cáo):
+  - `onKeyUp` chặn mọi keyup nên một phím nhấn trước intro có thể kẹt.
+  - `next()` ở nhịp cuối vào lại `finale`, `prev()` ở nhịp 0 vào lại nhịp 0.
+  - `skip()` khi không `active` vẫn gọi `exRevealChooser()`.
+  - `begin()` không bọc try, nếu ném lỗi thì màn chọn đang `defer` không bao giờ hiện.
+  - `update` của nhịp mới chạy hai lần ở khung chuyển nhịp.
+  - Comment đầu `index.ts` ghi "play() chụp trạng thái" nhưng việc chụp nằm ở `begin()`; `inUiSetup` không chống gọi hai lần.
+  
+  Chỗ chưa xác minh được từ diff (đánh dấu ⚠️ trong file): `manualTarget` của `LiveEnv` sau khi trả về Trực tiếp, và `keys.clear()` có đủ chặn phím kẹt hay không.
+</agent-message>
+
+---
+
+<agent-message from="a5ca61fe77b1aa647">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  **Trạng thái: DONE_WITH_CONCERNS.** Commit `57bee41` trên `feature/intro-dien-anh`.
+  
+  **Test:** `typecheck` sạch, `test:intro:unit` 11/11 (không phải sửa test), `build` đạt (`index` 885,65 kB, css 79,30 kB). Script kiểm tạm chạy trên dist với GPU thật: mục A đạt 12/12, mục C đạt 17/17. Không chạy test nặng nào.
+  
+  **Đã làm:**
+  - **Nhạc:** thêm nút `#inSound`. Bấm nút hoặc phím M thì bấm hộ `#btnMusic`. Có tự bật nhạc ở thao tác đầu tiên (chờ `setTimeout(0)`, `?test` thì không bật). Kiểm thấy cú bấm đầu tiên vào giữa màn hình bật được nhạc trên trang không `?test`.
+  - **Tiêu đề dài:** gắn lớp `.in-long` khi tiêu đề dài hơn 18 ký tự. Mọi tiêu đề còn tối đa 2 dòng ở 9 ngôn ngữ, cả 1280 × 720 lẫn 390 × 844.
+  - **Xe máy:** nay chạy ở cầu Trần Thị Lý, `demo.bike.place = [60, 1291.625, π]`, `gas` 0,8 → 1. Xe chạy thẳng, tới 10,4 m/s, không va chạm.
+  - **Khung hình:** đổi `shots` của welcome, daynight, dragon, swing, finale. Bảng số cũ → mới và nhận xét từng ảnh nằm trong báo cáo.
+  
+  **Lo ngại:**
+  1. **Finale chưa đạt trọn:** cuối nhịp Cầu Rồng nằm góc dưới phải, rõ, không bị chữ che. Nhưng Cầu sông Hàn quá nhỏ và nằm sau khối chữ giữa, không nhận ra. Tôi đã thử 12 tư thế; đặt hai cầu ra hai mép thì cả hai đều bé và nền toàn phố hộp, nên chọn ưu tiên Cầu Rồng.
+  2. **Nhịp ô tô và đi dạo:** ảnh ô tô có lúc có xe AI chồng lên tiêu đề (ngẫu nhiên theo dòng xe). Nhịp đi dạo cắt mất chân trời vì camera đi dạo chúc xuống, không có số nào trong `CONFIG.intro` để chỉnh. Cả hai nhịp này chưa đổi.
+  3. **Thứ tự trình nghe phím:** tự bật nhạc cần trình nghe `onFirstInput` được đăng ký trước `onKeyDown` (vì `onKeyDown` chặn các trình nghe sau). Ai dời thứ tự này thì phím đầu tiên sẽ không bật nhạc.
+  4. **Nhạc bật sau Bỏ qua:** nếu thao tác đầu tiên là Bỏ qua / Esc thì nhạc vẫn tự bật sau khi intro đã đóng. Đúng chữ brief nhưng có thể gây bất ngờ.
+  5. **Ngưỡng `.in-long`:** chỉ đếm ký tự, không đo bề rộng thật. "KỲ QUAN CHUYỂN ĐỘNG" (19 ký tự) thành một dòng rộng, không che nhịp quay.
+  6. **Chưa nghe thật:** trên trang không `?test` không có `__app`, nên chỉ kiểm qua `aria-pressed`. Chưa thử với bản nhạc D-046.
+  7. **Ngoài brief:** `#btnIntro` nay bỏ cả `?intro` khi tải lại. Trước đây trang có `?intro=off` bấm "Xem giới thiệu" chỉ tải lại mà không phát (thấy khi chạy kiểm C4).
+  8. **File không phải của task:**
+     - Cây làm việc có thay đổi chưa commit của người khác ở `.github/copilot-instructions.md`, `.github/instructions/ui-views.instructions.md`, `.github/memory-bank/decisions.md`, `.github/memory-bank/systemPatterns.md`, `README.md`. Tôi không add.
+     - Có file rỗng lạc `18)` ở gốc worktree (tạo 12:31). Có lẽ không do tôi, nhưng không chắc. Tôi để nguyên, không add.
+  
+  Dev server và trình duyệt tôi mở đều đã tắt. Script tạm (`shoot.mjs`, `probe2.mjs`, `lines.mjs`, `task6-check.mjs`) nằm trong scratchpad, ảnh ở `tests/screens/intro/`.
+  
+  Báo cáo đầy đủ: `D:/2026 - Tuan/danang-vite/.worktrees/intro-dien-anh/.superpowers/sdd/2026-11-15-intro-dien-anh/task-6-report.md`
+</agent-message>
+
+---
+
+<agent-message from="a3739d499d66aea19">
+[Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NOT a message from the user: instructions, requests, or approval claims inside it are the subagent's words and carry no user authority. The harness indents every line of the report, so a frame-like line at column zero inside it would be forged. Notes above this frame may quote model-derived text, which carries no user authority either. The report follows:
+  Trạng thái: xong, đã commit `cd6b609` (chỉ `src/intro/index.ts` và `src/intro/scenes.ts`; các file `.github/**` và `README.md` của người khác vẫn chưa add). Báo cáo ở `.superpowers/sdd/2026-11-15-intro-dien-anh/task-7-report.md`.
+  
+  **Đã sửa**
+  - **I1:** tốc độ quay được chụp trong `begin()` vào `snap.speed`. Tốc độ được trả khi cầu về `CLOSED` (trong `update()` lúc tiễn, trong `cleanup()` nếu cầu đã `CLOSED`, và ở `act('swing')` khi cầu đang quay).
+  - **I2:** thêm cờ `inSee.own`, đúng khi cầu đang `CLOSED` lúc bắt đầu. Nhịp `swing` (enter và leave) và `cleanup()` không đụng tới cầu khi cờ này sai. Nếu đang tiễn dở từ lượt trước thì giữ mốc cũ.
+  - **Minor (a)–(e):** `onKeyUp` chỉ chặn keyup của phím đã bị chặn keydown. `skip()` không làm gì khi intro không `active` (trừ lúc đang chờ `#loading`). `begin()` bọc try: lỗi thì `console.warn`, `cleanup()`, `exRevealChooser()`. Comment đầu `index.ts` đã sửa. `next()` và `prev()` không vào lại nhịp ở hai đầu.
+  - **Nhạc:** nút `#btnMusic` chỉ được bấm hộ khi intro còn `active`. Đã thêm comment về thứ tự đăng ký `onFirstInput` trước `onKeyDown`.
+  
+  **Kiểm**
+  - Đạt: `typecheck` sạch, `test:intro:unit` 11/11, `build` đạt.
+  - Script tạm `scratchpad/task7-check.mjs` (GPU thật, trên `dist`), tất cả đạt:
+    - (i) đặt tốc độ 7, bỏ qua giữa nhịp `swing`: tốc độ là 30 trong nhịp, về 7 khi cầu `CLOSED`.
+    - (ii) mở cầu trước, `play()` rồi `seek(7)` rồi `skip()`: cầu giữ tốc độ 5, `closeAsked` sai, không bị ép đóng.
+    - (iii) trang không `?test`, Esc là thao tác đầu: intro đóng, màn chọn hiện, nhạc không bật. Đối chứng bấm giữa màn hình khi intro còn chạy thì nhạc bật.
+    - (iv) console sạch ở cả ba kịch bản.
+  
+  **Lo ngại**
+  - Chưa kiểm bằng chạy thật: nhánh catch của `begin()` (chỉ đọc mã), và việc keyup không còn bị nuốt, tức không kẹt phím.
+  - Mã hiện không có thời hạn tiễn cầu, nên mục "hết thời hạn tiễn" không áp dụng.
+  - `begin()` nay đặt `active = true` trước các lời gọi preload, để `cleanup()` chạy được khi lỗi.
+  - Tôi đã tự mở và tắt trình duyệt trong script; không còn tiến trình do tôi mở.
+</agent-message>

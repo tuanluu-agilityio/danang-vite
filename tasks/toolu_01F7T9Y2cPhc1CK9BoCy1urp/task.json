@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01F7T9Y2cPhc1CK9BoCy1urp",
+  "agent_id": "a5ca61fe77b1aa647",
+  "subagent_type": "general-purpose",
+  "task_description": "Intro polish: music + framing",
+  "token_usage": {
+    "input_tokens": 170,
+    "cache_creation_tokens": 326747,
+    "cache_read_tokens": 19682918,
+    "output_tokens": 59576,
+    "api_call_count": 84
+  },
+  "started_at": "2026-11-15T12:02:05.5331694+07:00",
+  "completed_at": "2026-11-15T12:31:35.1244727+07:00"
+}
