@@ -1,6 +1,6 @@
 # Đoạn giới thiệu điện ảnh (Intro Guide) — thiết kế
 
-_D-045 · 2026-11-15 · nhánh `feature/intro-dien-anh` (từ `main` `51e5518`) · Trạng thái: đang triển khai_
+_D-045 · 2026-11-15 · nhánh `feature/intro-dien-anh` (từ `main` `51e5518`) · Trạng thái: xong mã (`cd6b609`), chờ người dùng xem demo; thêm nút nhạc `#inSound` theo yêu cầu sau (xem D-045 ở `decisions.md`); test trình duyệt `test:intro` bỏ theo lời người dùng_
 
 Nguồn yêu cầu: bản "BUILD A CINEMATIC 3D INTRO GUIDE FOR DA NANG BRIDGES" của người dùng (2026-11-15). Người dùng yêu cầu đi hết quy trình (khảo sát → spec → plan → làm → kiểm) không dừng hỏi; các lựa chọn dưới đây là quyết định của agent, ghi rõ để người dùng sửa.
 

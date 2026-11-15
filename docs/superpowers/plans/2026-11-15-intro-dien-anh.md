@@ -302,6 +302,8 @@ export const intro: {
 
 ### Task 5: Test trình duyệt `test:intro`
 
+> **Không làm** (2026-11-15): người dùng nói "không cần chạy test nặng. Tôi sẽ review demo". Các kịch bản dưới đây chỉ được kiểm một phần bằng script tạm trên GPU thật (không commit); giữ lại làm danh sách khi muốn viết test sau.
+
 **Files:**
 - Create: `tests/intro-check.mjs`
 - Modify: `package.json` (`"test:intro": "node tests/intro-check.mjs"`)
@@ -328,6 +330,8 @@ Theo khuôn `tests/env-check.mjs` (`serveDir('dist')`, `launch()`, `openApp()`, 
 ---
 
 ### Task 6: Chỉnh hình theo ảnh GPU thật + tài liệu
+
+> **Đã làm** (2026-11-15): `57bee41` (khung hình, xe máy ở cầu Trần Thị Lý, thêm nút nhạc `#inSound` theo yêu cầu mới của người dùng), `cd6b609` (sửa sau review Task 4), rồi commit tài liệu.
 
 - [ ] **Step 1:** Chụp ảnh từng nhịp (đầu / giữa / cuối) ở 1280 × 720 và 390 × 844, ngày / đêm; chỉnh `CONFIG.intro.shots` / `demo` / thời lượng và CSS tới khi khung hình đẹp, chữ đọc được trên mọi nền. Chạy lại `test:intro:unit`, `test:intro`.
 - [ ] **Step 2:** Cập nhật `.github/copilot-instructions.md` §5 (hai lệnh mới), `.github/memory-bank/` (`activeContext.md`, `progress.md`, `decisions.md` D-045, `systemPatterns.md`: móc `auto` / `stop()`, `cam.mode 'intro'`, khóa lưu trữ), `.github/instructions/ui-views.instructions.md` (quy tắc `body.intro`), README mục **Cấu trúc** (`src/intro/`), trạng thái spec. Chỉ ghi điều có thật (test nào đã chạy / chưa).
