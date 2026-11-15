@@ -31,6 +31,7 @@
     "test:env:unit": "tsx --test tests/env-unit/*.test.ts",
     "test:live:unit": "tsx --test tests/live-unit/*.test.ts",
     "test:env": "node tests/env-check.mjs",
+    "test:live": "node tests/live-check.mjs",
     "test:multi:unit": "tsx --test tests/multi-unit/*.test.ts",
     "test:multi:worker": "node tests/multi-unit/worker.integration.mjs",
     "test:boats:unit": "tsx --test tests/boats-unit/*.test.ts",
