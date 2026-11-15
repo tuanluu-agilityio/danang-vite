@@ -62,7 +62,6 @@ import { setupQualityUI } from './ui/qualityUI';
 import { setupCompactUI, ui as compactState, openSheet, closeSheets, reveal } from './ui/compactUI';
 import { setupEnvUI, type EnvUI } from './ui/envUI';
 import { createLiveEnv, liveNextDelay, type LiveEnv, type EnvMode } from './realtime/liveEnv';
-import { rng } from './common/math';
 import { updateHrUI } from './ui/hrUI';
 
 initI18n();
@@ -121,8 +120,8 @@ setupCompactUI();
 const query = new URLSearchParams(location.search);
 // Giờ + thời tiết thực tế (D-042); ?test không gọi Open-Meteo trừ khi có env=live. Chỉ là phần thông tin: lỗi ở đây không được chặn khám phá / vòng vẽ bên dưới
 let envUi: EnvUI | undefined;
-const liveJitter = rng(CONFIG.live.jitterSeed);   // nhiễu nhịp làm mới (D-043): bộ sinh riêng, không dùng rand()
-try { envUi = setupEnvUI({ live: !query.has('test') || query.get('env') === 'live', nextDelay: (now) => liveNextDelay(now, CONFIG.live, liveJitter), skew: { maxMs: CONFIG.live.skewMaxMs, stepMs: CONFIG.live.obsStepMs } }); }
+// nhiễu nhịp làm mới (D-043): Math.random để mỗi máy gọi Open-Meteo một giây khác (không phải ngẫu nhiên của cảnh, không đụng rand())
+try { envUi = setupEnvUI({ live: !query.has('test') || query.get('env') === 'live', nextDelay: (now) => liveNextDelay(now, CONFIG.live, Math.random), skew: { maxMs: CONFIG.live.skewMaxMs, stepMs: CONFIG.live.obsStepMs } }); }
 catch (e) { console.warn('env: không dựng được chỉ báo giờ / thời tiết', e); const envEl = document.getElementById('env'); if (envEl) envEl.style.display = 'none'; }
 // Môi trường theo thời tiết + giờ thật (D-043): Trực tiếp mặc định, ?test mặc định Mô phỏng (test cũ tất định), ?envmode=live|manual ép.
 // Dùng chính kho của envUi (không tạo kho thứ hai; ?test không gọi mạng trừ khi env=live). envUi hỏng ⇒ không có bộ điều khiển, cảnh chạy Mô phỏng như cũ

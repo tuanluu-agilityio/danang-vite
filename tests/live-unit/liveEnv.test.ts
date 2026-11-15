@@ -17,7 +17,7 @@ const W = (o: Partial<EnvWeather> = {}): EnvWeather => ({
 
 /* Kho / thời tiết / đồng hồ giả */
 function rig(initial: EnvMode, data: EnvWeather | null = null) {
-  let t = NOON, d: EnvWeather | null = data;
+  let t = NOON, ck = 1000, d: EnvWeather | null = data;   // ck: đồng hồ đơn điệu (cửa sổ áp tức thì cfg.instantMs)
   const subs: Array<() => void> = [];
   const calls = { setLive: [] as Array<[WeatherParams | null, boolean | undefined]>, stop: 0, stand: 0, refresh: 0 };
   const dayNight = { night: 0.3, target: 0.4 };
@@ -30,9 +30,9 @@ function rig(initial: EnvMode, data: EnvWeather | null = null) {
     setLive(p: WeatherParams | null, instant?: boolean) { calls.setLive.push([p, instant]); },
     stopScenario() { calls.stop++; }, standTrees() { calls.stand++; }
   };
-  const live = createLiveEnv({ cfg: L, lat: CONFIG.env.lat, lon: CONFIG.env.lon, refreshMs: CONFIG.env.refreshMs, now: () => t, store, weather, dayNight, initial });
+  const live = createLiveEnv({ cfg: L, lat: CONFIG.env.lat, lon: CONFIG.env.lon, refreshMs: CONFIG.env.refreshMs, now: () => t, clock: () => ck, store, weather, dayNight, initial });
   const push = (v: EnvWeather | null) => { d = v; for (const f of subs) f(); };
-  return { live, calls, dayNight, push, setNow: (v: number) => { t = v; } };
+  return { live, calls, dayNight, push, setNow: (v: number) => { t = v; }, wait: (ms: number) => { ck += ms; } };
 }
 
 test('mặc định theo initial; Mô phỏng: sun null, không ghi gì', () => {
@@ -67,6 +67,25 @@ test('Trực tiếp + kho bơm số liệu: setLive đúng envToParams, lần đ
   assert.equal(r.calls.setLive.length, 2);
   assert.deepEqual(r.calls.setLive[1][0], envToParams(b, true, L));
   assert.equal(r.calls.setLive[1][1], false);
+});
+
+test('số liệu đầu tới trong instantMs ⇒ tức thì; tới muộn hơn ⇒ tiến dần (cả khi skew đổi giờ)', () => {
+  const a = rig('live');
+  a.wait(L.instantMs);
+  a.push(W());
+  assert.equal(a.calls.setLive[0][1], true, 'đúng mốc instantMs vẫn tức thì');
+  const b = rig('live');
+  b.wait(L.instantMs + 1);
+  b.setNow(NOON - 5 * 3600000);   // giờ hiệu chỉnh nhảy (skew) không ảnh hưởng: cửa sổ đo bằng clock đơn điệu
+  b.push(W());
+  assert.equal(b.calls.setLive.length, 1);
+  assert.equal(b.calls.setLive[0][1], false, 'tới muộn ⇒ không tức thì');
+  b.push(W({ temp: 31 }));
+  assert.equal(b.calls.setLive[1][1], false);
+  const c = rig('live');
+  c.wait(L.instantMs + 1);
+  c.push(null); c.wait(10); c.push(W());
+  assert.equal(c.calls.setLive[0][1], false, 'kho báo loading trước rồi mới có số liệu muộn');
 });
 
 test('kho đã có số liệu (bộ nhớ đệm) lúc tạo: áp ngay, tức thì', () => {

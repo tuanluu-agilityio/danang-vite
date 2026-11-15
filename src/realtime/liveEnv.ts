@@ -14,6 +14,7 @@ export type LiveDeps = {
   cfg: typeof CONFIG.live; lat: number; lon: number;
   refreshMs: number;                                              // CONFIG.env.refreshMs: số liệu cũ hơn mức này thì làm mới khi vào Trực tiếp
   now: () => number;                                              // epoch ms (đã hiệu chỉnh: giờ máy + store.skew())
+  clock?: () => number;                                           // ms đơn điệu cho cửa sổ áp tức thì (cfg.instantMs); không dùng now() vì skew có thể nhảy hàng giờ đúng lúc số liệu đầu tới. Mặc định Date.now
   store: Pick<EnvStore, 'data' | 'status' | 'onChange' | 'refresh'>;
   weather: { setLive(p: WeatherParams | null, instant?: boolean): void; stopScenario(): void; standTrees(): void };
   dayNight: { night: number; target: number };
@@ -27,7 +28,8 @@ export type LiveEnv = {
 };
 
 /** Thời gian chờ tới lần lấy số liệu kế tiếp ở Trực tiếp: mốc quan trắc obsStepMs kế tiếp (theo UTC) + obsDelayMs + nhiễu 0–jitterMs, không dưới minDelayMs.
-    Mọi máy căn cùng mốc nên đổi số liệu gần như cùng lúc (spec §4.5). rnd: bộ sinh riêng rng(seed), không dùng rand(). */
+    Mọi máy căn cùng mốc nên đổi số liệu gần như cùng lúc (spec §4.5). rnd: Math.random khi chạy thật (mỗi máy một nhiễu khác nhau, không phải ngẫu nhiên của cảnh nên
+    không đụng chuỗi rand()); test tiêm nguồn tất định. */
 export function liveNextDelay(now: number, cfg: { obsStepMs: number; obsDelayMs: number; jitterMs: number; minDelayMs: number }, rnd: () => number): number {
   const S = cfg.obsStepMs, at = (Math.floor((now - cfg.obsDelayMs) / S) + 1) * S + cfg.obsDelayMs;
   return Math.max(cfg.minDelayMs, at - now + rnd() * cfg.jitterMs);
@@ -40,7 +42,8 @@ export function createLiveEnv(d: LiveDeps): LiveEnv {
   let sun: LiveSun | null = null;
   let sunAt = -Infinity;                    // giờ (ms) của lần tính mặt trời gần nhất: tính lại khi lệch > 1 s (mặt trời đi 0,004°/s)
   let firstNight = mode === 'live';         // lần update đầu ở Trực tiếp lúc mở trang: gán luôn night = target (không chuyển cảnh)
-  let applied = false;                      // đã áp số liệu lần nào chưa: lần đầu ở Trực tiếp lúc mở trang áp tức thì
+  let applied = false;                      // đã áp số liệu lần nào chưa: lần đầu ở Trực tiếp lúc mở trang áp tức thì nếu tới trong cfg.instantMs
+  const clock = d.clock || (() => Date.now()), born = clock();   // số liệu tới muộn (mạng chậm, người xem đã nhìn cảnh trung tính một lúc) thì tiến dần thay vì nhảy
   let lastData: unknown = null, lastUp: boolean | null = null;   // số liệu / ngày–đêm của lần setLive gần nhất (kho báo lỗi mà data giữ nguyên ⇒ không gọi lại)
   let manualTarget = d.dayNight.target;     // đêm đích của Mô phỏng, nhớ lúc rời Mô phỏng
   const subs: Array<(why: 'user' | 'feature' | 'data') => void> = [];
@@ -66,7 +69,7 @@ export function createLiveEnv(d: LiveDeps): LiveEnv {
     emit('data');
   };
 
-  d.store.onChange(() => { if (mode === 'live') applyData(!applied); });
+  d.store.onChange(() => { if (mode === 'live') applyData(!applied && clock() - born <= cfg.instantMs); });
   if (mode === 'live') { calcSun(true); applyData(true); }       // kho có thể đã có số liệu (bộ nhớ đệm) trước khi bộ điều khiển được tạo
 
   return {

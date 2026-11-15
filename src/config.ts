@@ -617,7 +617,7 @@ const liveBase = {
   heat: { from: 33, span: 6 },       // °C — mù nóng haze = clamp((nhiệt − 33) / 6) × (1 − mây), chỉ khi mặt trời trên chân trời (ước lượng)
   lightning: { storm: 0.5, hail: 0.8 },   // 0–1 — tần suất chớp: mã 95 (dông) / 96–99 (dông kèm mưa đá) (ước lượng)
   tauScale: 3,                // không đơn vị — Trực tiếp nhân hằng số thời gian CONFIG.weather.tau (trừ mặt ướt) để lần làm mới API không đổi cảnh thấy rõ (ước lượng)
-  fogMax: 14,                 // không đơn vị — mật độ sương ×14 ở fog 1: FogExp2 gốc 0,00016 ⇒ còn ≈ 15 % độ tương phản ở 600 m (ước lượng, spec §4.2)
+  fogMax: 8,                  // không đơn vị — mật độ sương ×8 ở fog 1: FogExp2 gốc 0,00016 ⇒ 0,00128, còn ≈ 55 % độ tương phản ở 600 m, ≈ 19 % ở 1 km, ≈ 2,5 % ở 1,5 km (công trình gần vẫn nhận ra; ×14 làm Cầu Rồng gần mất ở tầm nhìn 300 m) (ước lượng, spec §4.2)
   elevDay: 6,                 // ° — độ cao mặt trời từ mức này trở lên là ngày hẳn (night = 0) (ước lượng, theo chạng vạng dân dụng)
   elevNight: -6,              // ° — độ cao mặt trời từ mức này trở xuống là đêm hẳn (night = 1): giới hạn chạng vạng dân dụng
   warm: { full: 2, none: 15, below: -6 },   // ° — sắc ấm của nắng / sương (sunWarm): đủ ấm khi 0° ≤ độ cao ≤ 2°, hết ấm ở ≥ 15°; dưới 0° nhạt dần, hết ở −6° (ước lượng, spec §4.3)
@@ -633,8 +633,8 @@ const liveBase = {
   sunMinElev: 10,             // ° — độ cao tối thiểu của đèn định hướng (bóng không dài vô hạn); bầu trời vẫn nhận độ cao thật (ước lượng)
   obsStepMs: 900000,          // ms — kỳ quan trắc Open-Meteo 15 phút; làm mới căn theo mốc này
   obsDelayMs: 90000,          // ms — chờ sau mốc quan trắc rồi mới lấy số liệu (để nguồn kịp cập nhật) (ước lượng)
-  jitterMs: 20000,            // ms — nhiễu cộng thêm vào lần lấy kế tiếp (0–20 s, bộ sinh rng(jitterSeed)) để các máy không gọi đúng cùng một giây (ước lượng)
-  jitterSeed: 4301,           // hạt giống bộ sinh nhiễu ở trên (rng riêng, không dùng rand())
+  jitterMs: 20000,            // ms — nhiễu cộng thêm vào lần lấy kế tiếp (0–20 s, Math.random khi chạy thật: mỗi máy một số khác) để các máy không gọi Open-Meteo đúng cùng một giây (ước lượng)
+  instantMs: 3000,            // ms — số liệu đầu tiên tới trong chừng này kể từ lúc dựng bộ điều khiển (bộ nhớ đệm / mạng nhanh) thì áp tức thì; tới muộn hơn thì cảnh tiến dần (ước lượng)
   minDelayMs: 60000,          // ms — lần lấy kế tiếp không sớm hơn mức này (ước lượng)
   skewMaxMs: 7200000          // ms — giờ máy lệch khỏi giờ quan trắc quá 2 giờ thì hiệu chỉnh theo giờ quan trắc (ước lượng, spec §4.3)
 };
