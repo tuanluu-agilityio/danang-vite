@@ -15,6 +15,7 @@
     "gen:crowd": "node scripts/people/blender.mjs scripts/people/crowd.py",
     "gen:car": "node scripts/people/blender.mjs scripts/car/convert.py",
     "gen:pilot": "node scripts/people/blender.mjs scripts/people/pilot.py",
+    "gen:hero": "node scripts/people/blender.mjs scripts/people/hero.py",
     "gen:bike": "node scripts/people/blender.mjs scripts/bike/convert.py",
     "test:tour": "node tests/tour-check.mjs",
     "test:voice": "node tests/voice-check.mjs",

@@ -739,7 +739,7 @@ const exploreBase = {
 /* ------------------------- Đi dạo nhiều người -------------------------
    Chế độ đi bộ góc nhìn sau lưng (docs/superpowers/specs/2026-11-11-di-dao-design.md). Vùng đi được dựng ở explore/stroll/mapData.ts. Mọi số đều (ước lượng) */
 const strollBase = {
-  walk: 3.5,           // m/s — tốc độ đi, nhanh hơn người thật để đi được nhiều nơi (ước lượng)
+  walk: 1.6,           // m/s — tốc độ đi (phím W): nhịp đi bộ thật của người lớn (người dùng chọn 2026-11-15; trước là 3,5)
   run: 10,             // m/s — tốc độ chạy, giữ Shift / gạt hết cỡ: hết Cầu Rồng 666 m khoảng một phút (ước lượng)
   accel: 30,           // m/s² — gia tốc tiến tới tốc độ đích và hãm lại (ước lượng)
   turn: 12,            // 1/s — tốc độ nhân vật quay mặt về hướng đi (ước lượng)
@@ -781,8 +781,11 @@ const strollBase = {
     fade: 0.2,         // s — hằng thời gian làm mượt trọng số các đoạn khi đổi dáng (ước lượng)
     fallMin: 0.1,      // m/s — dáng rơi (3) có tốc độ ngang dưới mức này thì đứng yên, trên mức này thì như đang chạy (ước lượng)
     warmMs: 4000,      // ms — chờ biên dịch sẵn shader của mô hình vừa nạp tối đa chừng này, quá thì vẫn dùng mô hình (D-018; mất ngữ cảnh WebGL không treo) (ước lượng)
-    chars: [0, 3],     // mô hình của nhân vật chọn ở sảnh: [nam, nữ] = p0 (Male_Adult_10), p3 (Female_Adult_03), hai người trẻ nét Á; mọi máy vẽ một người bằng mô hình theo lựa chọn của chính người đó
-    models: ['people/p0.glb', 'people/p1.glb', 'people/p2.glb', 'people/p3.glb', 'people/p4.glb']   // đường dẫn tương đối BASE_URL tới 5 mô hình có xương (scripts/people/convert.py)
+    chars: [5, 6],     // mô hình của nhân vật chọn ở sảnh: [nam, nữ] = hero-m (siêu anh hùng "Dây Cầu Phát Sáng"), hero-f ("Sóng Biển Đà Nẵng") (D-048; trước là p0 / p3); mọi máy vẽ một người bằng mô hình theo lựa chọn của chính người đó
+    models: ['people/p0.glb', 'people/p1.glb', 'people/p2.glb', 'people/p3.glb', 'people/p4.glb', 'people/hero-m.glb', 'people/hero-f.glb']   // đường dẫn tương đối BASE_URL tới các mô hình có xương: p0..p4 (scripts/people/convert.py, khi chạy không còn nạp), hero-m / hero-f (scripts/people/hero.py, cùng xương + chuyển động với p0 / p3)
+  },
+  hero: {              // siêu anh hùng nguyên bản của Đi dạo + Xe máy (D-048, docs/superpowers/specs/2026-11-15-sieu-anh-hung-design.md)
+    glow: 1.6          // hệ số phát sáng ban đêm của texture phát sáng (tia dây cầu, biểu tượng, kính của bộ nam), nhân với uNight (0 ban ngày), không đơn vị (ước lượng)
   }
 };
 
@@ -1125,7 +1128,7 @@ const bikeBase = {
     damp: 0.7,         // tỉ số giảm chấn lò xo phản ứng (ước lượng)
     steerLook: 0.4,    // đầu quay theo góc lái chừng này phần (nhìn vào hướng rẽ khi chạy chậm), không đơn vị (ước lượng)
     dtMax: 0.1,        // s — kẹp bước thời gian của lò xo (tab ẩn rồi quay lại không văng) (ước lượng)
-    helmet: { r: 0.125, color: '#2a2f3a', up: 0.1, fore: -0.02, scale: [1.15, 1.25, 1.08] as [number, number, number], pitch: 0.3 },   // mũ bảo hiểm nửa đầu dựng bằng code: r m bán kính, màu vỏ; tâm cao hơn xương đầu up m, ra trước fore m (hệ C lúc đứng thẳng); scale hệ số kéo dài theo [trước–sau, cao, ngang]; pitch rad ngửa mũ (vành trước cao hơn vành sau, không che mắt) (ước lượng)
+    helmet: { show: false, r: 0.125, color: '#2a2f3a', up: 0.1, fore: -0.02, scale: [1.15, 1.25, 1.08] as [number, number, number], pitch: 0.3 },   // mũ bảo hiểm nửa đầu dựng bằng code: show có hiện không (D-048: siêu anh hùng đội mặt nạ kín nên mặc định ẩn; mũ vẫn dựng, chỉ visible = false); r m bán kính, màu vỏ; tâm cao hơn xương đầu up m, ra trước fore m (hệ C lúc đứng thẳng); scale hệ số kéo dài theo [trước–sau, cao, ngang]; pitch rad ngửa mũ (vành trước cao hơn vành sau, không che mắt) (ước lượng)
     handTol: 0.02,     // m — sai số cho phép điểm nắm bàn tay – tay nắm (unit test, spec §6)
     footTol: 0.03,     // m — sai số cho phép cổ chân – điểm đặt chân trên sàn (unit test, spec §6)
     seat: { fore: 0.02, up: 0.09 },   // m — xương hông (Pelvis) so với neo `seat` (đỉnh yên): ra trước, cao lên (bề dày mông dưới khớp hông) (ước lượng)

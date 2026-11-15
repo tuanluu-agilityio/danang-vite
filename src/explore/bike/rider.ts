@@ -1,6 +1,6 @@
 /* ============================ Lái xe máy: người lái có xương (src/explore/bike/rider.ts) ============================
    Spec D-040 §6, §17.10 (tư thế ngồi = bảng góc khớp trong code + IK, không chạy lại gen:people).
-   - Nhân vật: nguồn của Đi dạo (stroll/rig.ts stRigLoad, p0 nam / p3 nữ theo stCharModel), một bản sao (src.clone = SkeletonUtils.clone), KHÔNG AnimationMixer:
+   - Nhân vật: nguồn của Đi dạo (stroll/rig.ts stRigLoad, nam / nữ theo stCharModel), một bản sao (src.clone = SkeletonUtils.clone), KHÔNG AnimationMixer:
      mỗi khung xương về tư thế đứng chữ A của mô hình (PlBones.restore) rồi cộng góc. Hệ C = hệ gốc bản sao: +X trước mặt, +Y lên, +Z bên phải (trùng hệ thân xe).
    - Cây nút: neo `seat` của xe (đọc lại bike.anchors mỗi khung: neo đổi khi hình tạm đổi sang mô hình thật) → group 'bike-rider' → bản sao nhân vật
      (dời để xương Pelvis ở rider.seat so với đỉnh yên). Nhờ vậy người theo đủ yaw / pitch / nghiêng / giảm xóc của phần trên lò xo.
@@ -8,7 +8,8 @@
      lưng ngả theo gia tốc dọc, đầu bù (1 − headLean) độ nghiêng, đầu quay theo góc lái; 2) IK chân: plTwoBone hông → gối → cổ chân tới neo foot_l / foot_r
      (+ rider.ankle), đùi và cẳng chân xoay cung ngắn nhất từ tư thế bảng (giữ độ xoắn của bảng), bàn chân về hướng lúc đứng (phẳng trên sàn);
      3) IK tay: PlBones.ik của người treo dù với bộ số rider.arm / rider.finger, điểm nắm tới neo grip_l / grip_r (con của cổ lái: bẻ lái thì tay theo).
-   - Mũ bảo hiểm nửa đầu: nửa khối cầu (SphereGeometry cắt nửa) gắn xương đầu, vật liệu MeshStandardMaterial màu theo đỉnh = cùng chương trình với hình tạm
+   - Nhân vật mặc định là siêu anh hùng hero-m / hero-f (D-048, cùng xương + chuyển động với p0 / p3 nên bảng góc khớp / IK giữ nguyên).
+   - Mũ bảo hiểm nửa đầu (ẩn khi rider.helmet.show = false, mặc định từ D-048): nửa khối cầu (SphereGeometry cắt nửa) gắn xương đầu, vật liệu MeshStandardMaterial màu theo đỉnh = cùng chương trình với hình tạm
      của xe (model.ts bkTempMaterial, đã làm nóng) nên không thêm program. Lớp 1, không bóng như xe.
    - Lệnh vẽ: nhân vật Rocketbox là 1 SkinnedMesh 3 primitive (thân, đầu, mảnh alpha) = 3 lệnh, như nhân vật đi dạo; mũ 1 lệnh.
    - Góc nhìn thứ nhất: xương đầu thu về scale ≈ 0 (mũ là con của xương đầu nên ẩn theo); thân, tay giữ.
@@ -96,6 +97,7 @@ export class BkRider {
     this.helmet.quaternion.copy(_q).multiply(_qa.setFromAxisAngle(AZ, H.pitch));   // trục mũ = hệ C ngửa pitch quanh trục ngang
     this.helmet.position.set(H.fore, H.up, 0).applyQuaternion(_q).divideScalar(hs);
     this.helmet.scale.set(H.scale[0] / hs, H.scale[1] / hs, H.scale[2] / hs);
+    this.helmet.visible = RC.helmet.show;   // D-048: siêu anh hùng đội mặt nạ kín, mặc định không mũ
     b.head.add(this.helmet);
     this.group.traverse((o) => {
       o.layers.set(1);

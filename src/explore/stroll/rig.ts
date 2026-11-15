@@ -8,9 +8,12 @@
      pose(): trọng số đích từ stClipMix (anim.ts), làm mượt về đích với hằng thời gian anim.fade; walk / jog / sprint đồng pha bằng một pha chung 0–1
      (đặt action.time = pha × thời lượng đoạn, timeScale 0 để mixer không tự tua); photo LoopOnce + clampWhenFinished, phát lại từ đầu mỗi lần chuyển sang dáng chụp ảnh.
      dt kẹp [0, stroll.dtMax] (tab ẩn rồi quay lại không làm nhảy pha). Không cấp phát mỗi khung (D-018).
-   - Mô hình: mét, chân ở y = 0, mặt hướng +X (như hình khối), xương Rocketbox (Bip01_*). docs/superpowers/specs/2026-11-12-nguoi-di-dao-that-design.md §5, §7 */
+   - Mô hình: mét, chân ở y = 0, mặt hướng +X (như hình khối), xương Rocketbox (Bip01_*). docs/superpowers/specs/2026-11-12-nguoi-di-dao-that-design.md §5, §7
+   - Phát sáng ban đêm (D-048): vật liệu có emissiveMap (bộ đồ siêu anh hùng nam hero-m.glb) được vá một lần trên nguồn (stRigGlow): phát sáng × clamp(uNight) × stroll.hero.glow,
+     ban ngày bằng 0; không thêm đèn. Mọi bản sao dùng chung vật liệu nguồn nên chung một program. */
 import * as THREE from 'three';
 import { CONFIG } from '../../config';
+import { shared } from '../../core/shared';
 import { ST_CLIPS, stClipMix, type StClipMix } from './anim';
 
 const A = CONFIG.stroll.anim, NC = ST_CLIPS.length;
@@ -22,6 +25,18 @@ export interface StRigSource {
   natural: Float32Array;                                   // tốc độ tự nhiên từng đoạn theo ST_CLIPS, m/s (idle / photo = 0)
   height: number;                                          // chiều cao tư thế đứng, m (0 nếu file không ghi)
   clone: (o: THREE.Object3D) => THREE.Object3D;            // SkeletonUtils.clone (test truyền bản giả)
+}
+
+/* Vá phát sáng theo đêm cho vật liệu có emissiveMap (một lần trên nguồn, khóa program cố định) */
+export function stRigGlow(mat: THREE.MeshStandardMaterial): void {
+  const k = CONFIG.stroll.hero.glow.toFixed(3);
+  mat.emissive.setRGB(1, 1, 1);   // texture quyết định màu
+  mat.onBeforeCompile = (s) => {
+    s.uniforms.uNight = shared.uNight;
+    s.fragmentShader = 'uniform float uNight;\n' + s.fragmentShader.replace('#include <emissivemap_fragment>',
+      `#include <emissivemap_fragment>\ntotalEmissiveRadiance *= clamp( uNight, 0.0, 1.0 ) * ${k};`);
+  };
+  mat.customProgramCacheKey = () => 'stHeroGlow';
 }
 
 /* Chuẩn hóa cảnh + đoạn đã nạp thành nguồn dùng chung. speeds: tên đoạn → m/s. Thiếu đoạn nào thì ném lỗi (stRigLoad bắt, trả null) */
@@ -41,7 +56,7 @@ export function stRigSource(scene: THREE.Object3D, clips: THREE.AnimationClip[],
     const mats = Array.isArray(m.material) ? m.material : [m.material];
     for (const mat of mats) {
       const s = mat as THREE.MeshStandardMaterial;
-      if (s.isMeshStandardMaterial) { s.metalness = 0; s.roughness = 0.85; }
+      if (s.isMeshStandardMaterial) { s.metalness = 0; s.roughness = 0.85; if (s.emissiveMap) stRigGlow(s); }
       if (s.alphaTest > 0) s.transparent = false;   // MASK: cắt theo alphaTest, không trộn trong suốt (không cần sắp thứ tự)
     }
   });
