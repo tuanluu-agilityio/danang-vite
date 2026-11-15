@@ -47,7 +47,10 @@ const MUSIC_KEY = 'cauRong.music';                     // lựa chọn nhạc đ
 let touched = false;                                   // người xem đã thao tác trong lượt intro này (tắt gợi ý, chỉ tự bật một lần)
 let noAuto = false;                                    // ?test: không tự bật nhạc
 const clickMusic = (): void => { document.getElementById('btnMusic')?.click(); };
-const syncSound = (): void => inUiSound(audio.on, !touched);
+let seenOn = false;                                    // audio.on ở lần đồng bộ gần nhất (mỗi khung)
+let eatToggle = false;                                 // thao tác đầu tiên là M / #inSound và audioUI.ts (D-046) vừa tự bật nhạc ở chính thao tác đó: bỏ lần bấm hộ kế tiếp, kẻo bật rồi tắt ngay
+const syncSound = (): void => { seenOn = audio.on; inUiSound(audio.on, !touched); };
+const toggleMusic = (): void => { if (eatToggle) eatToggle = false; else clickMusic(); syncSound(); };
 /* Thao tác đầu tiên của người xem: chờ một nhịp (bản nhạc khác có thể tự bật trước ở cùng thao tác) rồi nếu vẫn tắt và người xem chưa chọn tắt thì bấm hộ */
 function musicNudge(): void {
   if (noAuto || audio.on || sget(LS, MUSIC_KEY) === 'off') return;
@@ -57,7 +60,9 @@ function onFirstInput(e: Event): void {
   if (!active || touched) return;
   touched = true;
   const tg = e.target as Element | null;
-  if (!(tg && tg.closest && tg.closest('#inSound'))) musicNudge();   // bấm chính nút nhạc: để nút tự bật / tắt, không bấm hộ
+  const onBtn = !!(tg && tg.closest && tg.closest('#inSound')), k = (e as KeyboardEvent).key;
+  eatToggle = audio.on && !seenOn && (onBtn || k === 'm' || k === 'M');   // audioUI.ts đăng ký trước nên đã chạy xong ở thao tác này
+  if (!onBtn) musicNudge();   // bấm chính nút nhạc: để nút tự bật / tắt, không bấm hộ
   syncSound();
 }
 
@@ -149,7 +154,7 @@ function onKeyDown(e: KeyboardEvent): void {
   else if (e.key === ' ') { e.preventDefault(); if (!e.repeat) intro.pause(); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); if (rtl) intro.prev(); else intro.next(); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); if (rtl) intro.next(); else intro.prev(); }
-  else if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') { e.preventDefault(); if (!e.repeat) clickMusic(); syncSound(); }   // M = nút #inSound
+  else if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') { e.preventDefault(); if (!e.repeat) toggleMusic(); }   // M = nút #inSound
   else if (e.key === 'Enter' && S[clock.i].id === 'finale' && !(tg && /^(BUTTON|SELECT|INPUT)$/.test(tg.tagName))) { e.preventDefault(); intro.skip(); }
 }
 function onKeyUp(e: KeyboardEvent): void {
@@ -176,7 +181,7 @@ export const intro = {
     /* onFirstInput PHẢI đăng ký trước onKeyDown: cả hai ở pha capture trên window và onKeyDown gọi stopImmediatePropagation, nên đăng ký sau thì phím đầu tiên không bao giờ tới onFirstInput (không tự bật nhạc) */
     window.addEventListener('pointerdown', onFirstInput, true);
     window.addEventListener('keydown', onFirstInput, true);
-    document.getElementById('inSound')?.addEventListener('click', () => { clickMusic(); syncSound(); });
+    document.getElementById('inSound')?.addEventListener('click', toggleMusic);
     window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('keyup', onKeyUp, true);
     document.getElementById('exIntroBtn')?.addEventListener('click', () => {

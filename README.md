@@ -67,7 +67,7 @@ src/
   views/             góc nhìn có sẵn, flyTo, Tour (đường cong + điểm dừng)
   realtime/          giờ + thời tiết thực tế tại Đà Nẵng (D-042): đồng hồ theo múi giờ, đọc Open-Meteo, kho trạng thái (nhịp lấy, thử lại, bộ nhớ đệm); chỉ hiển thị, không điều khiển cảnh; giao diện ở `ui/envUI.ts`, test đơn vị ở `tests/env-unit/` (`npm run test:env:unit`); từ D-043 còn ánh xạ số liệu → cảnh (envMap.ts), vị trí mặt trời (solar.ts), bộ điều khiển Trực tiếp / Mô phỏng (liveEnv.ts)
   intro/             đoạn giới thiệu điện ảnh lần đầu vào trang (D-045): dòng thời gian thuần (timeline.ts), tư thế camera (shots.ts), chín nhịp chạy bằng các hệ thật của trang (scenes.ts), khung chữ + điều khiển (ui.ts), điều phối + dọn trạng thái (index.ts); số ở `CONFIG.intro`, test đơn vị ở `tests/intro-unit/` (`npm run test:intro:unit`)
-  audio/             nhạc, còi, tiếng xe; narration.ts phát giọng thuyết trình của Tour
+  audio/             nhạc chủ đề tổng hợp bằng Web Audio (score.ts bản tổng phổ, music.ts bộ phát nhiều lớp phối theo chế độ / ngày đêm / thời tiết, D-046), tiếng sông / mưa / còi; narration.ts phát giọng thuyết trình của Tour; test ở `tests/music-unit/` (`npm run test:music:unit`) và `tests/music-render.mjs` (`npm run test:music`)
   ui/                bảng điều khiển, nút quay cầu, âm thanh, chất lượng hình, chế độ gọn cho điện thoại (compactUI.ts), chỉ báo giờ + thời tiết thực tế (envUI.ts)
   i18n/              index.ts + locales/{vi,en,ko,ja,zh,th,ar,hi,ru}.json
   styles/main.css

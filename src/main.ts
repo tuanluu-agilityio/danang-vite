@@ -56,6 +56,7 @@ import { exChat } from './explore/multi/chat';
 import { exDrivers } from './explore/multi/remoteDrive';
 import { CONFIG } from './config';
 import { audio } from './audio';
+import { musicModeOf } from './audio/score';
 import { narration } from './audio/narration';
 import { setupUI } from './ui/setupUI';
 import { setupQualityUI } from './ui/qualityUI';
@@ -191,6 +192,7 @@ function animate() {
   updateHrUI(camera);
   updateRiverfront(dt, time); pt = perf.lap('riverfront', pt);
   audio.setSwingDistance(camera.position.distanceTo(songHan.center));
+  audio.setMode(musicModeOf(cam.mode, cam.flight.then));   // bản phối nhạc theo chế độ (D-046): chỉ ghi khi đổi
   audio.update(dayNight.night, show.fireOn, show.waterOn, camera.position.distanceTo(mouthW)); pt = perf.lap('audio', pt);
   stepLights();                                             // bộ đèn ngày / đêm / đủ (D-031): sau mọi chỗ ghi cường độ đèn, trước khi vẽ
   quality.update(now0);                                     // bậc chất lượng (tự hạ khi lag), bóng đổ, giới hạn pixelRatio khi mưa

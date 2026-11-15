@@ -51,6 +51,8 @@
     "test:drive:unit": "tsx --test tests/drive-unit/*.test.ts",
     "test:bike": "node tests/bike-check.mjs",
     "test:bike:unit": "tsx --test tests/bike-unit/*.test.ts",
+    "test:music:unit": "tsx --test tests/music-unit/*.test.ts",
+    "test:music": "node tests/music-render.mjs",
     "test:pilot:unit": "tsx --test tests/pilot-unit/*.test.ts"
   },
   "dependencies": {
