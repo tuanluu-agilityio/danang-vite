@@ -3,7 +3,7 @@ import { Water } from 'three/addons/objects/Water.js';
 import { scene } from './renderer';
 import { rng } from '../common/math';
 import { CONFIG } from '../config';
-import { shared } from './shared';
+import { shared, weatherU } from './shared';
 import { passLodEnter, passLodLeave } from './passLod';
 
 /* ============================ Mặt nước sông Hàn ============================ */
@@ -54,6 +54,33 @@ function patchNightStreak(mat: THREE.ShaderMaterial) {
     }`).replace(/STREAK_SIGN/g, '1.0');
 }
 
+/* Gợn mưa trên sông (D-043): mỗi ô lưới một vòng tròn lan ra rồi tắt, hai lớp ô khác cỡ; cộng độ dốc vào pháp tuyến mặt nước nên cả ảnh phản chiếu lẫn ánh lóa đều vỡ theo.
+   Xa camera thì vòng nhỏ hơn điểm ảnh: biên độ giảm theo khoảng cách (fade), thay bằng mặt nhám chung (rough). uRain ≤ 0,01 không chạy nhánh nào: hình khi không mưa y như cũ.
+   Chỉ đổi mã nguồn của một program sẵn có (không thêm program, lệnh vẽ hay texture) */
+const NORMAL_LINE = 'vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );';
+function patchRainRipple(mat: THREE.ShaderMaterial) {
+  if (!mat.fragmentShader.includes(NORMAL_LINE)) throw new Error('Water.js đã đổi: không tìm thấy dòng pháp tuyến mặt nước');
+  const R = CONFIG.weather.ripple, f = (v: number, n = 3) => v.toFixed(n);
+  mat.uniforms.uRain = weatherU.uRain;
+  mat.fragmentShader = `uniform float uRain;
+float wvHash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
+vec2 wvRipple( vec2 p, float cell, float t ) {
+  vec2 id = floor( p / cell ), q = fract( p / cell ) - 0.5;
+  float h = wvHash( id ), ph = fract( t * ( 0.9 + h * 0.5 ) + h * 7.0 );
+  vec2 c = ( vec2( wvHash( id + 3.1 ), wvHash( id + 7.7 ) ) - 0.5 ) * 0.5;
+  vec2 d = q - c; float r = length( d ) + 1e-4, ring = ( r - ph * 0.42 ) * ${f(R.sharp, 1)};
+  float w = exp( - ring * ring ) * ( 1.0 - ph ) * step( 0.25, h + uRain );
+  return d / r * w * sin( ring * 1.6 );
+}
+` + mat.fragmentShader.replace(NORMAL_LINE, `${NORMAL_LINE}
+    if ( uRain > 0.01 ) {
+      float rpDist = length( eye - worldPosition.xyz ), rpT = time * ${f(R.speed, 2)};
+      vec2 rp = ( wvRipple( worldPosition.xz, ${f(R.cell[0], 2)}, rpT ) + wvRipple( worldPosition.xz + 13.7, ${f(R.cell[1], 2)}, rpT + 0.37 ) ) * ( ${f(R.amp)} / ( 1.0 + rpDist / ${f(R.fade, 1)} ) );
+      rp += ( getNoise( worldPosition.xz * size * ${f(R.roughScale, 2)} ).xy ) * ${f(R.rough)};
+      surfaceNormal = normalize( surfaceNormal + vec3( rp.x, 0.0, rp.y ) * uRain );
+    }`);
+}
+
 export function buildWater() {
   const g = new THREE.PlaneGeometry(40000, 40000);
   water = new Water(g, {
@@ -64,6 +91,7 @@ export function buildWater() {
   water.rotation.x = -Math.PI / 2;
   water.material.uniforms.size.value = 0.6;
   patchNightStreak(water.material as THREE.ShaderMaterial);
+  patchRainRipple(water.material as THREE.ShaderMaterial);
   scene.add(water);
   // Phản chiếu theo bậc chất lượng (D-018): every = 1 như gốc (vẽ lại cả cảnh vào target 512² mỗi khung), n > 1 vẽ mỗi n khung (giữ ảnh cũ ở giữa),
   // 0 = tắt: đổi sampler sang texture 1×1 màu sương (màu trời gần chân trời) — chỉ đổi giá trị uniform, không biên dịch lại
