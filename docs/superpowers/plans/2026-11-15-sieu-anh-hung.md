@@ -53,7 +53,7 @@
 **Giao diện:**
 - Tạo ra: `public/people/hero-m.glb` (nguồn `Male_Adult_10`, nhân vật convert số 0), `public/people/hero-f.glb` (nguồn `Female_Adult_03`, nhân vật convert số 3). Hướng, đơn vị, gốc tọa độ như `p0` / `p3`. Ảnh kiểm tra ở `scripts/people/.cache/preview-hero/hero-{m,f}-{front,back,side,q}.png` và `hero-m-night.png`.
 
-- [ ] **Bước 1: Viết test hỏng** trong `glb.test.ts`: `for (const f of ['hero-m', 'hero-f'])`, test tên `` `${f}.glb: anh hùng — 5 đoạn, speed như nguồn, 2 primitive, OPAQUE, xương đủ` ``. Các assert:
+- [x] **Bước 1: Viết test hỏng** trong `glb.test.ts`: `for (const f of ['hero-m', 'hero-f'])`, test tên `` `${f}.glb: anh hùng — 5 đoạn, speed như nguồn, 2 primitive, OPAQUE, xương đủ` ``. Các assert:
   - tồn tại, ≤ 1,5 MB;
   - tên năm đoạn như `p0`;
   - `|speed - speed của p0 (nam) / p3 (nữ)| ≤ 0.01`;
@@ -65,8 +65,8 @@
   - `hero-m`: có ít nhất một vật liệu `emissiveTexture`; `hero-f`: không có;
   - không Draco / Meshopt;
   - `scenes[0].extras.source` chứa `hero.py`.
-- [ ] **Bước 2:** `npx tsx --test tests/stroll-unit/glb.test.ts` → FAIL (thiếu tệp).
-- [ ] **Bước 3: Viết `hero.py`.** Nạp `convert.py` như `crowd.py` (thêm `HERE` vào `sys.path`, `import convert`). Không truyền tham số sau `--` để `convert.ONLY` không bị ảnh hưởng.
+- [x] **Bước 2:** `npx tsx --test tests/stroll-unit/glb.test.ts` → FAIL (thiếu tệp).
+- [x] **Bước 3: Viết `hero.py`.** Nạp `convert.py` như `crowd.py` (thêm `HERE` vào `sys.path`, `import convert`). Không truyền tham số sau `--` để `convert.ONLY` không bị ảnh hưởng.
   - Đặt `convert.OUT` = `.cache/hero-out`. Bọc `convert.fix_materials` bằng `hero_materials(log)`: gọi bản gốc, rồi:
     - (a) xóa mọi mặt có vật liệu alpha (vật liệu nối vào ổ `Alpha`) và gỡ slot đó;
     - (b) sơn texture thân (1024) / đầu (512) mới bằng hàm `paint(kind, role, P, N, R)`;
@@ -97,10 +97,10 @@
     - Cả hai: vân vải nhân `1 ± 0,03` (băm theo vị trí 5 mm, `rng` cố định để tất định). AO: chỉ thêm khi ảnh xem trước trông phẳng; nếu thêm thì nướng Cycles AO 32 mẫu, nhân `mix(1, ao, 0,5)`.
   - **Ảnh kiểm tra:** sau khi xuất, nạp lại GLB vào cảnh mới. Đoạn `idle` khung 0. Eevee 600 × 900, nền xám, đèn mặt trời. Bốn góc: trước, sau, nghiêng phải, 3/4. Riêng nam thêm một ảnh trời tối (đèn 0,05) để thấy phát sáng.
   - **In bảng:** byte, tam giác (trước / sau), primitive, vật liệu, cỡ ảnh, `height`, điểm thấp nhất (phải trong ±0,02 m quanh 0).
-- [ ] **Bước 4:** `npm run gen:hero` (≈ 3–6 phút) rồi xem ảnh kiểm tra. Đối chiếu danh sách phản mục tiêu; chỉnh thiết kế, chạy lại tới khi đạt.
-- [ ] **Bước 5:** `npx tsx --test tests/stroll-unit/glb.test.ts` → PASS (cả test `p0..p4` cũ).
-- [ ] **Bước 6:** Thêm dòng ở `LICENSE-Rocketbox.txt` (do `hero.py` ghi nối, tất định) + README (mục tài nguyên và lệnh `gen:hero`).
-- [ ] **Bước 7: Commit**
+- [x] **Bước 4:** `npm run gen:hero` (≈ 3–6 phút) rồi xem ảnh kiểm tra. Đối chiếu danh sách phản mục tiêu; chỉnh thiết kế, chạy lại tới khi đạt.
+- [x] **Bước 5:** `npx tsx --test tests/stroll-unit/glb.test.ts` → PASS (cả test `p0..p4` cũ).
+- [x] **Bước 6:** Thêm dòng ở `LICENSE-Rocketbox.txt` (do `hero.py` ghi nối, tất định) + README (mục tài nguyên và lệnh `gen:hero`).
+- [x] **Bước 7: Commit**
 ```bash
 git add scripts/people/hero.py package.json public/people/hero-m.glb public/people/hero-f.glb public/people/LICENSE-Rocketbox.txt README.md tests/stroll-unit/glb.test.ts
 git commit -m "feat(hero): gen:hero sinh hai siêu anh hùng nguyên bản từ Rocketbox (D-048)"
@@ -120,14 +120,14 @@ git commit -m "feat(hero): gen:hero sinh hai siêu anh hùng nguyên bản từ 
 - Dùng từ Task 1: hai tệp GLB.
 - Tạo ra: `stRigGlow(mat: THREE.MeshStandardMaterial): void`, export từ `rig.ts`. Hàm vá phát sáng × `clamp(uNight, 0, 1) × CONFIG.stroll.hero.glow`, đặt `customProgramCacheKey = () => 'stHeroGlow'`. `stRigSource` gọi nó cho mọi vật liệu có `emissiveMap`.
 
-- [ ] **Bước 1: Viết test hỏng:**
+- [x] **Bước 1: Viết test hỏng:**
   - `anim.test.ts`: `stCharModel(0) === 5`, `stCharModel(1) === 6`, `stCharModel(7) === 5`; `CONFIG.stroll.anim.models[5]` / `[6]` là `'people/hero-m.glb'` / `'people/hero-f.glb'`.
   - `rider.test.ts`: `new BkRider(src).helmet.visible === CONFIG.bike.rider.helmet.show`.
   - Test mới trong `anim.test.ts` hoặc test riêng của rig: `stRigSource` với cảnh giả có hai `MeshStandardMaterial` (một có `emissiveMap`) → chỉ vật liệu có map có `onBeforeCompile` khác mặc định và `customProgramCacheKey()` = `'stHeroGlow'`. Gọi `onBeforeCompile` với shader giả (chuỗi có `#include <emissivemap_fragment>`) → `fragmentShader` chứa `uNight` và `uniforms.uNight === shared.uNight`.
-- [ ] **Bước 2:** `npm run test:stroll:unit` và `npm run test:bike:unit` → các test mới FAIL.
-- [ ] **Bước 3: Sửa** theo danh sách tệp. `stRigGlow` làm như `bike/model.ts` (thay `#include <emissivemap_fragment>` bằng chính nó + `totalEmissiveRadiance *= clamp(uNight, 0.0, 1.0) * <glow>;`). Đặt `emissive` = trắng để texture quyết định màu. `shared` import từ module đang chứa `uNight` (xem `bike/model.ts`).
-- [ ] **Bước 4:** `npm run typecheck`; `npm run test:stroll:unit` (≥ 93 + mới); `npm run test:bike:unit` (109 + mới); `npm run test:multi:unit` (153, không đổi) → PASS. Chỗ nào ghi cứng số mô hình 0 / 3 (ví dụ `rider.test.ts` dựng xương từ `p0.glb`) thì đổi sang `hero-m.glb` chỉ khi test đó nói về "nhân vật đang dùng". Test về tệp `p0` giữ.
-- [ ] **Bước 5: Commit**
+- [x] **Bước 2:** `npm run test:stroll:unit` và `npm run test:bike:unit` → các test mới FAIL.
+- [x] **Bước 3: Sửa** theo danh sách tệp. `stRigGlow` làm như `bike/model.ts` (thay `#include <emissivemap_fragment>` bằng chính nó + `totalEmissiveRadiance *= clamp(uNight, 0.0, 1.0) * <glow>;`). Đặt `emissive` = trắng để texture quyết định màu. `shared` import từ module đang chứa `uNight` (xem `bike/model.ts`).
+- [x] **Bước 4:** `npm run typecheck`; `npm run test:stroll:unit` (≥ 93 + mới); `npm run test:bike:unit` (109 + mới); `npm run test:multi:unit` (153, không đổi) → PASS. Chỗ nào ghi cứng số mô hình 0 / 3 (ví dụ `rider.test.ts` dựng xương từ `p0.glb`) thì đổi sang `hero-m.glb` chỉ khi test đó nói về "nhân vật đang dùng". Test về tệp `p0` giữ.
+- [x] **Bước 5: Commit**
 ```bash
 git add src tests
 git commit -m "feat(hero): Đi dạo + xe máy dùng hai siêu anh hùng; phát sáng đêm, ẩn mũ (D-048)"
@@ -140,26 +140,26 @@ git commit -m "feat(hero): Đi dạo + xe máy dùng hai siêu anh hùng; phát 
 - Sửa: `public/people/thumb-m.webp`, `thumb-f.webp` (sinh lại)
 - Test: `tests/stroll-unit/glb.test.ts` (test ảnh xem trước đã có: WebP, ≤ 20 kB; thêm assert `thumbs.mjs` chứa `hero-m.glb` và `hero-f.glb`)
 
-- [ ] **Bước 1:** thêm assert về nội dung `thumbs.mjs` → FAIL.
-- [ ] **Bước 2:** sửa `thumbs.mjs`, chạy `npm run gen:thumbs`, xem hai ảnh.
-- [ ] **Bước 3:** `npx tsx --test tests/stroll-unit/glb.test.ts` → PASS.
-- [ ] **Bước 4: Commit** `feat(hero): ảnh xem trước sảnh là hai siêu anh hùng (D-048)`.
+- [x] **Bước 1:** thêm assert về nội dung `thumbs.mjs` → FAIL.
+- [x] **Bước 2:** sửa `thumbs.mjs`, chạy `npm run gen:thumbs`, xem hai ảnh.
+- [x] **Bước 3:** `npx tsx --test tests/stroll-unit/glb.test.ts` → PASS.
+- [x] **Bước 4: Commit** `feat(hero): ảnh xem trước sảnh là hai siêu anh hùng (D-048)`.
 
 ### Task 4: Demo, xem bằng mắt, tài liệu
 
 **Tệp:**
 - Sửa: `.github/memory-bank/activeContext.md`, `progress.md`, `decisions.md` (D-048), `.github/copilot-instructions.md` (§3 mục 5 tài nguyên: thêm `hero-*.glb`; §5 thêm `gen:hero`), trạng thái spec / plan.
 
-- [ ] **Bước 1:** `npm run build` → đạt; ghi cỡ chunk.
-- [ ] **Bước 2:** Script tạm của agent (Playwright, GPU thật, đọc `dist/`, không commit). Chụp:
+- [x] **Bước 1:** `npm run build` → đạt; ghi cỡ chunk.
+- [x] **Bước 2:** Script tạm của agent (Playwright, GPU thật, đọc `dist/`, không commit). Chụp:
   - `?test&explore=stroll` nam và nữ (đặt `localStorage.stChar`): đứng, đi, chạy, góc 3/4 trước;
   - ban đêm (bộ nam sáng, ban ngày không sáng);
   - `?test&explore=bike` góc thứ ba nam / nữ: thẳng và nghiêng hết; góc thứ nhất;
   - sảnh có ô chọn nhân vật.
 
   Đọc và ghi: `stAvatars.debug(0)` (`model` 5 / 6, `real`), `bike.rider.debug()` (tay ≤ 0,03 m, chân ≤ 0,03 m), console sạch. Chặn `hero-*.glb` một lượt: hình khối / xe không người, một cảnh báo.
-- [ ] **Bước 3:** Chạy `npm run dev` cho người dùng xem demo; ghi URL.
-- [ ] **Bước 4:** Cập nhật tài liệu AI: chỉ ghi điều có thật, test nào đã / chưa chạy. Commit `docs(hero): D-048 vào memory bank, trạng thái spec / plan`.
+- [x] **Bước 3:** Chạy `npm run dev` cho người dùng xem demo; ghi URL.
+- [x] **Bước 4:** Cập nhật tài liệu AI: chỉ ghi điều có thật, test nào đã / chưa chạy. Commit `docs(hero): D-048 vào memory bank, trạng thái spec / plan`.
 
 ## Không chạy (theo lời người dùng)
 

@@ -1,6 +1,6 @@
 # Siêu anh hùng nguyên bản thay người thường ở Đi dạo và Xe máy (D-048)
 
-_2026-11-15 · nhánh `feature/nhan-vat-sieu-anh-hung` (worktree `.worktrees/sieu-anh-hung`, từ `main` `e5c498f`) · trạng thái: thiết kế, chưa làm_
+_2026-11-15 · nhánh `feature/nhan-vat-sieu-anh-hung` (worktree `.worktrees/sieu-anh-hung`, từ `main` `e5c498f`) · trạng thái: đã triển khai trên nhánh (Task 1–4), chờ người dùng duyệt demo; chưa mở PR_
 
 Bản yêu cầu gốc của người dùng ("Project enhancement: replace player avatar with Spider-Man", 2026-11-15) muốn người chơi khám phá Đà Nẵng trong vai Người Nhện ở hai chế độ Đi dạo và Xe máy. Spec này ghi lại vì sao hướng đó đổi thành **siêu anh hùng nguyên bản**, và thiết kế đã chốt cùng người dùng.
 
