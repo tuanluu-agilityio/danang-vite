@@ -300,7 +300,7 @@ const weatherBase = {
   thermal: { steel: 12e-6, concrete: 10.5e-6, refTemp: 25 },   // hệ số giãn nở nhiệt (/°C) thép, bê tông (phổ biến; cần xác minh theo TCVN 11823:2017) và nhiệt độ chuẩn (°C)
   cableSag: { span: 405, sagRatio: 9.5 },               // cáp chủ Thuận Phước: nhịp (m), L/f — dùng tính võng thêm khi nóng
   beaufort: [0.3, 1.6, 3.4, 5.5, 8.0, 10.8, 13.9, 17.2, 20.8, 24.5, 28.5, 32.7, 37.0, 41.5, 46.2, 51.0],   // m/s — ngưỡng dưới cấp 1…16, thang Beaufort ở độ cao 10 m
-  tau: { rain: 4, wet: 40, wind: 6, temp: 20, cloud: 10, haze: 10, level: 30, lightning: 3 },   // s — hằng số thời gian tiến về target (mưa tới nhanh, mặt ướt khô chậm, nước dâng/rút chậm) (ước lượng)
+  tau: { rain: 4, wet: 40, wind: 6, temp: 20, cloud: 10, haze: 10, level: 30, lightning: 3, fog: 10 },   // s — hằng số thời gian tiến về target (mưa tới nhanh, mặt ướt khô chậm, nước dâng/rút chậm; fog: sương D-043) (ước lượng)
   levelMax: 1.2,                                        // m — mực nước sông dâng tối đa (không làm ngập phố)
   rain: { count: 6000, box: [160, 90, 160] as [number, number, number], fall: 18, len: 1.6 },   // số vệt; hộp bao quanh camera (m); tốc độ rơi (m/s); độ dài vệt (m) (ước lượng)
   rainLook: { width: 0.03, alpha: 0.55, color: 0xc4ccd4 },   // m — bề rộng vệt; độ đục tối đa (0–1); màu vệt ban ngày (ước lượng, chỉnh theo ảnh)
@@ -600,6 +600,30 @@ const envBase = {
     vis: [0, 100000] as [number, number]      // m — tầm nhìn, tùy chọn (ước lượng)
   },
   driveGap: 8                 // px — khe giữa đáy chú thích bản đồ nhỏ (#drMapNote) và chỉ báo khi lái ô tô / xe máy trên cảm ứng (ước lượng)
+};
+
+/* ------------------------- Môi trường 3D theo thời tiết + giờ thực tế (D-043) -------------------------
+   Chế độ Trực tiếp: số liệu Open-Meteo (CONFIG.env) → tham số thời tiết của cảnh (realtime/envMap.ts), giờ thật → mặt trời / ngày đêm (realtime/solar.ts).
+   Ngưỡng mưa nhỏ / vừa / to theo cách phân cấp phổ biến (2,5 / 7,6 mm/h); còn lại (ước lượng). Chế độ Mô phỏng không đọc khối này */
+const liveBase = {
+  rainCurve: [[0, 0], [0.1, 0.06], [1, 0.2], [2.5, 0.35], [7.6, 0.6], [20, 0.85], [50, 1]] as [number, number][],   // mm/h → rain 0–1, nội suy tuyến tính, quá mốc cuối giữ 1 (ước lượng, spec §4.2)
+  rainMin: 0.05,              // mm/h — dưới mức này và mã WMO không phải mưa ⇒ rain = 0 (ước lượng)
+  drizzleFloor: 0.05,         // 0–1 — sàn rain khi mã WMO là mưa phùn / mưa / dông mà lượng đo ≈ 0, để hình khớp chữ trên thẻ (ước lượng)
+  windMax: 40,                // m/s — trần gió trung bình đưa vào cảnh (ước lượng)
+  gustFallback: 0.35,         // không đơn vị — thiếu gió giật thì gust = 0,35 × gió trung bình (ước lượng)
+  visCurve: [[200, 1], [1000, 0.7], [4000, 0.25], [10000, 0]] as [number, number][],   // m tầm nhìn → fog 0–1, nội suy tuyến tính, ngoài hai đầu giữ giá trị mốc (ước lượng, spec §4.2)
+  fogCodeFloor: 0.6,          // 0–1 — sàn fog khi mã WMO là sương mù (45, 48) (ước lượng)
+  humHaze: { from: 85, max: 0.1 },   // % — độ ẩm trên mức này cộng thêm vào fog, tối đa 0,1 ở 100 % (mù nhẹ, không thành sương dày) (ước lượng)
+  heat: { from: 33, span: 6 },       // °C — mù nóng haze = clamp((nhiệt − 33) / 6) × (1 − mây), chỉ khi mặt trời trên chân trời (ước lượng)
+  lightning: { storm: 0.5, hail: 0.8 },   // 0–1 — tần suất chớp: mã 95 (dông) / 96–99 (dông kèm mưa đá) (ước lượng)
+  tauScale: 3,                // không đơn vị — Trực tiếp nhân hằng số thời gian CONFIG.weather.tau (trừ mặt ướt) để lần làm mới API không đổi cảnh thấy rõ (ước lượng)
+  fogMax: 14,                 // không đơn vị — mật độ sương ×14 ở fog 1: FogExp2 gốc 0,00016 ⇒ còn ≈ 15 % độ tương phản ở 600 m (ước lượng, spec §4.2)
+  elevDay: 6,                 // ° — độ cao mặt trời từ mức này trở lên là ngày hẳn (night = 0) (ước lượng, theo chạng vạng dân dụng)
+  elevNight: -6,              // ° — độ cao mặt trời từ mức này trở xuống là đêm hẳn (night = 1): giới hạn chạng vạng dân dụng
+  sunMinElev: 10,             // ° — độ cao tối thiểu của đèn định hướng (bóng không dài vô hạn); bầu trời vẫn nhận độ cao thật (ước lượng)
+  obsStepMs: 900000,          // ms — kỳ quan trắc Open-Meteo 15 phút; làm mới căn theo mốc này
+  obsDelayMs: 90000,          // ms — chờ sau mốc quan trắc rồi mới lấy số liệu (để nguồn kịp cập nhật) (ước lượng)
+  skewMaxMs: 7200000          // ms — giờ máy lệch khỏi giờ quan trắc quá 2 giờ thì hiệu chỉnh theo giờ quan trắc (ước lượng, spec §4.3)
 };
 
 /* ------------------------- Tự khám phá bằng dù lượn -------------------------
@@ -1312,7 +1336,8 @@ export const CONFIG = {
   bike: bikeBase,
   vehicles: vehiclesBase,
   trees: treesBase,
-  people: peopleBase
+  people: peopleBase,
+  live: liveBase
 };
 export type SongHanConfig = typeof CONFIG.songHan;
 export type HanTunnelConfig = typeof CONFIG.hanTunnel;
