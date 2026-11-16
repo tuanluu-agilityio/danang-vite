@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M7HNSAY5CDKSWXZ4AQ3281S1",
+  "strategy": "manual-commit",
+  "branch": "feature/ven-song-chan-thuc",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "prototypes/thoi-tiet-thuc/img/day.jpg",
+    "prototypes/thoi-tiet-thuc/img/dusk.jpg",
+    "prototypes/thoi-tiet-thuc/img/night.jpg",
+    "prototypes/thoi-tiet-thuc/img/rain.jpg",
+    "prototypes/thoi-tiet-thuc/index.html",
+    "prototypes/thoi-tiet-thuc/shots/A-dem.png",
+    "prototypes/thoi-tiet-thuc/shots/A-mo.png",
+    "prototypes/thoi-tiet-thuc/shots/A-vua.png",
+    "prototypes/thoi-tiet-thuc/shots/B-caidat.png",
+    "prototypes/thoi-tiet-thuc/shots/B-cu.png",
+    "prototypes/thoi-tiet-thuc/shots/B-dem-tren-canh-ngay.png",
+    "prototypes/thoi-tiet-thuc/shots/B-dong-ngay.png",
+    "prototypes/thoi-tiet-thuc/shots/B-mo-dem.png",
+    "prototypes/thoi-tiet-thuc/shots/B-mo-may.png",
+    "prototypes/thoi-tiet-thuc/shots/B-mo-mua.png",
+    "prototypes/thoi-tiet-thuc/shots/B-mo-nang.png",
+    "prototypes/thoi-tiet-thuc/shots/B-offline.png",
+    "prototypes/thoi-tiet-thuc/shots/B-tai.png",
+    "prototypes/thoi-tiet-thuc/shots/M-A.png",
+    "prototypes/thoi-tiet-thuc/shots/M-B-dem.png",
+    "prototypes/thoi-tiet-thuc/shots/M-B-dong.png",
+    "prototypes/thoi-tiet-thuc/shots/M-B-mo.png",
+    "src/config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
