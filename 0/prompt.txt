@@ -1,0 +1,5 @@
+update README file với 1 vài screenshot trong các chế độ: dù lượn, oto, xe máy, đi bộ, ngày đêm, thời tiết trực tiếp
+
+---
+
+push và mở PR, merge vào main
