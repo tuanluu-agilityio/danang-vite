@@ -1,0 +1,410 @@
+<pasted_content id="9626">
+# TASK: REDESIGN THE ENTIRE BACKGROUND MUSIC EXPERIENCE – DA NANG 3D
+
+Bạn là một **Game Audio Director, Film Score Composer, Sound Designer và Senior Web Audio Engineer**. Nhiệm vụ của bạn là thiết kế lại hoàn toàn hệ thống nhạc nền cho dự án Đà Nẵng 3D.
+
+Website: https://danangbridges.netlify.app/
+
+Đây không phải nhiệm vụ đơn giản là tìm một bản nhạc khác để thay thế bản nhạc hiện tại. Tôi muốn bạn tạo ra một **bản sắc âm nhạc riêng cho thế giới Đà Nẵng 3D**, khiến người dùng vừa mở website đã cảm thấy phấn khích, tò mò và muốn lập tức bắt đầu chuyến hành trình khám phá.
+
+Hãy tư duy như đang sáng tác nhạc chủ đề cho một bộ phim phiêu lưu điện ảnh kết hợp với trải nghiệm thế giới mở 3D.
+
+---
+
+## 1. CREATIVE VISION – TẦM NHÌN ÂM NHẠC
+
+Tên concept:
+
+**THE SPIRIT OF DA NANG – An Unforgettable Journey**
+
+Thông điệp cảm xúc:
+
+"Bạn không chỉ đang truy cập một website. Bạn đang chuẩn bị bước vào một chuyến hành trình khám phá thành phố Đà Nẵng, nơi bầu trời, biển cả, dòng sông Hàn và những cây cầu tuyệt đẹp cùng mở ra trước mắt."
+
+Âm nhạc cần truyền tải đồng thời 5 cảm xúc:
+
+1. **Excitement:** Cảm giác phấn khích, háo hức, muốn khám phá ngay lập tức.
+2. **Adventure:** Tinh thần phiêu lưu, tự do, khám phá những vùng đất mới.
+3. **Freedom:** Cảm giác tự do khi bay trên bầu trời, lái xe dọc dòng sông hoặc đi bộ trên những cây cầu.
+4. **Wonder:** Sự choáng ngợp trước vẻ đẹp của thành phố, đặc biệt trong những khung cảnh rộng lớn và lúc hoàng hôn, ban đêm.
+5. **Connection:** Cảm giác gần gũi với Đà Nẵng, thành phố biển năng động, hiện đại và giàu sức sống.
+
+### Phong cách âm nhạc mong muốn
+
+Hãy kết hợp tinh tế:
+
+- Cinematic Adventure Music.
+- Epic Orchestral.
+- Modern Electronic / Synthwave Elements.
+- Atmospheric Ambient.
+- Uplifting Travel Soundtrack.
+- Subtle Organic / Ethnic Textures gợi liên tưởng đến miền biển Việt Nam.
+
+Có thể sử dụng:
+- Những lớp cinematic strings tạo cảm giác rộng lớn.
+- Synth arpeggios tạo nhịp chuyển động và khám phá.
+- Percussion mạnh mẽ nhưng tinh tế.
+- Bass có chiều sâu, giúp âm nhạc giàu năng lượng.
+- Piano hoặc nhạc cụ dây gảy tạo những khoảnh khắc cảm xúc.
+- Những lớp âm thanh airy, atmospheric tạo cảm giác gió biển và bầu trời rộng mở.
+
+Lưu ý: Không biến nhạc thành một bản nhạc dân gian Việt Nam truyền thống. Cũng không sử dụng âm thanh nhạc cụ dân tộc một cách gượng ép. Hãy giữ tinh thần cinematic hiện đại, quốc tế, nhưng có bản sắc riêng.
+
+**Định hướng quan trọng:** Đây phải là một bản nhạc khiến người nghe muốn khám phá Đà Nẵng, không phải nhạc nền thư giãn thông thường.
+
+---
+
+## 2. COMPOSITION – CẤU TRÚC BẢN NHẠC
+
+Hãy tạo một bản nhạc chủ đề original, có khả năng phát lặp liên tục mà không gây nhàm chán.
+
+Định hướng cấu trúc:
+
+**Opening – The Invitation (0–10 giây)**
+
+- Bắt đầu bằng một đoạn nhạc có sức hút ngay từ những giây đầu.
+- Sử dụng atmospheric synth, cinematic strings hoặc âm thanh mở rộng không gian.
+- Có một giai điệu chủ đạo ngắn, dễ nhớ, mang cảm giác đi lên và mở ra một hành trình.
+- Tạo cảm giác người nghe sắp bước vào một thế giới tuyệt đẹp.
+
+Không được bắt đầu quá chậm, buồn ngủ hoặc kéo dài nhiều giây chỉ với tiếng ambient.
+
+**Build-up – The Journey Begins**
+
+- Nhịp điệu bắt đầu xuất hiện.
+- Percussion, bass và synth dần tạo năng lượng.
+- Giai điệu phát triển theo hướng lạc quan, phấn khích.
+- Người nghe cảm nhận rõ sự chuyển động và khám phá.
+
+**Main Theme – Endless Exploration**
+
+Đây là phần quan trọng nhất.
+
+- Giai điệu phải đủ hấp dẫn để nghe lặp lại.
+- Có tính điện ảnh, rộng lớn, truyền cảm hứng.
+- Nhịp điệu có năng lượng nhưng không quá dồn dập.
+- Tạo cảm giác đang di chuyển giữa một thành phố xinh đẹp, hiện đại và sống động.
+
+**Evolution – Discover More**
+
+- Âm nhạc cần có những biến đổi nhẹ nhàng.
+- Thêm hoặc giảm lớp nhạc cụ để không tạo cảm giác một đoạn loop đơn điệu.
+- Có những đoạn đẩy cao trào ngắn rồi quay về giai điệu chủ đạo.
+
+**Seamless Loop**
+
+- Điểm kết thúc phải kết nối tự nhiên với phần mở đầu.
+- Không có khoảng lặng đột ngột.
+- Không bị giật hoặc thay đổi âm lượng khi loop.
+- Tránh tạo cảm giác người dùng đang nghe một file nhạc ngắn lặp đi lặp lại.
+
+Đề xuất thời lượng bản nhạc chính khoảng 2–4 phút, tùy khả năng tạo nhạc và dung lượng tài nguyên.
+
+---
+
+## 3. ADAPTIVE SOUNDTRACK – ÂM NHẠC THÍCH ỨNG VỚI CÁC CHẾ ĐỘ
+
+Đây là phần tạo nên sự khác biệt của hệ thống mới.
+
+Website hiện có nhiều chế độ trải nghiệm:
+
+- Dù lượn.
+- Ô tô.
+- Xe máy.
+- Đi dạo.
+- Tham quan có hướng dẫn.
+- Khám phá các cây cầu và dòng sông Hàn.
+
+Hãy nghiên cứu cấu trúc dự án và cách các chế độ này đang hoạt động để thiết kế hệ thống âm nhạc tương ứng.
+
+Không nhất thiết mỗi chế độ phải có một bản nhạc hoàn toàn khác nhau. Tôi ưu tiên một bản sắc âm nhạc xuyên suốt, kết hợp những lớp âm thanh hoặc arrangement khác nhau để mỗi chế độ có cảm xúc riêng.
+
+### A. PARAGLIDING – FREEDOM IN THE SKY
+
+<Philosophy>
+Người dùng đang bay tự do trên bầu trời Đà Nẵng và ngắm nhìn toàn cảnh sông Hàn.
+</Philosophy>
+
+Âm nhạc cần:
+
+- Rộng lớn, bay bổng, phóng khoáng.
+- Có những lớp atmospheric synth và strings giàu không gian.
+- Tạo cảm giác đang lướt giữa không trung.
+- Nhịp điệu nhẹ nhàng nhưng vẫn tràn đầy năng lượng.
+- Không sử dụng percussion quá nặng làm mất cảm giác tự do.
+
+Cảm giác: Flying above a beautiful world.
+
+### B. CAR – THE URBAN JOURNEY
+
+Người dùng lái ô tô qua các cây cầu Đà Nẵng.
+
+Âm nhạc cần:
+
+- Năng động, hiện đại.
+- Có nhịp bass và percussion rõ ràng.
+- Tạo cảm giác chuyển động liên tục.
+- Pha trộn electronic và cinematic.
+- Đem lại cảm giác đang lái xe khám phá một thành phố tuyệt đẹp.
+
+Cảm giác: Drive, discover, experience.
+
+### C. MOTORBIKE – THE THRILL OF EXPLORATION
+
+Người dùng điều khiển xe máy qua những cây cầu và cung đường.
+
+Âm nhạc cần:
+
+- Nhịp điệu linh hoạt, giàu năng lượng.
+- Percussion sắc nét hơn chế độ ô tô.
+- Tạo cảm giác nhanh nhẹn, tự do, chủ động.
+- Có tính khám phá và phiêu lưu.
+- Không trở thành nhạc đua xe hoặc nhạc hành động quá căng thẳng.
+
+Cảm giác: Feel the road, embrace the freedom.
+
+### D. WALKING – SLOW DOWN AND DISCOVER
+
+Người dùng đi bộ khám phá các cây cầu và bờ sông.
+
+Âm nhạc cần:
+
+- Nhẹ nhàng hơn nhưng không buồn ngủ.
+- Có giai điệu đẹp, giàu cảm xúc.
+- Sử dụng piano, plucked strings hoặc ambient texture một cách tinh tế.
+- Giảm nhịp percussion và bass.
+- Tạo cảm giác đang tận hưởng vẻ đẹp của thành phố.
+
+Cảm giác: Every step tells a story.
+
+### E. GUIDED TOUR – DISCOVER THE STORY
+
+Khi người dùng tham quan theo tour hoặc nghe thuyết minh:
+
+- Nhạc nền cần lùi xuống phía sau.
+- Không được cạnh tranh với giọng thuyết minh.
+- Tự động giảm âm lượng nhạc khi có giọng đọc.
+- Khi thuyết minh kết thúc, âm lượng nhạc trở lại tự nhiên.
+- Có thể duy trì phiên bản atmospheric nhẹ nhàng của chủ đề chính.
+
+Cảm giác: Explore, learn and be inspired.
+
+---
+
+## 4. DAY / NIGHT / WEATHER – ÂM NHẠC THEO KHÔNG GIAN
+
+Website có khả năng chuyển đổi ngày/đêm, thời tiết thực tế và mô phỏng thời tiết.
+
+Hãy tận dụng những trạng thái hiện có để làm cho âm nhạc có chiều sâu hơn.
+
+**Daytime:**
+- Tươi sáng, tràn đầy năng lượng.
+- Giai điệu sáng, lạc quan.
+- Cảm giác một ngày mới bắt đầu với vô vàn điều thú vị.
+
+**Nighttime:**
+- Tăng atmospheric synth, những lớp âm thanh lung linh.
+- Có một chút bí ẩn, huyền ảo và quyến rũ.
+- Vẫn giữ năng lượng khám phá, không biến thành nhạc kinh dị hoặc u buồn.
+- Phù hợp với hình ảnh các cây cầu được chiếu sáng, dòng sông Hàn về đêm.
+
+**Clear / Sunny:**
+- Tươi sáng, rộng mở, giàu sức sống.
+
+**Rain / Cloudy:**
+- Có thể thêm các lớp ambient sâu hơn.
+- Giai điệu trầm hơn một chút nhưng vẫn duy trì tính tích cực.
+
+**Storm:**
+- Có thể tăng chiều sâu và sự căng thẳng nhẹ trong arrangement.
+- Không thay đổi đột ngột thành nhạc thảm họa hoặc nhạc kinh dị.
+
+Lưu ý:
+Không bắt buộc phải tạo nhạc riêng cho mọi loại thời tiết. Chỉ triển khai những biến thể thực sự tạo ra trải nghiệm khác biệt và có thể tích hợp hợp lý với hệ thống hiện tại.
+
+---
+
+## 5. AUDIO EXPERIENCE – CHẤT LƯỢNG TRẢI NGHIỆM
+
+Tôi muốn hệ thống âm thanh có cảm giác chuyên nghiệp như một sản phẩm game hoặc trải nghiệm 3D thương mại.
+
+Các yêu cầu:
+
+**Volume Management**
+- Có thể điều chỉnh âm lượng nhạc nền.
+- Có thể bật/tắt nhạc dễ dàng.
+- Không để âm lượng nhạc quá lớn khi vừa bắt đầu.
+- Tránh clipping, distortion và các thay đổi âm lượng bất thường.
+
+**Smooth Transitions**
+- Khi chuyển chế độ dù lượn, ô tô, xe máy hoặc đi bộ, nhạc phải chuyển đổi tự nhiên.
+- Sử dụng crossfade hoặc chuyển đổi các lớp âm thanh.
+- Tránh tắt nhạc cũ rồi bật ngay nhạc mới.
+- Không để các track chồng lấn không kiểm soát.
+
+**Voice-over Priority**
+- Ưu tiên giọng thuyết minh.
+- Tự động duck nhạc khoảng 8–12 dB khi có thuyết minh.
+- Phục hồi âm lượng nhạc từ từ khi giọng đọc kết thúc.
+
+**Continuous Playback**
+- Nhạc có khả năng phát liên tục khi người dùng khám phá.
+- Không bị restart từ đầu mỗi khi camera thay đổi hoặc chuyển góc nhìn.
+- Không phát sinh nhiều audio instance cùng lúc.
+- Không tạo ra khoảng lặng không mong muốn.
+
+**User Experience**
+- Không ép phát âm thanh khi trình duyệt chưa cho phép autoplay.
+- Kích hoạt âm nhạc sau tương tác hợp lệ của người dùng.
+- Xử lý tốt các trường hợp người dùng chuyển tab, quay lại website, thoát chế độ trải nghiệm hoặc reload trang.
+- Giữ trạng thái bật/tắt và âm lượng theo cơ chế lưu trữ phù hợp của dự án.
+
+---
+
+## 6. MUSIC PRODUCTION – YÊU CẦU VỀ TÀI NGUYÊN ÂM THANH
+
+Ưu tiên theo thứ tự:
+
+1. Tạo bản nhạc original dành riêng cho Đà Nẵng 3D bằng công cụ tạo nhạc có sẵn trong môi trường thực thi.
+2. Nếu không có khả năng tạo nhạc trực tiếp, tìm các tài nguyên instrumental có giấy phép sử dụng phù hợp với website.
+3. Nếu cần các phiên bản khác nhau, ưu tiên stem hoặc arrangement có cùng tempo, tông nhạc và motif để chuyển đổi mượt mà.
+
+Yêu cầu bắt buộc:
+
+- Không sử dụng nhạc thương mại có bản quyền khi chưa có quyền sử dụng.
+- Không tải nhạc từ YouTube hoặc các nguồn không rõ giấy phép.
+- Không sử dụng những bản nhạc nổi tiếng hoặc sao chép giai điệu phim/game.
+- Không sử dụng các đoạn nhạc AI chất lượng thấp, thiếu cấu trúc hoặc loop nghe không tự nhiên.
+- Không sử dụng audio URL bên ngoài thiếu ổn định cho playback chính.
+- Lưu trữ và tối ưu các file âm thanh theo kiến trúc tài nguyên hiện có của dự án.
+
+Nếu sử dụng tài nguyên bên thứ ba, phải ghi rõ nguồn và giấy phép.
+
+---
+
+## 7. TECHNICAL IMPLEMENTATION – REVIEW & IMPLEMENT
+
+Trước khi chỉnh sửa, hãy thực hiện:
+
+1. Review toàn bộ cấu trúc dự án.
+2. Tìm hiểu cách nhạc nền hiện tại được triển khai.
+3. Kiểm tra audio engine, các file âm thanh, state quản lý chế độ và các sự kiện chuyển chế độ.
+4. Xác định tại sao nhạc hiện tại không phù hợp với trải nghiệm website.
+5. Xác định những state hiện có có thể tái sử dụng để điều khiển âm nhạc.
+6. Đề xuất giải pháp có khả năng tích hợp tốt nhất với kiến trúc hiện tại.
+
+Không được tự ý giả định cấu trúc dữ liệu, tên biến, tên component hoặc framework đang sử dụng.
+
+Hãy đọc code thực tế trước khi quyết định phương án triển khai.
+
+### Nguyên tắc implementation
+
+- Tái sử dụng kiến trúc hiện tại khi hợp lý.
+- Không phá vỡ các tính năng 3D đang hoạt động.
+- Không làm ảnh hưởng chế độ dù lượn, ô tô, xe máy, đi bộ và tham quan.
+- Không làm hỏng hệ thống thuyết minh.
+- Không tạo thêm các nút điều khiển dư thừa.
+- Giữ nguyên UI hiện tại nếu không thực sự cần thiết phải thay đổi.
+- Tối ưu tải audio, quản lý bộ nhớ và giải phóng tài nguyên.
+- Tương thích với trình duyệt desktop và mobile phù hợp với khả năng hiện tại của dự án.
+- Không làm giảm FPS hoặc gây lag cho trải nghiệm Three.js.
+- Xử lý tốt lỗi tải file audio và trường hợp người dùng mất kết nối.
+
+Không over-engineer. Ưu tiên trải nghiệm thực tế, chất lượng âm thanh và sự ổn định.
+
+---
+
+## 8. ACCEPTANCE CRITERIA – TIÊU CHÍ HOÀN THÀNH
+
+Chỉ coi nhiệm vụ hoàn thành khi đáp ứng các tiêu chí sau:
+
+**Music Quality**
+- [ ] Có một bản nhạc chủ đề mới, mang bản sắc riêng.
+- [ ] Nghe những giây đầu tiên đã tạo cảm giác muốn khám phá.
+- [ ] Nhạc mang tinh thần cinematic adventure, hiện đại và giàu năng lượng.
+- [ ] Không có cảm giác nhạc nền stock hoặc nhạc thư giãn thông thường.
+- [ ] Có diễn biến âm nhạc và không gây nhàm chán khi nghe lâu.
+- [ ] Loop tự nhiên, không nghe thấy điểm nối.
+
+**Adaptive Experience**
+- [ ] Dù lượn có cảm giác bay bổng, tự do.
+- [ ] Ô tô có cảm giác hiện đại, năng động.
+- [ ] Xe máy có cảm giác linh hoạt và phiêu lưu.
+- [ ] Đi bộ có cảm giác thư thái và giàu cảm xúc.
+- [ ] Thuyết minh không bị nhạc nền lấn át.
+- [ ] Chuyển đổi giữa các chế độ mượt mà.
+
+**Environment Adaptation**
+- [ ] Có sự khác biệt hợp lý giữa ngày và đêm.
+- [ ] Có thể phản ứng với trạng thái thời tiết nếu dữ liệu hiện có hỗ trợ.
+- [ ] Không chuyển đổi âm thanh đột ngột hoặc gây khó chịu.
+
+**Technical Quality**
+- [ ] Không phát nhiều bản nhạc cùng lúc ngoài ý muốn.
+- [ ] Không có lỗi autoplay.
+- [ ] Không có lỗi memory leak hoặc audio instance bị bỏ lại.
+- [ ] Không ảnh hưởng các tính năng hiện tại.
+- [ ] Không làm giảm hiệu suất của trải nghiệm 3D.
+- [ ] Kiểm tra hoạt động thực tế trên các chế độ chính.
+
+---
+
+## 9. FINAL CREATIVE DIRECTION
+
+Hãy luôn đặt ra câu hỏi:
+
+**"Nếu người dùng đang nghe bản nhạc này và lần đầu tiên nhìn thấy toàn cảnh sông Hàn, Cầu Rồng, Cầu Thuận Phước và những cây cầu Đà Nẵng từ trên cao, liệu họ có cảm thấy phấn khích và muốn khám phá nhiều hơn không?"**
+
+Nếu câu trả lời chưa phải là YES, hãy tiếp tục cải thiện thiết kế âm nhạc.
+
+Tôi không muốn một bản nhạc chỉ có tác dụng lấp đầy khoảng trống âm thanh.
+
+Tôi muốn âm nhạc trở thành một phần quan trọng của trải nghiệm, góp phần tạo nên cảm xúc và bản sắc cho toàn bộ thế giới Đà Nẵng 3D.
+
+**The music should make people feel that an adventure is waiting for them.**
+
+Hãy chủ động đưa ra các quyết định sáng tạo và kỹ thuật tốt nhất dựa trên code thực tế.
+
+Không dừng lại ở việc phân tích hoặc đưa ra kế hoạch. Sau khi hoàn tất việc review và xác định giải pháp, hãy triển khai, tích hợp, kiểm thử và hoàn thiện trực tiếp trong dự án.
+
+Ở bước cuối, báo cáo:
+- Concept âm nhạc đã lựa chọn.
+- Những tài nguyên âm thanh đã tạo hoặc sử dụng và giấy phép tương ứng.
+- Cách âm nhạc thay đổi theo từng chế độ.
+- Những file/component đã thay đổi.
+- Kết quả kiểm thử và những giới hạn còn tồn tại.
+
+**Mục tiêu cuối cùng: biến nhạc nền từ một tính năng phụ thành linh hồn cảm xúc của Đà Nẵng 3D.**
+</pasted_content id="9626">
+
+---
+
+tôi sẽ test demo không cần chạy test nặng
+
+---
+
+bỏ test nặng, tôi sẽ review demo
+
+---
+
+push và merge vào main. Update AI model cần thiết
+
+---
+
+xóa tiếng rít rít rít trong dự án
+
+---
+
+push và merge vào main, cập nhật AI document
+
+---
+
+nhạc nền đang có một đoạn bị lag, cần tìm root cause và fix nó
+
+---
+
+nhạc nền không nên đi cùng với các âm thanh của xe máy, oto hay cầu rồng phun nước, phun lửa. Nó nên tách rời. Hiện tại khi tôi tắt nhạc nền nó cũng tắt luôn các âm thanh khác
+
+---
+
+push và merge vào main, update AI document
