@@ -3,6 +3,34 @@
 Chuyển từ một file `index.html` (~4 600 dòng) sang Vite + TypeScript, không dùng framework UI. Mọi tính năng giữ nguyên.
 Ngoài bốn cây cầu còn có **Hầm vượt sông Hàn** (phương án đề xuất 2025, chưa xây) — xem mục [Hầm vượt sông Hàn](#hầm-vượt-sông-hàn).
 
+## Ảnh chụp
+
+Chụp từ chính cảnh 3D (GPU thật, 1280 × 720) bằng `TEST_REAL_GPU=1 node tests/readme-shots.mjs` sau `npm run build`; ảnh nằm ở `docs/screenshots/`.
+
+### Các chế độ tự khám phá
+
+| Dù lượn (`?explore=glider`) | Ô tô VinFast VF 3 (`?explore=drive`) |
+|---|---|
+| ![Dù lượn](docs/screenshots/glider.jpg) | ![Lái ô tô](docs/screenshots/drive.jpg) |
+
+| Xe máy tay ga (`?explore=bike`) | Đi dạo (`?explore=stroll`) |
+|---|---|
+| ![Lái xe máy](docs/screenshots/bike.jpg) | ![Đi dạo](docs/screenshots/stroll.jpg) |
+
+### Ngày / đêm
+
+| Ngày | Đêm |
+|---|---|
+| ![Cầu Rồng ban ngày](docs/screenshots/ngay.jpg) | ![Cầu Rồng ban đêm](docs/screenshots/dem.jpg) |
+
+### Thời tiết
+
+Ở chế độ **Trực tiếp** (mặc định khi mở trang), cảnh theo giờ và thời tiết thực tế tại Đà Nẵng (Open-Meteo). Hai ảnh dưới là các kịch bản của chế độ **Mô phỏng** (mưa, bão), vì thời tiết thực không thể chụp theo ý muốn.
+
+| Mưa | Bão (đêm) |
+|---|---|
+| ![Mưa](docs/screenshots/mua.jpg) | ![Bão](docs/screenshots/bao.jpg) |
+
 ## Chạy
 
 ```bash
